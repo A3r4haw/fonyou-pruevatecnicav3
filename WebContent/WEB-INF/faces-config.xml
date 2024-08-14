@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<faces-config version="2.0"
+              xmlns="http://java.sun.com/xml/ns/javaee"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd"
+>
+    <factory>
+        <exception-handler-factory>
+            mx.mc.init.CustomExceptionHandlerFactory
+        </exception-handler-factory>
+    </factory>
+    <application>
+        
+        <locale-config>
+            <default-locale>es</default-locale>
+        </locale-config>
+
+        <resource-bundle>
+            <base-name>i18n.messages</base-name>
+            <var>msg</var>
+        </resource-bundle>
+            
+        <resource-bundle>
+            <base-name>i18n.validation</base-name>
+            <var>val</var>
+        </resource-bundle>
+    
+        <el-resolver>org.springframework.web.jsf.el.SpringBeanFacesELResolver</el-resolver>
+        
+        <lifecycle>
+            <phase-listener id="nocache">mx.mc.init.CacheControlPhaseListener</phase-listener>
+        </lifecycle>
+        
+    </application>
+
+    <managed-bean>
+        <managed-bean-name>currentDate</managed-bean-name>
+        <managed-bean-class>java.util.Date</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+</faces-config>

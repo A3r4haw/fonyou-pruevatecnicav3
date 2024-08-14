@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TipoSurtimientoMapper" >
+ 
+    <select id="obtenerLista" resultType="mx.mc.model.TipoSurtimiento" parameterType="mx.mc.model.TipoSurtimiento" >
+        SELECT * FROM tipoSurtimiento
+        WHERE 1=1
+        <if test=" idTipoSurtimiento != null ">
+            AND idTipoSurtimiento = #{ idTipoSurtimiento }
+        </if>
+        <if test=" clave != null ">
+            AND clave = #{ clave }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion }
+        </if>
+        ;
+    </select>
+ 
+    <select id="obtener" resultType="mx.mc.model.TipoSurtimiento" parameterType="mx.mc.model.TipoSurtimiento" >
+        SELECT * FROM tipoSurtimiento
+        WHERE 1=1
+        <if test=" idTipoSurtimiento != null ">
+            AND idTipoSurtimiento = #{ idTipoSurtimiento }
+        </if>
+        <if test=" clave != null ">
+            AND clave = #{ clave }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion }
+        </if>
+        LIMIT 1;
+    </select>
+    
+</mapper>

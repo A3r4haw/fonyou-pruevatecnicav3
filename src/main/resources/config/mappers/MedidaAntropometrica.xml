@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.MedidaAntropometrica" >
+    
+    <select id="obtener" resultType="mx.mc.model.MedidaAntropometrica" parameterType="mx.mc.model.MedidaAntropometrica" >
+        SELECT idMedidaAntropometrica, fecha, idPaciente, idPacienteServicio, idPrescripcion, peso, estatura, superficieCorporal, cintura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM medidaAntropometrica
+        WHERE 1=1
+        <if test=" idMedidaAntropometrica != null ">
+            AND idMedidaAntropometrica = #{ idMedidaAntropometrica }
+        </if>
+        <if test=" fecha != null ">
+            AND fecha = #{ fecha }
+        </if>
+        <if test=" idPaciente != null ">
+            AND idPaciente = #{ idPaciente } 
+        </if>
+        <if test=" idPacienteServicio != null ">
+            AND idPacienteServicio = #{ idPacienteServicio } 
+        </if>
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion }
+        </if>
+        LIMIT 1;
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.MedidaAntropometrica" parameterType="mx.mc.model.MedidaAntropometrica" >
+        SELECT idMedidaAntropometrica, fecha, idPaciente, idPacienteServicio, idPrescripcion, peso, estatura, superficieCorporal, cintura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM medidaAntropometrica
+        WHERE 1=1
+        <if test=" idMedidaAntropometrica != null ">
+            AND idMedidaAntropometrica = #{ idMedidaAntropometrica }
+        </if>
+        <if test=" fecha != null ">
+            AND fecha = #{ fecha }
+        </if>
+        <if test=" idPacienteServicio != null ">
+            AND idPacienteServicio = #{ idPacienteServicio } 
+        </if>
+        <if test=" idPaciente != null ">
+            AND idPaciente = #{ idPaciente } 
+        </if>
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion }
+        </if>
+        ORDER BY fecha DESC
+    </select>
+    
+    <select id="obtenerUltimo" resultType="mx.mc.model.MedidaAntropometrica" parameterType="mx.mc.model.MedidaAntropometrica" >
+        SELECT idMedidaAntropometrica, fecha, idPaciente, idPacienteServicio, idPrescripcion, peso, estatura, superficieCorporal, cintura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM medidaAntropometrica
+        WHERE 1=1
+        <if test=" idMedidaAntropometrica != null ">
+            AND idMedidaAntropometrica = #{ idMedidaAntropometrica }
+        </if>
+        <if test=" fecha != null ">
+            AND fecha = #{ fecha }
+        </if>
+        <if test=" idPacienteServicio != null ">
+            AND idPacienteServicio = #{ idPacienteServicio } 
+        </if>
+        <if test=" idPaciente != null ">
+            AND idPaciente = #{ idPaciente } 
+        </if>
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion }
+        </if>
+        ORDER BY fecha DESC
+        LIMIT 1
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.MedidaAntropometrica" >
+        INSERT INTO medidaAntropometrica (
+            idMedidaAntropometrica
+            , fecha
+            , idPaciente
+            <if test=" idPacienteServicio != null "> , idPacienteServicio </if>
+            <if test=" idPrescripcion != null "> , idPrescripcion </if>
+            <if test=" peso != null "> , peso </if>
+            <if test=" estatura != null "> , estatura </if>
+            <if test=" superficieCorporal != null "> , superficieCorporal </if>
+            <if test=" cintura != null "> , cintura </if>
+            , insertFecha
+            , insertIdUsuario
+            <if test=" updateFecha != null "> , updateFecha </if>
+            <if test=" updateIdUsuario != null "> , updateIdUsuario </if>
+        ) VALUES (
+            #{ idMedidaAntropometrica } 
+            , #{ fecha } 
+            , #{ idPaciente } 
+            <if test=" idPacienteServicio != null "> , #{ idPacienteServicio } </if>
+            <if test=" idPrescripcion != null "> , #{ idPrescripcion } </if>
+            <if test=" peso != null "> , #{ peso } </if>
+            <if test=" estatura != null "> , #{ estatura } </if>
+            <if test=" superficieCorporal != null "> , #{ superficieCorporal } </if>
+            <if test=" cintura != null "> , #{ cintura } </if>
+            , #{ insertFecha }
+            , #{ insertIdUsuario }
+            <if test=" updateFecha != null "> , #{ updateFecha } </if>
+            <if test=" updateIdUsuario != null "> , #{ updateIdUsuario } </if>
+        );
+    </insert>
+    
+</mapper>

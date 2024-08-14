@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.EstructuraAlmacenServicioMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.EstructuraAlmacenServicio" parameterType="mx.mc.model.EstructuraAlmacenServicio" >
+        SELECT idAlmacenServicio, idEstructuraAlmacen , idEstructuraServicio, prioridadSurtir
+        FROM estructuraAlmacenServicio
+        WHERE 1=1
+        <if test=" idEstructuraAlmacen != null ">
+            AND idEstructuraAlmacen = #{ idEstructuraAlmacen , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructuraServicio != null ">
+            AND idEstructuraServicio = #{ idEstructuraServicio , jdbcType = VARCHAR }
+        </if>   
+        Limit 1  
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.EstructuraAlmacenServicio" parameterType="mx.mc.model.EstructuraAlmacenServicio" >
+        SELECT idAlmacenServicio, idEstructuraAlmacen , idEstructuraServicio, prioridadSurtir
+        FROM estructuraAlmacenServicio
+        WHERE 1=1
+        <if test=" idEstructuraAlmacen != null ">
+            AND idEstructuraAlmacen = #{ idEstructuraAlmacen , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructuraServicio != null ">
+            AND idEstructuraServicio = #{ idEstructuraServicio , jdbcType = VARCHAR }
+        </if>     
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.EstructuraAlmacenServicio" >
+        INSERT INTO estructuraAlmacenServicio (
+        <if test=" idAlmacenServicio != null ">
+            idAlmacenServicio
+        </if>  
+        <if test=" idEstructuraAlmacen != null ">
+            ,idEstructuraAlmacen
+        </if>
+        <if test=" idEstructuraServicio != null ">
+            ,idEstructuraServicio
+        </if>
+        <if test = "prioridadSurtir != null">
+            ,prioridadSurtir
+        </if>
+        ) VALUES (
+        <if test=" idAlmacenServicio != null ">
+            #{ idAlmacenServicio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructuraAlmacen != null ">
+            , #{ idEstructuraAlmacen , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructuraServicio != null ">
+            , #{ idEstructuraServicio , jdbcType = VARCHAR }
+        </if>
+        <if test ="prioridadSurtir!= null">
+            ,#{prioridadSurtir}
+        </if>     
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.EstructuraAlmacenServicio" >
+        UPDATE estructuraAlmacenServicio SET
+        <if test=" idEstructuraServicio != null ">
+            idEstructuraServicio = #{ idEstructuraServicio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructuraAlmacen != null ">
+            ,idEstructuraAlmacen = #{ idEstructuraAlmacen , jdbcType = VARCHAR }
+        </if>
+        <if test=" prioridadSurtir != null ">
+            ,prioridadSurtir = #{ prioridadSurtir , jdbcType = VARCHAR }
+        </if>
+        WHERE idAlmacenServicio = #{ idAlmacenServicio , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.EstructuraAlmacenServicio"  >
+        DELETE FROM estructuraAlmacenServicio 
+        WHERE idEstructuraAlmacen = #{ idEstructuraAlmacen , jdbcType = VARCHAR }
+    </delete>
+    
+    <select id="obtenerEstructuraAsignada" resultType="mx.mc.model.EstrucAlmacenServicio_Extend" parameterType="String" >
+    	SELECT ae.idAlmacenServicio, ae.idEstructuraAlmacen, ae.idEstructuraServicio, e.nombre, ae.prioridadSurtir
+    	FROM estructuraAlmacenServicio ae INNER JOIN estructura e
+    	ON ae.idEstructuraServicio = e.idEstructura
+    	WHERE 1 = 1
+    	<if test=" idEstructuraAlmacen != null ">
+    		AND ae.idEstructuraAlmacen = #{ idEstructuraAlmacen, jdbcType = VARCHAR }    									
+    	</if>    
+    </select>
+    
+    <select id="obtenerAlmacenServicio" resultType="mx.mc.model.EstructuraAlmacenServicio" parameterType="String" >
+    	SELECT * FROM estructuraAlmacenServicio 
+        WHERE idEstructuraAlmacen = #{ idEstructuraAlmacen , jdbcType = VARCHAR }
+    </select>
+    
+    <select id="validarAsignacionServicio" resultType="mx.mc.model.EstrucAlmacenServicio_Extend" parameterType="String" >
+    	SELECT ae.idAlmacenServicio, ae.idEstructuraAlmacen, ae.idEstructuraServicio, e.nombre
+    	FROM estructuraAlmacenServicio ae 
+            INNER JOIN estructura e ON ae.idEstructuraAlmacen = e.idEstructura
+    	WHERE 1 = 1
+    	<if test=" idEstructuraServicio != null ">
+    		AND ae.idEstructuraServicio = #{ idEstructuraServicio, jdbcType = VARCHAR }    									
+    	</if>    
+    </select>
+    
+    <select id="getAlmacenServicioByClaveEstructura" resultType="mx.mc.model.EstrucAlmacenServicio_Extend" parameterType="String" >
+        SELECT ae.idAlmacenServicio, ae.idEstructuraAlmacen, ae.idEstructuraServicio, e.nombre, ae.prioridadSurtir
+        FROM estructuraAlmacenServicio ae 
+            INNER JOIN estructura e  ON ae.idEstructuraAlmacen = e.idEstructura
+        WHERE 1 = 1    	
+            AND e.claveEstructura = #{ claveEstructura, jdbcType = VARCHAR }
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerAlmacenServicios" resultType="mx.mc.model.EstrucAlmacenServicio_Extend" parameterType="Map" >
+        SELECT 
+            eas.idAlmacenServicio,
+            ea.nombre AS almacen,
+            es.nombre AS servicio,
+            tp.nombre AS tipo,
+            ea.activa AS estado,
+            eas.idEstructuraAlmacen,
+            eas.idEstructuraServicio,
+            eas.prioridadSurtir
+        FROM  estructuraAlmacenServicio eas
+            INNER JOIN  estructura ea ON ea.idEstructura = eas.idEstructuraAlmacen
+            INNER JOIN  estructura es ON es.idEstructura = eas.idEstructuraServicio        
+            INNER JOIN	estructuraTipoSurtimiento  ets ON ets.idEstructuraAlmacen = eas.idEstructuraAlmacen
+            INNER JOIN  tipoSurtimiento tp ON tp.idTipoSurtimiento = ets.idTipoSurtimiento
+        WHERE 1=1
+        <if test = 'idEntidadHosp != null'>
+            AND ea.idEntidadHospitalaria = #{idEntidadHosp}
+        </if>   
+        <if test="valueAlma != null">
+            AND ea.nombre LIKE '%${valueAlma}%'
+        </if>
+        <if test = "valueServ != null">
+            AND es.nombre LIKE '%${valueServ}%'
+        </if>
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'almacen'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY ea.nombre asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY ea.nombre desc
+                </if>            
+            </if>
+            <if test="sortField == 'servicio'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY es.nombre asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY es.nombre desc
+                </if>
+            </if>
+            <if test="sortField == 'tipo'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY tp.nombre asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY tp.nombre desc
+                </if>            
+            </if>
+            <if test="sortField == 'estado'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY ea.activa asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY ea.activa desc
+                </if>            
+            </if>
+        </if>               
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    <select id="obtenerTotalAlmacenServicios" resultType="Long" parameterType="Map" >
+        SELECT 
+            count(*)
+        FROM    estructuraAlmacenServicio eas
+            INNER JOIN    estructura ea ON ea.idEstructura = eas.idEstructuraAlmacen
+            INNER JOIN    estructura es ON es.idEstructura = eas.idEstructuraServicio
+            INNER JOIN	estructuraTipoSurtimiento  ets ON ets.idEstructuraAlmacen = eas.idEstructuraAlmacen
+            INNER JOIN  tipoSurtimiento tp ON tp.idTipoSurtimiento = ets.idTipoSurtimiento
+        WHERE 1=1   
+        <if test = 'idEntidadHosp != null'>
+            AND ea.idEntidadHospitalaria = #{idEntidadHosp}
+        </if> 
+        <if test="valueAlma != null">
+            AND ea.nombre LIKE '%${valueAlma}%'
+        </if>
+        <if test = "valueServ != null">
+            AND es.nombre LIKE '%${valueServ}%'
+        </if>;
+    </select>
+    
+    <select id="obtenerServiciosOfAlmacen" resultType="mx.mc.model.EstrucAlmacenServicio_Extend" parameterType="Map" >
+        SELECT 
+            es.nombre as servicio
+            ,ea.nombre as almacen    
+            ,tp.nombre as tipo
+            ,es.activa as estado
+            ,eas.*
+        FROM  estructuraAlmacenServicio eas
+            INNER JOIN  estructura ea ON ea.idEstructura = eas.idEstructuraAlmacen
+            INNER JOIN  estructura es ON es.idEstructura = eas.idEstructuraServicio
+            INNER JOIN	estructuraTipoSurtimiento  ets ON ets.idEstructuraAlmacen = eas.idEstructuraAlmacen
+            INNER JOIN  tipoSurtimiento tp ON tp.idTipoSurtimiento = ets.idTipoSurtimiento
+        WHERE 1=1 	  
+        <if test = 'idAlmacen != null'>
+            AND eas.idEstructuraAlmacen =  #{idAlmacen}
+        </if> 
+    </select>
+    
+    <delete id="eliminarAlmacenServicioIdAlmacen"  parameterType="Map" >
+        DELETE FROM estructuraAlmacenServicio
+        WHERE  idEstructuraAlmacen = #{idEstructuraAlmacen}
+    </delete>
+    
+    <insert id="insertarAlmacenServicioList"  parameterType="java.util.List" >
+        INSERT INTO estructuraAlmacenServicio (
+            idAlmacenServicio,
+            idEstructuraAlmacen,
+            idEstructuraServicio,
+            prioridadSurtir
+        ) VALUES
+        <foreach collection="almacenServicioList" item="item" separator="," index="index">  
+            (
+                #{item.idAlmacenServicio}
+                ,#{item.idEstructuraAlmacen}
+                ,#{item.idEstructuraServicio}
+                ,#{item.prioridadSurtir}
+            )
+        </foreach>
+    </insert>
+    
+    <select id="obtenerServiciosXOrdenar" resultType="mx.mc.model.EstrucAlmacenServicio_Extend">
+        SELECT 
+            COUNT(eas.idEstructuraServicio) AS total,
+            ea.nombre AS Almacen,
+            es.nombre AS Servicio,
+            eas.idEstructuraAlmacen,
+            eas.idEstructuraServicio,
+            eas.prioridadSurtir
+        FROM    estructuraAlmacenServicio eas
+                INNER JOIN    estructura ea ON ea.idEstructura = eas.idEstructuraAlmacen
+                INNER JOIN    estructura es ON es.idEstructura = eas.idEstructuraServicio
+        GROUP BY eas.idEstructuraServicio
+        HAVING COUNT(eas.idEstructuraServicio) > 1
+        ;
+    </select>
+    
+    <select id="obtenerTotalServiciosXOrdenar" parameterType="Map" resultType="mx.mc.model.EstrucAlmacenServicio_Extend">
+        SELECT 
+            COUNT(eas.idEstructuraServicio) AS total,
+            ea.nombre AS Almacen,
+            es.nombre AS Servicio,
+            eas.idEstructuraAlmacen,
+            eas.idEstructuraServicio,
+            eas.prioridadSurtir
+        FROM  estructuraAlmacenServicio eas
+                INNER JOIN    estructura ea ON ea.idEstructura = eas.idEstructuraAlmacen
+                INNER JOIN    estructura es ON es.idEstructura = eas.idEstructuraServicio
+        WHERE   eas.idEstructuraServicio = #{idServicio}
+        GROUP BY eas.idEstructuraServicio
+        ;
+    </select>
+    
+    <select id="obtenerAlmacenesOfServicio" parameterType="Map" resultType="mx.mc.model.EstrucAlmacenServicio_Extend">
+        SELECT             
+            ea.nombre AS Almacen,
+            es.nombre AS Servicio,
+            eas.idAlmacenServicio,
+            eas.idEstructuraAlmacen,
+            eas.idEstructuraServicio,
+            eas.prioridadSurtir
+        FROM  estructuraAlmacenServicio eas
+                INNER JOIN    estructura ea ON ea.idEstructura = eas.idEstructuraAlmacen
+                INNER JOIN    estructura es ON es.idEstructura = eas.idEstructuraServicio
+        WHERE   eas.idEstructuraServicio = #{idServicio}      
+        ;
+    </select>
+    
+    <select id="obtenerTotalNumeroServicios" parameterType="Map" resultType="int">
+        SELECT COUNT(eas.idEstructuraServicio) AS total
+        FROM estructuraAlmacenServicio eas
+        WHERE eas.idEstructuraServicio = #{ idServicio }
+    </select>
+    
+    <update id="guardarPrioridadAlmacenes"  parameterType="java.util.List">
+         <foreach collection="almacenesXOrdenarList" item="item"  index="index"  separator=";">
+            UPDATE estructuraAlmacenServicio
+            <set>
+                <if test="item.prioridadSurtir != null">
+                    prioridadSurtir = #{item.prioridadSurtir,jdbcType=INTEGER}
+                </if>
+            </set>
+            WHERE idAlmacenServicio = #{item.idAlmacenServicio,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    
+    
+</mapper>

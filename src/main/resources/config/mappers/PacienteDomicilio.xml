@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.PacienteDomicilioMapper" >
+    <select id="obtenerPacienteDomicilioByIdPaciente" resultType="mx.mc.model.PacienteDomicilio" parameterType="Map" >
+        SELECT idPacienteDomicilio,idPaciente,idPais,idEstado,idMunicipio,idColonia,calle,codigoPostal,numeroExterior,
+               numeroInterior,telefonoCasa,telefonoOficina,extension,telefonoCelular,correoElectronico,cuentaFacebook,
+               domicilioActual,insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+        FROM pacienteDomicilio
+        WHERE 1=1
+        AND idPaciente = #{idPaciente , jdbcType = VARCHAR};
+    </select>
+</mapper>

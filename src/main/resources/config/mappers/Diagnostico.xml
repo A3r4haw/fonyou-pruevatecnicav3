@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DiagnosticoMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Diagnostico" parameterType="mx.mc.model.Diagnostico" >
+        SELECT idDiagnostico , nombre , clave , descripcion , activo , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario 
+        FROM diagnostico
+        WHERE 1=1
+        <if test=" idDiagnostico != null ">
+            AND idDiagnostico = #{ idDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre LIKE '%${ nombre  }%'
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion LIKE '%${ descripcion  }%'
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        LIMIT 1
+    </select>
+ 
+    <select id="obtenerLista" resultType="mx.mc.model.Diagnostico" parameterType="mx.mc.model.Diagnostico" >
+        SELECT idDiagnostico , nombre , clave , descripcion , activo , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario 
+        FROM diagnostico
+        WHERE 1=1
+        <if test=" idDiagnostico != null ">
+            AND idDiagnostico = #{ idDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre LIKE '%${ nombre  }%'
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion LIKE '%${ descripcion  }%'
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+    </select>
+ 
+    <select id="obtenerListaChiconcuac" resultType="mx.mc.model.Diagnostico" parameterType="Map" >
+        SELECT idDiagnostico , nombre , clave , descripcion , activo , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario 
+        FROM diagnostico
+        WHERE 1=1
+        <if test=" idDiagnostico != null ">
+            AND idDiagnostico = #{ diagnostico.idDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND (nombre LIKE '%${ nombre  }%' OR clave LIKE '%${ nombre }%')
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        LIMIT #{numRegistros , jdbcType = INTEGER};
+    </select>
+ 
+    <select id="obtenerListaAutoComplete" resultType="mx.mc.model.Diagnostico" parameterType="Map" >
+        SELECT idDiagnostico , nombre , clave , descripcion , activo 
+        FROM diagnostico
+        WHERE
+        activo = 1
+        <if test=" cadena != null ">
+            AND ( nombre LIKE '%${ cadena }%' OR clave LIKE '%${ cadena }%' )
+        </if>
+        LIMIT 10
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Diagnostico" >
+        INSERT INTO diagnostico (
+        <if test=" idDiagnostico != null ">
+            idDiagnostico
+        </if>
+        <if test=" clave != null ">
+            , clave
+        </if>
+        <if test=" nombre != null ">
+            , nombre
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion
+        </if>
+        <if test=" activo != null ">
+            , activo
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , updateIdUsuario
+        </if>
+        ) VALUES (
+        <if test=" idDiagnostico != null ">
+            #{ idDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" clave != null ">
+            , #{clave, jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            , #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , #{ activo , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+
+    <select id="obtenerPorIdPacienteIdVisitaIdPrescripcion" resultType="mx.mc.model.Diagnostico" parameterType="Map" >
+        <!--todo    agregar el filtro de visita-->
+        
+        SELECT DISTINCT d.idDiagnostico , d.nombre , d.clave , d.descripcion , d.activo 
+        FROM prescripcion p
+        INNER JOIN diagnosticoPaciente dp ON p.idPrescripcion = dp.idPrescripcion 
+        INNER JOIN diagnostico d ON dp.idDiagnostico = d.idDiagnostico 
+        
+        <if test=" idPaciente != null or idVisita != null ">
+            INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+            INNER JOIN visita v ON ps.idVisita = v.idVisita
+        </if>
+        
+        WHERE 1=1
+        <if test=" idPrescripcion != null ">
+            AND p.idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPaciente != null ">
+            AND v.idPaciente = #{ idPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" idVisita != null ">
+            AND v.idVisita = #{ idVisita , jdbcType = VARCHAR }
+        </if>
+        ORDER BY d.insertFecha DESC
+    </select>
+    
+    <select id="obtenerByIdPaciente" parameterType="Map" resultType="mx.mc.model.Diagnostico">
+        SELECT DISTINCT d.idDiagnostico , d.nombre , d.clave
+        FROM visita v
+        INNER JOIN paciente pa on v.idPaciente = pa.idPaciente
+        INNER JOIN pacienteServicio ps ON v.idVisita = ps.idVisita
+<!-- TODO: 28dic2022 porque se usa estructura en el query join -->
+        INNER JOIN estructura pe ON ps.idEstructura = pe.idEstructura
+        INNER JOIN prescripcion p  ON ps.idPacienteServicio = p.idPacienteServicio
+        INNER JOIN diagnosticoPaciente dp on p.idPrescripcion = dp.idPrescripcion
+        INNER JOIN diagnostico d on dp.idDiagnostico = d.idDiagnostico
+        WHERE
+        pa.idPaciente = #{ idPaciente , jdbcType = VARCHAR }
+        AND dp.idEstatusDiagnostico != 3
+        AND v.fechaEgreso is null 
+        ORDER BY d.nombre ASC
+    </select>
+
+    
+    <insert id="registraDiagnosticoList" parameterType="java.util.List" useGeneratedKeys="false" >
+        INSERT INTO diagnosticoPaciente
+        (
+        idDiagnosticoPaciente ,
+        idPrescripcion ,
+        fechaDiagnostico ,
+        idUsuarioDiagnostico ,
+        idDiagnostico ,
+        fechaFinDiagnostico ,
+        idUsuarioDiagnosticoTratado ,
+        idEstatusDiagnostico ,
+        insertFecha ,
+        insertIdUsuario ,
+        updateFecha ,
+        updateIdUsuario
+        )
+        VALUES
+        <foreach collection="list" item="item" separator="," index="index"> 
+            (
+            #{ item.idDiagnosticoPaciente }
+            , #{ item.idPrescripcion }
+            , #{ item.fechaDiagnostico }
+            , #{ item.idUsuarioDiagnostico }
+            , #{ item.idDiagnostico }
+            , #{ item.fechaFinDiagnostico }
+            , #{ item.idUsuarioDiagnosticoTratado }
+            , #{ item.idEstatusDiagnostico }
+            , #{ item.insertFecha }
+            , #{ item.insertIdUsuario }
+            , #{ item.updateFecha }
+            , #{ item.updateIdUsuario }
+            )
+        </foreach>
+    </insert>
+    
+    <delete id="eliminaDiagnosticoList" parameterType="Map" >
+        DELETE FROM 
+        diagnosticoPaciente
+        WHERE idPrescripcion = #{ idPrescripcion , jdbcType = INTEGER } 
+    </delete>
+        
+    <select id="obtenerDiagnosticoPorIdDiag" resultType="mx.mc.model.Diagnostico" parameterType="Map">
+        SELECT idDiagnostico , nombre , clave , descripcion , activo , insertFecha , 
+        insertidUsuario , updateFecha , updateidUsuario 
+        FROM diagnostico
+        WHERE idDiagnostico = #{idDiagnostico , jdbcType = VARCHAR}
+    </select>
+    
+    <!-- TODO [APL]: Revisar porque es un error esperar 1 sólo registro, ya que la clave acepta duplicados -->
+    <select id="obtenerDiagnosticoPorClave" resultType="mx.mc.model.Diagnostico" parameterType="Map">
+        SELECT idDiagnostico, nombre, clave, descripcion, activo, insertFecha, 
+        insertidUsuario, updateFecha, updateidUsuario 
+        FROM diagnostico
+        WHERE clave = #{clave , jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtenerDiagnosticoPorNombre" resultType="mx.mc.model.Diagnostico" parameterType="Map">
+        SELECT idDiagnostico, nombre, clave, descripcion, activo, insertFecha, 
+        insertidUsuario, updateFecha, updateidUsuario 
+        FROM diagnostico
+        WHERE nombre = #{nombreDiagnostico , jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtenerBusquedaDiagnosticos" resultType="mx.mc.model.Diagnostico" parameterType="Map">
+        SELECT idDiagnostico , nombre , clave , descripcion , activo , insertFecha , 
+        insertIdUsuario , updateFecha , updateIdUsuario 
+        FROM diagnostico
+        WHERE 1 =1
+        <if test="paramBusquedaReporte.cadenaBusqueda != null ">
+            AND nombre LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR clave LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR descripcion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+        </if>    
+        <if test=" sortField == null" > 
+            ORDER BY clave asc
+        </if>
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'clave'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY clave asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY clave desc
+                </if>            
+            </if>
+            <if test="sortField == 'nombre'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombre asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombre desc
+                </if>
+            </if>
+            <if test="sortField == 'descripcion'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY descripcion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY descripcion desc
+                </if>            
+            </if>
+        </if>   
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER} 
+    </select>
+    
+    <select id="obtenerTotalBusquedaDiagnosticos" resultType="Long" parameterType="Map">
+        SELECT count(*) 
+        FROM diagnostico
+        WHERE 1 = 1
+        <if test="paramBusquedaReporte.cadenaBusqueda != null ">
+            AND nombre LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR clave LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR descripcion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+        </if>   
+    </select>
+    
+    <update id="actualizar" parameterType="mx.mc.model.Diagnostico">
+        UPDATE diagnostico SET 
+        <if test=" nombre != null ">
+            nombre = #{nombre, jdbcType = VARCHAR},
+        </if>
+        <if test=" descripcion != null ">
+            descripcion = #{descripcion, jdbcType = VARCHAR},
+        </if>
+        <if test=" activo != null ">
+            activo = #{activo, jdbcType = VARCHAR},
+        </if>
+        <if test=" updateFecha != null ">
+            updateFecha = #{updateFecha, jdbcType = TIMESTAMP}, 
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario = #{updateIdUsuario, jdbcType = VARCHAR}
+        </if>
+        WHERE idDiagnostico = #{idDiagnostico, jdbcType = VARCHAR}
+    </update>
+    
+    <select id="validaClaveExistente" resultType="String" parameterType="String">
+        SELECT clave FROM diagnostico
+        WHERE clave = #{clave, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtenerByIdPrescripcion" parameterType="Map" resultType="mx.mc.model.Diagnostico">
+        SELECT DISTINCT d.idDiagnostico , d.nombre , d.clave , d.descripcion , d.activo 
+        FROM prescripcion p
+        INNER JOIN diagnosticoPaciente dp ON p.idPrescripcion = dp.idPrescripcion 
+        INNER JOIN diagnostico d ON dp.idDiagnostico = d.idDiagnostico
+        WHERE dp.idEstatusDiagnostico != 3
+        AND p.idPrescripcion = #{ idPrescripcion } 
+    </select>
+    
+</mapper>

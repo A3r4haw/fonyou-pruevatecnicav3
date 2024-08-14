@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <link rel="stylesheet"></link>
+        <title>REPORTE DE CONSULTA DE EMISIÓN DE VALES</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="movGralesId" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <h3 style="text-align: center">REPORTE DE EMISIÓN DE VALES</h3>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha inicio" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" value="#{repEmisionValesMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repEmisionValesMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Fin" />
+                                            <br/>
+                                            <p:calendar id="txtFechaFin" value="#{repEmisionValesMB.paramBusquedaReporte.fechaFin}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repEmisionValesMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                            <p:ajax event="dateSelect" listener="#{repEmisionValesMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Tipo  de Movimiento" rendered="false"/>
+                                            <br/>
+                                            <p:selectCheckboxMenu rendered="false" id="comboTipoMovimiento" label="Tipos de Movimiento"
+                                                                  value="#{repEmisionValesMB.tipoMovimientoSelects}"
+                                                                  disabled="#{!repEmisionValesMB.permiso.puedeVer}"
+                                                                  filter="true" filterMatchMode="startsWith" panelStyle="width:250px">					                                         
+                                                <f:selectItems value="#{repEmisionValesMB.listTipoMovimiento}"
+                                                               var="tipoMovimiento"
+                                                               itemValue="#{tipoMovimiento.idTipoMovimiento}"
+                                                               itemLabel="#{tipoMovimiento.descripcion}"/>
+                                            </p:selectCheckboxMenu>
+                                        </div>                                       
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:commandButton value="Consultar Reporte"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{repEmisionValesMB.consultar}"
+                                                             update=":formTablaMovimientos, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"  
+                                                             style="float:right;margin-top: 15px;"
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            <p:outputLabel style="margin-right: 10px; font-weight: bolder;" value="Nombre de Medicamento" />
+                                            <br/>
+                                            <p:autoComplete id="txtInsumo" 
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{repEmisionValesMB.paramBusquedaReporte.listInsumos}"
+                                                            completeMethod="#{repEmisionValesMB.autocompleteInsumo}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="insum" 
+                                                            placeholder="Filtro Medicamentos" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{insum.nombreCorto}" itemValue="#{insum}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="#{!repEmisionValesMB.permiso.puedeEditar}" >
+                                            </p:autoComplete>
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+
+                                            <p:outputLabel style="margin-right: 10px; font-weight: bolder;" value="Usuario" />
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;"
+                                                           value="#{repEmisionValesMB.usuarioSession.nombre} #{repEmisionValesMB.usuarioSession.apellidoPaterno} #{repEmisionValesMB.usuarioSession.apellidoMaterno}" 
+                                                           rendered="#{!repEmisionValesMB.administrador}"/>
+                                            <br/>
+                                            <p:autoComplete id="txtUsuario" 
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{repEmisionValesMB.paramBusquedaReporte.listUsuarios}"
+                                                            completeMethod="#{repEmisionValesMB.autocompleteUsuario}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="usr" 
+                                                            placeholder="Filtro Usuarios" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{usr.nombre}" itemValue="#{usr}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="#{!repEmisionValesMB.permiso.puedeEditar}" 
+                                                            rendered="#{repEmisionValesMB.administrador}">
+                                            </p:autoComplete>
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+
+                                            <p:menuButton value="Exportar Documento" style="margin-top: 15px; margin-left: 10px">                                                
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{repEmisionValesMB.imprimeReporteEmisionVales}"
+                                                            update="formPDF"
+                                                            onclick="PF('statusProcess').show();"
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"
+                                                            />
+                                                <p:menuitem value="Formato EXCEL"
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false"
+                                                            actionListener="#{repEmisionValesMB.GeneraExcelVales}"
+                                                            />
+                                            </p:menuButton>
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form><br />
+                    <h:form id="formTablaMovimientos" >
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     style="font-size: x-small !important;"
+                                     value="#{repEmisionValesMB.reporteValesLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true" scrollWidth="100%" scrollHeight="350">
+
+                            <p:column style="width: 8%" headerText="FOLIO">
+                                <h:outputText value="#{result.folio}"/>
+                            </p:column>                    
+
+                            <p:column style="width: 14%" headerText="FECHA FIRMA">
+                                <h:outputText value="#{result.fechaFirma}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </p:column> 
+
+                            <p:column style="width: 10%" headerText="FOLIO SURTIMIENTO">
+                                <h:outputText value="#{result.folioSurtimiento}"/>
+                            </p:column>
+
+
+
+                            <p:column style="width: 12%" headerText="CLAVE MEDICAMENTO">
+                                <h:outputText value="#{result.claveMedicamento}"/>
+                            </p:column>
+
+
+                            <p:column style="width: 35%" headerText="NOMBRE">
+                                <h:outputText value="#{result.nombreMedicamento}"/>
+                            </p:column>
+
+
+                            <p:column style="width: 10%" headerText="S_INSUMO SOLICITADO">
+                                <h:outputText value="#{result.insumoSolictado}"/>
+                            </p:column>
+
+                            <p:column style="width: 8%" headerText="CANTIDAD VALE">
+                                <h:outputText value="#{result.cantidadVale}"/>
+                            </p:column>
+
+                            <p:column style="width: 8%" headerText="FOLIO VALE">
+                                <h:outputText value="#{result.folioVale}"/>
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:form>	
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes" 
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

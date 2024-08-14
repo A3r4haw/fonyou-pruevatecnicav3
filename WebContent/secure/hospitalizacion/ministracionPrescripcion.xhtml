@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <p:messages globalOnly="true" closable="true" showDetail="false" rendered="#{!ministracionPrescripcionMB.msgModal}" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Ministración de Medicamentos "  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 10px;" />
+                            
+                        <p:outputLabel value="Servicio:" 
+                                           style="margin-right: 10px;margin-left: 10px;color: #FFF;font-size: 14px;font-weight: bold;"/>
+                        <p:outputLabel value="#{ministracionPrescripcionMB.estructuraList.get(0).nombre}"
+                                           style="margin-right: 10px;color: #FFF;font-size: 16px  !important;font-weight: bold;"
+                                           rendered="#{!ministracionPrescripcionMB.isAdmin}"/>
+                        <p:selectOneMenu id="comboAlmacen" 
+                                         value="#{ministracionPrescripcionMB.idEstructura}"
+                                         disabled="#{!ministracionPrescripcionMB.permiso.puedeVer}"
+                                         style="vertical-align: middle; margin-right: 10px;"
+                                         rendered="#{ministracionPrescripcionMB.isAdmin}">
+                            <p:ajax listener="#{ministracionPrescripcionMB.obtenerSutimientoEnviado}" 
+                                         update="tblMedMinis" />              
+                        	<f:selectItems value="#{ministracionPrescripcionMB.estructuraList}"
+                                           var="estructura"
+                                           itemValue="#{estructura.idEstructura}"
+                                           itemLabel="#{estructura.nombre}"/>
+                        </p:selectOneMenu>
+                            
+                            <p:inputText id="textSearch" style="margin-top:0px; width: 50% !important;" 
+                                         value="#{ministracionPrescripcionMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar Prescripción.." />
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>
+                            </i>
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{ministracionPrescripcionMB.buscarPrescripcion()}"
+                                 update=":frmNewMinistr,:mainForm:tblMedMinis" ajax="true" validateClient="true" onclick="PF('statusProcess').show();"
+                                 oncomplete="PF('statusProcess').hide();;if(args.estatus){PF('mdlDetalleMedicamentosMin').show();}" style=" margin-left: 15px; margin-bottom: 8px;" />
+                        </div>
+                        <p:dataTable widgetVar="tblMedMinis" id="tblMedMinis" var="item"
+                                     styleClass="styleEventosPlanPrestacion" reflow="true" value="#{ministracionPrescripcionMB.viewRecepcionList}"
+                            emptyMessage="No existen registros para mostrar." style="margin-bottom:5px; padding: 5px;" 
+                            scrollRows="10" scrollable="true" scrollHeight="350"
+                            paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                         currentPageReportTemplate=" "
+                                         paginator="true"
+                                         rows="10"
+                                         paginatorPosition="bottom"
+                            >
+                            
+                            <p:column style="text-align: left;width: 10%;"  sortBy="#{item.folioPrescripcion}"  headerText="Folio">
+                                <h:outputText value="#{item.folioPrescripcion}" class="altoColumn" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 20%;" sortBy="#{item.nombrePaciente}"  headerText="Paciente">
+                                <h:outputText value="#{item.nombrePaciente}" class="altoColumn" title="#{item.nombrePaciente}" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 10%;" sortBy="#{item.nombreCama}"  headerText="Cama">
+                                <h:outputText value="#{item.nombreCama}" class="altoColumn" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 15%;" sortBy="#{item.nombreMedico}"  headerText="Médico">
+                                <h:outputText value="#{item.nombreMedico}" class="altoColumn" title="#{item.nombreMedico}" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 15%;" sortBy="#{item.fechaPrescripcion}"  headerText="Fecha">
+                                <h:outputText value="#{item.fechaPrescripcion}" class="altoColumn" >
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy hh:mm" />
+                                    </h:outputText>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 10%;" sortBy="#{item.estatusSurtimiento}"  headerText="Estatus">
+                                <h:outputText value="#{item.estatusSurtimiento}" class="altoColumn" />                                
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 5%;"  headerText="Acciones">
+                                <p:commandLink title="Detalle"  actionListener="#{ministracionPrescripcionMB.obtenerDetallePrescripcion(item)}"
+                                                       onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();PF('mdlDetalleMedicamentosMin').show();" 
+                                                       update=":frmNewMinistr" >
+                                        <i class="fa fa-edit iconMusAzul" />
+                                    </p:commandLink>
+                            </p:column>
+                            
+                             <f:facet name="footer" >
+                                <p:outputLabel style="font-size: 1em !important; color: #000;">
+                                    #{ministracionPrescripcionMB.numeroRegistros} Prescripciones encontrados
+                                </p:outputLabel> 
+                            </f:facet>
+                        </p:dataTable>
+                    </h:form>
+                    
+                    <p:dialog  header="Ministracion de Medicamentos"
+                          widgetVar="mdlDetalleMedicamentosMin"
+                          closeOnEscape="true" modal="true"                          
+                          style="font-size:xx-small !important;" width="70%">   
+                        <h:form id="frmNewMinistr">                            
+                            <p:messages globalOnly="false" closable="true" showDetail="false" rendered="#{ministracionPrescripcionMB.msgModal}" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:panelGrid columns="6" layout="tabular"  style="width:100%;">
+                                <p:outputLabel value="Folio:" style="width:150px;" />
+                                <p:outputLabel value="#{ministracionPrescripcionMB.viewRecepcionMed.folioPrescripcion}"  class="textoNegrita" />
+
+                                <p:outputLabel value="Fecha:"  style="width:150px;" />
+                                <p:outputLabel value="#{ministracionPrescripcionMB.viewRecepcionMed.fechaPrescripcion}"  class="textoNegrita" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </p:outputLabel>
+                                
+                                <p:outputLabel value="Tipo Prescripción:"  style="width:150px;"  />
+                                <p:outputLabel value="#{ministracionPrescripcionMB.tipoPrescripcion}"  class="textoNegrita" />
+                                
+                                
+                                <p:outputLabel value="Num. Paciente:"  style="width:150px;" />                                
+                                <p:outputLabel value="#{ministracionPrescripcionMB.viewRecepcionMed.pacienteNumero}"  class="textoNegrita" />
+                                
+                                <p:outputLabel value="Paciente:"  style="width:150px;" />                                
+                                <p:outputLabel value="#{ministracionPrescripcionMB.viewRecepcionMed.nombrePaciente}"  class="textoNegrita" />
+
+                                <p:outputLabel value="Cama:"  style="width:150px;" />                                
+                                <p:outputLabel value="#{ministracionPrescripcionMB.viewRecepcionMed.nombreCama}"  class="textoNegrita" />
+
+                                
+                                <p:outputLabel value="Médico:"  style="width:150px;"  />
+                                <p:outputLabel value="#{ministracionPrescripcionMB.viewRecepcionMed.nombreMedico}"   class="textoNegrita" />
+                                
+                                <p:outputLabel value="Ubicación:"  style="width:150px;"  />
+                                <p:outputLabel value="#{ministracionPrescripcionMB.viewRecepcionMed.nombreEstructura}"  class="textoNegrita" />
+                                
+                                <p:outputLabel value="Estatus:"  style="width:150px;" />
+                                <p:outputLabel value="#{ministracionPrescripcionMB.viewRecepcionMed.estatusPrescripcion}"  class="textoNegrita" />
+                                                                
+                            </p:panelGrid>
+                            <br />
+                            <p:dataTable  widgetVar="tblDetMed" id="tblReabastoInsumo" var="item"
+                                     styleClass="styleEventosPlanPrestacion" reflow="true" value="#{ministracionPrescripcionMB.listaSurtimiento}"
+                            emptyMessage="No existen registros para mostrar." style="margin-bottom:5px;" 
+                            scrollRows="10" scrollable="true" liveScroll="true" scrollHeight="250">                                                                
+                                
+                                <p:column style="text-align: left;width: 14%;" headerText="Clave">
+                                    <h:outputText value="#{item.claveInstitucional}" class="altoColumn" /> 
+                                </p:column>
+                                
+                                <p:column style="text-align: left;width: 35%;" headerText="Medicamento">
+                                    <h:outputText value="#{item.nombreCorto}" class="altoColumn" />       
+                                </p:column>
+                                
+                                <p:column style="text-align: left;width: 18%;" headerText="Inicio de Tratamiento">
+                                    <h:outputText value="#{item.fechaProgramada}" class="altoColumn" >                                 
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                    </h:outputText>
+                                </p:column>                                                                 
+                                
+                                <p:column style="text-align: left;width: 8%;" headerText="Cantidad Enviada">
+                                    <h:outputText value="#{item.cantidadEnviada}" class="altoColumn" > 
+                                    </h:outputText>
+                                </p:column>  
+                                
+                                <p:column style="text-align: left;width: 8%;" headerText="Cantidad Recibida">
+                                    <h:outputText value="#{item.cantidadRecepcion}" class="altoColumn" > 
+                                    </h:outputText>
+                                </p:column>
+                                <p:column style="text-align: left;width: 12%" headerText="Acciones">
+                                    <p:commandLink title="Eliminar Medicamento"  actionListener="#{ministracionPrescripcionMB.eliminarMedicamentoList(item)}"  rendered="true"
+                                                   onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update="tblReabastoInsumo" >
+                                        <i class="fa fa-trash-o iconMusAzul" />
+                                        <p:confirm header="Eliminación de Ministración" message="Realmente desea Eliminar la ministración de medicamento 
+                                                   #{item.claveInstitucional} " icon="ui-icon-alert"  />
+                                    </p:commandLink>
+                                </p:column>
+                                
+                                <f:facet name="footer" >
+                                    <p:outputLabel style="font-size: 1em !important; color: #000;">
+                                        #{ministracionPrescripcionMB.numeroMedDetalles} Medicamentos encontrados
+                                    </p:outputLabel> 
+                                </f:facet>
+                            </p:dataTable>
+                           <div class="pnlActions">
+                                <p:commandButton id="btnConfCancel" class="btnItem" value="Cancelar" style="width: 100px;"        
+                                                 ajax="true" onclick="PF('mdlDetalleMedicamentosMin').hide();"  tabindex="4"/>&nbsp;&nbsp;
+                                
+                                <p:commandButton id="btnConfSend"  tabindex="5" styleClass="btnMusAzul"
+                                            value="Guardar" style="margin:0; width: 100px;"
+                                            actionListener="#{ministracionPrescripcionMB.guardarSurtimiento}"
+                                            onclick="PF('statusProcess').show();"  update=":mainForm"                                       
+                                            oncomplete="PF('mdlDetalleMedicamentosMin').hide(); PF('statusProcess').hide(); " />
+                            </div>
+                        </h:form>
+                    </p:dialog>
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

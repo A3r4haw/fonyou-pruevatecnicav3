@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <f:metadata>
+        <f:viewAction action="#{cargaAppMB.list}" />
+    </f:metadata>
+    <h:head>
+        <title>Carga de Versiones APK</title>
+    </h:head>
+        
+    <h:body>        
+    	<ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel">
+                    <h:form id="mainForm"><br/>
+                            <p:tab title="Aplicación Movil">
+                                <p:panel header="Carga de aplicación Movil" >
+                                    <p:messages id="msg" showDetail="false" globalOnly="true" closable="true" />
+                                    <p:fileUpload dragDropSupport="false" uploadLabel="Subir Archivo" cancelLabel="Cancelar" label="Seleccionar Archivo" 
+                                        allowTypes="/(\.|\/)(apk)$/" invalidFileMessage="Tipo de archivo invalido"
+                                        fileUploadListener="#{cargaAppMB.apkFileUpload}" mode="advanced" update="msg,resultadosApk"/>
+                                        <style type="text/css">
+                                            .old {
+                                                background-color: rgb(47,160,236,0.2) !important;
+                                                background-image: none !important;
+                                                color: #000000 !important;
+                                            }
+                                            .oldNot {
+                                                background-color:rgb(244, 247, 248) !important;
+                                                background-image: none !important;
+                                                color: #000000 !important;
+                                            }
+                                        </style>
+                                        <p:outputPanel rendered="true" >
+                                        <p:dataTable 
+                                            value="#{cargaAppMB.aplicationMovilLazy}"
+                                            var="item" editable="true"
+                                            rows="10"
+                                            paginator="true"  
+                                            paginatorTemplate="{FirstPageLink} {PreviousPageLink} {RowsPerPageDropdown} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                                            styleClass="styleEventosPlanPrestacion" reflow="true"
+                                            style="margin-bottom:5px;" 
+                                            selectionMode="single"
+                                            lazy="true" id="resultadosApk" rowStyleClass="#{item.activo ? 'old' : 'oldNot'}"
+                                            scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350"> 
+                                            <f:facet name="header" ><h:outputText style="color: #000;" value="Versiones" /></f:facet>
+                                            <p:ajax event="sort" skipChildren="false" />
+                                            <p:column sortBy="#{item.nombre}" headerText="Nombre" >
+                                                <h:outputText value="#{item.nombre}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column  sortBy="#{item.versionName}" headerText="Versión App" >
+                                                <h:outputText value="#{item.versionName}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column  sortBy="#{item.versionCode}" headerText="Versión Codigo" >
+                                                <h:outputText value="#{item.versionCode}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column  sortBy="item.activo" headerText="Aplicación Activa" >
+                                                <p:inputSwitch value="#{item.activo}" disabled="#{item.activo}">
+                                                        <p:ajax  listener="#{cargaAppMB.confirm(item.idVersion)}" 
+                                                                 event="change" 
+                                                                 update="mainForm:msg,resultadosApk" 
+                                                                 oncomplete="if (args.estatus) { PF('confirmDialogwidget').show();}else{ PF('confirmDialogwidget').hide();}"/>
+                                                </p:inputSwitch>
+                                               <p:confirmDialog  showEffect="fade" 
+                                                                 hideEffect="fade" 
+                                                                 header="Actualizar Aplicación"
+                                                                 message="Se actualizará la versión de la aplicación, Está seguro de realizar esta acción ?" 
+                                                                 widgetVar="confirmDialogwidget"
+                                                                 closable="false">
+                                                    <p:commandButton actionListener="#{cargaAppMB.no}" 
+                                                                     value="No"  
+                                                                     oncomplete="if (args.estatus) { PF('confirmDialogwidget').show();}else{ PF('confirmDialogwidget').hide();}" 
+                                                                     resetValues="true"
+                                                                     update="mainForm:msg,resultadosApk" /> 
+                                                    <p:commandButton action="#{cargaAppMB.yes}" value="Si"  oncomplete="if (args.estatus) { PF('confirmDialogwidget').show();} else{ PF('confirmDialogwidget').hide();}" update="mainForm:msg,resultadosApk"/>
+                                               </p:confirmDialog>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:outputPanel>
+                                </p:panel>
+                            </p:tab>
+                    </h:form>
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+    			
+            </ui:define>        
+        </ui:composition>
+    </h:body>
+</html>
+

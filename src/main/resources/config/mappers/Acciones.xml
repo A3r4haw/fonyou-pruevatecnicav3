@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.AccionMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Accion" parameterType="mx.mc.model.Accion" >
+        SELECT idAccion , nombre , descripcion , activo , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario
+        FROM acciones
+        WHERE 1=1
+        <if test=" idAccion != null ">
+            AND idAccion = #{ idAccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        LIMIT 0, 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Accion" parameterType="mx.mc.model.Accion" >
+        SELECT idAccion , nombre , descripcion , activo , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario
+        FROM acciones
+        WHERE 1=1
+        <if test=" idAccion != null ">
+            AND idAccion = #{ idAccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Accion" >
+        INSERT INTO acciones (
+        <if test=" idAccion != null ">
+            idAccion
+        </if>
+        <if test=" nombre != null ">
+            , nombre
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion
+        </if>
+        <if test=" activo != null ">
+            , activo
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertidUsuario != null ">
+            , insertidUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario
+        </if>
+        ) VALUES (
+        <if test=" idAccion != null ">
+            #{ idAccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            , #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , #{ activo , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertidUsuario != null ">
+            , #{ insertidUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.Accion"  >
+        UPDATE acciones SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" nombre != null ">
+            , nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        WHERE idAccion = #{ idAccion , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.Accion"  >
+        DELETE FROM acciones 
+        WHERE idAccion = #{ idAccion , jdbcType = VARCHAR }
+    </delete>
+    
+</mapper>

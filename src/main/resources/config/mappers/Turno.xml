@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TurnoMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Turno" parameterType="mx.mc.model.Turno" >
+        SELECT * FROM turno
+        WHERE 1 = 1
+        <if test=" idTurno != null ">
+           AND idTurno = #{ idTurno , jdbcType = VARCHAR}
+        </if>
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Turno" parameterType="mx.mc.model.Turno" >
+        SELECT * FROM turno
+        WHERE 1 = 1
+        <if test=" idTurno != null ">
+           AND idTurno = #{ idTurno , jdbcType = VARCHAR}
+        </if>
+    </select>
+    
+    <select id="obtenerPorHora" resultType="mx.mc.model.Turno" parameterType="Map" >
+        SELECT * FROM turno t 
+        WHERE DATE_FORMAT(horaInicio , '%H:%m:%s') &lt;= DATE_FORMAT( #{ hora } , '%H:%m:%s') 
+        AND DATE_FORMAT(horaFin , '%H:%m:%s') &gt;= DATE_FORMAT( #{ hora } , '%H:%m:%s')
+        LIMIT 1 ;
+    </select>
+    
+</mapper>

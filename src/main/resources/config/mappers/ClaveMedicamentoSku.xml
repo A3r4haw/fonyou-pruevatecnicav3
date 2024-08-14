@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ClaveMedicamentoSkuMapper" >
+ 
+    <select id="obtenerClave" resultType="mx.mc.model.ClaveMedicamentoSku" parameterType="Map" >
+        SELECT claveIssemym, sku, cantXCaja , claveProveedor , propiedadInstituto
+        FROM claveMedicamentoSku
+        WHERE sku = #{sku}
+        LIMIT 1
+    </select>
+ 
+    <select id="obtenerListaClave" resultType="mx.mc.model.ClaveMedicamentoSku" parameterType="Map" >
+        SELECT claveIssemym, sku, cantXCaja , claveProveedor , propiedadInstituto
+        FROM claveMedicamentoSku
+        WHERE sku = #{sku}
+    </select>
+    
+    <select id="obtenerCantidadPorClaveMedicamento" resultType="java.lang.Integer" parameterType="Map">
+        SELECT me.factorTransformacion 
+        FROM medicamento me
+        WHERE me.idMedicamento = #{ idMedicamento , jdbcType = VARCHAR }
+        LIMIT 1
+    </select>
+    
+<!--    
+TODO: Cambiar la cantidad de piezas por caja al catalogo de medicamentos
+    <select id="obtenerCantidadPorClaveMedicamento" resultType="java.lang.Integer" parameterType="Map">
+        SELECT cantXCaja 
+        FROM claveMedicamentoSku cms INNER JOIN medicamento me
+        ON cms.claveIssemym = me.claveInstitucional
+        WHERE me.idMedicamento = #{ idMedicamento , jdbcType = VARCHAR };
+    </select>-->
+    
+    <select id="obtenerListaClavesSku" resultType="mx.mc.model.ClaveMedicamentoSku_Extend" parameterType="Map">
+        <!-- TODO: se elimina sku para no duplicidad de registros
+        cms.sku ,-->
+        SELECT DISTINCT cms.claveIssemym , cms.cantXCaja , cms.claveProveedor , cms.propiedadInstituto
+        , me.idMedicamento , me.nombreCorto , me.nombreLargo , i.idInventario , i.lote , i.fechaCaducidad , i.idEstructura , i.cantidadActual
+        FROM claveMedicamentoSku cms 
+        INNER JOIN medicamento me ON cms.claveIssemym = me.claveInstitucional
+        INNER JOIN claveProveedorBarras b ON cms.claveProveedor = b.claveProveedor 
+        INNER JOIN inventario i ON (me.idMedicamento = i.idInsumo AND cms.claveProveedor = i.lote)
+        WHERE 1=1
+            and (CASE WHEN UPPER (#{ sku , jdbcType = VARCHAR }) REGEXP '^[A-Z]'> 0 THEN me.nombreCorto like '%${ sku }%' ELSE  b.codigoBarras = #{ sku , jdbcType = VARCHAR } END)
+        AND i.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        AND i.cantidadActual > 0
+        order by cms.claveProveedor desc
+    </select>
+    
+</mapper>

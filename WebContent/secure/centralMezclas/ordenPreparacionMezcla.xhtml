@@ -1,0 +1,1285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+<script id="emo1608202301" type="text/javascript">
+$(document).on('keyup keypress', '.noSubm', function(e) {
+  if(e.which === 13) {
+    e.preventDefault();
+    return false;
+  }
+});
+$(document).on('keyup keypress', '.noSubm', function(e) {
+    if (e.which === 9) {
+        e.preventDefault();
+        console.log('tab');
+        return false;
+    }
+});
+$(document).on('blur', '.noSubm', function(e) {
+        e.preventDefault();
+        console.log('blur');
+        return false;
+});
+
+</script>
+                <div class="mainPanel" >
+                    <h:form id="mainForm">
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <p:focus context="mainForm"/>
+
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value="Órdenes de Mezclas NPT" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+                            <p:spacer width="10px;" />
+                            <p:inputText id="busqueda" 
+                                         value="#{ordenPreparacionMezclaMB.cadenaBusqueda}" 
+                                         class="textSearch noSubm"
+                                         style="width:25% !important;" 
+                                         placeholder="Buscar..." title="Buscar por Número de Cama, Paciente o Servicio" />
+                            <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />        
+                            <p:spacer width="10px" />
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); if(args.modal){PF(':formSurtimientoDetail').show();}"
+                                             actionListener="#{ordenPreparacionMezclaMB.buscarOrdenesPreparacion}"
+                                             update="@form" />
+                        </div>
+                        <p:commandButton value="Registrar Mezcla NPT" icon="fa fa-file-o" 
+                                         class="btnNew" style="margin: 5px 0;" styleClass="btnMusAzul"
+                                         rendered="#{ordenPreparacionMezclaMB.permiso.puedeCrear}"
+                                         actionListener="#{ordenPreparacionMezclaMB.nuevaMezcla()}" 
+                                         onclick="PF('statusProcess').show();" 
+                                         oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('mdlNuevaOrden').show(); }" 
+                                         update="frmNewOrden" ajax="true" />
+                        <br/>
+
+                        <p:tabView rendered="false">
+                            <p:ajax event="tabChange" process="@this" update=":mainForm:tblOrdenesMezcla" listener="#{ordenPreparacionMezclaMB.onTabChange}"/>
+                            <p:tab id="#{ordenPreparacionMezclaMB.porValidar}" title="SOLICITADAS" />
+                            <p:tab id="#{ordenPreparacionMezclaMB.validada}" title="VALIDADAS"  />
+                            <p:tab id="#{ordenPreparacionMezclaMB.rechazada}" title="CANCELADAS" />
+                        </p:tabView>
+                        
+                        <p:dataTable id="tblOrdenesMezcla" widgetVar="tblOrdenesMezcla" 
+                                     value="#{ordenPreparacionMezclaMB.ordenMezclaLazy}" 
+                                     var="item" lazy="true" 
+                                     selectionMode="single" 
+                                     selection="#{ordenPreparacionMezclaMB.nutricionParenteralSelect}"
+                                     rowKey="#{item.idNutricionParenteral}" rowIndexVar="row"
+                                     scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     reflow="true"
+                                     paginator="true" paginatorPosition="bottom" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     emptyMessage="No se encontraron registros"
+                                     style="margin-bottom:5px; text-align: center;" >
+
+                            <p:ajax event="rowDblselect" 
+                                    listener="#{ordenPreparacionMezclaMB.obtenerDetalleOrdenPreparacion(item.idNutricionParenteral)}"
+                                    update=":frmNewOrden"
+                                    oncomplete="PF('mdlNuevaOrden').show();" />
+
+                            <p:column headerText="Solución" style="text-align: left; width: 4% " >
+                                <h:outputText value="NPT" />
+                            </p:column>
+
+                            <p:column headerText="Fecha Programada" style="text-align: left; width: 10% " >
+                                <h:outputText value="#{item.fechaProgramada}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Fecha Entrega" style="text-align: left; width: 10% " rendered="false" >
+                                <h:outputText value="#{item.fechaParaEntregar}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Prescripción" style="text-align: left; width: 8% " >
+                                <h:outputText value="#{item.folio}" />
+                            </p:column>
+
+                            <p:column headerText="Mezcla" style="text-align: left; width: 10% " >
+                                <h:outputText value="#{item.folioPreparacion}" />
+                            </p:column>
+
+                            <p:column headerText="Paciente" style="text-align: left; width: 12% " >
+                                <h:outputText value="#{item.nombrePaciente}" />
+                            </p:column> >
+
+                            <p:column headerText="Servicio" style="text-align: left; width: 16% " >
+                                <h:outputText value="#{item.nombreEstructura}" />
+                            </p:column>
+
+                            <p:column headerText="Ubicación" style="text-align: left; width: 6% " >
+                                <h:outputText value="#{item.ubicacion}" />
+                            </p:column>
+
+                            <p:column headerText="Médico" style="text-align: left; width: 10% " >
+                                <h:outputText value="#{item.prescribio}" />
+                            </p:column>
+
+                            <p:column headerText="Estatus" style="text-align: left; width: 10% " >
+                                <h:outputText value="#{item.estatus}" />
+                            </p:column>
+
+                            <p:column headerText="Acciones" style="text-align: left; width: 5% " >
+                                <p:commandLink title="Ver"  
+                                               actionListener="#{ordenPreparacionMezclaMB.obtenerDetalleOrdenPreparacion(item.idNutricionParenteral)}"
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide();PF('mdlNuevaOrden').show();" 
+                                               update=":frmNewOrden" >
+                                    <i class="fa fa-eye iconMusAzul" style="font-size: large"/>
+                                </p:commandLink>&nbsp;
+                                <p:commandLink title="Editar" 
+                                               actionListener="#{ordenPreparacionMezclaMB.obtenerDetalleOrdenPreparacion(item.idNutricionParenteral)}" 
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide();PF('mdlNuevaOrden').show();" 
+                                               update=":frmNewOrden"
+                                               rendered="false"    >        
+                                </p:commandLink>&nbsp;&nbsp;
+                                <p:commandLink id="linkImprimir" 
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide();if(args.estatus) {PF('mdlReport').show();}"
+                                               actionListener="#{ordenPreparacionMezclaMB.previewPrint(item)}" 
+                                               styleClass="iconMusAzul" rendered="false"    >
+                                    <i class="fa fa-print" style="font-size: large" />
+                                </p:commandLink>
+                                <p:commandLink id="linkImprimir2" onclick="PF('statusProcess').show();"
+                                               oncomplete="PF('statusProcess').hide();if(args.estatus) {PF('mdlReport').show();}"
+                                               actionListener="#{ordenPreparacionMezclaMB.previewPrint(item)}"
+                                               update="formPDF"
+                                               styleClass="iconMusAzul" >
+                                    <i class="fa fa-print" style="font-size: large" />
+                                </p:commandLink>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </h:form>
+
+                    <p:dialog header="Orden de Mezcla NPT"
+                              widgetVar="mdlNuevaOrden" 
+                              width="98%" 
+                              height="80vh"
+                              closeOnEscape="true" 
+                              modal="true" 
+                              resizable="true" >
+                        <h:form id="frmNewOrden">
+                            <p:messages id="validaMsg1" globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+
+                            <div class="ui-g">
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Folio Surtimiento: " />
+                                        <p:outputLabel value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.folioPreparacion}" 
+                                                       style="font-weight: bolder;" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Fecha Registro: " />
+                                        <p:outputLabel id="txtFechaRegistro" value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.fechaProgramada}" >
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                        </p:outputLabel>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Estatus: " />
+                                        <p:outputLabel value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.estatus}" 
+                                                       style="font-weight: bolder;" />
+                                    </div>
+                                </div>
+
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Folio Prescripción: " />
+                                        <p:inputText value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.folio}" 
+                                                     style="font-weight: bolder;" class="noSubm"
+                                                     disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" >
+                                            <p:ajax event="change" 
+                                                    listener="#{ordenPreparacionMezclaMB.buscarPrescripcion()}" 
+                                                    onstart="PF('statusProcess').show();"
+                                                    oncomplete="PF('statusProcess').hide();" 
+                                                    update="frmNewOrden" />
+                                        </p:inputText>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Fecha Programada: " />
+                                        <p:calendar id="txtFechaPrescribe" class="noSubm"
+                                                    value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.fechaProgramada}" 
+                                                    showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                    mindate="" maxdate=""
+                                                    pages="1" mask="true" showButtonPanel="true" effect="fade"
+                                                    disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 1px;" for="tipoPrescripcion" value="Tipo Prescripción: "/>
+                                        <p:selectOneMenu id="tipoPrescripcion" class="noSubm"
+                                                         value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.tipoPrescripcion}" label="Tipo de Prescripción"
+                                                         title="Tipo de Prescripción" autoWidth="true" style="vertical-align: middle;" 
+                                                         required="true" requiredMessage="Debe seleccionar un Tipo de Prescripción"
+                                                         disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" >
+                                            <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                            <f:selectItem itemLabel="Normal" itemValue="N" />
+                                            <f:selectItem itemLabel="Urgente" itemValue="U" />
+                                            <f:selectItem itemLabel="Dosis Única" itemValue="D" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="ui-g-12" >
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel style="margin-right: 5px;" value="Área/Servicio: "/>
+                                            <p:selectOneMenu id="comboServicios" title="Área o Servicio" class="noSubm"
+                                                             value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstructura}"
+                                                             autoWidth="true" required="false"
+                                                             requiredMessage="Debe seleccionar el Área o Servicio"
+                                                             filter="true" filterMatchMode="contains"
+                                                             style="vertical-align: middle; "
+                                                             disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" >
+                                                <f:selectItem itemLabel="Seleccione Área" itemValue="#{null}"/>
+                                                <f:selectItems value="#{ordenPreparacionMezclaMB.listaEstructuras}"
+                                                               var="servicio"
+                                                               itemValue="#{servicio.idEstructura}"
+                                                               itemLabel="#{servicio.nombre}" />
+                                                <p:ajax event="itemSelect" 
+                                                        listener="#{ordenPreparacionMezclaMB.obtenerCamas}" 
+                                                        update="comboCamas" />
+                                            </p:selectOneMenu>
+                                            <p:inputText id="servicio" disabled="true" 
+                                                         value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.nombreEstructura}" 
+                                                         style="font-weight: bolder;" size="2" type="hidden" />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel style="margin-right: 5px;" value="Cama: "/>
+                                            <p:selectOneMenu id="comboCamas" title="Cama del Paciente" class="noSubm"
+                                                             value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idCama}"
+                                                             autoWidth="true"
+                                                             filter="true" filterMatchMode="contains" 
+                                                             style="vertical-align: middle; "
+                                                             disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}"  >
+                                                <p:ajax event="itemSelect" listener="#{ordenPreparacionMezclaMB.seleccionaCama}" />
+                                                <f:selectItem itemLabel="Seleccione Cama" itemValue="#{null}"/>
+                                                <f:selectItems value="#{ordenPreparacionMezclaMB.listaCamas}"
+                                                               var="cama"
+                                                               itemValue="#{cama.idCama}"
+                                                               itemLabel="#{cama.nombreCama} - #{cama.ubicacion} " />
+                                            </p:selectOneMenu>
+                                            <p:inputText id="ubicacion" style="font-weight: bolder;" size="2" type="hidden"
+                                                         value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.ubicacion}" />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel value="Médico Prescribe: * " />
+                                            <p:autoComplete id="txtMedico" class="noSubm"
+                                                            multiple="false"
+                                                            value="#{ordenPreparacionMezclaMB.medicoSelect}"
+                                                            completeMethod="#{ordenPreparacionMezclaMB.autoCompleteMedicos}"
+                                                            minQueryLength="3"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="medico" 
+                                                            placeholder="Buscar Médico..." 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{medico.nombre}  #{medico.apellidoPaterno}  #{medico.apellidoMaterno}" itemValue="#{medico}" 
+                                                            converter="musGenericConverter"                                                            
+                                                            scrollHeight = "200"
+                                                            disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" >
+                                                <p:ajax event="itemSelect" 
+                                                        listener="#{ordenPreparacionMezclaMB.selectMedico}" />
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Cédula" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{medico.cedProfesional}" 
+                                                                  style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{medico.nombre}  #{medico.apellidoPaterno}  #{medico.apellidoMaterno}" 
+                                                                  style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>       
+
+                                            </p:autoComplete>
+                                            <p:commandButton title="Agregar" value="+" 
+                                                             actionListener="#{ordenPreparacionMezclaMB.mostrarModalAgregarMedico}" 
+                                                             rendered="#{ordenPreparacionMezclaMB.permiso.puedeAutorizar}"
+                                                             disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}"  
+                                                             onclick="PF('statusProcess').show();" 
+                                                             oncomplete="PF('statusProcess').hide();PF('modalAgregarMedico').show();" 
+                                                             update=":formAgregarMedico:turnoMedico" />
+                                        </div>
+                                    </div>
+
+                                    <div class="ui-g-12" >
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel value="Paciente: * " />
+                                            <p:autoComplete id="autoCompletePaciente" class="noSubm"
+                                                            multiple="false"
+                                                            value="#{ordenPreparacionMezclaMB.pacienteSelect}" 
+                                                            completeMethod="#{ordenPreparacionMezclaMB.autoCompletePacientes}" 
+                                                            minQueryLength="3"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="paciente"  
+                                                            placeholder="Buscar paciente..."
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"                                                                
+                                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" itemValue="#{paciente}"
+                                                            converter="pacienteConverter" 
+                                                            scrollHeight = "200"
+                                                            disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" >
+                                                <p:ajax event="itemSelect" 
+                                                        listener="#{ordenPreparacionMezclaMB.selectPaciente}" 
+                                                        update="frmNewOrden:numPaciente,frmNewOrden:edad, frmNewOrden:txtEdadPaciente,frmNewOrden:peso,frmNewOrden:servicio,frmNewOrden:ubicacion,frmNewOrden:txtDiagnostico" />
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="No. Expediente" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.pacienteNumero}" 
+                                                                  style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.nombreCompleto}" 
+                                                                  style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Apellido Paterno" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Apellido Materno" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                            <p:commandButton title="Agregar" value="+" 
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{ordenPreparacionMezclaMB.mostrarModalAgregarPaciente}"
+                                                             disabled="#{!ordenPreparacionMezclaMB.permiso.puedeCrear}"
+                                                             oncomplete="PF('statusProcess').hide();PF('modalAgregarPaciente').show();"
+                                                             update="formAgregarPaciente" />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel value="No. Expediente: " />
+                                            <p:inputText class="textoNegrita" id="numPaciente"  title="Número del Paciente"
+                                                         value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.pacienteNumero}"
+                                                         disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel for="tipoConsulta" style="margin-right: 5px;" value="Tipo consulta: "/>
+                                            <p:selectOneMenu id="tipoConsulta" title="Tipo de la Consulta" autoWidth="true" class="noSubm"
+                                                             value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.tipoConsulta}" 
+                                                             style="vertical-align: middle;" 
+                                                             required="true" requiredMessage="Debe seleccionar el tipo de consulta"
+                                                             disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}"  >
+                                                <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                                <f:selectItem value="#{I}" itemLabel="Hospitalización" itemValue="I" />
+                                                <f:selectItem value="#{E}" itemLabel="Ambulatoria" itemValue="E" />
+                                            </p:selectOneMenu>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="ui-g-12" >
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 1px;" value="Fecha Nacimiento: " />
+                                            <p:outputLabel id="edad" value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.fechaNacimiento}" >
+                                                <f:convertDateTime pattern="yyyy-MM-dd" />
+                                            </p:outputLabel>
+                                            <p:outputLabel value=" ( " />
+                                            <p:outputLabel id="txtEdadPaciente" value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.edad}" />
+                                            <p:outputLabel value=" años )" />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel value="Peso: " />
+                                            <p:inputNumber id="peso" style="font-weight: bolder;" class="noSubm"
+                                                           placeholder="" 
+                                                           value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.peso}" 
+                                                           size="4" minValue="0" maxValue="350" 
+                                                           decimalPlaces="3" decimalSeparator="." thousandSeparator=","
+                                                           disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" >
+                                                <p:ajax event="change" update="txtAreaPaciente" listener="#{ordenPreparacionMezclaMB.obtenerSuperficieCorporal()}" />
+                                            </p:inputNumber>
+                                            <p:outputLabel value=" kg" />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 1px;" value="Estatura:" />
+                                            <p:inputText id="txtTallaPaciente" class="noSubm" placeholder=""
+                                                         value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.tallaPaciente}" 
+                                                         size="4" disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" >
+                                                <p:keyFilter mask="num" />
+                                                <p:ajax event="change" update="txtAreaPaciente" listener="#{ordenPreparacionMezclaMB.obtenerSuperficieCorporal()}" />
+                                            </p:inputText>
+                                            <p:outputLabel value=" mts" />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 1px;" value="Superficie Corporal:" />
+                                            <p:inputText id="txtAreaPaciente" class="noSubm"
+                                                         value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.areaCorporal}" 
+                                                         size="4" disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" >
+                                                <p:keyFilter mask="num" />
+                                            </p:inputText>
+                                            <p:outputLabel value=" m²" />
+                                        </div>
+                                    </div>
+
+                                    <div class="ui-g-12" >
+                                        <div style="width:50%; float:left;">
+                                            <p:outputLabel value="Diagnósticos: " />
+                                            <p:autoComplete size="30" id="txtDiagnostico" class="noSubm"
+                                                            styleClass="autocomplete-multiple-hiper2" 
+                                                            multiple="true"                                       
+                                                            style="width: 520px !important;" 
+                                                            panelStyle="width: 520px !important;" 
+                                                            inputStyle="width: 520px !important;" 
+                                                            placeholder="Agregar Diagnósticos" 
+                                                            value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.listaDiagnosticos}" 
+                                                            completeMethod="#{ordenPreparacionMezclaMB.autocompleteDiagnostico}" 
+                                                            minQueryLength="3" 
+                                                            forceSelection="true" 
+                                                            var="diagnos" 
+                                                            itemLabel="#{diagnos.nombre}" itemValue="#{diagnos}" 
+                                                            onkeydown="if (event.keyCode === 13) {return false;}"
+                                                            onkeypress="if (event.keyCode === 13) {return false;}"
+                                                            onkeyup="if (event.keyCode === 13) {return false;}"
+                                                            converter="musGenericConverter"
+                                                            disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" >
+                                                <p:ajax event="itemSelect" 
+                                                        listener="#{ordenPreparacionMezclaMB.agregarDiagostico}" />
+
+                                                <p:column style="width: 30px; font-size: small;" >
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{diagnos.clave}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 200px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{diagnos.nombre}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                        <div style="width:10%; float:left;">
+                                            <p:outputLabel style="margin-right: 1px;" value="Prob Glucosa:" />
+                                            <p:selectBooleanCheckbox value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.diabetes}" 
+                                                                     id="chkDiabetes" class="noSubm" disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" />
+                                        </div>
+
+                                        <div style="width:10%; float:left;">
+                                            <p:outputLabel style="margin-right: 1px;" value="Prob Renales" />
+                                            <p:selectBooleanCheckbox value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.problemasRenales}" 
+                                                                     id="chkProRenales" class="noSubm" disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" />
+                                        </div>
+
+                                        <div style="width:10%; float:left;">
+                                            <p:outputLabel style="margin-right: 1px;" value="Prob Hipertensión:" />
+                                            <p:selectBooleanCheckbox value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.hipertension}" 
+                                                                     id="chkHipertension" class="noSubm" disabled="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}" />
+                                        </div>
+
+                                    </div>
+                                    <p:outputLabel value="INFORMACIÓN DE LA SOLUCIÓN"  class="plabel ui-g-12" />
+
+                                    <div class="ui-g-12" >
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 5px;" value="Tipo Solución: " />
+                                            <p:selectOneMenu id="tipoSolucion" style="vertical-align: middle;" title="Tipo de Solución" 
+                                                             value="#{ordenPreparacionMezclaMB.idTipoSolucion}" label="Tipo Solución"
+                                                             required="true" requiredMessage="Seleccione tipo solución"
+                                                             filter="true" filterMatchMode="contains" class="noSubm" >
+                                                <f:selectItems value="#{ordenPreparacionMezclaMB.tipoSolucionList}" var="tipoSol"
+                                                               itemLabel="#{tipoSol.clave}" itemValue="#{tipoSol.idTipoSolucion}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 5px;" value="Vía Administración: "/>
+                                            <p:selectOneMenu id="viaAdministracion" style="vertical-align: middle; " 
+                                                             value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idViaAdministracion}"
+                                                             label="Vía de Administración" title="Vía de Administración" autoWidth="true" 
+                                                             required="true" requiredMessage="Seleccione vía de administración" 
+                                                             filter="true" filterMatchMode="contains" class="noSubm" >
+                                                <f:selectItem itemLabel="Seleccione Vía" itemValue="#{null}"/>
+                                                <f:selectItems value="#{ordenPreparacionMezclaMB.viaAdministracionList}" var="via"
+                                                               itemLabel="#{via.nombreViaAdministracion}" itemValue="#{via.idViaAdministracion}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 1px;" value="Volumen total: * " />
+                                            <p:outputLabel id="txtVolTotal" style="margin-right: 1px; font-weight: bold" 
+                                                           value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.volumenTotal}" />
+                                            <p:inputText size="4" rendered="false" class="noSubm"
+                                                         value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.volumenTotal}"  >
+                                                <p:keyFilter regEx="/[0-9.]/i" mask="num" />
+                                                <p:ajax event="change" 
+                                                        listener="#{ordenPreparacionMezclaMB.activaPerfusion}" 
+                                                        process="@this"/>
+                                            </p:inputText>
+                                            <p:outputLabel value=" mL" />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 1px;" value="Contenedor: " />
+                                            <p:selectOneMenu id="cmbIdContenedor" class="noSubm"
+                                                             value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idContenedor}" 
+                                                             filter="true" filterMatchMode="contains" placeholder="Seleccione un contenedor" >
+                                                <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}"/>
+                                                <f:selectItems value="#{ordenPreparacionMezclaMB.envaseList}" var="tipo" 
+                                                               itemLabel="#{tipo.descripcion}" itemValue="#{tipo.idEnvaseContenedor}" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12" >
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel for="cmbSobrellenado" value="Sobrellenado: *"/>
+                                            <p:selectOneMenu id="cmbSobrellenado" class="noSubm"
+                                                             value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.sobrellenado}" 
+                                                             disabled="#{ordenPreparacionMezclaMB.existePrescripcion}"
+                                                             filter="true" filterMatchMode="contains" placeholder="" >
+                                                <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}"/>
+                                                <f:selectItems value="#{ordenPreparacionMezclaMB.sobrelleadoList}" var="tipo" 
+                                                               itemLabel="#{tipo.descripcion}" itemValue="#{tipo.idSobrellenado}" />
+                                            </p:selectOneMenu>
+                                            <p:outputLabel value=" mL" />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel for="chkPerfucionContinua" style="margin-right: 5px;" value="Perfusión Continua: "/>
+                                            <p:selectBooleanCheckbox id="chkPerfucionContinua" class="noSubm"
+                                                                     value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.perfusionContinua}" >
+                                                <p:ajax event="change" 
+                                                        listener="#{ordenPreparacionMezclaMB.activaPerfusion}"
+                                                        update="txtVelocidad" 
+                                                        process="@this"/>
+                                            </p:selectBooleanCheckbox>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel for="txtTiempoInfusion" style="margin-right: 5px;" value="Tiempo Infusión: "/>
+                                            <p:selectOneMenu id="txtTiempoInfusion" autoWidth="false" style="width: 50px;" class="noSubm"
+                                                             value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.horasInfusion}" >
+                                                <f:selectItem itemLabel="24" itemValue="#{24}" noSelectionOption="true"  />
+                                                <f:selectItem itemLabel="12" itemValue="#{12}" />
+                                                <f:selectItem itemLabel="16" itemValue="#{16}" />
+                                                <f:selectItem itemLabel="36" itemValue="#{36}" />
+                                                <p:keyFilter regEx="/[0-9.]/i" mask="num" />
+                                                <p:ajax event="change" 
+                                                        listener="#{prescribirMezclaNPTMB.activaPerfusion}" 
+                                                        update="txtVelocidad" 
+                                                        process="@this"/>
+                                            </p:selectOneMenu>
+                                            <p:outputLabel value=" hrs" />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel for="txtVelocidad" style="margin-right: 5px;" value="Velocidad: " />
+                                            <p:inputNumber id="txtVelocidad" title="Velocidad de Administración" class="noSubm"
+                                                           value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.velocidad}"
+                                                           minValue="0" decimalSeparator="." thousandSeparator=","
+                                                           decimalPlaces="2" size="6" 
+                                                           readonly="true" >
+                                                <p:keyFilter regEx="/[0-9.]/i" mask="num" />
+                                                <p:ajax event="change" 
+                                                        listener="#{ordenPreparacionMezclaMB.activaPerfusion}" 
+                                                        process="@this" />
+                                            </p:inputNumber>
+                                            <p:outputLabel value=" mL/h"  />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <p:remoteCommand name="actualizarTabla"
+                                             update=":frmNewOrden:tblMedicamentos , :frmNewOrden:validaMsg1 , :frmNewOrden:volTotal , :frmNewOrden:pesoTotal , :frmNewOrden:caloriasTotal , :frmNewOrden:equivalencia , :frmNewOrden:valEquivalencia , :frmNewOrden:estabilidad , :frmNewOrden:valEstabilidad , :frmNewOrden:valTotalOsmolaridad , :frmNewOrden:txtViaAdmon , :frmNewOrden:txtVolTotal , :frmNewOrden:txtVelocidad , :frmNewOrden:txtKcalProteicas , :frmNewOrden:txtKcalNoProteicas , btnGuardar , btnValidar " />
+                            <p:dataTable id="tblMedicamentos" 
+                                         value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.listaMezclaMedicamentos}" 
+                                         var="item" editable="#{ordenPreparacionMezclaMB.contEdit}" 
+                                         editMode="cell" reflow="true"
+                                         style="font-size: x-small !important; width: 100% !important;"
+                                         scrollRows="150" scrollable="false"  scrollHeight="990" >
+                                <f:facet name="header" rendered="false">
+                                    <p:commandButton id="toggler" type="button" value="" style="float:right" icon="fa fa-columns" />
+                                    <p:columnToggler datasource="tblMedicamentos" trigger="toggler" />
+                                </f:facet>
+
+                                <p:ajax event="cellEdit" 
+                                        listener="#{ordenPreparacionMezclaMB.onCellEdit}" 
+                                        oncomplete="actualizarTabla();"  /> 
+
+                                <p:column style="text-align: left;" headerText="Clave"
+                                          width="10%" >
+                                    <h:outputText value="#{item.claveMedicamento}" />
+                                </p:column>
+
+                                <p:column style="text-align: left;" headerText="Nombre" 
+                                          width="25%" >
+                                    <h:outputText value="#{item.nombreCorto}" class="altoColumn" id="nombreCorto"/>
+                                    <p:tooltip value="#{item.nombreCorto}"
+                                               for="nombreCorto"
+                                               position="top"/>
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="Presentación"
+                                          width="8%"  rendered="false" >
+                                    <h:outputText value="#{item.nombrePresentacion}" />
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="Via Administración" 
+                                          width="15%"  visible="false"  rendered="false" >
+                                    <h:outputText value="#{item.viaAdministracion}" />
+                                </p:column>
+
+                                <p:column style="text-align: right  ;" headerText="Dosis Prescrita" 
+                                          width="8%" >
+                                    <h:outputText value="#{item.volPrescrito}" 
+                                                  rendered="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}"  />
+                                    <p:cellEditor rendered="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion eq 1}">
+                                        <f:facet name="output">
+                                            <h:outputText value="#{item.volPrescrito}" id="tblColCantVol" 
+                                                          class="lblTableEdi"  /> 
+                                            <p:tooltip value="#{item.nombreCorto}" 
+                                                       for="tblColCantVol" 
+                                                       position="bottom" />
+                                        </f:facet>
+                                        <f:facet name="input">
+                                            <p:inputNumber value="#{item.volPrescrito}"  class="siSubm"
+                                                           padControl="false" inputStyleClass="txtTableEdi"
+                                                           decimalSeparator="." thousandSeparator=","
+                                                           size="2" 
+                                                           minValue="0" 
+                                                           onblur="preventDefault();" />
+                                        </f:facet>
+                                    </p:cellEditor>
+                                </p:column>
+
+                                <p:column style="text-align: center;" headerText="Unidad " width="5%" >
+                                    <h:outputText value="#{item.nombreUnidadConcentracion}" />
+                                </p:column>
+
+                                <p:column style="text-align: right;" headerText="Volumen Calc. (mL)" width="5%" >
+                                    <h:outputText value="#{item.volPrescrito gt 0 ? item.cantCalculada: '' }" id="txtColCantCal" /> 
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="Osmol. (mOsm)"  width="5%"   visible="false" >
+                                    <h:outputText value="#{item.volPrescrito gt 0 ? item.osmolaridad : '' }" />
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="Osmol. Calc. (mOsm)"  width="5%"  >
+                                    <h:outputText value="#{item.volPrescrito gt 0 ? item.calculoOsmolaridad : '' }" />
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="Densidad"  width="8%"  visible="false"  >
+                                    <h:outputText value="#{item.volPrescrito gt 0 ? item.densidad : '' }" />
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="Peso Calc.(g)"  width="4%"  >
+                                    <h:outputText value="#{item.peso}" />
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="Calorías Calc. (kCal)"  width="5%" >
+                                    <h:outputText value="#{item.volPrescrito gt 0 ? item.calorias : '' }" />
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="Sobrellenado (mL)"  width="5%" >
+                                    <h:outputText value="#{item.volPrescrito gt 0 ? item.sobrellenado : '' }" />
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="Vol. Total (mL)"  width="5%" >
+                                    <h:outputText value="#{item.volPrescrito gt 0 ? item.sobrellenado + item.cantCalculada : '' }" />
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="N° Piezas"  width="5%" rendered="false" >
+                                    <h:outputText value="#{item.numPiezas}" />
+                                </p:column> 
+                                <p:column style="text-align: left;"  headerText="Remanente"  width="8%" rendered="false"  >
+                                    <h:outputText value="#{item.remanente}" />
+                                </p:column> 
+                                <p:column style="text-align: left;"  headerText="% Conc."  width="8%" rendered="false" >
+                                    <h:outputText value="#{item.porcentajeConcentracion}" />
+                                </p:column>
+                                <p:column style="text-align: left;"  headerText="% Calc."  width="8%" rendered="false" >
+                                    <h:outputText value="#{item.porcentajeCalculado}" />
+                                </p:column>
+                                <p:column style="text-align: left;"  headerText="% Energía"  width="8%" rendered="false" >
+                                    <h:outputText value="#{item.porcentajeEnergia}" />
+                                </p:column>
+                                <p:column style="text-align: left;"  headerText="Nitrogeno"  width="8%" rendered="false" >
+                                    <h:outputText value="#{item.nitrogeno}" />
+                                </p:column>
+
+                            </p:dataTable>
+                            <br/>
+
+                            <div class="ui-g" style="margin: auto;  width: 80%;  border: 3px solid gray;  padding: 10px; " >
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4" style=" background: #EDEDED !important;">
+                                        <h:outputLabel value="Volumen Total: " class="plabel" /> 
+                                        <h:outputText id="volTotal" 
+                                                      value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.volumenTotal}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                        <h:outputLabel value="Peso Total:  " class="plabel" /> 
+                                        <h:outputText id="pesoTotal" 
+                                                      value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.pesoTotal}" /> 
+                                        <h:outputLabel value=" mg"/>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4" style=" background: #EDEDED !important;">
+                                        <h:outputLabel value="Calorías Total:  " class="plabel" /> 
+                                        <h:outputText id="caloriasTotal" 
+                                                      value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.caloriasTotal}" /> 
+                                    </div>
+
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <h:outputLabel value="Valor Compatibilidad :  " class="plabel" /> 
+                                        <h:outputText id="valEquivalencia" 
+                                                      value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.precipitacion}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <h:outputLabel value="Valor Estabilidad :  " class="plabel" /> 
+                                        <h:outputText id="valEstabilidad" 
+                                                      value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.estabilidad}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <h:outputLabel value="Total Osmolaridad :  " class="plabel" /> 
+                                        <h:outputText id="valTotalOsmolaridad" 
+                                                      value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.totalOsmolaridad}" />
+                                        <h:outputLabel value=" mOsm/L"/>
+                                    </div>
+
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4" style=" background: #EDEDED !important;" >
+                                        <h:outputLabel value="Compatibilidad :  " class="plabel" /> 
+                                        <h:outputText id="equivalencia" 
+                                                      value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.resultPrecipitacion}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4" style=" background: #EDEDED !important;">
+                                        <h:outputLabel value="Estabilidad :  " class="plabel" /> 
+                                        <h:outputText id="estabilidad" 
+                                                      value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.resultEstabilidad}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4" style=" background: #EDEDED !important;" >
+                                        <h:outputLabel value="Vía de Administración :  " class="plabel" /> 
+                                        <h:outputText id="txtViaAdmon" 
+                                                      value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.viaAdministracion}" />
+                                    </div>
+
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4" >
+                                        <h:outputLabel value="Calorias Proteícas :  " class="plabel" /> 
+                                        <h:outputText id="txtKcalProteicas" 
+                                                      value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.kcalProteicas}" />
+                                        <h:outputLabel value=" kcal"/>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4" style=" background: #EDEDED !important;" >
+                                        <h:outputLabel value="Calorias No Proteicas :  " class="plabel" /> 
+                                        <h:outputText id="txtKcalNoProteicas" 
+                                                      value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.kcalNoProteicas}" />
+                                        <h:outputLabel value=" kcal"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p:dataTable id="tblMedicDi" 
+                                         editable="#{ordenPreparacionMezclaMB.contEdit}" editMode="cell"
+                                         value="#{ordenPreparacionMezclaMB.listaMedicamentos}" 
+                                         var="item2" 
+                                         styleClass="styleEventosPlanPrestacion" reflow="true"
+                                         style="margin-bottom:5px;" 
+                                         scrollRows="100" scrollable="true" liveScroll="true" scrollHeight="300"
+                                         rendered="false"    >
+
+                                <p:column style="text-align: left;" headerText="Clave" width="20%" >
+                                    <h:outputText value="#{item2.claveInstitucional}" />
+                                </p:column>
+                                <p:column style="text-align: left;"  headerText="Clave"  width="35%" >
+                                    <h:outputText value="#{item2.nombreCorto}" />
+                                </p:column>
+                                <p:column style="text-align: left;"  headerText="Clave"  width="20%" >
+                                    <p:cellEditor>
+                                        <f:facet name="output">
+                                            <h:outputText value="#{item2.concentracion}" id="tblColCantCon" class="altoColumn" title="Cantidad" style="font-weight: bolder;" /> 
+                                            <p:tooltip value="Cantidad " 
+                                                       for="tblColCantCon" 
+                                                       position="bottom" />
+                                        </f:facet>
+                                        <f:facet name="input">
+                                            <p:inputNumber value="#{item2.concentracion}" 
+                                                           padControl="false" 
+                                                           style="width:90%" label="Cantidad"
+                                                           decimalSeparator="." thousandSeparator="," />
+                                        </f:facet>
+                                    </p:cellEditor>
+                                </p:column>
+                            </p:dataTable>
+                            <br/>
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                    <p:outputLabel style="margin-right: 1px; font-weight: bold;" 
+                                                   value="Observaciones:" />
+                                    <br/>
+                                    <p:inputTextarea id="txtCondicionesConser" 
+                                                     value="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.observaciones}" 
+                                                     rows="4" cols="80" />
+                                </div>
+                            </div>
+
+                            <br />
+                            <div class="ui-g-12" style=" width: 100% !important; /*position: absolute; bottom: 0px;*/ background-color: #f8f8f8; border-top: solid 2px #C8C8C8;  " >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3" style="display: flex; align-content: center; justify-content: space-between; float: right;" >
+                                    <div >
+                                        <p:commandButton value="Cerrar" oncomplete="PF('mdlNuevaOrden').hide();" ajax="true" />
+                                    </div>
+                                    <div >
+                                        <p:commandButton value="Rechazar" styleClass="btnMusOrange" icon="fa fa-times-circle" 
+                                                         onclick="PF('statusProcess').show()"
+                                                         oncomplete="PF('statusProcess').hide(); if (args.estatus){PF('dlgCofirmaRechazo').show();}  else { PF('mdlNuevaOrden').content.scrollTop('0') } "
+                                                         actionListener="#{ordenPreparacionMezclaMB.validaRechazo}" 
+                                                         style="margin-right: 10px;float: right;" 
+                                                         update=":mainForm:tblOrdenesMezcla , :mainForm:validaMsg , :frmCofirmaRechazo  "
+                                                         rendered="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion ne 1}"  /> 
+
+                                    </div>
+                                    <div>
+                                        <p:commandButton id="btnGuardar" value="Guardar"  
+                                                         styleClass="btnMusAzul" 
+                                                         actionListener="#{ordenPreparacionMezclaMB.guardarOrdenPreparacion(12)}" 
+                                                         oncomplete="if(args.estatus){ PF('mdlNuevaOrden').hide();}" 
+                                                         ajax="true"  update="mainForm" 
+                                                         rendered="#{ordenPreparacionMezclaMB.nutricionParenteralSelect.idEstatusSolucion eq 1}" />
+                                    </div>
+                                    <div>
+                                        <p:commandButton id="btnValidar" value="Validar"  styleClass="btnMusAzul" actionListener="#{ordenPreparacionMezclaMB.validarOrdenPreparacion}" 
+                                                         onclick="PF('statusProcess').show()" disabled="#{ordenPreparacionMezclaMB.deshabilitaValidar}"
+                                                         oncomplete="PF('statusProcess').hide(); if (args.estatus){PF('mdlResValidaciones').show(); PF('mdlNuevaOrden').hide();}" 
+                                                         update=":formAlerts,:mainForm:validaMsg, :mainForm " rendered="#{ordenPreparacionMezclaMB.mostrarBotones}"/>
+                                    </div>
+                                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                        <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                    </p:confirmDialog>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>
+                </div>
+
+                <p:dialog header="CONFIRMACIÓN"
+                          widgetVar="dlgCofirmaConfirmRegistro"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="frmCofirmaConfirmRegistro" >
+                        <p:messages id="msgCofirmaConfirmRegistro" globalOnly="false" showDetail="false" closable="true" />
+                        <br/>
+                        <!--<p:confirm header="Confirmación" message="¿Desea guardar la prescripción y solicitar la mezcla ?" icon="ui-icon-alert"  />-->
+                        <p:outputLabel value="Desea guardar la Prescripción y solicitar la mezcla ?"
+                                       style="font-weight: bold;" />
+                        <br/>
+                        <br/>
+                        <p:commandButton id="btnConfirmRegistra" value="Si" styleClass="btnMusAzul" 
+                                         style="margin-right: 1px; float: right;"
+                                         onclick="PF('statusProcess').show();"
+                                         actionListener="#{ordenPreparacionMezclaMB.guardarOrdenPreparacion(2)}" 
+                                         oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('dlgCofirmaConfirmRegistro').hide(); PF('mdlNuevaOrden').hide(); } "
+                                         update=":mainForm, :frmNewOrden , :frmCofirmaConfirmRegistro " />
+
+                        <p:commandButton title="No" value="No" styleClass="btnMusBoolGris" 
+                                         style="margin-right: 1px; float: right;"
+                                         update=":frmCofirmaConfirmRegistro"
+                                         oncomplete="PF('dlgCofirmaConfirmRegistro').hide();" />
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="Confirmar cambio de servicio"
+                          widgetVar="modalConfirmarCambio"
+                          closeOnEscape="true"
+                          modal="true"
+                          resizable="false"
+                          responsive="true">
+                    <h:form>
+                        <p:outputLabel value="El paciente se encuentra en otro servicio. Desea cambiarlo de servicio?" /> <br />
+                        <p:commandButton value="Si"  styleClass="btnMusAzul" actionListener="#{ordenPreparacionMezclaMB.cambiarServicioPaciente}" 
+                                         oncomplete="if(args.estatus){ PF('modalConfirmarCambio').hide();}"
+                                         update="frmNewOrden:numPaciente,frmNewOrden:edad,frmNewOrden:peso,
+                                         frmNewOrden:servicio,frmNewOrden:ubicacion,frmNewOrden:txtDiagnostico,
+                                         frmNewOrden:autoCompletePaciente" ajax="true" />&nbsp;&nbsp;        
+                        <p:commandButton value="No"   
+                                         oncomplete="PF('modalConfirmarCambio').hide();" ajax="true" actionListener="#{ordenPreparacionMezclaMB.limpiarDatosPaciente}"
+                                         update="frmNewOrden:numPaciente,frmNewOrden:edad,frmNewOrden:peso,
+                                         frmNewOrden:servicio,frmNewOrden:ubicacion,frmNewOrden:txtDiagnostico,frmNewOrden:autoCompletePaciente"/>
+                    </h:form>
+
+                </p:dialog>
+
+                <p:dialog header="AGREGAR PACIENTE"
+                          widgetVar="modalAgregarPaciente"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="formAgregarPaciente" >
+                        <p:messages id="msgModalAddUsuario" globalOnly="false" showDetail="false" closable="true" />
+                        <p:panelGrid columns="2" >
+
+                            <p:outputLabel value="Tipo de paciente : " rendered="false" />
+                            <p:selectOneMenu id="tipoPaciente" style="width: 152px;" rendered="false" 
+                                             value="#{ordenPreparacionMezclaMB.pacienteNuevo.idTipoPaciente}" >
+                                <f:selectItems value="#{ordenPreparacionMezclaMB.listaTipoPacientes}"
+                                               var="tipoPaciente" itemValue="#{tipoPaciente.idCatalogoGeneral}"
+                                               itemLabel="#{tipoPaciente.nombreCatalogo}"/>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="#{msg['pac.numPac']} : *" for="txtPacClavePaciente" />
+                            <p:inputText id="txtPacClavePaciente" value="#{ordenPreparacionMezclaMB.pacienteNuevo.claveDerechohabiencia}"
+                                         placeholder="Clave o número de paciente" maxlength="45" />
+
+                            <p:outputLabel value="Nombre : *" for="txtPacNombrePaciente" />
+                            <p:inputText id="txtPacNombrePaciente" value="#{ordenPreparacionMezclaMB.pacienteNuevo.nombreCompleto}"
+                                         placeholder="Nombre(s) de paciente" maxlength="45" />
+
+                            <p:outputLabel value="Apellido Paterno : *" for="txtPacApePatPaciente" />
+                            <p:inputText id="txtPacApePatPaciente" value="#{ordenPreparacionMezclaMB.pacienteNuevo.apellidoPaterno}" 
+                                         placeholder="Apellido paterno" maxlength="45" />
+
+                            <p:outputLabel value="Apellido Materno : " for="txtPacApeMatPaciente" />
+                            <p:inputText id="txtPacApeMatPaciente" value="#{ordenPreparacionMezclaMB.pacienteNuevo.apellidoMaterno}" 
+                                         placeholder="Apellido materno" maxlength="45" />
+
+                            <p:outputLabel value="Sexo : *" for="txtPacSexoPaciente" />
+                            <p:selectOneButton id="txtPacSexoPaciente" value="#{ordenPreparacionMezclaMB.pacienteNuevo.sexo}">
+                                <f:selectItem itemLabel="Masculino" itemValue="M" />
+                                <f:selectItem itemLabel="Femenino" itemValue="F" />
+                            </p:selectOneButton>
+
+                            <p:outputLabel value="Fecha Nacimiento : *" for="txtFechaInicio" />
+                            <p:calendar id="txtFechaInicio" showOn="button" navigator="true" yearRange="c-100:c" pages="1" 
+                                        value="#{ordenPreparacionMezclaMB.pacienteNuevo.fechaNacimiento}" maxdate="#{ordenPreparacionMezclaMB.fechaActual}"
+                                        mask="true" pattern="dd/MM/yyyy" locale="es_MX" placeholder="dd/MM/yyyy"  />
+                            <p:selectCheckboxMenu id="turno" label="Turnos" rendered="false"
+                                                  value="#{ordenPreparacionMezclaMB.listaIdTurnos}" >
+                                <f:selectItems value="#{ordenPreparacionMezclaMB.listaTurnos}" rendered="false"
+                                               var="turno" itemValue="#{turno.idTurno.toString()}" itemLabel="#{turno.nombre}" />
+                            </p:selectCheckboxMenu>
+
+                            <p:outputLabel value="CURP : " for="txtPacCurp" />
+                            <p:inputText id="txtPacCurp" value="#{ordenPreparacionMezclaMB.pacienteNuevo.curp}" 
+                                         placeholder="CURP" maxlength="18" />
+
+                            <p:outputLabel value="RFC : " for="txtPacRfc" />
+                            <p:inputText id="txtPacRfc" value="#{ordenPreparacionMezclaMB.pacienteNuevo.rfc}" 
+                                         placeholder="RFC" maxlength="13" />
+
+                            <p:outputLabel value="Lugar Nacimiento : " for="txtPacLugarNac" />
+                            <p:inputText id="txtPacLugarNac" value="#{ordenPreparacionMezclaMB.pacienteNuevo.lugarNacimiento}" 
+                                         placeholder="Lugar de Nacimiento" maxlength="45" />
+
+                            <p:outputLabel value="País de Residencia : " for="txtPacPaisRes" />
+                            <p:inputText id="txtPacPaisRes" value="#{ordenPreparacionMezclaMB.pacienteNuevo.paisResidencia}" 
+                                         placeholder="Pais de Residencia" maxlength="45" />
+
+                            <p:outputLabel value="Presenta Discapacidad : " for="txtPacPresDisc" />
+                            <p:inputText id="txtPacPresDisc" value="#{ordenPreparacionMezclaMB.pacienteNuevo.descripcionDiscapacidad}" 
+                                         placeholder="Descripción Discapacidad" maxlength="45" />
+
+                        </p:panelGrid>
+                        <br/>
+                        <br/>
+                        <p:commandButton value="Agregar" title="Guardar paciente" styleClass="btnMusAzul" style="float: right;"
+                                         onclick="PF('statusProcess').show();"
+                                         actionListener="#{ordenPreparacionMezclaMB.agregarPaciente}"
+                                         oncomplete="PF('statusProcess').hide(); if(!args.error) {PF('modalAgregarPaciente').hide()};"
+                                         update=":frmNewOrden:validaMsg1 , :formAgregarPaciente:msgModalAddUsuario" >
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                            </p:confirmDialog>
+                        </p:commandButton>
+                        <p:commandButton title="Cancelar" value="Cancelar" oncomplete="PF('modalAgregarPaciente').hide();"  style="float: right;"/>
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="AGREGAR MEDICO"
+                          widgetVar="modalAgregarMedico"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formAgregarMedico" >
+                        <p:messages id="msgModalAddMedico" globalOnly="false" showDetail="false" closable="true" />
+                        <p:panelGrid columns="2">
+                            <p:outputLabel value="Nombre" />
+                            <p:inputText id="txtNombre" style="width: 300px !important;"  label="Nombre" 
+                                         maxlength="20"
+                                         value="#{ordenPreparacionMezclaMB.medicoExtended.nombre}"  >
+
+                            </p:inputText>
+
+                            <p:outputLabel value="Apellido Paterno" />
+                            <p:inputText id="txtNombrePaterno" style="width: 300px !important;"   maxlength="20"
+                                         label="Apellido Paterno"  
+                                         value="#{ordenPreparacionMezclaMB.medicoExtended.apellidoPaterno}"  >
+                            </p:inputText>
+
+                            <p:outputLabel value="Apellido Materno" />
+                            <p:inputText id="txtApellidoMaterno" style="width: 300px !important;" label="Apellido Materno" maxlength="20"
+                                         value="#{ordenPreparacionMezclaMB.medicoExtended.apellidoMaterno}"   >
+
+                            </p:inputText>
+
+                            <p:outputLabel value="Nombre Usuario" />
+                            <p:inputText id="txtNombreUsuario"  style="width: 200px !important;"   label="Nombre Usuario"
+                                         value="#{ordenPreparacionMezclaMB.medicoExtended.nombreUsuario}" maxlength="15"   >
+                            </p:inputText>
+
+                            <p:outputLabel value="Correo Electrónico" />
+                            <p:inputText id="txtCorreoElectronico" style="width: 200px !important;"   label="Correo electrónico" 
+                                         value="#{ordenPreparacionMezclaMB.medicoExtended.correoElectronico}"  >    
+
+                            </p:inputText>     
+
+                            <p:outputLabel value="Cedula Profesional:" />
+                            <p:inputText id="cedProf" style="width: 200px !important;" value="#{ordenPreparacionMezclaMB.medicoExtended.cedProfesional}" />
+
+                            <p:outputLabel value="Cedula Especialidad:" />
+                            <p:inputText id="cedEsp"  style="width: 200px !important;" value="#{ordenPreparacionMezclaMB.medicoExtended.cedEspecialidad}"/>
+
+                            <p:outputLabel value="Turnos:" />
+                            <p:selectCheckboxMenu id="turnoMedico"
+                                                  label="Turnos"
+                                                  class="sOneMenu"
+                                                  value="#{ordenPreparacionMezclaMB.listaIdTurnos}" 
+                                                  >
+                                <f:selectItems value="#{ordenPreparacionMezclaMB.listaTurnos}"
+                                               var="turno"
+                                               itemValue="#{turno.idTurno}"
+                                               itemLabel="#{turno.nombre}"/>
+                            </p:selectCheckboxMenu>
+
+                        </p:panelGrid>
+                        <br/>     
+                        <p:commandButton id="btnSave1"
+                                         actionListener="#{ordenPreparacionMezclaMB.agregarMedicos}"
+                                         styleClass="btnMusAzul" 
+                                         value="Guardar" 
+                                         style="float: right;"
+                                         onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide();if(!args.errorModalMedicos){PF('modalAgregarMedico').hide();}"
+                                         update="msgModalAddMedico,:frmNewOrden:validaMsg1" />
+                    </h:form>
+                </p:dialog>
+                
+                <p:dialog header="Resultados de la validación"
+                          widgetVar="mdlResValidaciones"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          style="font-size:xx-small !important; " >
+                    <h:form id="formAlerts">
+                        <p:messages id="validaMsgres" class="validaMsg" globalOnly="true" closable="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <h:outputLabel value="#{ordenPreparacionMezclaMB.alertasDTO.codigo}" style="font-weight: bold!important; color:black!important;" />
+                        &nbsp;&nbsp;
+                        <h:outputLabel value="#{ordenPreparacionMezclaMB.alertasDTO.descripcion}" style="font-weight: bold!important; color:black!important;" />
+                        <br/>
+                        <p:dataTable emptyMessage="No se encontraron registros" rows="10" 
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"  reflow="true"                                       
+                                     paginatorPosition="bottom" widgetVar="tblAlertaFarmaco" 
+                                     value="#{ordenPreparacionMezclaMB.alertasDTO.listaAlertaFarmacovigilancia}" var="item" 
+                                     lazy="true" id="tblAlertaFarmaco" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" >
+                            
+                            <f:facet name="header">
+                                <h:outputLabel value="Alertas de Farmacovigilancia" style="font-weight: bold!important; color:black!important;" />
+                            </f:facet>
+                            
+                            <p:column style="text-align: left !important; width: 5%;" headerText="Número">
+                                <h:outputText value="#{item.numero}"/>
+                            </p:column>
+
+                            <p:column style="text-align: left !important; width: 25%;" headerText="Factor Uno">
+                                <h:outputText value="#{item.factor1}" />
+                            </p:column>
+
+                            <p:column style="text-align: left !important; width: 25%;" headerText="Factor Dos">
+                                <h:outputText value="#{item.factor2}" />
+                            </p:column>
+                            <p:column style="text-align: left !important; width: 5%;" headerText="Riesgo">
+                                <h:outputLabel styleClass="#{item.riesgo eq 'Alto' ? 'riesgoAlto' : item.riesgo eq 'Medio' ? 'riesgoMedio' : item.riesgo eq 'Bajo' ? 'riesgoBajo' : null}" value="#{item.riesgo}" />
+                            </p:column>
+                            <p:column style="text-align: left !important; width: 10%;" headerText="Tipo">
+                                <h:outputText value="#{item.tipo}" />
+                            </p:column>
+                            <p:column style="text-align: left !important; width: 10%;" headerText="Origen">
+                                <h:outputText value="#{item.origen}" />
+                            </p:column>
+                            <p:column style="text-align: left !important; width: 10%;" headerText="Clasificación">
+                                <h:outputText value="#{item.clasificacion}" />
+                            </p:column>
+                            <p:column style="text-align: left !important; width: 10%;"  headerText="Motivo">
+                                <h:outputText value="#{item.motivo}" />
+                            </p:column>
+                        </p:dataTable>
+                        <br />
+                        <p:dataTable emptyMessage="No se encontraron registros" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"  reflow="true"                                       
+                                     paginatorPosition="bottom" widgetVar="tblAlertaFarmaco" 
+                                     value="#{ordenPreparacionMezclaMB.alertasDTO.validacionNoCumplidas}" var="item" 
+                                     lazy="true" id="tblValidacionNoCumplida" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" > 
+                            
+                            <f:facet name="header" >
+                                <h:outputLabel value="Validaciones no Cumplidas" style="font-weight: bold!important; color:black!important;" />
+                            </f:facet>
+
+                            <p:column style="text-align: left;"  headerText="Codigo"  width="15%">
+                                <h:outputText value="#{item.codigo}" />
+                            </p:column>
+
+                            <p:column style="text-align: left !important; "  headerText="Descripción"  width="40%" >
+                                <h:outputText value="#{item.descripcion}"  />
+                            </p:column>
+                        </p:dataTable>
+                        
+                        
+                        <p:commandButton value="Continuar"  styleClass="btnMusAzul"                                                                                 
+                                         icon="fa fa-check-circle" style="margin-right: 1px;float: right;"
+                                         onclick="PF('statusProcess').show()"
+                                         oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('mdlResValidaciones').hide(); PF('mdlReport').show();}"
+                                         actionListener="#{ordenPreparacionMezclaMB.continuarValidacionOrdenPreparada}"                                          
+                                         update=":mainForm:tblOrdenesMezcla , :mainForm:validaMsg " > 
+                            <p:confirm  header="Confirmación" message="Desea continuar con la validación de orden de preparación ?" icon="ui-icon-alert" />
+                        </p:commandButton>           
+                        
+                        <p:commandButton value="Cancelar" style="margin-right: 1px;float: right;"  
+                                         oncomplete="PF('mdlResValidaciones').hide();" />
+                        
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                            <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>        
+                    </h:form>
+                </p:dialog>
+                
+                <p:dialog header="CONFIRMACIÓN DE RECHAZO"
+                          widgetVar="dlgCofirmaRechazo"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="frmCofirmaRechazo" >
+                        <p:messages id="msgCofirmaRechazo" globalOnly="false" showDetail="false" closable="true" />
+                        <div class="ui-g">
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                    <p:outputLabel value="Desea rechazar la Prescripción de la Mezcla ?" 
+                                                   style="font-weight: bold;" />
+                                </div>
+                            </div>
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                    <p:outputLabel value="Motivo: " for="txtMotivoRechazo"
+                                                   rendered="false" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                    <p:selectOneMenu id="txtMotivoRechazo" class="sOneMenu" 
+                                                     value="#{ordenPreparacionMezclaMB.solucion.idMotivoRechazo}"
+                                                     filter="true" filterMatchMode="contains" filterPlaceholder="Seleccione motivo"
+                                                     required="true" requiredMessage="Seleccione motivo" immediate="true"
+                                                     rendered="false" >
+                                        <f:selectItem itemValue="#{null}" itemLabel="Seleccione una opción"  />
+                                        <f:selectItem itemValue="#{1}" itemLabel="Alta de paciente"/>
+                                        <f:selectItem itemValue="#{2}" itemLabel="Cambio de Tratamiento"/>
+                                        <f:selectItem itemValue="#{3}" itemLabel="Datos Incompletos"/>
+                                        <f:selectItem itemValue="#{17}" itemLabel="Cantidades insuficientes" />
+                                        <f:selectItem itemValue="#{14}" itemLabel="Condiciones de preparación incorrectas" />
+                                        <f:selectItem itemValue="#{15}" itemLabel="Condiciones de conservación incorrectas" />
+                                        <f:selectItem itemValue="#{4}" itemLabel="Diagnóstico de alta"/>
+                                        <f:selectItem itemValue="#{5}" itemLabel="Egreso de paciente"/>
+                                        <f:selectItem itemValue="#{6}" itemLabel="Error en preparación"/>
+                                        <f:selectItem itemValue="#{7}" itemLabel="Error en prescripción"/>
+                                        <f:selectItem itemValue="#{12}" itemLabel="Medicamento contaminado" />
+                                        <f:selectItem itemValue="#{13}" itemLabel="Medicamento caduco" />
+                                        <f:selectItem itemValue="#{8}" itemLabel="Mezcla inestable"/>
+                                        <f:selectItem itemValue="#{10}" itemLabel="Reacción de hipersensibilidad"/>
+                                        <f:selectItem itemValue="#{11}" itemLabel="Sospecha de RAM"/>
+                                        <f:selectItem itemValue="#{9}" itemLabel="Sospecha de evento Adverso"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel value="Comentarios " for="txtComentariosRechazo" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                    <p:inputText id="txtComentariosRechazo" maxlength="99" size="40" placeholder=""
+                                                 required="true" requiredMessage="Registre motivo de cancelación" 
+                                                 value="#{ordenPreparacionMezclaMB.solucion.comentariosRechazo}" />
+                                </div>
+                            </div>
+                        </div>
+                        <br/>
+                        <br/>
+                        <div class="ui-g-12" style=" width: 100% !important; /*position: absolute; bottom: 0px;*/ background-color: #f8f8f8; border-top: solid 2px #C8C8C8;  " >
+                            <div class="ui-g-12 ui-md-6 ui-lg-3" style="display: flex; align-content: center; justify-content: space-between; float: right;" >
+                                <div>
+                                   <p:commandButton title="No" value="No" styleClass="btnMusBoolGris" 
+                                         style="margin-right: 1px; float: right;"
+                                         oncomplete="PF('dlgCofirmaRechazo').hide();" />
+                                </div>
+                                <div>
+                                    <p:commandButton id="btnConfirmaRechazo" value="Si" styleClass="btnMusRed" 
+                                         style="margin-right: 1px; float: right;"
+                                         onclick="PF('statusProcess').show();"
+                                         actionListener="#{ordenPreparacionMezclaMB.rechazarValidacionSolucion}" 
+                                         oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('dlgCofirmaRechazo').hide(); PF('mdlNuevaOrden').hide(); } "
+                                         update=":mainForm, :frmCofirmaRechazo" />
+                                </div>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+                
+                
+                <p:dialog widgetVar="mdlReport" width="820px" height="600px"
+                    closeOnEscape="false" modal="true"                          
+                    style="font-size:xx-small !important;" >
+                    <h:form id="formPDF">
+                        <p:media value="/Reportes" player="pdf" width="800px" height="600px" cache="false" />
+                    </h:form>
+                    <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                </p:dialog>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>    

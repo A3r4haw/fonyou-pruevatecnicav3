@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>REPORTE DE ORDENES EN DOVETRACK</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="movGralesId" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="REPORTE DE ORDENES EN DOVETRACK" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-4 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Inicio" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" value="#{doveTrackMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{doveTrackMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-4 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Fin" />
+                                            <br/>
+                                            <p:calendar id="txtFechaFin" value="#{doveTrackMB.paramBusquedaReporte.fechaFin}"                                                                                                                 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxHour="23" maxMinute="59"                                                        
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"> 
+                                                
+                                            </p:calendar>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-12">
+                                            
+                                        </div>
+                                        <div class="ui-g-12 ui-md-4 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Insumos" />
+                                            <br/>
+                                            <p:inputText id="txtInsumo" styleClass="autoComplete-Sum" value="#{doveTrackMB.paramBusquedaReporte.cadenaBusqueda}" placeholder="Buscar" >
+                                                
+                                                
+                                            </p:inputText>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-4 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder; margin-top: 0px;" value="Servicio" />
+                                            <br/>
+                                            <p:selectCheckboxMenu id="comboTipoMovimiento" label="Servicio"
+                                                                  value="#{doveTrackMB.selectServiceList}"
+                                                                  disabled="#{!doveTrackMB.permiso.puedeVer}"
+                                                                  filter="true" filterMatchMode="contains" panelStyle="width:250px"> 
+                                                <f:selectItems value="#{doveTrackMB.listAreaEstructura}"
+                                                               var="service"
+                                                               itemValue="#{service.idEstructura}"
+                                                               itemLabel="#{service.nombre}"/>
+                                            </p:selectCheckboxMenu>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-4 ui-lg-3" style="margin-top: 15px">                                            
+                                            <p:commandButton value="Generar Reporte"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{doveTrackMB.consultar}"
+                                                             update=":formTablaMovimientos, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"  
+                                                             
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form><br />
+                    <h:form id="formTablaMovimientos" >
+                    <style type="text/css">
+                        .ui-datatable-header {
+                            height: 20px
+                        }
+                    </style>
+                        
+                        
+                        <p:dataTable widgetVar="resultadosDT" id="resultadosDT" var="result"
+                                     styleClass="styleEventosPlanPrestacion" reflow="true" value="#{doveTrackMB.listDataResultReporte}"
+                            emptyMessage="No existen registros para mostrar." style="margin-bottom:5px; padding: 5px;" 
+                            scrollRows="10" scrollable="true" scrollHeight="350"
+                            paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                         currentPageReportTemplate=" " 
+                                         selectionMode="single" 
+                                         rowKey="#{result.folio}"
+                                         paginator="true"
+                                         rows="10"
+                                         paginatorPosition="bottom">
+                            <p:column class="" headerText="Folio" style="width: 5%; " >
+                                <h:outputText value="#{result.folio}"/>
+                            </p:column>
+                            <p:column class="" headerText="Fecha Solicitada"  style="width: 10%;">
+                                <h:outputText value="#{result.fechaSolicitada}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="Servicio" style="width: 8%;">
+                                <h:outputText value="#{result.servicio}"/>
+                            </p:column>
+                            <p:column class="" headerText="Cama" style="width: 5%;">
+                                <h:outputText value="#{result.cama}"/>
+                            </p:column>
+                            <p:column class="" headerText="Paciente" style="width: 7%;">
+                                <h:outputText value="#{result.paciente}" />
+                            </p:column>
+                            <p:column class="" headerText="Nombre" style="width: 5%;">
+                                <h:outputText value="#{result.nombre}" />
+                            </p:column>
+                            <p:column class="" headerText="Clave" style="width: 7%;" >
+                                <h:outputText value="#{result.clave}">
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column class="" headerText="Medicamento" style="width: 7%;">
+                                <h:outputText value="#{result.medicamento}"/>
+                            </p:column>
+                            <p:column class="" headerText="Cant. Sol." style="width: 3%;">
+                                <h:outputText value="#{result.cantidadSolicitada}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="Fecha Surt."  style="width: 5%;">
+                                <h:outputText value="#{result.fechaSurtida}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column class="" headerText="Usuario" style="width: 5%;">
+                                <h:outputText value="#{result.usuario}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="Cant. Surt." style="width: 3%;">
+                                <h:outputText value="#{result.cantidadSurtida}"/>
+                            </p:column>
+                            
+                        </p:dataTable>
+                    </h:form>	
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

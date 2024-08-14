@@ -1,0 +1,2086 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanelAmplio" >
+                    <h:form id="mainForm">
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <p:focus context="mainForm"/>
+
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value="Dispensación Colectiva"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 10px;" />
+
+                        </div>
+                        <p:commandButton title="Nueva Dispensación Colectiva" value="Dispensación Colectiva" styleClass="btnMusAzul"
+                                         onclick="PF('statusProcess').show();" style="margin-top: 5px; margin-bottom: 5px;"
+                                         oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('modalDispecolec').show(); }"
+                                         update=":frmDispecolec" 
+                                         actionListener="#{notaDispenColectMB.previsualizaLista}" 
+                                         rendered="#{notaDispenColectMB.permiso.puedeCrear}">
+
+                        </p:commandButton>
+
+                        <p:tabView id="tabs">
+                            <p:ajax event="tabChange" process="@this" 
+                                    update=":mainForm:tabs:tblSoluciones , :mainForm:tabs:dataTableNotas , :mainForm:tabs:dataTableNotas2 , :mainForm:tabs:dataTableNotas3 " 
+                                    listener="#{notaDispenColectMB.onTabChange}"/>
+                            <p:tab title="ACONDICIONADAS" id="#{notaDispenColectMB.mezclaAcondicionada}" >
+                        
+                                <div id="busqueda" style="height: 30px !important;">
+                                    <p:outputLabel style="margin-right: 1px;" value="Servicio : " />
+                                    <p:selectOneMenu id="comboServicios" title="Área o Servicio"
+                                                     value="#{notaDispenColectMB.idEstructura}"
+                                                     filter="true" filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Seleccione Área" itemValue="#{null}"/>
+                                        <f:selectItems value="#{notaDispenColectMB.listServiciosQueSurte}"
+                                                       var="servicio"
+                                                       itemValue="#{servicio.idEstructura}"
+                                                       itemLabel="#{servicio.nombre}" />
+                                    </p:selectOneMenu>
+                                    <p:spacer width="10px;" />
+                                    <p:outputLabel style="margin-right: 1px;" value="Tipo Mezcla : " />
+                                    <p:selectOneMenu id="tipoSolucion" style="vertical-align: middle;"
+                                                     value="#{notaDispenColectMB.idTipoSolucion}"
+                                                     filter="true" filterMatchMode="contains" >
+                                        <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}"/>
+                                        <f:selectItems value="#{notaDispenColectMB.tipoSolucionList}" var="tipoSol"
+                                                       itemLabel="#{tipoSol.clave}" itemValue="#{tipoSol.idTipoSolucion}"/>
+                                        <p:ajax event="itemSelect" 
+                                                listener="#{notaDispenColectMB.obtenerListaHorarios}" />
+                                    </p:selectOneMenu>
+                                    <p:spacer width="10px;" />
+                                    <p:outputLabel style="margin-right: 1px;" value="F. Inicio: " />
+                                    <p:calendar id="txtFechaEntrega" title="Fecha Programada" size="7"
+                                                value="#{notaDispenColectMB.fechaParaEntregar}"
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yy HH:mm"
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade" />
+                                    <p:spacer width="10px;" />
+                                    <p:outputLabel style="margin-right: 1px;" value="F. Fin: " />
+                                    <p:calendar id="txtFechaEntregaFin" title="Fecha Programada" size="7"
+                                                value="#{notaDispenColectMB.fechaParaEntregarFin}"
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yy HH:mm"
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade" />
+
+                                    <p:selectCheckboxMenu id="menu" value="#{notaDispenColectMB.tipoPrescripcionSelectedList}" label="Tipo" 
+                                                          filter="true" filterMatchMode="startsWith" panelStyle="width:110px" style="width: 110px;"
+                                                          rendered="false" >
+                                        <f:selectItem value="#{N}" itemLabel="Normal" itemValue="N" />
+                                        <f:selectItem value="#{U}" itemLabel="Urgente" itemValue="U" />
+                                        <f:selectItem value="#{D}" itemLabel="Dosis Única" itemValue="D" />
+                                    </p:selectCheckboxMenu>
+                                    <p:spacer width="20px;" />
+                                    <p:inputText id="busqueda" 
+                                                 value="#{notaDispenColectMB.cadenaBusqueda}" 
+                                                 class="textSearch"
+                                                 style="width: 12% !important;" 
+                                                 placeholder="Buscar..." title="Buscar por Número de Cama, Paciente o Servicio" />
+                                    <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />
+                                    <p:spacer width="10px" />
+                                    <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                                     onclick="PF('statusProcess').show();"
+                                                     oncomplete="PF('statusProcess').hide(); if(args.modal){PF(':formSurtimientoDetail').show();}"
+                                                     actionListener="#{notaDispenColectMB.obtenerSurtimientos()}"
+                                                     update="@form"  />
+                                </div>
+
+                                <p:panel id="dataTable" style="margin:0px 0px;">
+                                    <p:dataTable id="tblSoluciones"
+                                                 widgetVar="tblSoluciones"                                         
+                                                 value="#{notaDispenColectMB.dispensacionSolucionLazy}"
+                                                 lazy="true"
+                                                 selection="#{notaDispenColectMB.surtimientoExtendedListSelected}"
+                                                 var="item"
+                                                 rowKey="#{item.idSurtimiento}"
+                                                 selectionMode="multiple"
+                                                 style="margin-bottom:5px;"
+                                                 styleClass="mystyle"
+                                                 scrollRows="10" scrollable="true" scrollHeight="400"
+                                                 emptyMessage="No se encontraron Registros"
+                                                 reflow="true"
+                                                 paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                                 currentPageReportTemplate=" "
+                                                 paginator="true"
+                                                 rows="150"
+                                                 paginatorPosition="bottom"
+                                                 rowStyleClass="#{item.tipoPrescripcion eq 'U' ? 'urgente' : item.tipoPrescripcion eq 'D' ? 'unica': null}" >
+
+                                        <f:facet name="footer" >
+                                            <p:outputLabel class="footerLabel"
+                                                           value="#{notaDispenColectMB.dispensacionSolucionLazy.totalReg} Mezclas por entregar. " />
+                                        </f:facet>
+
+                                        <p:ajax event="rowDblselect" listener="#{notaDispenColectMB.verSolucion}"
+                                                update=":formSurtimientoDetail, :formSurtimientoDetailEntregar"
+                                                onstart="PF('statusProcess').show()"
+                                                oncomplete="PF('statusProcess').hide(); if (args.modal){ PF('modalSolucion').show();}else{PF('modalEntregarSolucion').show();}" >
+                                        </p:ajax>
+
+                                        <p:column style="text-align: left; width: 6% " exportable="false" 
+                                          sortBy="#{item.tipoPrescripcion}" 
+                                          filterBy="#{item.tipoPrescripcion}" filterMatchMode="contains" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Tipo" />
+                                            </f:facet>
+                                            <p:outputPanel rendered="#{item.tipoPrescripcion eq 'N'}" >
+                                                <img src="#{request.contextPath}/resources/img/cpnormal.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                                <p:spacer width="8px"/>
+                                                <h:outputText value="Normal"/>
+                                            </p:outputPanel>
+                                            <p:outputPanel rendered="#{item.tipoPrescripcion eq 'U'}" >
+                                                <img src="#{request.contextPath}/resources/img/cpurgente.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                                <p:spacer width="8px"/>
+                                                <h:outputText value="Urgente"/>
+                                            </p:outputPanel>
+                                            <p:outputPanel rendered="#{item.tipoPrescripcion eq 'D'}" >
+                                                <img src="#{request.contextPath}/resources/img/cpunica.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                                <p:spacer width="8px"/>
+                                                <h:outputText value="Dosis Única"/>
+                                            </p:outputPanel>
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 6% "
+                                                  sortBy="#{item.tipoSolucion}" 
+                                                  filterBy="#{item.tipoSolucion}" filterMatchMode="contains" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Mezcla" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.tipoSolucion}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 8% "
+                                                  sortBy="#{item.fechaProgramada}" 
+                                                  filterBy="#{item.fechaProgramada}" filterMatchMode="contains" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Fecha" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.fechaProgramada}"
+                                                          styleClass="#{item.prioridad eq 'Alta' ? 'prioridadAlta' : item.prioridad eq 'Media' ? 'prioridadMedia' : item.prioridad eq 'Baja' ? 'prioridadBaja' : null}" >
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 8% "
+                                                  sortBy="#{item.folio}" 
+                                                  filterBy="#{item.folio}" filterMatchMode="contains" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Folio" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.folio}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 12% " 
+                                                  sortBy="#{item.nombrePaciente}"
+                                                  filterBy="#{item.nombrePaciente}" filterMatchMode="contains" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Paciente" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.nombrePaciente}" />
+                                        </p:column>
+                                
+                                        <p:column style="text-align: left; width: 14% " 
+                                                   filterBy="#{item.descripcion}" filterMatchMode="contains" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Descripción Mezcla" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.descripcion}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 10% " 
+                                                  sortBy="#{item.nombreEstructura}"
+                                                  filterBy="#{item.nombreEstructura}" filterMatchMode="contains" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Servicio " />
+                                            </f:facet>
+                                            <h:outputText title="#{item.nombreEstructura}" value="#{item.nombreEstructura}"  class="limitCarater"/>
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 6% "
+                                                  sortBy="#{item.cama}"
+                                                  filterBy="#{item.cama}" filterMatchMode="contains" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Ubicación" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.cama}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 10% " 
+                                                  sortBy="#{item.nombreMedico}" 
+                                                  filterBy="#{item.nombreMedico}" filterMatchMode="contains" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Médico" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.nombreMedico}"  title="#{item.nombreEstructura}" class="limitCarater" />
+                                        </p:column>
+                                
+                                        <p:column style="text-align: left; width: 10% " 
+                                                  sortBy="#{item.estatusSolucion}" 
+                                                  filterBy="#{item.estatusSolucion}"  filterMatchMode="contains" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Estatus" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.estatusSolucion}" />
+                                        </p:column>
+                                        
+                                     <p:column style="width: 6%;" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Acciones"  />
+                                            </f:facet>
+                                            <p:commandLink id="linkImprimir" onclick="PF('statusProcess').show();" title="Reimprimir Orden de Preparación" 
+                                                           oncomplete="PF('statusProcess').hide();if(args.estatus) {PF('mdlReport').show();}"
+                                                           actionListener="#{notaDispenColectMB.previewPrint(item)}"
+                                                           update="formPDF"
+                                                           rendered="false" 
+                                                           styleClass="iconMusAzul" >
+                                                <i class="fa fa-print"  style="font-size: large" />
+                                            </p:commandLink>
+                                            <p:commandLink id="linkImprimir2" onclick="PF('statusProcess').show();"  title="Reimprimir Etiquetas de Mezcla" 
+                                                           oncomplete="PF('statusProcess').hide();PF('mdlPrint').show();"
+                                                           actionListener="#{notaDispenColectMB.previewPrint(item)}"
+                                                           style="margin: 5px;text-decoration: none;"
+                                                           rendered="false"  
+                                                           styleClass="iconMusAzul" update="frmPrintSelect" >
+                                                <i class="fa fa-barcode"  style="font-size: large" />
+                                                <!--rendered="# {notaDispenColectMB.permiso.puedeAutorizar}"-->
+                                            </p:commandLink>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </p:tab>
+                            
+                            <p:tab title="EN TRÁNSITO" id="#{notaDispenColectMB.mezclaEnTransito}" >
+                                
+                                <div id="busqueda" style="height: 30px !important;">
+                                    <p:outputLabel style="margin-right: 1px;" value="Servicio : " />
+                                    <p:selectOneMenu id="comboServicios2" title="Área o Servicio"
+                                                     value="#{notaDispenColectMB.idEstructuraNotas}"
+                                                     filter="true" filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Seleccione Área" itemValue="#{null}"/>
+                                        <f:selectItems value="#{notaDispenColectMB.listServiciosQueSurte}"
+                                                       var="servicio"
+                                                       itemValue="#{servicio.idEstructura}"
+                                                       itemLabel="#{servicio.nombre}" />
+                                    </p:selectOneMenu>
+                                    <p:spacer width="10px;" />
+                                    <p:outputLabel style="margin-right: 1px;" value="Tipo Mezcla : " />
+                                    <p:selectOneMenu id="tipoSolucion2" style="vertical-align: middle;"
+                                                     value="#{notaDispenColectMB.idTipoSolucionNotas}"
+                                                     filter="true" filterMatchMode="contains" >
+                                        <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}"/>
+                                        <f:selectItems value="#{notaDispenColectMB.tipoSolucionList}" var="tipoSol"
+                                                       itemLabel="#{tipoSol.clave}" itemValue="#{tipoSol.idTipoSolucion}"/>
+                                        <p:ajax event="itemSelect" 
+                                                listener="#{notaDispenColectMB.obtenerListaHorarios}" />
+                                    </p:selectOneMenu>
+                                    <p:spacer width="10px;" />
+                                    <p:outputLabel style="margin-right: 1px;" value="F. Inicio: " />
+                                    <p:calendar id="txtFechaEntrega2" title="Fecha Programada" size="7"
+                                                value="#{notaDispenColectMB.fechaParaEntregarNotas}"
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yy HH:mm"
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade" />
+                                    <p:spacer width="10px;" />
+                                    <p:outputLabel style="margin-right: 1px;" value="F. Fin: " />
+                                    <p:calendar id="txtFechaEntregaFin2" title="Fecha Programada" size="7"
+                                                value="#{notaDispenColectMB.fechaParaEntregarFinNotas}"
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yy HH:mm"
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade" />
+
+                                    <p:selectCheckboxMenu id="menu2" value="#{notaDispenColectMB.tipoPrescripcionSelectedList}" label="Tipo" 
+                                                          filter="true" filterMatchMode="startsWith" panelStyle="width:110px" style="width: 110px;"
+                                                          rendered="false" >
+                                        <f:selectItem value="#{N}" itemLabel="Normal" itemValue="N" />
+                                        <f:selectItem value="#{U}" itemLabel="Urgente" itemValue="U" />
+                                        <f:selectItem value="#{D}" itemLabel="Dosis Única" itemValue="D" />
+                                    </p:selectCheckboxMenu>
+                                    <p:spacer width="20px;" />
+                                    <p:inputText id="busqueda2" 
+                                                 value="#{notaDispenColectMB.cadenaBusquedaNotas}" 
+                                                 class="textSearch"
+                                                 style="width: 12% !important;" 
+                                                 placeholder="Buscar..." title="Buscar por Número de Cama, Paciente o Servicio" />
+                                    <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />
+                                    <p:spacer width="10px" />
+                                    <p:commandButton title="Buscar2" value="Buscar" icon="ui-icon-search" 
+                                                     onclick="PF('statusProcess').show();"
+                                                     oncomplete="PF('statusProcess').hide(); if(args.modal){PF(':formSurtimientoDetail').show();}"
+                                                     actionListener="#{notaDispenColectMB.buscaNotasEnTransito()}"
+                                                     update="tblNotas"  />
+                                </div>
+                                
+                                <p:panel id="dataTableNotas" style="margin:0px 0px;">
+                                    <p:dataTable id="tblNotas" widgetVar="tblNotas"                                         
+                                                 value="#{notaDispenColectMB.notaDispenColectLista}"
+                                                 selection="#{notaDispenColectMB.notaDispenColectSelected}"
+                                                 var="ndce" rowKey="#{ndce.idNotaDispenColect}"
+                                                 lazy="false" selectionMode="single"
+                                                 style="margin-bottom:5px;" styleClass="mystyle"
+                                                 scrollRows="10" scrollable="true" scrollHeight="450"
+                                                 emptyMessage="No se encontraron Registros"
+                                                 reflow="true"
+                                                 paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                                 currentPageReportTemplate=" "
+                                                 paginator="true" rows="150"
+                                                 paginatorPosition="bottom" >
+
+                                        <f:facet name="footer" >
+                                            <p:outputLabel class="footerLabel"
+                                                           value="#{notaDispenColectMB.notaDispenColectLista.size()} Notas de dispensacion colectiva. " />
+                                        </f:facet>
+
+                                        <p:ajax event="rowDblselect" 
+                                                listener="#{notaDispenColectMB.verNota}" 
+                                                update=":frmDispecolec "
+                                                onstart="PF('statusProcess').show()"
+                                                oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('modalDispecolec').show(); }" />
+
+                                        <p:column style="text-align: left; width: 6% "
+                                                  sortBy="#{ndce.tipoSolucion}" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Mezcla" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.tipoSolucion}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 10% "
+                                                  sortBy="#{ndce.folio}" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Folio" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.folio}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 10% "
+                                                  sortBy="#{ndce.fechaEntrega}" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Fecha Programada" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.fechaEntrega}" >
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 18% " 
+                                                  sortBy="#{ndce.nombreUsuarioEntrega}">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Usuario Entrega" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.nombreUsuarioEntrega}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 10% "
+                                                  sortBy="#{ndce.fechaDispensa}" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Fecha Dispensa" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.fechaDispensa}" >
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 18% " 
+                                                  sortBy="#{ndce.nombreUsuarioDispensa}">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Usuario Dispensa" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.nombreUsuarioDispensa}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 14% " sortBy="#{ndce.nombreEstructura}">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Servicio " />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.nombreEstructura}"  class="limitCarater"/>
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 6% ">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Estatus" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.estatusNotaDispencolect}" />
+                                        </p:column>
+
+                                        <p:column style="width: 6%;" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Acciones"  />
+                                            </f:facet>
+                                            <p:commandLink id="linkImprimirNota" onclick="PF('statusProcess').show();" title="Reimprimir Nota de Dispensación Colectiva" 
+                                                           oncomplete="PF('statusProcess').hide();if(args.estatus) {PF('mdlReport').show();}"
+                                                           actionListener="#{notaDispenColectMB.imprimeNotaDispenColectiva(ndce)}"
+                                                           update="formPDF"
+                                                           styleClass="iconMusAzul" >
+                                                <i class="fa fa-print"  style="font-size: large" />
+                                            </p:commandLink>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </p:tab>
+                            
+                            <p:tab title="ENTREGADAS" id="#{notaDispenColectMB.mezclaEntregada}" >
+                                
+                                <div id="busqueda" style="height: 30px !important;">
+                                    <p:outputLabel style="margin-right: 1px;" value="Servicio : " />
+                                    <p:selectOneMenu id="comboServicios3" title="Área o Servicio"
+                                                     value="#{notaDispenColectMB.idEstructuraNotasE}"
+                                                     filter="true" filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Seleccione Área" itemValue="#{null}"/>
+                                        <f:selectItems value="#{notaDispenColectMB.listServiciosQueSurte}"
+                                                       var="servicio"
+                                                       itemValue="#{servicio.idEstructura}"
+                                                       itemLabel="#{servicio.nombre}" />
+                                    </p:selectOneMenu>
+                                    <p:spacer width="10px;" />
+                                    <p:outputLabel style="margin-right: 1px;" value="Tipo Mezcla : " />
+                                    <p:selectOneMenu id="tipoSolucion3" style="vertical-align: middle;"
+                                                     value="#{notaDispenColectMB.idTipoSolucionNotasE}"
+                                                     filter="true" filterMatchMode="contains" >
+                                        <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}"/>
+                                        <f:selectItems value="#{notaDispenColectMB.tipoSolucionList}" var="tipoSol"
+                                                       itemLabel="#{tipoSol.clave}" itemValue="#{tipoSol.idTipoSolucion}"/>
+                                        <p:ajax event="itemSelect" 
+                                                listener="#{notaDispenColectMB.obtenerListaHorarios}" />
+                                    </p:selectOneMenu>
+                                    <p:spacer width="10px;" />
+                                    <p:outputLabel style="margin-right: 1px;" value="F. Inicio: " />
+                                    <p:calendar id="txtFechaEntrega3" title="Fecha Programada" size="7"
+                                                value="#{notaDispenColectMB.fechaParaEntregarNotasE}"
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yy HH:mm"
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade" />
+                                    <p:spacer width="10px;" />
+                                    <p:outputLabel style="margin-right: 1px;" value="F. Fin: " />
+                                    <p:calendar id="txtFechaEntregaFin3" title="Fecha Programada" size="7"
+                                                value="#{notaDispenColectMB.fechaParaEntregarFinNotasE}"
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yy HH:mm"
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade" />
+
+                                    <p:selectCheckboxMenu id="menu3" value="#{notaDispenColectMB.tipoPrescripcionSelectedList}" label="Tipo" 
+                                                          filter="true" filterMatchMode="startsWith" panelStyle="width:110px" style="width: 110px;"
+                                                          rendered="false" >
+                                        <f:selectItem value="#{N}" itemLabel="Normal" itemValue="N" />
+                                        <f:selectItem value="#{U}" itemLabel="Urgente" itemValue="U" />
+                                        <f:selectItem value="#{D}" itemLabel="Dosis Única" itemValue="D" />
+                                    </p:selectCheckboxMenu>
+                                    <p:spacer width="20px;" />
+                                    <p:inputText id="busqueda3" 
+                                                 value="#{notaDispenColectMB.cadenaBusquedaNotasE}" 
+                                                 class="textSearch"
+                                                 style="width: 12% !important;" 
+                                                 placeholder="Buscar..." title="Buscar por Número de Cama, Paciente o Servicio" />
+                                    <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />
+                                    <p:spacer width="10px" />
+                                    <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                                     onclick="PF('statusProcess').show();"
+                                                     oncomplete="PF('statusProcess').hide(); if(args.modal){PF(':formSurtimientoDetail').show();}"
+                                                     actionListener="#{notaDispenColectMB.buscaNotasEntregadas()}"
+                                                     update="tblNotas2"  />
+                                </div>
+                                
+                                <p:panel id="dataTableNotas2" style="margin:0px 0px;">
+                                    <p:dataTable id="tblNotas2" widgetVar="tblNotas"                                         
+                                                 value="#{notaDispenColectMB.notaDispenColectLista}"
+                                                 selection="#{notaDispenColectMB.notaDispenColectSelected}"
+                                                 var="ndce" rowKey="#{ndce.idNotaDispenColect}"
+                                                 lazy="false" selectionMode="single"
+                                                 style="margin-bottom:5px;" styleClass="mystyle"
+                                                 scrollRows="10" scrollable="true" scrollHeight="450"
+                                                 emptyMessage="No se encontraron Registros"
+                                                 reflow="true"
+                                                 paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                                 currentPageReportTemplate=" "
+                                                 paginator="true" rows="150"
+                                                 paginatorPosition="bottom" >
+
+                                        <f:facet name="footer" >
+                                            <p:outputLabel class="footerLabel"
+                                                           value="#{notaDispenColectMB.notaDispenColectLista.size()} Notas de dispensacion colectiva. " />
+                                        </f:facet>
+
+                                        <p:ajax event="rowDblselect" 
+                                                listener="#{notaDispenColectMB.verNota}" 
+                                                update=":frmDispecolec "
+                                                onstart="PF('statusProcess').show()"
+                                                oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('modalDispecolec').show(); }" />
+
+                                        <p:column style="text-align: left; width: 6% "
+                                                  sortBy="#{ndce.tipoSolucion}" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Mezcla" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.tipoSolucion}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 10% "
+                                                  sortBy="#{ndce.folio}" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Folio" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.folio}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 10% "
+                                                  sortBy="#{ndce.fechaEntrega}" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Fecha Entrega" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.fechaEntrega}" >
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                            </h:outputText>
+                                        </p:column>
+                                        
+
+                                        <p:column style="text-align: left; width: 18% " 
+                                                  sortBy="#{ndce.nombreUsuarioEntrega}">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Usuario Entrega" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.nombreUsuarioEntrega}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 10% "
+                                                  sortBy="#{ndce.fechaDispensa}" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Fecha Dispensa" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.fechaDispensa}" >
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 18% " 
+                                                  sortBy="#{ndce.nombreUsuarioDispensa}">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Usuario Dispensa" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.nombreUsuarioDispensa}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 14% " sortBy="#{ndce.nombreEstructura}">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Servicio " />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.nombreEstructura}"  class="limitCarater"/>
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 6% ">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Estatus" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.estatusNotaDispencolect}" />
+                                        </p:column>
+
+                                        <p:column style="width: 6%;" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Acciones"  />
+                                            </f:facet>
+                                            <p:commandLink id="linkImprimirNota" onclick="PF('statusProcess').show();" title="Imprimir Orden de Preparación" 
+                                                           oncomplete="PF('statusProcess').hide();if(args.estatus) {PF('mdlReport').show();}"
+                                                           actionListener="#{notaDispenColectMB.imprimeNotaDispenColectiva(ndce)}"
+                                                           update="formPDF"
+                                                           styleClass="iconMusAzul" >
+                                                <i class="fa fa-print"  style="font-size: large" />
+                                            </p:commandLink>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </p:tab>
+                            
+                            <p:tab title="NO ENTREGADAS" id="#{notaDispenColectMB.mezclaNoEntregada}" >
+                                
+                                <div id="busqueda" style="height: 30px !important;">
+                                    <p:outputLabel style="margin-right: 1px;" value="Servicio : " />
+                                    <p:selectOneMenu id="comboServicios4" title="Área o Servicio"
+                                                     value="#{notaDispenColectMB.idEstructuraNotasN}"
+                                                     filter="true" filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Seleccione Área" itemValue="#{null}"/>
+                                        <f:selectItems value="#{notaDispenColectMB.listServiciosQueSurte}"
+                                                       var="servicio"
+                                                       itemValue="#{servicio.idEstructura}"
+                                                       itemLabel="#{servicio.nombre}" />
+                                    </p:selectOneMenu>
+                                    <p:spacer width="10px;" />
+                                    <p:outputLabel style="margin-right: 1px;" value="Tipo Mezcla : " />
+                                    <p:selectOneMenu id="tipoSolucion4" style="vertical-align: middle;"
+                                                     value="#{notaDispenColectMB.idTipoSolucionNotasN}"
+                                                     filter="true" filterMatchMode="contains" >
+                                        <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}"/>
+                                        <f:selectItems value="#{notaDispenColectMB.tipoSolucionList}" var="tipoSol"
+                                                       itemLabel="#{tipoSol.clave}" itemValue="#{tipoSol.idTipoSolucion}"/>
+                                        <p:ajax event="itemSelect" 
+                                                listener="#{notaDispenColectMB.obtenerListaHorarios}" />
+                                    </p:selectOneMenu>
+                                    <p:spacer width="10px;" />
+                                    <p:outputLabel style="margin-right: 1px;" value="F. Inicio: " />
+                                    <p:calendar id="txtFechaEntrega4" title="Fecha Programada" size="7"
+                                                value="#{notaDispenColectMB.fechaParaEntregarNotasN}"
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yy HH:mm"
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade" />
+                                    <p:spacer width="10px;" />
+                                    <p:outputLabel style="margin-right: 1px;" value="F. Fin: " />
+                                    <p:calendar id="txtFechaEntregaFin4" title="Fecha Programada" size="7"
+                                                value="#{notaDispenColectMB.fechaParaEntregarFinNotasN}"
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yy HH:mm"
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade" />
+
+                                    <p:selectCheckboxMenu id="menu4" value="#{notaDispenColectMB.tipoPrescripcionSelectedList}" label="Tipo" 
+                                                          filter="true" filterMatchMode="startsWith" panelStyle="width:110px" style="width: 110px;"
+                                                          rendered="false" >
+                                        <f:selectItem value="#{N}" itemLabel="Normal" itemValue="N" />
+                                        <f:selectItem value="#{U}" itemLabel="Urgente" itemValue="U" />
+                                        <f:selectItem value="#{D}" itemLabel="Dosis Única" itemValue="D" />
+                                    </p:selectCheckboxMenu>
+                                    <p:spacer width="20px;" />
+                                    <p:inputText id="busqueda4" 
+                                                 value="#{notaDispenColectMB.cadenaBusquedaNotasN}" 
+                                                 class="textSearch"
+                                                 style="width: 12% !important;" 
+                                                 placeholder="Buscar..." title="Buscar por Número de Cama, Paciente o Servicio" />
+                                    <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />
+                                    <p:spacer width="10px" />
+                                    <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                                     onclick="PF('statusProcess').show();"
+                                                     oncomplete="PF('statusProcess').hide(); if(args.modal){PF(':formSurtimientoDetail').show();}"
+                                                     actionListener="#{notaDispenColectMB.buscaNotasNoEntregadas()}"
+                                                     update="tblNotas2"  />
+                                </div>
+                                
+                                <p:panel id="dataTableNotas3" style="margin:0px 0px;">
+                                    <p:dataTable id="tblNotas3" widgetVar="tblNotas"                                         
+                                                 value="#{notaDispenColectMB.notaDispenColectLista}"
+                                                 selection="#{notaDispenColectMB.notaDispenColectSelected}"
+                                                 var="ndce" rowKey="#{ndce.idNotaDispenColect}"
+                                                 lazy="false" selectionMode="single"
+                                                 style="margin-bottom:5px;" styleClass="mystyle"
+                                                 scrollRows="10" scrollable="true" scrollHeight="450"
+                                                 emptyMessage="No se encontraron Registros"
+                                                 reflow="true"
+                                                 paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                                 currentPageReportTemplate=" "
+                                                 paginator="true" rows="150"
+                                                 paginatorPosition="bottom" >
+
+                                        <f:facet name="footer" >
+                                            <p:outputLabel class="footerLabel"
+                                                           value="#{notaDispenColectMB.notaDispenColectLista.size()} Notas de dispensacion colectiva. " />
+                                        </f:facet>
+
+                                        <p:ajax event="rowDblselect" 
+                                                listener="#{notaDispenColectMB.verNota}" 
+                                                update=":frmDispecolec "
+                                                onstart="PF('statusProcess').show()"
+                                                oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('modalDispecolec').show(); }" />
+
+                                        <p:column style="text-align: left; width: 6% "
+                                                  sortBy="#{ndce.tipoSolucion}" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Mezcla" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.tipoSolucion}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 10% "
+                                                  sortBy="#{ndce.folio}" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Folio" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.folio}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 10% "
+                                                  sortBy="#{ndce.fechaEntrega}" rendered="false" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Fecha Entrega" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.fechaEntrega}" >
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 18% " 
+                                                  sortBy="#{ndce.nombreUsuarioEntrega}">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Usuario Entrega" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.nombreUsuarioEntrega}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 10% "
+                                                  sortBy="#{ndce.fechaDispensa}" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Fecha Dispensa" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.fechaDispensa}" >
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 18% " 
+                                                  sortBy="#{ndce.nombreUsuarioDispensa}">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Usuario Dispensa" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.nombreUsuarioDispensa}" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 14% " sortBy="#{ndce.nombreEstructura}">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Servicio " />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.nombreEstructura}"  class="limitCarater"/>
+                                        </p:column>
+
+                                        <p:column style="text-align: left; width: 6% ">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Estatus" />
+                                            </f:facet>
+                                            <h:outputText value="#{ndce.estatusNotaDispencolect}" />
+                                        </p:column>
+
+                                        <p:column style="width: 6%;" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Acciones"  />
+                                            </f:facet>
+                                            <p:commandLink id="linkImprimirNota" onclick="PF('statusProcess').show();" title="Imprimir Orden de Preparación" 
+                                                           oncomplete="PF('statusProcess').hide();if(args.estatus) {PF('mdlReport').show();}"
+                                                           actionListener="#{notaDispenColectMB.imprimeNotaDispenColectiva(ndce)}"
+                                                           update="formPDF"
+                                                           styleClass="iconMusAzul" >
+                                                <i class="fa fa-print"  style="font-size: large" />
+                                            </p:commandLink>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </p:tab>
+                        </p:tabView>
+
+                    </h:form>
+                </div>
+
+                <p:dialog header="NOTA DE DISPENSACIÓN COLECTIVA"
+                          widgetVar="modalDispecolec"
+                          closeOnEscape="true"
+                          closable="true"
+                          width="95%"
+                          height="550px" 
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:x-small !important;">
+                    <h:form id="frmDispecolec">
+
+                        <p:messages id="msgValidaRegistro" showDetail="false" globalOnly="false" closable="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <div class="ui-g"  >
+                            <div class="ui-g-12"  >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                    <p:outputLabel style="margin-right: 1px;" value="Folio : " />
+                                    <p:outputLabel class="textoNegrita"  
+                                                   value="#{notaDispenColectMB.notaDispenColectSelected.folio}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                    <p:outputLabel style="margin-right: 1px;" value="Fecha de entrega : " />
+                                    <p:calendar value="#{notaDispenColectMB.notaDispenColectSelected.fechaEntrega}"
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                title="Fecha de Entrega" 
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade" required="true"
+                                                requiredMessage="Capture fecha de entrega"
+                                                validatorMessage="Fecha y hora de entrega inválida" 
+                                                size="12"
+                                                disabled="#{ (notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 1 and notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 3) }" >
+                                    </p:calendar>
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                    <p:outputLabel style="margin-right: 1px;" value="Servicio : " />
+                                    <p:selectOneMenu id="comboServicioDistribuye" title="Área o Servicio"
+                                                     value="#{notaDispenColectMB.notaDispenColectSelected.idEstructura}"
+                                                     required="false" requiredMessage="Seleccione Área o Servicio"
+                                                     filter="true" filterMatchMode="contains"
+                                                     style="vertical-align: middle; "
+                                                     disabled="#{ (notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 1 and notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 3) }"  >
+                                        <f:selectItem itemLabel="Seleccione Área" itemValue="#{null}"/>
+                                        <f:selectItems value="#{notaDispenColectMB.listServiciosQueSurte}"
+                                                       var="servicio"
+                                                       itemValue="#{servicio.idEstructura}"
+                                                       itemLabel="#{servicio.nombre}" />
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                    <p:outputLabel style="margin-right: 1px;" value="Estatus : " />
+                                    <p:outputLabel class="textoNegrita"  
+                                                   value="#{notaDispenColectMB.notaDispenColectSelected.estatusNotaDispencolect}" />
+                                </div>
+                            </div>
+
+                            <div class="ui-g-12"  >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                    <p:outputLabel style="margin-right: 1px;" value="Turno : " />
+                                    <p:selectOneMenu id="comboTurnoDistribuye" title="Turno"
+                                                     value="#{notaDispenColectMB.notaDispenColectSelected.idTurno}"
+                                                     required="true" requiredMessage="Debe seleccionar el Turno"
+                                                     filter="true" filterMatchMode="contains"
+                                                     style="vertical-align: middle; "
+                                                     disabled="#{ (notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 1 and notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 3) }"  >
+                                        <f:selectItem itemLabel="Seleccione turno" itemValue="#{null}"/>
+                                        <f:selectItems value="#{notaDispenColectMB.turnoLista}"
+                                                       var="turno"
+                                                       itemValue="#{turno.idTurno}"
+                                                       itemLabel="#{turno.nombre}" />
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                    <p:outputLabel style="margin-right: 1px;" value="Usuario Entrega : " />
+                                    <p:autoComplete id="txtUsuarioEntrega" 
+                                                    value="#{notaDispenColectMB.usuarioEntrega}" 
+                                                    completeMethod="#{notaDispenColectMB.autocompleteUsuario}" 
+                                                    minQueryLength="3" queryDelay="500" 
+                                                    maxResults="20" forceSelection="true" 
+                                                    cacheTimeout="0" cache="false"
+                                                    placeholder="Seleccione Usuario" emptyMessage="No se encontraron registros"
+                                                    var="usrEntrega" itemValue="#{usrEntrega}" 
+                                                    itemLabel="#{usrEntrega.nombre} #{usrEntrega.apellidoPaterno} #{usrEntrega.apellidoMaterno}" 
+                                                    converter="medicoConverter"
+                                                    scrollHeight = "200"
+                                                    disabled="#{ (notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 1 and notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 3) }"  >
+                                        <p:ajax event="itemSelect" 
+                                                listener="#{notaDispenColectMB.seleccionarUsuario}" />
+
+                                        <p:column style="width: 80px; font-size: small;" width="20px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Nombre" />
+                                            </f:facet>
+                                            <h:outputText value="#{usrEntrega.nombre}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width:80px; font-size: small;" width="350px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Apellido Paterno" />
+                                            </f:facet>
+                                            <h:outputText value="#{usrEntrega.apellidoPaterno}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width: 80px; font-size: small;" width="350px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Apellido Materno" />
+                                            </f:facet>
+                                            <h:outputText value="#{usrEntrega.apellidoMaterno}" style=" font-size: small;" />
+                                        </p:column>
+                                    </p:autoComplete>
+                                </div>
+
+                                <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                    <p:outputLabel style="margin-right: 1px;" value="Comentarios : " />
+                                    <p:inputTextarea id="txtComentariosDistribuye"
+                                                     rows="1" cols="30" counter="txtComentDistribu" maxlength="100"
+                                                     counterTemplate=" {0} Caracteres." autoResize="false"
+                                                     value="#{notaDispenColectMB.notaDispenColectSelected.comentarios}"
+                                                     disabled="#{ (notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 1 and notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 3) }"  />
+                                    <h:outputText id="txtComentDistribu"   />
+                                </div>
+                            </div>
+                            <br />
+                            <div class="ui-g-12"  >
+                                <p:dataTable id="tblDispenColect"
+                                             widgetVar="tblDispenColect"                                     
+                                             value="#{notaDispenColectMB.notaDispenColectDetalleLista}"
+                                             lazy="false"
+                                             var="mezc"
+                                             selection="#{notaDispenColectMB.notaDispenColectDetalleSelected}"
+                                             rowKey="#{mezc.idNotaDispenColect}"
+                                             selectionMode="single"
+                                             style="margin-bottom:5px;"
+                                             styleClass="mystyle"
+                                             scrollRows="10" scrollable="true" scrollHeight="350"
+                                             emptyMessage="No se encontraron Registros"
+                                             reflow="true" >
+                                    <p:column style="text-align: left; width: 6% "
+                                              sortBy="#{mezc.tipoPrescripcion}" exportable="false" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Tipo" />
+                                        </f:facet>
+                                        <p:outputPanel rendered="#{mezc.tipoPrescripcion eq 'N'}" >
+                                            <img src="#{request.contextPath}/resources/img/cpnormal.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                            <p:spacer width="8px"/>
+                                            <h:outputText value="Normal"/>
+                                        </p:outputPanel>
+                                        <p:outputPanel rendered="#{mezc.tipoPrescripcion eq 'U'}" >
+                                            <img src="#{request.contextPath}/resources/img/cpurgente.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                            <p:spacer width="8px"/>
+                                            <h:outputText value="Urgente"/>
+                                        </p:outputPanel>
+                                        <p:outputPanel rendered="#{mezc.tipoPrescripcion eq 'D'}" >
+                                            <img src="#{request.contextPath}/resources/img/cpunica.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                            <p:spacer width="8px"/>
+                                            <h:outputText value="Dosis Única"/>
+                                        </p:outputPanel>
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 6% "
+                                              sortBy="#{mezc.tipoSolucion}" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Mezcla" />
+                                        </f:facet>
+                                        <h:outputText value="#{mezc.tipoSolucion}" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 10% " 
+                                              sortBy="#{mezc.fechaParaEntregar}" rendered="false" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Fecha Entrega" />
+                                        </f:facet>
+                                        <h:outputText value="#{mezc.fechaParaEntregar}" >
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 10% " 
+                                              sortBy="#{mezc.fechaProgramada}" rendered="true" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Fecha" />
+                                        </f:facet>
+                                        <h:outputText value="#{mezc.fechaProgramada}" >
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 10% "
+                                              sortBy="#{mezc.folio}" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Folio" />
+                                        </f:facet>
+                                        <h:outputText value="#{mezc.folio}" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 10% " 
+                                              sortBy="#{mezc.nombreEstructura}">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Servicio " />
+                                        </f:facet>
+                                        <h:outputText value="#{mezc.nombreEstructura}"  class="limitCarater"/>
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 20% " 
+                                              sortBy="#{mezc.nombrePaciente}">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Paciente" />
+                                        </f:facet>
+                                        <h:outputText value="#{mezc.nombrePaciente}" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 20% " 
+                                              sortBy="#{mezc.nombreMedico}" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Médico" />
+                                        </f:facet>
+
+                                        <h:outputText value="#{mezc.nombreMedico}" class="limitCarater" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 12% " >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Comentarios" />
+                                        </f:facet>
+                                        <h:inputText style="border: 2px solid graytext !important; border-radius: 4px !important;"
+                                                     value="#{mezc.comentarios}" maxlength="45" size="15" 
+                                                     rendered="#{ (notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect eq 1 or notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect eq 3) }" />
+                                        <h:outputText style="border: 2px solid graytext !important; border-radius: 4px !important;"
+                                                      value="#{mezc.comentarios}" 
+                                                      rendered="#{ (notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 1 and notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 3) }" />
+                                    </p:column>
+                                    <p:column style="text-align: left; width: 3% " >
+                                        <p:commandLink title="Eliminar" onclick="PF('statusProcess').show()"
+                                                       oncomplete="PF('statusProcess').hide();"
+                                                       actionListener="#{notaDispenColectMB.eliminarMezclaDeLista(mezc)}"
+                                                       update="tblDispenColect "
+                                                       rendered="#{notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect eq 1 or notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect eq 3 }" >
+                                            <i class="fa fa-trash iconMusRojo" style="font-size: large !important;" />
+                                        </p:commandLink>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                            <br/>
+                            <br/>
+                            <div class="ui-g-12"  >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                    <p:outputLabel style="margin-right: 1px;" value="Usuario Distribuye : "
+                                                   rendered="#{ notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect &gt; 1}" />
+                                    <p:autoComplete id="txtUsuarioDispensa" 
+                                                    value="#{notaDispenColectMB.usuarioDistribuye}" 
+                                                    completeMethod="#{notaDispenColectMB.autocompleteUsuario}" 
+                                                    minQueryLength="3" queryDelay="500" 
+                                                    maxResults="20" forceSelection="true" 
+                                                    cacheTimeout="0" cache="false"
+                                                    placeholder="Seleccione Usuario" emptyMessage="No se encontraron registros"
+                                                    var="usrEntrega" itemValue="#{usrEntrega}" 
+                                                    itemLabel="#{usrEntrega.nombre} #{usrEntrega.apellidoPaterno} #{usrEntrega.apellidoMaterno}" 
+                                                    converter="medicoConverter"
+                                                    scrollHeight = "200"
+                                                    disabled="#{ (notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 1 and notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 3) }"
+                                                    rendered="#{ notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect &gt; 1}" >
+                                        <p:ajax event="itemSelect" 
+                                                listener="#{notaDispenColectMB.seleccionarUsuario}" />
+                                        <p:column style="width: 80px; font-size: small;" width="20px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Nombre" />
+                                            </f:facet>
+                                            <h:outputText value="#{usrEntrega.nombre}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width:80px; font-size: small;" width="350px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Apellido Paterno" />
+                                            </f:facet>
+                                            <h:outputText value="#{usrEntrega.apellidoPaterno}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width: 80px; font-size: small;" width="350px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Apellido Materno" />
+                                            </f:facet>
+                                            <h:outputText value="#{usrEntrega.apellidoMaterno}" style=" font-size: small;" />
+                                        </p:column>
+                                    </p:autoComplete>
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                    <p:outputLabel style="margin-right: 1px;" value="Usuario Recibe : "
+                                                   rendered="#{ notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect &gt; 1}" />
+                                    <!-- Se cambia por campo de texto por petición del cliente -->
+                                    <p:inputText id="txtUsuarioRecibe" value="#{notaDispenColectMB.userRecibe}"
+                                                 disabled="#{ (notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 1 and notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 3) }" 
+                                                    rendered="#{ notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect &gt; 1}" ></p:inputText>
+                                    <!-- p:autoComplete id="txtUsuarioRecibe" 
+                                                    value="# {notaDispenColectMB.usuarioRecibe}" 
+                                                    completeMethod="# {notaDispenColectMB.autocompleteUsuario}" 
+                                                    minQueryLength="3" queryDelay="500" 
+                                                    maxResults="20" forceSelection="true" 
+                                                    cacheTimeout="0" cache="false"
+                                                    placeholder="Seleccione Usuario" emptyMessage="No se encontraron registros"
+                                                    var="usrEntrega" itemValue="# {usrEntrega}" 
+                                                    itemLabel="# {usrEntrega.nombre} # {usrEntrega.apellidoPaterno} # {usrEntrega.apellidoMaterno}" 
+                                                    converter="medicoConverter"
+                                                    scrollHeight = "200"
+                                                    disabled="# { (notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 1 and notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect ne 3) }" 
+                                                    rendered="# { notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect &gt; 1}" >
+                                        <p:ajax event="itemSelect" 
+                                                listener="# {notaDispenColectMB.seleccionarUsuario}" />
+                                        <p:column style="width: 80px; font-size: small;" width="20px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Nombre" />
+                                            </f:facet>
+                                            <h:outputText value="# {usrEntrega.nombre}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width:80px; font-size: small;" width="350px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Apellido Paterno" />
+                                            </f:facet>
+                                            <h:outputText value="# {usrEntrega.apellidoPaterno}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width: 80px; font-size: small;" width="350px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Apellido Materno" />
+                                            </f:facet>
+                                            <h:outputText value="# {usrEntrega.apellidoMaterno}" style=" font-size: small;" />
+                                        </p:column>
+                                    </p:autoComplete -->
+                                    
+                                </div>
+                            </div>
+                            <br />
+                            <br />        
+                        </div>
+                        <div class="ui-g-12" style=" width: 100% !important; /*position: absolute; bottom: 0px;*/ background-color: #f8f8f8; border-top: solid 2px #C8C8C8;  " >
+                            <div class="ui-g-12 ui-md-6 ui-lg-3" style="display: flex; align-content: center; justify-content: space-between; float: right;" >
+                                <div>
+                                    <p:commandButton title="Cerrar" value="Cerrar" immediate="true"
+                                                     styleClass="btnMusGris" icon="fa fa-times-circle" 
+                                                     onclick="PF('modalDispecolec').hide();"
+                                                     actionListener="#{notaDispenColectMB.cierraListaDistribucion}"  
+                                                     update="frmDispecolec" />
+                                </div>
+                                <div >
+                                    <p:commandButton value="Guardar" title="Guardar Nota de Dispensación Colectiva"
+                                                     styleClass="btnMusAzul" style="margin-top: 5px; margin-bottom: 5px;"
+                                                     onclick="PF('statusProcess').show();" 
+                                                     oncomplete="PF('statusProcess').hide();if(args.estatus) { PF('dlgCofirmaConfirmRegistro').show(); }"
+                                                     update=":frmCofirmaConfirmRegistro"
+                                                     process="@all" 
+                                                     actionListener="#{notaDispenColectMB.validaNotaDispenColec}"
+                                                     rendered="#{ notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect eq 1 or notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect eq 3}"/>
+                                </div>
+                                <div >
+                                    <p:commandButton value="Entregar" 
+                                                     styleClass="btnMusAzul" style="margin-top: 5px; margin-bottom: 5px;"
+                                                     onclick="PF('statusProcess').show();" 
+                                                     oncomplete="PF('statusProcess').hide();if(args.estatus) { PF('dlgCofirmaConfirmRegistroEntrega').show(); }"
+                                                     update=":frmCofirmaConfirmRegistroEntrega"
+                                                     process="@all" 
+                                                     actionListener="#{notaDispenColectMB.validaNotaDispenColec}" 
+                                                     rendered="#{ notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect eq 3 }"
+                                                     />
+                                </div>
+                                <div >
+                                    <p:commandButton value="Cancelar" immediate="true"
+                                                     icon="fa fa-times-circle" 
+                                                     styleClass="btnMusRed" style="margin-top: 5px; margin-bottom: 5px;"
+                                                     onclick="PF('statusProcess').show();" 
+                                                     oncomplete="PF('statusProcess').hide();if(args.estatus) { PF('dlgCofirmaConfirmRegistroCancela').show(); }"
+                                                     update=":frmCofirmaConfirmRegistroCancela"
+                                                     process="@all" 
+                                                     actionListener="#{notaDispenColectMB.validaNotaDispenColec}"
+                                                     rendered="#{ notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect eq 3 or notaDispenColectMB.notaDispenColectSelected.idEstatusDispenColect eq 4 }" />
+                                </div>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="CONFIRMACIÓN DE REGISTRO"
+                          widgetVar="dlgCofirmaConfirmRegistro"
+                          closeOnEscape="true" closable="true"
+                          modal="true" resizable="false" responsive="true"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="frmCofirmaConfirmRegistro" >
+                        <p:messages id="msgCofirmaConfirmRegistro" globalOnly="false" showDetail="false" closable="true" />
+                        <br/>
+                        <p:outputLabel value="Desea guardar la Nota de Dispensación Colectiva ?"
+                                       style="font-weight: bold;" />
+                        <br/>
+                        <br/>
+                        <p:commandButton id="btnConfirmRegistraNota" value="Si" styleClass="btnMusAzul" 
+                                         style="margin-right: 1px; float: right;"
+                                         onclick="PF('statusProcess').show();"
+                                         actionListener="#{notaDispenColectMB.registrarNotaDispenColectiva()}" 
+                                         oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('dlgCofirmaConfirmRegistro').hide(); PF('modalDispecolec').hide(); PF('mdlReport').show(); } "
+                                         update=":mainForm, :frmCofirmaConfirmRegistro, :formPDF " />
+
+                        <p:commandButton title="No" value="No" styleClass="btnMusBoolGris" 
+                                         style="margin-right: 1px; float: right;"
+                                         update=":frmCofirmaConfirmRegistro"
+                                         oncomplete="PF('dlgCofirmaConfirmRegistro').hide();" />
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="CONFIRMACIÓN DE REGISTRO DE ENTREGA"
+                          widgetVar="dlgCofirmaConfirmRegistroEntrega"
+                          closeOnEscape="true" closable="true"
+                          modal="true" resizable="false" responsive="true"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="frmCofirmaConfirmRegistroEntrega" >
+                        <p:messages id="msgCofirmaConfirmRegistro" globalOnly="false" showDetail="false" closable="true" />
+                        <br/>
+                        <p:outputLabel value="Desea registrar la entrega de la Nota de Dispensación Colectiva ?"
+                                       style="font-weight: bold;" />
+                        <br/>
+                        <br/>
+                        <p:commandButton id="btnConfirmRegistraNota" value="Si" styleClass="btnMusAzul" 
+                                         style="margin-right: 1px; float: right;"
+                                         onclick="PF('statusProcess').show();"
+                                         actionListener="#{notaDispenColectMB.confirmarEntregaNotaDispenColectiva()}" 
+                                         oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('dlgCofirmaConfirmRegistroEntrega').hide(); PF('modalDispecolec').hide(); PF('mdlReport').show(); } "
+                                         update=":mainForm, :frmCofirmaConfirmRegistroEntrega, :formPDF " />
+
+                        <p:commandButton title="No" value="No" styleClass="btnMusBoolGris" 
+                                         style="margin-right: 1px; float: right;"
+                                         update=":frmCofirmaConfirmRegistroEntrega"
+                                         oncomplete="PF('dlgCofirmaConfirmRegistroEntrega').hide();" />
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="CONFIRMACIÓN DE CANCELACION DE DISPENSACION COLECTIVA"
+                          widgetVar="dlgCofirmaConfirmRegistroCancela"
+                          closeOnEscape="true" closable="true"
+                          modal="true" resizable="false" responsive="true"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="frmCofirmaConfirmRegistroCancela" >
+                        <p:messages id="msgCofirmaConfirmRegistroCancela" globalOnly="false" showDetail="false" closable="true" />
+                        <br/>
+                        <p:outputLabel value="Desea cancelar de la Nota de Dispensación Colectiva ?"
+                                       style="font-weight: bold;" />
+                        <br/>
+                        <br/>
+                        <p:commandButton id="btnConfirmRegistraNota" value="Si" styleClass="btnMusAzul" 
+                                         style="margin-right: 1px; float: right;"
+                                         onclick="PF('statusProcess').show();"
+                                         actionListener="#{notaDispenColectMB.cancelarNotaDispenColectiva()}" 
+                                         oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('dlgCofirmaConfirmRegistroCancela').hide(); PF('modalDispecolec').hide(); } "
+                                         update=":mainForm, :frmCofirmaConfirmRegistro, :formPDF " />
+
+                        <p:commandButton title="No" value="No" styleClass="btnMusBoolGris" 
+                                         style="margin-right: 1px; float: right;"
+                                         update=":frmCofirmaConfirmRegistro"
+                                         oncomplete="PF('dlgCofirmaConfirmRegistro').hide();" />
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="INFORMACIÓN DE MEZCLA"
+                          widgetVar="modalSolucion"
+                          closeOnEscape="true"
+                          closable="true"
+                          width="95%"
+                          height="650px" 
+                          position="30,10"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formSurtimientoDetail"  >                        
+                        <p:messages id="msgValidaRegistro" showDetail="false" globalOnly="false" closable="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <div class="ui-g"  >
+
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Folio Surtimiento:</p:outputLabel>
+                                    <p:outputLabel class="textoNegrita"  value="#{notaDispenColectMB.surtimientoExtendedSelected.folio}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Fecha Registro</p:outputLabel>
+                                    <p:outputLabel  class="textoNegrita"  value="#{notaDispenColectMB.surtimientoExtendedSelected.insertFecha}">
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                    </p:outputLabel>
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Estatus:</p:outputLabel>
+                                    <p:outputLabel id="estatusSurtimiento" value="#{notaDispenColectMB.surtimientoExtendedSelected.estatusSurtimiento}" ></p:outputLabel>
+                                </div>
+                            </div>
+
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel >Folio Prescripción:</p:outputLabel>
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.folioPrescripcion}"
+                                                    class="textoNegrita lbl-subtitulo" />
+                                    <p:outputLabel class="lbl-Tipo-PrescripcionNormal" value="Normal" rendered="#{notaDispenColectMB.surtimientoExtendedSelected.tipoPrescripcion eq 'N'}" />
+                                    <p:outputLabel class="lbl-Tipo-PrescripcionUnica" value="Única" rendered="#{notaDispenColectMB.surtimientoExtendedSelected.tipoPrescripcion eq 'D'}" />
+                                    <p:outputLabel class="lbl-Tipo-PrescripcionUrgente" value="Urgente" rendered="#{notaDispenColectMB.surtimientoExtendedSelected.tipoPrescripcion eq 'U'}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Fecha Programada</p:outputLabel>
+                                    <p:outputLabel  class="textoNegrita"  value="#{notaDispenColectMB.surtimientoExtendedSelected.fechaProgramada}">
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                    </p:outputLabel>
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel for="tipoPrescripcion" style="margin-right: 1px;">Tipo Prescripción:</p:outputLabel>
+                                    <p:selectOneMenu id="tipoPrescripcion" value="#{notaDispenColectMB.surtimientoExtendedSelected.tipoPrescripcion}" label="Tipo de Prescripción"
+                                                     title="Tipo de Prescripción" autoWidth="true" style="vertical-align: middle;" disabled="true"
+                                                     required="true" requiredMessage="Debe seleccionar un Tipo de Prescripción">
+                                        <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                        <f:selectItem itemLabel="Normal" itemValue="N" />
+                                        <f:selectItem itemLabel="Urgente" itemValue="U" />
+                                        <f:selectItem itemLabel="Dosis Única" itemValue="D" />
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Área/Servicio:</p:outputLabel>
+                                    <p:outputLabel  class="textoNegrita" value="#{notaDispenColectMB.surtimientoExtendedSelected.nombreEstructura}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Cama:</p:outputLabel>
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.cama}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Médico Solicitante:</p:outputLabel>
+                                    <p:outputLabel  class="textoNegrita" value="#{notaDispenColectMB.surtimientoExtendedSelected.nombreMedico}" />
+                                </div>
+                            </div>
+
+
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel  value="Paciente: "/>
+                                    <p:outputLabel  class="textoNegrita" value="#{notaDispenColectMB.surtimientoExtendedSelected.nombrePaciente}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 0px;" value="No. Paciente:" />
+                                    <p:outputLabel style="margin-right: 0px;" class="textoNegrita" value="#{notaDispenColectMB.surtimientoExtendedSelected.pacienteNumero}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Tipo Consulta:</p:outputLabel>
+                                </div>
+                            </div>
+
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Edad" />
+                                    <p:outputLabel id="txtEdadPaciente" value="#{notaDispenColectMB.surtimientoExtendedSelected.edadPaciente}" /> años
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Peso:"  />
+                                    <p:outputLabel id="txtPesoPaciente" value="#{notaDispenColectMB.surtimientoExtendedSelected.pesoPaciente}" /> kg
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Estatura:"  />
+                                    <p:outputLabel id="txtTallaPaciente" value="#{notaDispenColectMB.surtimientoExtendedSelected.tallaPaciente}" /> mts
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Área:"  />
+                                    <p:outputLabel id="txtAreaPaciente" value="#{notaDispenColectMB.surtimientoExtendedSelected.areaCorporal}" /> m²
+                                </div>
+                            </div>
+
+                            <p:outputLabel value="INFORMACIÓN DE LA SOLUCIÓN"  class="plabel ui-g-12" />
+
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Tipo Solución:" />
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.tipoSolucion}" />
+                                </div>                            
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel style="margin-right: 1px;">Vía Administración:</p:outputLabel>
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.nombreViaAdministracion}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Contenedor: " />
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.nombreEnvaseContenedor}" />
+
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Volumen total:" />                                
+                                    <p:outputLabel value="#{notaDispenColectMB.surtimientoExtendedSelected.volumenTotal}" style="margin-bottom: 5px;" /> ml
+                                </div>
+                            </div>
+
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Perfusión Continua:" />
+                                    <p:outputLabel style="margin-right: 1px;" value="#{notaDispenColectMB.surtimientoExtendedSelected.perfusionContinua ? 'SI' : 'NO' }" />
+                                </div>                                
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Velocidad:" />
+                                    <p:outputLabel style="margin-right: 1px;" value="#{(notaDispenColectMB.surtimientoExtendedSelected.velocidad gt 0) ? notaDispenColectMB.surtimientoExtendedSelected.velocidad : ''}" />
+                                    <p:outputLabel value=" ml/h" />
+                                </div>
+                            </div>
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Protocolo:" />
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.nombreProtoclo}" />
+                                </div>
+                                <div style="width:75%; float:left;">
+                                    <p:outputLabel style="margin-right: 1px;">Diagnóstico:</p:outputLabel>
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.nombreDiagnostico}" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <p:dataTable id="tblInsumos" 
+                                     widgetVar="tblInsumos" 
+                                     value="#{notaDispenColectMB.surtimientoInsumoExtendedList}"
+                                     selection="#{notaDispenColectMB.surtimientoInsumoExtendedSelected}"                                     
+                                     var="item" 
+                                     rowKey="#{item.idSurtimientoInsumo}"
+                                     rowIndexVar="row"
+                                     selectionMode="single"
+                                     style="margin-bottom:5px;"
+                                     styleClass="mystyle"
+                                     scrollable="true" scrollHeight="250"
+                                     emptyMessage="No se encontraron Registros"
+                                     reflow="true"
+                                     disabledSelection="false" 
+                                     rendered="#{notaDispenColectMB.sizeSurtimientoInsumoExtendedList gt -1}" >
+                            <f:facet name="{Records}">
+                                <div style="float:left;">
+                                    <p:outputLabel class="footerLabel" 
+                                                   value="  # Insumos registrados: #{notaDispenColectMB.sizeSurtimientoInsumoExtendedList}" rendered="true" />
+                                </div>
+                            </f:facet>
+
+                            <p:column style="text-align: left; width: 8% "
+                                      sortBy="#{item.claveInstitucional}" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Clave" />
+                                </f:facet>
+                                <h:outputText value="#{item.claveInstitucional}" class="textoNegrita" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 55% "
+                                      sortBy="#{item.nombreCorto}" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Nombre" />
+                                </f:facet>
+                                <h:outputText value="#{item.nombreCorto}" title="#{item.nombreCorto}" class="limitText" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 8% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Dosis" />
+                                </f:facet>
+                                <h:outputText value="#{item.dosis} #{item.unidadConcentracion}" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 8% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Lote" />
+                                </f:facet>
+                                <h:outputText value="#{item.lote}" class="textoNegrita" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 8% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Caducidad" />
+                                </f:facet>
+                                <h:outputText value="#{item.caducidad}" class="textoNegrita" > 
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column style="text-align: left; width: 8% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Fabricante" />
+                                </f:facet>
+                                <h:outputText value="#{item.nombreFabricante}" class="textoNegrita" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 5% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Estab (hrs) " title="No. horas estabilidad" />
+                                </f:facet>
+                                <h:outputText value="#{item.noHorasestabilidad}" class="textoNegrita" />
+                            </p:column>
+                        </p:dataTable>                        
+
+                        <div class="ui-g" style="margin:0px; padding: 0px; " >
+                            <div class="ui-g-12" >
+                                <div style="width:40%; float:left;">
+                                    <p:outputLabel style="margin-right: 5px; font-weight: bold;" value="Instrucciones de Preparación:" />
+                                    <br/>
+                                    <p:inputTextarea id="txtInstruccionesPrep" rows="3" cols="80" disabled="true"
+                                                     value="#{notaDispenColectMB.surtimientoExtendedSelected.instruccionPreparacion}"
+                                                     style="margin-right: 10px; opacity: 99% !important;" />
+                                </div>
+                                <div style="width:10%; float:left;">
+                                    <p:spacer width="10" />
+                                </div>
+                                <div style="width:40%; float:left;">
+                                    <p:outputLabel style="margin-right: 5px; font-weight: bold;" value="Observaciones:"/>
+                                    <br/>
+                                    <p:inputTextarea id="txtCondicionesConser" rows="3" cols="80" disabled="true"
+                                                     value="#{notaDispenColectMB.surtimientoExtendedSelected.observaciones}" 
+                                                     style="margin-right: 10px; opacity: 99% !important;"/>
+                                </div>
+                            </div>
+
+                            <div class="ui-g-12" >
+                                <div style="width:45%; float:left;">
+                                    <p:selectBooleanCheckbox id="chkTemRefrigeracion" value="#{notaDispenColectMB.surtimientoExtendedSelected.tempRefrigeracion}" 
+                                                             itemLabel="Temp. Refrigeración" style="margin-bottom: 10px;" />
+                                    <p:selectBooleanCheckbox id="chkTemAmbiente" value="#{notaDispenColectMB.surtimientoExtendedSelected.tempAmbiente}" 
+                                                             itemLabel="Temp. Ambiente" style="margin-bottom: 10px;" />
+                                    <p:selectBooleanCheckbox id="chkProteccionLuz" value="#{notaDispenColectMB.surtimientoExtendedSelected.proteccionLuz}" 
+                                                             itemLabel="Protección de Luz" style="margin-bottom: 10px;" />
+                                    <p:selectBooleanCheckbox id="chkNoAgitar" value="#{notaDispenColectMB.surtimientoExtendedSelected.noAgitar}" 
+                                                             itemLabel="No agitar" style="margin-bottom: 10px;" />
+                                </div>
+                            </div>
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3" >
+                                    <p:outputLabel style="margin-right: 1px;" value="Clave Mezcla:" />
+                                    <p:inputText  value="#{notaDispenColectMB.claveMezcla}" size="10" />
+                                    <i class="fa fa-info-circle" 
+                                       style="color: #004890; font-weight: bold; font-size: large;"
+                                       title="Clave de identificación única de mezcla generada automáticamente." />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Lote Mezcla:" />
+                                    <p:inputText  value="#{notaDispenColectMB.loteMezcla}" size="10" />
+                                    <i class="fa fa-info-circle" 
+                                       style="color: #004890; font-weight: bold; font-size: large;"
+                                       title="Lote de mezcla generada automáticamente."/>
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Estabilidad" />
+                                    <p:inputText  value="#{notaDispenColectMB.estabilidadMezcla}" size="10" />
+                                    <i class="fa fa-info-circle" 
+                                       style="color: #004890; font-weight: bold; font-size: large;"
+                                       title="Número de horas de estabilidad mínimo de alguno de los insumos." />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Fecha máxima de uso: " />
+                                    <p:calendar  value="#{notaDispenColectMB.caducidadMezcla}"
+                                                 showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                 title="Fecha Programada" mindate="#{notaDispenColectMB.fechaActual}"
+                                                 pages="1" mask="true" showButtonPanel="true" effect="fade" required="true"
+                                                 size="10" 
+                                                 requiredMessage="Fecha de Caducidad Requerida"/>
+                                    <i class="fa fa-info-circle" 
+                                       style="color: #004890; font-weight: bold; font-size: large;"
+                                       title="Fecha de caducidad calculada con la fecha actual mas el número mínimo de horas de estabilidad." />
+                                </div>
+                            </div>
+                            <div class="ui-g-12" >
+                                <div style="width:40%; float:left;">
+                                    <p:outputLabel style="margin-right: 1px;" value="Comentarios:" />
+                                    <p:inputTextarea  rows="1" cols="40"
+                                                      value="#{notaDispenColectMB.solucionSelect.comentarioAcondicionada}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Almacenada:" />
+                                    <p:inputText id="almacenada" 
+                                                 value="#{notaDispenColectMB.solucionSelect.donde}" />
+                                    <i class="fa fa-info-circle" 
+                                       style="color: #004890; font-weight: bold; font-size: large;"
+                                       title="Ubicación donde se almacenará hasta la entrega." />|
+                                </div>
+                            </div>
+                        </div>
+
+                        <p:commandButton value="Cerrar" icon="fa fa-times-circle"  onclick="PF('modalSolucion').hide();"
+                                         style="margin-right: 10px;float: right;" /> 
+
+                    </h:form>
+                </p:dialog>                
+
+                <p:dialog header="MEZCLA NO ACONDICIONADA"
+                          widgetVar="mdlNoAcondicionada"
+                          closeOnEscape="true"
+                          closable="true"
+                          width="550px" 
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formCancelarSolucion"  >                        
+                        <p:messages id="msgCancelar" showDetail="false" globalOnly="false" closable="true">
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <div class="ui-g" style="margin:0px; padding: 0px; " >
+                            <div class="ui-g-12"  >                                              
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  style="margin:0px; padding: 0px;  width: 100%!important;">
+                                    <p:outputLabel class="textoNegrita lbl-subtitulo"  value="Seleccione el motivo:" />
+
+                                    <p:selectOneMenu style="width: 190px;vertical-align: middle;margin-right: 10px;" value="#{notaDispenColectMB.idMotivoRechazo}" 
+                                                     filter="true" filterPlaceholder="Motivo Incorrecto" >
+                                        <f:selectItem itemLabel="Seleccionar un Motivo" itemValue="0" />
+                                        <f:selectItems value="#{notaDispenColectMB.listaMotivosRechazo}" var="motivo" itemLabel="#{motivo.motivo}" itemValue="#{motivo.idMotivoRechazo}" />
+                                    </p:selectOneMenu>                                    
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ui-g" style="margin:0px; padding: 0px; " >
+                            <div class="ui-g-12"  >                                              
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  style="margin:0px; padding: 0px;  width: 100%!important;">
+                                    <p:outputLabel class="textoNegrita lbl-subtitulo"  value="Comentarios:" /><br/>
+                                    <p:inputTextarea  value="#{notaDispenColectMB.comentarios}" rows="3" cols="47"  autoResize="false"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <br/>
+                        <p:commandButton value="Confirmar" icon="fa fa-check-circle" style="margin-right: 10px;float: right;"
+                                         onclick="PF('statusProcess').show()" 
+                                         oncomplete="PF('statusProcess').hide(); if(args.estatus){PF('mdlNoAcondicionada').hide();PF('modalSolucion').hide();}"
+                                         actionListener="#{notaDispenColectMB.noAcondicionada()}" 
+                                         styleClass="btnMusAzul" update=":mainForm:tabs:tblSoluciones" > 
+                            <p:confirm header="Confirmación" message="¿Está seguro que es una Solución Incorrecta?" icon="ui-icon-alert" />
+                        </p:commandButton>
+
+                        <p:commandButton value="Cancelar"  icon="fa fa-times-circle" onclick="PF('mdlNoAcondicionada').hide();"                                          
+                                         style="margin-right: 10px;float: right;" /> 
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="Impresión de Etiqueta" width="550" id="modalEtiqueta"
+                          widgetVar="mdlPrint" closable="true"
+                          closeOnEscape="true" modal="true"                          
+                          style="font-size:xx-small !important;" >
+                    <h:form id="frmPrintSelect">
+                        <p:messages id="validaMsg" globalOnly="false" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <p:panelGrid style="padding: 10px !important;" columns="2" >
+                            <h:outputText value="Paciente : " />
+                            <h:outputText value="#{notaDispenColectMB.surtimientoExtendedSelected.nombrePaciente}"
+                                          style="width:400px; font-weight: bolder;" />
+
+                            <h:outputText value="Folio : " />
+                            <h:outputText value="#{notaDispenColectMB.solucionSelect.claveMezcla}"
+                                          style="width:400px; font-weight: bolder; " />
+
+                            <h:outputText value="Lote : " />
+                            <h:outputText value="#{notaDispenColectMB.solucionSelect.loteMezcla}"
+                                          style="width:400px; font-weight: bolder; "  />
+
+                            <h:outputText value="Caducidad Solución : " />
+                            <h:outputText value="#{notaDispenColectMB.solucionSelect.caducidadMezcla}"
+                                          style="width:400px; font-weight: bolder; "  >
+                                <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                            </h:outputText>
+
+                            <h:outputText value="Documento : "/>
+                            <p:selectOneMenu  value="#{notaDispenColectMB.tipoArchivoImprimir}" style="width:125px" >
+                                <f:selectItem itemLabel="Etiqueta" itemValue="#{notaDispenColectMB.docEtiqueta}" />
+                                <!--<f:selectItem itemLabel="Reporte" itemValue="# {notaDispenColectMB.docReporte}" />-->
+                                <p:ajax update="catImp,comboImpresora,btnTipNew,btnGenReporte" listener="#{notaDispenColectMB.changeDoctoImpresora}" />
+                            </p:selectOneMenu>
+
+                            <h:outputText value="Impresora : "/>
+
+                            <p:selectOneMenu id="comboImpresora" disabled="#{notaDispenColectMB.imprimeEtiqueta}" 
+                                             style="width: 290px;"  value="#{notaDispenColectMB.idPrintSelect}" >
+                                <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true"  />
+                                <f:selectItems  var="print" value="#{notaDispenColectMB.listaImpresoras}"  itemLabel="#{print.descripcion}" 
+                                                itemValue="#{print.idImpresora}" />
+                                <p:ajax update="btnTipNew" listener="#{notaDispenColectMB.changePrint}" />
+                            </p:selectOneMenu>
+
+                            <h:outputText value="Plantilla: " />
+                            <p:selectOneMenu id="template" style="width: 290px;"  value="#{notaDispenColectMB.template}" >
+                                <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true"  />
+                                <f:selectItems  var="temp" value="#{notaDispenColectMB.templateList}"  itemLabel="#{temp.nombre}" 
+                                                itemValue="#{temp.idTemplate}" />
+                                <p:ajax update="btnTipNew" listener="#{notaDispenColectMB.changePrint}" />
+                            </p:selectOneMenu>
+                            <h:outputText value="Número de Etiquetas a reimprimir: "/>
+                            <p:inputNumber size="10" id="catImp" disabled="#{notaDispenColectMB.solucionSelect.noEtiquetas}"
+                                           value="#{notaDispenColectMB.cantPrint}" 
+                                           inputStyle="text-align:right" decimalPlaces="0" decimalSeparator="," > 
+                                <p:ajax update="btnTipNew" event="change" listener="#{notaDispenColectMB.changePrint}" />
+                            </p:inputNumber>
+                            <h:outputText value="Motivo de Reimpresión: "/>
+                            <p:inputText value="#{notaDispenColectMB.solucionSelect.motivoReimpresion}" />
+                            <h:outputText value="Usuario Reimprime: "/>
+                            <p:inputText value="#{notaDispenColectMB.solucionSelect.motivoReimpresion}" />
+                        </p:panelGrid>
+                        <p:panel class="pnlActions">
+                            <p:commandButton id="btnTipCancel" class="btnItem" value="Cancelar"  style="width: 80px;" 
+                                             actionListener="#{notaDispenColectMB.cancelImprimirEtiqueta}"                                             
+                                             ajax="true" onclick="PF('mdlPrint').hide();"  validateClient="false" />                                                                            
+
+                            <p:commandButton id="btnGenReporte" disabled="#{notaDispenColectMB.imprimeReporte}" class="btnItem" value="Reporte"
+                                             styleClass="btnMusVerde" style="width: 80px;" 
+                                             actionListener="#{notaDispenColectMB.imprimirReporte}" 
+                                             update="formPDF"
+                                             onclick="PF('statusProcess').show()"                                
+                                             oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('mdlPrint').hide(); PF('mdlReport').show();}"
+                                             rendered="false" 
+                                             />
+
+                            <p:commandButton id="btnTipNew" disabled="#{!notaDispenColectMB.activeBtnPrint or notaDispenColectMB.imprimeEtiqueta}"
+                                             value="Imprimir" style="margin:0; width: 80px; "
+                                             actionListener="#{notaDispenColectMB.imprimirEtiquetaItem}"
+                                             onclick="PF('statusProcess').show();"
+                                             styleClass="btnMusAzul"
+                                             rendered="false" 
+                                             oncomplete="if(args.estatus == true){PF('mdlPrint').hide();} PF('statusProcess').hide();"
+                                             />
+
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="ENTREGAR SOLUCIÓN"
+                          widgetVar="modalEntregarSolucion"
+                          closeOnEscape="true"
+                          closable="true"
+                          width="95%"
+                          height="650px" 
+                          position="30,10"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formSurtimientoDetailEntregar"  >                        
+                        <p:messages id="msgValidaRegistro1" showDetail="false" globalOnly="false" closable="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <div class="ui-g"  >
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Folio Surtimiento:</p:outputLabel>
+                                    <p:outputLabel class="textoNegrita"  value="#{notaDispenColectMB.surtimientoExtendedSelected.folio}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Fecha Registro</p:outputLabel>
+                                    <p:outputLabel  class="textoNegrita"  value="#{notaDispenColectMB.surtimientoExtendedSelected.fechaProgramada}">
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                    </p:outputLabel>
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Estatus:</p:outputLabel>
+                                    <p:outputLabel id="estatusSurtimiento" value="#{notaDispenColectMB.surtimientoExtendedSelected.estatusSurtimiento}" ></p:outputLabel>
+                                </div>
+                            </div>
+
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel >Folio Prescripción:</p:outputLabel>
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.folioPrescripcion}"
+                                                    class="textoNegrita lbl-subtitulo" />
+                                    <p:outputLabel class="lbl-Tipo-PrescripcionNormal" value="Normal" rendered="#{notaDispenColectMB.surtimientoExtendedSelected.tipoPrescripcion eq 'N'}" />
+                                    <p:outputLabel class="lbl-Tipo-PrescripcionUnica" value="Única" rendered="#{notaDispenColectMB.surtimientoExtendedSelected.tipoPrescripcion eq 'D'}" />
+                                    <p:outputLabel class="lbl-Tipo-PrescripcionUrgente" value="Urgente" rendered="#{notaDispenColectMB.surtimientoExtendedSelected.tipoPrescripcion eq 'U'}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Fecha Programada</p:outputLabel>
+                                    <p:outputLabel  class="textoNegrita"  value="#{notaDispenColectMB.surtimientoExtendedSelected.fechaProgramada}">
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                    </p:outputLabel>
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel for="tipoPrescripcion" style="margin-right: 1px;">Tipo Prescripción:</p:outputLabel>
+                                    <p:selectOneMenu id="tipoPrescripcion" value="#{notaDispenColectMB.surtimientoExtendedSelected.tipoPrescripcion}" label="Tipo de Prescripción"
+                                                     title="Tipo de Prescripción" autoWidth="true" style="vertical-align: middle;" disabled="true"
+                                                     required="true" requiredMessage="Debe seleccionar un Tipo de Prescripción">
+                                        <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                        <f:selectItem itemLabel="Normal" itemValue="N" />
+                                        <f:selectItem itemLabel="Urgente" itemValue="U" />
+                                        <f:selectItem itemLabel="Dosis Única" itemValue="D" />
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Área/Servicio:</p:outputLabel>
+                                    <p:outputLabel  class="textoNegrita" value="#{notaDispenColectMB.surtimientoExtendedSelected.nombreEstructura}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Cama:</p:outputLabel>
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.cama}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Médico Solicitante:</p:outputLabel>
+                                    <p:outputLabel  class="textoNegrita" value="#{notaDispenColectMB.surtimientoExtendedSelected.nombreMedico}" />
+                                </div>
+                            </div>
+
+
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel  value="Paciente: "/>
+                                    <p:outputLabel  class="textoNegrita" value="#{notaDispenColectMB.surtimientoExtendedSelected.nombrePaciente}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 0px;" value="No. Paciente:" />
+                                    <p:outputLabel style="margin-right: 0px;" class="textoNegrita" value="#{notaDispenColectMB.surtimientoExtendedSelected.pacienteNumero}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;">Tipo Consulta:</p:outputLabel>
+                                </div>
+                            </div>
+
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Edad" />
+                                    <p:outputLabel id="txtEdadPaciente" value="#{notaDispenColectMB.surtimientoExtendedSelected.edadPaciente}" /> años
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Peso:"  />
+                                    <p:outputLabel id="txtPesoPaciente" value="#{notaDispenColectMB.surtimientoExtendedSelected.pesoPaciente}" /> kg
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Estatura:"  />
+                                    <p:outputLabel id="txtTallaPaciente" value="#{notaDispenColectMB.surtimientoExtendedSelected.tallaPaciente}" /> mts
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Área:"  />
+                                    <p:outputLabel id="txtAreaPaciente" value="#{notaDispenColectMB.surtimientoExtendedSelected.areaCorporal}" /> m²
+                                </div>
+                            </div>
+
+                            <p:outputLabel value="INFORMACIÓN DE LA SOLUCIÓN"  class="plabel ui-g-12" />
+
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Tipo Solución:" />
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.tipoSolucion}" />
+                                </div>                            
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel style="margin-right: 1px;">Vía Administración:</p:outputLabel>
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.nombreViaAdministracion}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Contenedor: " />
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.nombreEnvaseContenedor}" />
+
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Volumen total:" />                                
+                                    <p:outputLabel value="#{notaDispenColectMB.surtimientoExtendedSelected.volumenTotal}" style="margin-bottom: 5px;" /> ml
+                                </div>
+                            </div>
+
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Perfusión Continua:" />
+                                    <p:outputLabel style="margin-right: 1px;" value="#{notaDispenColectMB.surtimientoExtendedSelected.perfusionContinua ? 'SI' : 'NO' }" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Tiempo Infusión:" />
+                                    <p:outputLabel style="margin-right: 1px;" value="#{(notaDispenColectMB.surtimientoExtendedSelected.minutosInfusion gt 0) ? notaDispenColectMB.surtimientoExtendedSelected.minutosInfusion : '' }" />
+                                    <p:outputLabel value=" min." />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Velocidad:" />
+                                    <p:outputLabel style="margin-right: 1px;" value="#{(notaDispenColectMB.surtimientoExtendedSelected.velocidad gt 0) ? notaDispenColectMB.surtimientoExtendedSelected.velocidad : ''}" />
+                                    <p:outputLabel value=" mL/hr" />
+                                </div>
+                                <ui:remove>
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Ritmo:" />
+                                    <p:outputLabel style="margin-right: 1px;" value="# {(notaDispenColectMB.surtimientoExtendedSelected.ritmo gt 0) ? notaDispenColectMB.surtimientoExtendedSelected.ritmo : ''}" />
+                                </div></ui:remove>
+                            </div>
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                    <p:outputLabel  value="Protocolo:" />
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.nombreProtoclo}" />
+                                </div>
+                                <div style="width:75%; float:left;">
+                                    <p:outputLabel style="margin-right: 1px;">Diagnóstico:</p:outputLabel>
+                                    <p:outputLabel  value="#{notaDispenColectMB.surtimientoExtendedSelected.nombreDiagnostico}" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <p:dataTable id="tblInsumos" 
+                                     widgetVar="tblInsumos" 
+                                     value="#{notaDispenColectMB.surtimientoInsumoExtendedList}"
+                                     selection="#{notaDispenColectMB.surtimientoInsumoExtendedSelected}"                                     
+                                     var="item" 
+                                     rowKey="#{item.idSurtimientoInsumo}"
+                                     rowIndexVar="row"
+                                     selectionMode="single"
+                                     style="margin-bottom:5px;"
+                                     styleClass="mystyle"
+                                     scrollable="true" scrollHeight="250"
+                                     emptyMessage="No se encontraron Registros"
+                                     reflow="true"
+                                     disabledSelection="false" 
+                                     rendered="#{notaDispenColectMB.sizeSurtimientoInsumoExtendedList gt -1}" >
+                            <!--                            paginatorTemplate="{Records} {CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                                 paginator="false" rows="10" paginatorPosition="bottom" currentPageReportTemplate=" "-->
+                            <f:facet name="{Records}">
+                                <div style="float:left;">
+                                    <p:outputLabel class="footerLabel" value="  Insumos Registrados: #{notaDispenColectMB.sizeSurtimientoInsumoExtendedList}" rendered="true" />
+                                </div>
+                            </f:facet>
+                            <p:column style="text-align: left; width: 8% "
+                                      sortBy="#{item.claveInstitucional}" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Clave" />
+                                </f:facet>
+                                <h:outputText value="#{item.claveInstitucional}" class="textoNegrita" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 55% "
+                                      sortBy="#{item.nombreCorto}" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Nombre" />
+                                </f:facet>
+                                <h:outputText value="#{item.nombreCorto}" title="#{item.nombreCorto}" class="limitText" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 8% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Dosis" />
+                                </f:facet>
+                                <h:outputText value="#{item.dosis} #{item.unidadConcentracion}" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 8% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Lote" />
+                                </f:facet>
+                                <h:outputText value="#{item.lote}" class="textoNegrita" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 8% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Caducidad" />
+                                </f:facet>
+                                <h:outputText value="#{item.caducidad}" class="textoNegrita" > 
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column style="text-align: left; width: 8% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Fabricante" />
+                                </f:facet>
+                                <h:outputText value="#{item.nombreFabricante}" class="textoNegrita" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 5% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Estab (hrs) " title="No. horas estabilidad" />
+                                </f:facet>
+                                <h:outputText value="#{item.noHorasestabilidad}" class="textoNegrita" />
+                            </p:column>
+                        </p:dataTable>
+                        <br/>
+
+                        <div class="ui-g" style="padding-top: 0px; padding-right: 3px;">
+                            <div class="ui-g-12"   >
+                                <div class="ui-g-12 ui-md-6 ui-lg-6"  >
+                                    <p:outputLabel style="margin-right: 5px; font-weight: bold;" value="Instrucciones de Preparación:" />
+                                    <br/>
+                                    <p:inputTextarea id="txtInstruccionesPrep" rows="3" cols="80" disabled="true"
+                                                     value="#{notaDispenColectMB.surtimientoExtendedSelected.instruccionPreparacion}"
+                                                     style="margin-right: 10px; opacity: 99% !important;" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-6"  >
+                                    <p:outputLabel style="margin-right: 5px; font-weight: bold;" value="Observaciones:"/>
+                                    <br/>
+                                    <p:inputTextarea id="txtCondicionesConser" rows="3" cols="80" disabled="true"
+                                                     value="#{notaDispenColectMB.surtimientoExtendedSelected.observaciones}" 
+                                                     style="margin-right: 10px; opacity: 99% !important;"/>
+                                </div>
+                            </div>
+
+                            <div class="ui-g-12" style="padding-top: 0px; padding-right: 3px;">
+                                <div class="ui-g-12 ui-md-6 ui-lg-6"  >
+                                    <p:selectBooleanCheckbox id="chkTemRefrigeracion" value="#{notaDispenColectMB.surtimientoExtendedSelected.tempRefrigeracion}" 
+                                                             itemLabel="Temp. Refrigeración" style="margin-bottom: 10px;" disabled="true" />
+                                    <p:selectBooleanCheckbox id="chkTemAmbiente" value="#{notaDispenColectMB.surtimientoExtendedSelected.tempAmbiente}" 
+                                                             itemLabel="Temp. Ambiente" style="margin-bottom: 10px;" disabled="true" />
+                                    <p:selectBooleanCheckbox id="chkProteccionLuz" value="#{notaDispenColectMB.surtimientoExtendedSelected.proteccionLuz}" 
+                                                             itemLabel="Prot. de Luz" style="margin-bottom: 10px;" disabled="true" />
+                                    <p:selectBooleanCheckbox id="chkNoAgitar" value="#{notaDispenColectMB.surtimientoExtendedSelected.noAgitar}" 
+                                                             itemLabel="No agitar" style="margin-bottom: 10px;" disabled="true" />
+                                </div>
+
+                                <div class="ui-g-12 ui-md-6 ui-lg-2"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Clave Mezcla:"  />
+                                    <p:outputLabel  class="textoNegrita"  value="#{notaDispenColectMB.claveMezcla}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-2"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Lote Mezcla:" />
+                                    <p:outputLabel  class="textoNegrita"  value="#{notaDispenColectMB.loteMezcla}" />
+                                </div>
+                                <ui:remove>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                        <p:outputLabel style="margin-right: 1px;" value="Estabilidad" />
+                                        <p:outputLabel class="textoNegrita"  value="#{notaDispenColectMB.estabilidadMezcla}" />
+                                        <i class="fa fa-info-circle" 
+                                           style="color: #004890; font-weight: bold; font-size: large;"
+                                           title="Número de horas de estabilidad mínimo de alguno de los insumos." />
+                                    </div>
+                                </ui:remove>
+                                <div class="ui-g-12 ui-md-6 ui-lg-2"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Caducidad:" />
+                                    <p:outputLabel  class="textoNegrita" style=" color: red; margin-right: 10px;" value="#{notaDispenColectMB.caducidadMezcla}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                    </p:outputLabel>
+                                    <i class="fa fa-info-circle" 
+                                       style="color: #004890; font-weight: bold; font-size: large;"
+                                       title="Fecha de caducidad considera la fecha de preparación mas el número de horas de estabilidad de los insumos." />
+                                </div>
+                            </div>
+
+                            <div class="ui-g-12" style="padding-top: 0px; padding-right: 3px;">
+                                <div class="ui-g-12 ui-md-6 ui-lg-6"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Comentarios Acondicionamiento:" />
+                                    <p:inputTextarea rows="1" cols="50" disabled="true"
+                                                     value="#{notaDispenColectMB.solucionSelect.comentarioAcondicionada}"
+                                                     style="margin-right: 10px; opacity: 99% !important;" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Almacenada:" />
+                                    <p:outputLabel  value="#{notaDispenColectMB.solucionSelect.donde}" />
+                                </div>
+                            </div>
+                        </div>                        
+
+                        <div class="ui-g"  >
+                            <div class="ui-g-12"  >                                              
+                                <div class="ui-g-12 ui-md-6 ui-lg-6"  >
+                                    <p:outputLabel style="margin-right: 1px;" value="Comentarios de la entrega: " />
+                                    <p:inputTextarea  value="#{notaDispenColectMB.solucionSelect.comentarioRecibe}" rows="1" cols="50" autoResize="false" 
+                                                      disabled="#{notaDispenColectMB.solucionSelect.idEstatusSolucion==6}"/>
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;" class="textoNegrita" value="Área Recibe: " />
+                                    <p:selectOneMenu style="width: 150px;vertical-align: middle;margin-right: 10px;" value="#{notaDispenColectMB.idSerivicioRecive}" 
+                                                     filter="true" filterMatchMode="contains" filterPlaceholder="Servicio que recibe" disabled="#{notaDispenColectMB.solucionSelect.idEstatusSolucion==6}" >   
+                                        <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" />
+                                        <f:selectItems value="#{notaDispenColectMB.listaEstructurasRecibir}" var="estructura" itemLabel="#{estructura.nombre}" itemValue="#{estructura.idEstructura}" />                                
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                    <p:outputLabel style="margin-right: 1px;" class="textoNegrita" value="Usuario Recibe: " />
+                                    <!-- se cambia por texto libre  -->
+                                    <p:inputText id="txtUsuarioRecibe" value="#{notaDispenColectMB.userRecibe}"
+                                                 disabled="#{notaDispenColectMB.solucionSelect.idEstatusSolucion==6}"></p:inputText>
+                                    <!-- p:autoComplete id="txtUsuario" 
+                                                    styleClass="width: 300px !important;" 
+                                                    panelStyle="width: 300px !important;" 
+                                                    inputStyleClass="width: 300px !important;" 
+                                                    value="# {notaDispenColectMB.usrselected}"
+                                                    completeMethod="# {notaDispenColectMB.autocompleteUsuario}"
+                                                    minQueryLength="3"
+                                                    queryDelay="500" 
+                                                    maxResults="20" 
+                                                    forceSelection="true" 
+                                                    cacheTimeout="0" 
+                                                    var="usr" 
+                                                    placeholder="Filtro Usuarios" 
+                                                    cache="false"
+                                                    emptyMessage="No se encontraron registros"
+                                                    itemLabel="# {usr.nombre} # {usr.apellidoPaterno} # {usr.apellidoMaterno}" itemValue="# {usr}" 
+                                                    converter="musGenericConverter"
+                                                    scrollHeight = "200" 
+                                                    disabled="# {notaDispenColectMB.solucionSelect.idEstatusSolucion==6}">
+                                        <p:column style="width: 80px; font-size: small;" width="20px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Nombre" />
+                                            </f:facet>
+                                            <h:outputText value="# {usr.nombre}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width:80px; font-size: small;" width="350px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Apellido Paterno" />
+                                            </f:facet>
+                                            <h:outputText value="# {usr.apellidoPaterno}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width: 80px; font-size: small;" width="350px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Apellido Materno" />
+                                            </f:facet>
+                                            <h:outputText value="# {usr.apellidoMaterno}" style=" font-size: small;" />
+                                        </p:column>
+                                    </p:autoComplete -->
+                                </div>
+                            </div>
+                            <br/>
+                        </div>    
+                        <br />
+                        <p:commandButton value="Entregar" rendered="#{notaDispenColectMB.solucionSelect.idEstatusSolucion==5}"                                                                                   
+                                         icon="fa fa-check-circle" style="margin-right: 20px;float: right;"
+                                         onclick="PF('statusProcess').show()" 
+                                         oncomplete="PF('statusProcess').hide(); if (args.estatus){PF('modalEntregarSolucion').hide();}"
+                                         actionListener="#{notaDispenColectMB.entregarMezcla()}"
+                                         styleClass="btnMusAzul" update=":mainForm:validaMsg, :mainForm:tabs:tblSoluciones" > 
+                            <p:confirm header="Correcta" message="¿Está seguro de entregar la solución?" icon="ui-icon-alert" />
+                        </p:commandButton>
+
+                        <p:commandButton value="Cerrar" icon="fa fa-times-circle"  onclick="PF('modalEntregarSolucion').hide();"
+                                         style="margin-right: 20px;float: right;" /> 
+
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                            <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog widgetVar="mdlReport" width="820px" height="600px"
+                          closeOnEscape="false" modal="true"                          
+                          style="font-size:xx-small !important;" >
+                    <h:form id="formPDF">
+                        <p:media value="/Reportes" player="pdf" width="800px" height="600px" cache="false" />
+                    </h:form>
+                    <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                </p:dialog>
+                
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

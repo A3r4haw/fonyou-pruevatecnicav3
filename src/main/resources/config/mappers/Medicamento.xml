@@ -1,0 +1,1723 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+
+<mapper namespace="mx.mc.mapper.MedicamentoMapper">
+    <resultMap id="MedicamentoMap" type="Medicamento" >
+        <result property="idMedicamento" column="idMedicamento" jdbcType = "VARCHAR" />
+        <result property="claveInstitucional" column="claveInstitucional" jdbcType = "VARCHAR" />
+        <result property="sustanciaActiva" column="sustanciaActiva" jdbcType= "INTEGER" />
+        <result property="idViaAdministracion" column="idViaAdministracion" jdbcType="INTEGER" />
+        <result property="nombreCorto" column="nombreCorto" jdbcType="VARCHAR" />
+        <result property="nombreLargo" column="nombreLargo" jdbcType="VARCHAR" />
+        <result property="concentracion" column="concentracion" jdbcType="VARCHAR" />
+        <result property="idUnidadConcentracion" column="idUnidadConcentracion" jdbcType="INTEGER" />
+        <result property="presentacionLaboratorio" column="presentacionLaboratorio" jdbcType="VARCHAR" />
+        <result property="laboratorio" column="laboratorio" jdbcType="VARCHAR" />
+        <result property="idPresentacionEntrada" column="idPresentacionEntrada" jdbcType="INTEGER" />
+        <result property="factorTransformacion" column="factorTransformacion" jdbcType="INTEGER" />
+        <result property="idPresentacionSalida" column="idPresentacionSalida" jdbcType="INTEGER" />
+        <result property="idCategoria" column="idCategoria" jdbcType="INTEGER" />
+        <result property="idSubcategoria" column="idSubcategoria" jdbcType="INTEGER" />
+        <result property="grupo" column="grupo" jdbcType="VARCHAR" />
+        <result property="indivisible" column="indivisible" jdbcType="INTEGER" />
+        <result property="nameImage" column="nameImage" jdbcType="VARCHAR" />
+        <result property="cuadroBasico" column="cuadroBasico" jdbcType="INTEGER" />
+        <result property="activo" column="activo" jdbcType="INTEGER" />
+        <result property="tipo" column="tipo" jdbcType="INTEGER" />
+        <result property="tipoMedicacion" column="tipoMedicacion" jdbcType="INTEGER" />
+        <result property="mezclaParental" column="mezclaParental" jdbcType="INTEGER" />
+        <result property="ordenAdicion" column="ordenAdicion" jdbcType="DECIMAL" />
+        <result property="ordenEtiqueta" column="ordenEtiqueta" jdbcType="DECIMAL" />
+    </resultMap>
+    
+    <resultMap id="ImagenBlob" type="Medicamento" extends="MedicamentoMap" >
+        <result property="imagenPresentacion" column="imagenPresentacion" jdbcType="BLOB" />
+    </resultMap>
+    
+    <select id="tiposInsumoPorAlmacen" resultType="mx.mc.model.Medicamento" parameterType="Map" >
+        SELECT distinct m.tipo 
+        FROM almacenPuntosControl a
+        inner join medicamento m on a.idMedicamento = m.idMedicamento
+        inner join estructura e on a.idAlmacen = e.idEstructura
+        WHERE 1=1
+        <if test="idEstructura!=null">
+            AND idEstructura = #{idEstructura};
+        </if>
+    </select>
+    
+    <select id="obtenerBusqueda" resultType="mx.mc.model.VistaMedicamento" parameterType="Map" >        
+        SELECT idMedicamento,
+        claveInstitucional,
+        sustanciaActiva, 
+        nombreCorto, 
+        nombreLargo,
+        unidadConcentracion,
+        cuadroBasico,
+        activo,
+        tipo,
+        idLocalidadAVG
+        FROM viewMedicamentos
+        WHERE 1=1
+        <if test="tipo != null "> AND tipo = #{tipo,jdbcType=INTEGER} </if>
+        <if test="cadena != null ">
+            AND claveInstitucional LIKE '%${cadena}%'
+            OR sustanciaActiva LIKE '%${cadena}%'
+            OR viaAdministracion LIKE '%${cadena}%'
+            OR nombreCorto LIKE '%${cadena}%'
+            OR nombreLargo LIKE '%${cadena}%'
+            OR concentracion LIKE '%${cadena}%'
+            OR unidadConcentracion LIKE '%${cadena}%'
+            OR presentacionLaboratorio LIKE '%${cadena}%'
+            OR laboratorio LIKE '%${cadena}%'
+            OR presentacionEntrada LIKE '%${cadena}%'
+            OR factorTransformacion LIKE '%${cadena}%'
+            OR categoria LIKE '%${cadena}%'
+            OR subcategoria LIKE '%${cadena}%'
+            OR grupo LIKE '%${cadena}%'
+        </if>
+        ORDER BY tipo ASC
+    </select>
+    
+    <select id="obtenerBusquedaMedicamento" resultType="mx.mc.model.VistaMedicamento" parameterType="Map" >        
+        SELECT idMedicamento,
+        claveInstitucional,
+        sustanciaActiva, 
+        nombreCorto, 
+        nombreLargo,
+        cuadroBasico,
+        activo,
+        tipo,
+        idLocalidadAVG,
+        refrigeracion,
+        codigoBarrasAlterno,
+        claveAlterna
+        FROM viewMedicamentos
+        WHERE 1=1
+        <if test="tipoInsumo != null "> AND tipo = #{tipoInsumo,jdbcType=INTEGER} </if>
+        <if test="paramBusquedaReporte.cadenaBusqueda != null ">
+            AND claveInstitucional LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR sustanciaActiva LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR viaAdministracion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR nombreCorto LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR nombreLargo LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR concentracion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR unidadConcentracion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR presentacionLaboratorio LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR laboratorio LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR presentacionEntrada LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR factorTransformacion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR categoria LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR subcategoria LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR grupo LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR codigoBarrasAlterno LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR claveAlterna LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+        </if>        
+        <if test=" sortField == null" > 
+            ORDER BY claveInstitucional asc
+        </if>
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'claveInstitucional'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY claveInstitucional asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY claveInstitucional desc
+                </if>            
+            </if>
+            <if test="sortField == 'nombreCorto'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreCorto asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreCorto desc
+                </if>
+            </if>
+            <if test="sortField == 'nombreLargo'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreLargo asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreLargo desc
+                </if>            
+            </if>
+            <if test="sortField == 'sustanciaActiva'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY sustanciaActiva asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY sustanciaActiva desc
+                </if>            
+            </if>
+        </if>   
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}                
+    </select>
+    
+    <select id="obtenerTotalBusquedaMedicamento" resultType="Long" parameterType="Map">
+        SELECT count(*)
+        FROM viewMedicamentos
+        WHERE 1=1
+        <if test="tipoInsumo != null "> AND tipo = #{tipoInsumo,jdbcType=INTEGER} </if>
+        <if test="paramBusquedaReporte.cadenaBusqueda != null ">
+            AND claveInstitucional LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR sustanciaActiva LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR viaAdministracion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR nombreCorto LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR nombreLargo LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR concentracion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR unidadConcentracion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR presentacionLaboratorio LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR laboratorio LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR presentacionEntrada LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR factorTransformacion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR categoria LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR subcategoria LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR grupo LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+        </if>
+    </select>
+    
+    
+    <select id="obtenerPorIdMedicamento" resultType="mx.mc.model.Medicamento" parameterType="Map" >
+        SELECT *
+        FROM medicamento        
+        <where>            
+            <if test="idMedicamento != null"> idMedicamento = #{ idMedicamento, jdbcType = VARCHAR} </if>
+        </where>    
+    </select>
+    
+    <select id="obtenerPorNombre" resultType="mx.mc.model.Medicamento" parameterType="Map" >
+        SELECT idMedicamento, nombreCorto, nombreLargo
+        FROM medicamento        
+        <where>
+            <if test="nombreCorto != null"> nombreCorto LIKE '%${nombreCorto}%' </if>
+            <if test="nombreCorto != null"> OR nombreCorto LIKE '%${nombreCorto}%' </if>
+            and activo=1;
+        </where>    
+    </select>
+    
+    <select id="obtenerAutoCompNombreClave" resultType="mx.mc.model.Medicamento" parameterType="Map" >
+        SELECT idMedicamento, claveInstitucional, nombreCorto, nombreLargo
+        FROM medicamento        
+        <where>
+            <if test="nombreCorto != null"> nombreCorto LIKE '%${nombreCorto}%' </if>
+            <if test="nombreCorto != null"> OR claveInstitucional LIKE '%${nombreCorto}%' </if>
+            and activo=1            
+        </where>    
+        Limit 10
+    </select>
+    
+    <select id="obtenerMedicamentoByName" resultType="mx.mc.model.Medicamento" parameterType="Map" >
+        SELECT idMedicamento,claveInstitucional, nombreCorto, nombreLargo,idPresentacionEntrada,idPresentacionSalida,tipo
+        FROM medicamento        
+        where  nombreCorto LIKE '%${valor}%' 
+        and activo=1
+        
+    </select>
+    
+    <select id="obtener" resultType="mx.mc.model.Medicamento" parameterType="mx.mc.model.Medicamento">
+        SELECT *
+        FROM medicamento
+        WHERE 1=1        
+        <if test="idMedicamento != null">           AND idMedicamento = #{ idMedicamento, jdbcType = VARCHAR} </if>
+        <if test="claveInstitucional != null">      AND claveInstitucional = #{ claveInstitucional, jdbcType = VARCHAR} </if>
+        <if test= "sustanciaActiva != null">        AND sustanciaActiva = #{sustanciaActiva,jdbcType= INTEGER} </if>
+        <if test="idViaAdministracion != null">     AND idViaAdministracion = #{idViaAdministracion,jdbcType=INTEGER} </if>    
+        <if test="nombreCorto != null">             AND nombreCorto = #{nombreCorto,jdbcType=VARCHAR} </if>
+        <if test="nombreLargo != null">             AND nombreLargo = #{nombreLargo,jdbcType=VARCHAR} </if>
+        <if test="concentracion != null">           AND concentracion = #{concentracion,jdbcType=VARCHAR} </if>
+        <if test="idUnidadConcentracion != null">   AND idUnidadConcentracion = #{idUnidadConcentracion,jdbcType=INTEGER} </if>
+        <if test="presentacionLaboratorio != null"> AND presentacionLaboratorio = #{presentacionLaboratorio,jdbcType=VARCHAR} </if>
+        <if test="laboratorio != null">             AND laboratorio = #{laboratorio,jdbcType=VARCHAR} </if>
+        <if test="idPresentacionEntrada != null">   AND idPresentacionEntrada = #{idPresentacionEntrada,jdbcType=INTEGER} </if>
+        <if test="factorTransformacion != null">    AND factorTransformacion = #{factorTransformacion,jdbcType=INTEGER} </if>
+        <if test="idPresentacionSalida != null">    AND idPresentacionSalida = #{idPresentacionSalida,jdbcType=INTEGER} </if>
+        <if test="idCategoria != null">             AND idCategoria = #{idCategoria,jdbcType=INTEGER} </if>
+        <if test="idSubcategoria != null">          AND idSubcategoria = #{idSubcategoria,jdbcType=INTEGER} </if>
+        <if test="grupo != null">                   AND grupo = #{grupo,jdbcType=VARCHAR} </if>
+        <if test="indivisible != null">             AND indivisible = #{indivisible,jdbcType=INTEGER} </if>
+        <if test="imagenPresentacion != null">      AND imagenPresentacion = #{imagenPresentacion,jdbcType=BLOB} </if>
+        <if test="nameImage != null">               AND nameImage = #{nameImage,jdbcType=VARCHAR} </if>
+        <if test="cuadroBasico != null">            AND cuadroBasico = #{cuadroBasico,jdbcType=INTEGER} </if>
+        <if test="activo != null">                  AND activo = #{activo,jdbcType=INTEGER} </if>
+        <if test="tipo != null">                    AND tipo = #{tipo, jdbcType=INTEGER}    </if>
+    </select>       
+     
+    <select id="obtenerMedicamentosControlados" resultType="mx.mc.model.Medicamento" parameterType="Map">
+        SELECT idMedicamento, claveInstitucional, sustanciaActiva, idViaAdministracion, nombreCorto, nombreLargo
+        , concentracion, idUnidadConcentracion, presentacionLaboratorio, laboratorio, idPresentacionEntrada
+        , factorTransformacion, idPresentacionSalida, idCategoria, idSubcategoria, grupo, indivisible
+        , imagenPresentacion, nameImage, cuadroBasico, activo , idSubcategoria
+        FROM medicamento
+        WHERE 1=1        
+        AND idSubcategoria IN
+        <foreach item="item" index="index" collection="listaSubCategorias" open="(" separator="," close=")">
+            #{item}
+        </foreach> 
+        ORDER BY nombreCorto ASC
+    </select>  
+     
+    <select id="obtenerImagen" resultMap="ImagenBlob" parameterType="String" >
+        SELECT imagenPresentacion
+        FROM medicamento
+        WHERE  idMedicamento = #{ idMedicamento, jdbcType = VARCHAR}
+    </select>
+                    
+    <select id="obtenerMedicamentosPorPrescripcion" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT p.folio as folioPrescripcion , p.fechaPrescripcion, p.idPrescripcion
+        , CONCAT( u.apellidoPaterno , ' ' , u.apellidoMaterno , ' ' , u.nombre ) AS nombreMedico, u.cedProfesional
+        , pi.idInsumo , pi.dosis , pi.frecuencia , pi.duracion , pi.indicaciones
+        , m.claveInstitucional , m.nombreCorto , m.nombreLargo 
+        , m.activo as medicamentoActivo
+        , su.nombreSustanciaActiva 
+        , pm.nombrePresentacion
+        , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' ' ,pa.nombreCompleto) AS nombrePaciente , pa.idPaciente
+        , pa.pacienteNumero
+        , c.nombreCama 
+        , sm.idMinistrado , sm.fechaProgramado,  sm.cantidad as cantidadActual, sm.dosis , sm.idEstatusSurtimiento as estatusMinistracion
+        , inv.lote , inv.fechaCaducidad, inv.activo , inv.idInventario
+        , uc.nombreUnidadConcentracion
+        , p.idTipoSolucion, s.claveAgrupada as codigoBarras
+        , v.idVisita
+        , s.idEstructuraAlmacen AS idEstructuraAlmacenSurte
+        FROM prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON si.idPrescripcionInsumo = pi.idPrescripcionInsumo AND si.idSurtimiento = s.idSurtimiento
+        
+        INNER JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        INNER JOIN inventario inv ON se.idInventarioSurtido = inv.idInventario
+        INNER JOIN surtimientoMinistrado sm ON sm.idSurtimientoEnviado = se.idSurtimientoEnviado
+        
+        INNER JOIN medicamento m ON pi.idInsumo = m.idMedicamento
+        INNER JOIN sustanciaActiva su ON m.sustanciaActiva = su.idSustanciaActiva
+        INNER JOIN presentacionMedicamento pm ON m.idPresentacionSalida = pm.idPresentacion
+        
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        LEFT JOIN pacienteUbicacion pu ON ps.idPacienteServicio = pu.idPacienteServicio
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        WHERE 1=1
+                 AND pa.idPaciente = #{idPaciente , jdbcType = VARCHAR}
+        AND sm.idEstatusMinistracion IN 
+        <foreach item="item" index="index" collection="listEstatusMinistracion" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND pi.idTipoIngrediente in (0,1)
+        AND pu.fechaUbicaFin is null
+        AND ( sm.fechaProgramado  BETWEEN DATE_ADD( NOW(), INTERVAL #{ministraPrevDays} DAY ) AND DATE_ADD( NOW(), INTERVAL #{ministraLaterHours} HOUR ) )
+        ORDER BY sm.fechaProgramado ASC
+        LIMIT #{ numRegistros , jdbcType = INTEGER }
+    </select>
+    <select id="obtenerDetallePrescripcionSolucion" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT p.folio as folioPrescripcion , p.fechaPrescripcion
+        , CONCAT( u.apellidoPaterno , ' ' , u.apellidoMaterno , ' ' , u.nombre ) AS nombreMedico
+        , pi.idInsumo , pi.dosis , pi.frecuencia , pi.duracion , pi.indicaciones
+        , m.claveInstitucional , m.nombreCorto , m.nombreLargo 
+        , m.activo as medicamentoActivo
+        , su.nombreSustanciaActiva 
+        , pm.nombrePresentacion
+        , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' ' ,pa.nombreCompleto) AS nombrePaciente , pa.idPaciente
+        , c.nombreCama 
+        , sm.idMinistrado , sm.fechaProgramado,  sm.cantidad as cantidadActual, sm.dosis , sm.idEstatusSurtimiento as estatusMinistracion
+        , inv.lote , inv.fechaCaducidad, inv.activo , inv.idInventario
+        , uc.nombreUnidadConcentracion
+        , p.idTipoSolucion
+        FROM prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON si.idPrescripcionInsumo = pi.idPrescripcionInsumo AND si.idSurtimiento = s.idSurtimiento
+        
+        INNER JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        INNER JOIN inventario inv ON se.idInventarioSurtido = inv.idInventario
+        INNER JOIN surtimientoMinistrado sm ON sm.idSurtimientoEnviado = se.idSurtimientoEnviado
+        
+        INNER JOIN medicamento m ON pi.idInsumo = m.idMedicamento
+        INNER JOIN sustanciaActiva su ON m.sustanciaActiva = su.idSustanciaActiva
+        INNER JOIN presentacionMedicamento pm ON m.idPresentacionSalida = pm.idPresentacion
+        
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        LEFT JOIN pacienteUbicacion pu ON ps.idPacienteServicio = pu.idPacienteServicio
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        WHERE 1=1
+        AND p.folio = #{folioPrescripcion}                    
+        ORDER BY sm.fechaProgramado ASC            
+    </select>                              
+    <insert id="insertar" parameterType="mx.mc.model.Medicamento">
+        INSERT INTO medicamento (
+        idMedicamento,
+        claveInstitucional,
+        sustanciaActiva,
+        idViaAdministracion,
+        nombreCorto,
+        nombreLargo,
+        concentracion,
+        idUnidadConcentracion,
+        presentacionLaboratorio,
+        laboratorio,
+        idPresentacionEntrada,
+        factorTransformacion,
+        idPresentacionSalida,
+        idCategoria,
+        idSubcategoria,
+        grupo,
+        indivisible,
+        imagenPresentacion,
+        nameImage,
+        cuadroBasico,
+        activo,
+        tipo,
+        insertFecha,
+        insertIdUsuario,
+        updateFecha,
+        updateIdUsuario, 
+        tipoMedicacion,
+        refrigeracion,
+        ubicacion,
+        medicamentoControlado,
+        claveAlterna,
+        codigoBarrasAlterno,
+        
+        mezclaParental
+        , osmolaridad
+        , densidad
+        , noHorasEstabilidad
+        , cantPorEnvase
+        , idUnidadMedida
+        
+        , incluyeDiluyente
+        , requiereDiluyente
+        , diluyente
+        , fotosensible
+        , tempAmbiente
+        , noHorasEstabilidadAbierto
+        , contenedor
+        , dosisPorMl
+        , idUnidadMedidaDosis
+        , calcularNCA
+        , calorias
+        , ordenAdicion
+        , ordenEtiqueta
+        , noAgitar
+        , tempRefrigeracion
+        , autorizar
+        
+        )
+        VALUES 
+        (
+        #{idMedicamento, jdbcType=VARCHAR},
+        #{claveInstitucional, jdbcType=VARCHAR},
+        #{sustanciaActiva, jdbcType=INTEGER},
+        #{idViaAdministracion, jdbcType=INTEGER},
+        #{nombreCorto, jdbcType=VARCHAR},
+        #{nombreLargo, jdbcType=VARCHAR},
+        #{concentracion, jdbcType=VARCHAR},
+        #{idUnidadConcentracion, jdbcType=INTEGER},
+        #{presentacionLaboratorio, jdbcType=VARCHAR},
+        #{laboratorio, jdbcType=VARCHAR},
+        #{idPresentacionEntrada, jdbcType=INTEGER},
+        #{factorTransformacion, jdbcType=INTEGER},
+        #{idPresentacionSalida, jdbcType=INTEGER},
+        #{idCategoria, jdbcType=INTEGER},
+        #{idSubcategoria, jdbcType=INTEGER},
+        #{grupo, jdbcType=VARCHAR},
+        #{indivisible, jdbcType=INTEGER},
+        #{imagenPresentacion, jdbcType=BLOB},
+        #{nameImage, jdbcType=VARCHAR},
+        #{cuadroBasico, jdbcType=INTEGER },
+        #{activo, jdbcType=INTEGER},
+        #{tipo, jdbcType=INTEGER},
+        #{insertFecha, jdbcType=DATE},
+        #{insertIdUsuario, jdbcType=VARCHAR},
+        #{updateFecha, jdbcType=DATE},
+        #{updateIdUsuario, jdbcType=VARCHAR},
+        #{tipoMedicacion, jdbcType=INTEGER},
+        #{refrigeracion, jdbcType=INTEGER},
+        #{ubicacion, jdbcType=VARCHAR},
+        #{medicamentoControlado, jdbcType=INTEGER},
+        #{claveAlterna, jdbcType=VARCHAR},
+        #{codigoBarrasAlterno, jdbcType=VARCHAR}, 
+        #{mezclaParental, jdbcType=INTEGER}
+        , #{ osmolaridad  , jdbcType = DECIMAL }
+        , #{ densidad  , jdbcType = DECIMAL }
+        , #{ noHorasEstabilidad , jdbcType = INTEGER }
+        , #{ cantPorEnvase , jdbcType = DECIMAL }
+        , #{ idUnidadMedida , jdbcType = INTEGER }
+        
+        , #{ incluyeDiluyente  , jdbcType = INTEGER }
+        , #{ requiereDiluyente  , jdbcType = INTEGER }
+        , #{ diluyente , jdbcType = INTEGER }
+        , #{ fotosensible , jdbcType = INTEGER }
+        , #{ tempAmbiente , jdbcType = INTEGER }
+        , #{ noHorasEstabilidadAbierto , jdbcType = INTEGER }
+        , #{ contenedor , jdbcType = INTEGER }
+        , #{ dosisPorMl , jdbcType = DECIMAL }
+        , #{ idUnidadMedidaDosis , jdbcType = DECIMAL }
+        , #{ calcularNCA , jdbcType = INTEGER }
+        , #{ calorias , jdbcType = DECIMAL }
+        , #{ ordenAdicion , jdbcType = DECIMAL }
+        , #{ ordenEtiqueta , jdbcType = DECIMAL }
+        , #{ noAgitar , jdbcType = INTEGER }
+        , #{ tempRefrigeracion , jdbcType = INTEGER }
+        , #{ autorizar , jdbcType = INTEGER }
+        )
+    </insert>
+        
+        
+    
+    <update id="actualizar" parameterType="mx.mc.model.Medicamento" >
+        UPDATE medicamento
+        <set>
+            <if test="claveInstitucional != null"> claveInstitucional = #{ claveInstitucional, jdbcType = VARCHAR}, </if>
+            <if test="sustanciaActiva != null"> sustanciaActiva = #{sustanciaActiva,jdbcType= INTEGER}, </if>
+            <if test="idViaAdministracion != null"> idViaAdministracion = #{idViaAdministracion,jdbcType=INTEGER}, </if>    
+            <if test="nombreCorto != null"> nombreCorto = #{nombreCorto,jdbcType=VARCHAR}, </if>
+            <if test="nombreLargo != null"> nombreLargo = #{nombreLargo,jdbcType=VARCHAR}, </if>
+            <if test="concentracion != null"> concentracion = #{concentracion,jdbcType=VARCHAR}, </if>
+            <if test="idUnidadConcentracion != null"> idUnidadConcentracion = #{idUnidadConcentracion,jdbcType=INTEGER}, </if>
+            <if test="presentacionLaboratorio != null"> presentacionLaboratorio = #{presentacionLaboratorio,jdbcType=VARCHAR}, </if>
+            <if test="laboratorio != null"> laboratorio = #{laboratorio,jdbcType=VARCHAR}, </if>
+            <if test="idPresentacionEntrada != null"> idPresentacionEntrada = #{idPresentacionEntrada,jdbcType=INTEGER}, </if>
+            <if test="factorTransformacion != null"> factorTransformacion = #{factorTransformacion,jdbcType=INTEGER}, </if>
+            <if test="idPresentacionSalida != null"> idPresentacionSalida = #{idPresentacionSalida,jdbcType=INTEGER}, </if>
+            <if test="idCategoria != null"> idCategoria = #{idCategoria,jdbcType=INTEGER}, </if>
+            <if test="idSubcategoria != null"> idSubcategoria = #{idSubcategoria,jdbcType=INTEGER}, </if>
+            <if test="grupo != null"> grupo = #{grupo,jdbcType=VARCHAR}, </if>
+            <if test="indivisible != null"> indivisible = #{indivisible,jdbcType=INTEGER}, </if>
+            <if test="imagenPresentacion != null"> imagenPresentacion = #{imagenPresentacion,jdbcType=BLOB}, </if>
+            <if test="nameImage != null"> nameImage = #{nameImage,jdbcType=VARCHAR}, </if>
+            <if test="cuadroBasico != null"> cuadroBasico = #{cuadroBasico, jdbcType=INTEGER }, </if>
+            <if test="activo != null"> activo = #{activo, jdbcType=INTEGER}, </if>
+            <if test="tipo != null"> tipo = #{tipo, jdbcType=INTEGER}, </if>
+            <if test="updateFecha != null"> updateFecha= #{updateFecha, jdbcType=DATE}, </if>   
+            <if test="updateIdUsuario != null"> updateIdUsuario = #{updateIdUsuario, jdbcType=VARCHAR}, </if>
+            <if test="tipoMedicacion != null"> tipoMedicacion = #{tipoMedicacion, jdbcType=INTEGER},</if>
+            <if test="refrigeracion != null"> refrigeracion = #{refrigeracion, jdbcType=INTEGER},</if>
+            <if test="ubicacion != null"> ubicacion = #{ubicacion, jdbcType=VARCHAR}, </if>
+            <if test="medicamentoControlado != null"> medicamentoControlado = #{medicamentoControlado, jdbcType=INTEGER}, </if>
+            <if test="claveAlterna != null"> claveAlterna = #{claveAlterna, jdbcType=VARCHAR}, </if>
+            <if test="mezclaParental != null"> mezclaParental = #{mezclaParental, jdbcType=INTEGER}</if>
+            <if test="osmolaridad != null"> , osmolaridad = #{ osmolaridad  , jdbcType = DECIMAL } </if>
+            <if test="densidad != null"> , densidad = #{ densidad  , jdbcType = DECIMAL } </if>
+            <if test="calorias != null"> , calorias = #{ calorias  , jdbcType = DECIMAL } </if>
+            <if test="noHorasEstabilidad != null"> , noHorasEstabilidad = #{ noHorasEstabilidad , jdbcType = INTEGER } </if>
+            <if test=" cantPorEnvase != null"> , cantPorEnvase = #{ cantPorEnvase , jdbcType = DECIMAL } </if>
+            <if test=" idUnidadMedida != null"> , idUnidadMedida = #{ idUnidadMedida , jdbcType = INTEGER } </if>
+            
+            <if test=" incluyeDiluyente != null"> , incluyeDiluyente = #{ incluyeDiluyente  , jdbcType = INTEGER } </if>
+            <if test=" requiereDiluyente != null"> , requiereDiluyente = #{ requiereDiluyente  , jdbcType = INTEGER } </if>
+            <if test=" diluyente != null"> , diluyente = #{ diluyente , jdbcType = INTEGER } </if>
+            <if test=" fotosensible != null"> , fotosensible = #{ fotosensible , jdbcType = INTEGER } </if>
+            <if test=" tempAmbiente != null"> , tempAmbiente = #{ tempAmbiente , jdbcType = INTEGER } </if>
+            <if test=" densidad != null"> , densidad =#{ densidad , jdbcType = DECIMAL } </if>
+            <if test=" noHorasEstabilidadAbierto != null"> , noHorasEstabilidadAbierto = #{ noHorasEstabilidadAbierto , jdbcType = INTEGER } </if>
+            <if test=" contenedor != null"> , contenedor = #{ contenedor , jdbcType = INTEGER } </if>
+            <if test=" dosisPorMl != null"> , dosisPorMl = #{ dosisPorMl , jdbcType = DECIMAL } </if>
+            <if test=" idUnidadMedidaDosis != null"> , idUnidadMedidaDosis = #{ idUnidadMedidaDosis , jdbcType = INTEGER } </if>
+            <if test=" calcularNCA != null"> , calcularNCA = #{ calcularNCA , jdbcType = INTEGER } </if>
+            <if test=" ordenAdicion != null"> , ordenAdicion = #{ ordenAdicion , jdbcType = DECIMAL } </if>
+            <if test=" ordenEtiqueta != null"> , ordenEtiqueta = #{ ordenEtiqueta , jdbcType = DECIMAL } </if>
+            <if test=" noAgitar != null"> , noAgitar = #{ noAgitar , jdbcType = INTEGER } </if>
+            <if test=" tempRefrigeracion != null"> , tempRefrigeracion = #{ tempRefrigeracion , jdbcType = INTEGER } </if>
+            <if test=" autorizar != null"> , autorizar = #{ autorizar , jdbcType = INTEGER } </if>
+        </set>
+        WHERE  idMedicamento = #{ idMedicamento, jdbcType = VARCHAR}
+    </update>
+    
+    <select id="obtenerInsumoDisponible" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT distinct m.idMedicamento , m.claveInstitucional , m.nombreCorto , m.nombreLargo , m.concentracion , m.indivisible , i.cantidadActual 
+        , ifnull( aic.cantidadComprometida, 0) AS cantidadComprometida 
+        FROM medicamento m 
+        INNER JOIN inventario i ON m.idMedicamento = i.idInsumo 
+        INNER JOIN sustanciaActiva s ON m.sustanciaActiva = s.idSustanciaActiva
+        LEFT JOIN vwAlmacenInsumoComprometido aic ON (i.idEstructura = aic.idEstructuraAlmacen AND i.idInsumo = aic.idInsumo )
+        WHERE 
+        <!-- regla de activo por Medicamento -->
+        m.activo = 1
+        <!-- regla de activo por lote -->
+        AND i.activo = 1
+        <!-- regla de existencia en el inventario del Almacen que surte al servicio -->
+        <if test=" idEstructura != null">
+            AND i.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test="cadenaBusqueda != null">
+            AND (
+            m.claveInstitucional LIKE '%${ cadenaBusqueda }%'
+            OR m.nombreCorto LIKE '%${ cadenaBusqueda }%'
+            OR m.nombreLargo LIKE '%${ cadenaBusqueda }%'
+            OR s.nombreSustanciaActiva LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+        <!-- regla de existencia disponible -->
+        AND  ( i.cantidadActual - ifnull( aic.cantidadComprometida, 0) ) > 0
+        <!-- regla de caducidad mayor a la fecha actual mas una cantidad de dias -->
+        <if test=" noDiasCaducidad != null">
+            AND DATE_FORMAT(i.fechaCaducidad , "%Y-%m-%d") >  DATE_FORMAT( DATE_ADD( DATE_FORMAT( now() ,"%Y-%m-%d" ), INTERVAL #{ noDiasCaducidad , jdbcType = INTEGER } DAY) ,"%Y-%m-%d" )
+        </if>
+    </select>
+    
+    <select id="obtenerInsumoDisponiblePorIdInsumo" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT idMedicamento, claveInstitucional, nombreCorto, nombreLargo, concentracion, indivisible, sum(cantidadActual) AS cantidadActual, sum(cantidadComprometida) AS cantidadComprometida FROM (
+        SELECT m.idMedicamento , m.claveInstitucional , m.nombreCorto , m.nombreLargo , m.concentracion , m.indivisible , i.cantidadActual 
+        , ifnull( aic.cantidadComprometida, 0) AS cantidadComprometida 
+        FROM medicamento m 
+        INNER JOIN inventario i ON m.idMedicamento = i.idInsumo 
+        INNER JOIN sustanciaActiva s ON m.sustanciaActiva = s.idSustanciaActiva
+        LEFT JOIN vwAlmacenInsumoComprometido aic ON (i.idEstructura = aic.idEstructuraAlmacen AND i.idInsumo = aic.idInsumo )
+        WHERE 
+        <!-- regla de activo por Medicamento -->
+        m.activo = 1
+        <!-- regla de activo por lote -->
+        AND i.activo = 1
+        <!-- regla de existencia en el inventario del Almacen que surte al servicio -->
+        <if test=" estructuraList != null">
+            AND i.idEstructura IN
+            <foreach item="item" collection="estructuraList" separator="," open="(" close=")">
+                #{ item.idEstructura , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="idMedicamento != null">
+            AND m.idMedicamento = #{ idMedicamento , jdbcType = VARCHAR }
+        </if>
+        <!-- regla de existencia disponible -->
+        AND  ( i.cantidadActual - ifnull( aic.cantidadComprometida, 0) ) > 0
+        <!-- regla de caducidad mayor a la fecha actual mas una cantidad de dias -->
+        <if test=" noDiasCaducidad != null">
+            AND DATE_FORMAT(i.fechaCaducidad , "%Y-%m-%d") >  DATE_FORMAT( DATE_ADD( DATE_FORMAT( now() ,"%Y-%m-%d" ), INTERVAL #{ noDiasCaducidad , jdbcType = INTEGER } DAY) ,"%Y-%m-%d" )
+        </if>
+        ) AS S1
+        GROUP BY idMedicamento, claveInstitucional, nombreCorto, nombreLargo, concentracion, indivisible
+    </select>
+    
+    <select id="obtenerInsumoyLoteDisponible" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT distinct m.idMedicamento , m.claveInstitucional , m.nombreCorto , m.nombreLargo , m.concentracion , m.indivisible, i.fechaCaducidad, i.lote
+        FROM medicamento m 
+        INNER JOIN inventario i ON m.idMedicamento = i.idInsumo 
+        INNER JOIN sustanciaActiva s ON m.sustanciaActiva = s.idSustanciaActiva
+        LEFT JOIN vwAlmacenInsumoComprometido aic ON (i.idEstructura = aic.idEstructuraAlmacen AND i.idInsumo = aic.idInsumo )
+        WHERE 
+        <!-- regla de activo por Medicamento -->
+        m.activo = 1
+        <!-- regla de activo por lote -->
+        AND i.activo = 1
+        <!-- regla de existencia en el inventario del Almacen que surte al servicio -->
+        <if test=" estructuraList != null">
+            AND i.idEstructura IN
+            <foreach item="item" collection="estructuraList" separator="," open="(" close=")">
+                #{ item.idEstructura , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="cadenaBusqueda != null">
+            AND (
+            m.claveInstitucional LIKE '%${ cadenaBusqueda }%'
+            OR m.nombreCorto LIKE '%${ cadenaBusqueda }%'
+            OR m.nombreLargo LIKE '%${ cadenaBusqueda }%'
+            OR s.nombreSustanciaActiva LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+        <!-- regla de existencia disponible -->
+        AND  ( i.cantidadActual - ifnull( aic.cantidadComprometida, 0) ) > 0
+        <!-- regla de caducidad mayor a la fecha actual mas una cantidad de dias -->
+        <if test=" noDiasCaducidad != null">
+            AND DATE_FORMAT(i.fechaCaducidad , "%Y-%m-%d") >  DATE_FORMAT( DATE_ADD( DATE_FORMAT( now() ,"%Y-%m-%d" ), INTERVAL #{ noDiasCaducidad , jdbcType = INTEGER } DAY) ,"%Y-%m-%d" )
+        </if>
+    </select>
+    
+    <select id="obtenerInsumoDisponiblePrescExt" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT m.idMedicamento , m.claveInstitucional , m.nombreCorto , m.nombreLargo , m.concentracion , m.indivisible , i.cantidadActual 
+        , ifnull( aic.cantidadComprometida, 0) AS cantidadComprometida 
+        FROM medicamento m 
+        INNER JOIN inventario i ON m.idMedicamento = i.idInsumo 
+        INNER JOIN sustanciaActiva s ON m.sustanciaActiva = s.idSustanciaActiva
+        LEFT JOIN vwAlmacenInsumoComprometido aic ON (i.idEstructura = aic.idEstructuraAlmacen AND i.idInsumo = aic.idInsumo )
+        WHERE 
+        <!-- regla de activo por Medicamento -->
+        m.activo = 1
+        <!-- regla de activo por lote -->
+        AND i.activo = 1
+        <!-- regla de existencia en el inventario del Almacen que surte al servicio -->
+        <if test=" estructuraList != null">
+            AND i.idEstructura IN
+            <foreach item="item" collection="estructuraList" separator="," open="(" close=")">
+                #{ item.idEstructura , jdbcType = VARCHAR }
+            </foreach>
+            
+        </if>
+        <if test="cadenaBusqueda != null">
+            AND (
+            m.claveInstitucional LIKE '%${ cadenaBusqueda }%'
+            OR m.nombreCorto LIKE '%${ cadenaBusqueda }%'
+            OR m.nombreLargo LIKE '%${ cadenaBusqueda }%'
+            OR s.nombreSustanciaActiva LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+        <!-- regla de existencia disponible -->
+        AND  ( i.cantidadActual - ifnull( aic.cantidadComprometida, 0) ) > 0
+        <!-- regla de caducidad mayor a la fecha actual mas una cantidad de dias -->
+        <if test=" noDiasCaducidad != null">
+            AND DATE_FORMAT(i.fechaCaducidad , "%Y-%m-%d") >  DATE_FORMAT( DATE_ADD( DATE_FORMAT( now() ,"%Y-%m-%d" ), INTERVAL #{ noDiasCaducidad , jdbcType = INTEGER } DAY) ,"%Y-%m-%d" )
+        </if>
+        GROUP BY m.idMedicamento
+    </select>
+    
+    <select id="obtenerMedicamento" resultType="mx.mc.model.Medicamento" parameterType="Map" >
+        SELECT idMedicamento
+        , claveInstitucional, sustanciaActiva, idViaAdministracion, nombreCorto, nombreLargo
+        , concentracion, idUnidadConcentracion, presentacionLaboratorio, laboratorio
+        , idPresentacionEntrada, factorTransformacion, idPresentacionSalida, idCategoria
+        , idSubcategoria, grupo, indivisible, cuadroBasico, activo, tipo, insertFecha
+        , insertIdUsuario, updateFecha, updateIdUsuario, idEstatusGabinete, idLocalidadAVG
+        , tipoMedicacion, costo, refrigeracion, medicamentoControlado, ubicacion, claveAlterna
+        , codigoBarrasAlterno, osmolaridad, margenOsmolaridad, noHorasestabilidad, cantPorEnvase
+        , idUnidadMedida, mezclaParental, calculoMezcla, incluyeDiluyente, requiereDiluyente
+        , diluyente, fotosensible, tempAmbiente, tempRefrigeracion, densidad
+        , noHorasEstabilidadAbierto, presentacion, contenedor, listaDiluyentes, dosificacion
+        , riesgos, contraindicaciones, interacciones, composicion, precauciones, reacciones
+        , farmacocinetica, farmacodinamica, indicacionesTerapeuticas, ordePreparacion, dosisPorMl
+        , idUnidadMedidaDosis, calcularNCA, calorias, ordenEtiqueta, ordenAdicion, noAgitar , tempRefrigeracion
+        FROM medicamento        
+        WHERE
+        idMedicamento = #{ idMedicamento , jdbcType = VARCHAR}
+    </select>
+    
+    
+    <select id="obtenerXNombreTipo" resultType="mx.mc.model.Medicamento" parameterType="Map" >        
+        SELECT m.idMedicamento, m.claveInstitucional, m.nombreCorto, m.nombreLargo, m.tipo
+        FROM medicamento m
+        inner join almacenPuntosControl pc on pc.idMedicamento=m.idMedicamento        
+        WHERE m.activo = 1 and pc.activo =1                      
+        <if test="tipo != null "> AND m.tipo = #{tipo,jdbcType=INTEGER} </if>            
+        <if test="cadena != null "> AND ( m.nombreCorto LIKE '%${cadena}%'
+            OR m.nombreLargo LIKE '%${cadena}%'
+            OR m.claveInstitucional LIKE '%${cadena}%' )
+        </if>
+        and pc.idAlmacen=#{idEstructura,jdbcType=VARCHAR} 
+        and pc.activo = 1
+    </select>
+    
+    <select id="obtenerPorTipo" resultType="mx.mc.model.Medicamento" parameterType="Map">
+        SELECT idMedicamento, claveInstitucional, sustanciaActiva, idViaAdministracion, nombreCorto, nombreLargo, concentracion, idUnidadConcentracion, presentacionLaboratorio, laboratorio, idPresentacionEntrada, factorTransformacion, idPresentacionSalida, idCategoria, idSubcategoria, grupo, indivisible, imagenPresentacion, nameImage, cuadroBasico, activo
+        FROM medicamento
+        WHERE activo=1
+        <if test="tipo != null "> AND tipo = #{tipo,jdbcType=INTEGER} </if>
+    </select>  
+    
+    <select id="obtenerInsumos" resultType="mx.mc.model.Medicamento" parameterType="Map">
+        SELECT m.idMedicamento , m.claveInstitucional , m.nombreCorto, m.nombreLargo
+        FROM medicamento m
+        WHERE 
+        m.activo = 1
+        <if test="cadenaBusqueda != null">
+            AND (
+            m.claveInstitucional LIKE '%${ cadenaBusqueda }%'
+            OR m.nombreCorto LIKE '%${ cadenaBusqueda }%'
+            OR m.nombreLargo LIKE '%${ cadenaBusqueda }%'
+            )
+            ORDER BY m.claveInstitucional ASC
+        </if>
+    </select>
+    <select id="obtenerPorMedicamento" resultType="mx.mc.model.Medicamento" parameterType="mx.mc.model.Medicamento">
+        SELECT idMedicamento, claveInstitucional, sustanciaActiva, idViaAdministracion, nombreCorto, nombreLargo, concentracion, idUnidadConcentracion, presentacionLaboratorio, laboratorio, idPresentacionEntrada, factorTransformacion, idPresentacionSalida, idCategoria, idSubcategoria, grupo, indivisible, imagenPresentacion, nameImage, cuadroBasico, activo
+        FROM medicamento
+        WHERE 1=1                
+        <if test="claveInstitucional != null">      AND claveInstitucional = #{ claveInstitucional, jdbcType = VARCHAR} </if>
+        <if test= "sustanciaActiva != null">        AND sustanciaActiva = #{sustanciaActiva,jdbcType= INTEGER} </if>
+        <if test="idViaAdministracion != null">     AND idViaAdministracion = #{idViaAdministracion,jdbcType=INTEGER} </if>    
+        <if test="nombreCorto != null">             AND nombreCorto = #{nombreCorto,jdbcType=VARCHAR} </if>
+        <if test="nombreLargo != null">             AND nombreLargo = #{nombreLargo,jdbcType=VARCHAR} </if>        
+        <if test="idUnidadConcentracion != null">   AND idUnidadConcentracion = #{idUnidadConcentracion,jdbcType=INTEGER} </if>
+        <if test="presentacionLaboratorio != null"> AND presentacionLaboratorio = #{presentacionLaboratorio,jdbcType=VARCHAR} </if>
+        <if test="laboratorio != null">             AND laboratorio = #{laboratorio,jdbcType=VARCHAR} </if>
+        <if test="idPresentacionEntrada != null">   AND idPresentacionEntrada = #{idPresentacionEntrada,jdbcType=INTEGER} </if>        
+        <if test="idPresentacionSalida != null">    AND idPresentacionSalida = #{idPresentacionSalida,jdbcType=INTEGER} </if>
+        <if test="idCategoria != null">             AND idCategoria = #{idCategoria,jdbcType=INTEGER} </if>
+        <if test="idSubcategoria != null">          AND idSubcategoria = #{idSubcategoria,jdbcType=INTEGER} </if>
+        <if test="grupo != null">                   AND grupo = #{grupo,jdbcType=VARCHAR} </if>        
+        <if test="imagenPresentacion != null">      AND imagenPresentacion = #{imagenPresentacion,jdbcType=BLOB} </if>
+        <if test="nameImage != null">                   AND nameImage = #{nameImage,jdbcType=VARCHAR} </if>
+        <if test="cuadroBasico != null">            AND cuadroBasico = #{cuadroBasico,jdbcType=INTEGER} </if>
+        <if test="activo != null">                  AND activo = #{activo,jdbcType=INTEGER} </if>
+        <if test="tipo != null">                    AND tipo = #{tipo, jdbcType=INTEGER}    </if>
+    </select>  
+    
+    <select id="obtenerMedicaByClave" resultType="mx.mc.model.Medicamento" parameterType="mx.mc.model.Medicamento">
+        select * from medicamento where claveInstitucional = #{ claveInstitucional, jdbcType = VARCHAR}         
+    </select>
+    
+    <select id="obtenerMedicamentoPresentacion" resultType="mx.mc.model.Medicamento_Extended" parameterType="mx.mc.model.Medicamento">
+        select m.*, pm.nombrePresentacion from medicamento m
+        INNER JOIN
+        presentacionMedicamento pm ON m.idPresentacionEntrada = pm.idPresentacion
+        where claveInstitucional = #{ claveInstitucional, jdbcType = VARCHAR}         
+    </select>    
+    
+    <select id="obtenerMedicaLocalidad" resultType="mx.mc.model.Medicamento" parameterType="Map" >
+        SELECT idMedicamento, claveInstitucional, activo, m.idLocalidadAVG
+        FROM medicamento m 
+        LEFT JOIN localidadAVG l ON m.idLocalidadAVG = l.idLocalidadAVG        
+        <where>            
+            <if test="idMedicamento != null"> m.idMedicamento = #{ idMedicamento, jdbcType = VARCHAR} </if>
+        </where>    
+    </select>
+    
+    <update id="actualizarLocalidadAVG" parameterType="mx.mc.model.Medicamento" >
+        UPDATE medicamento
+        <set>
+            <if test="idLocalidadAVG != null"> idLocalidadAVG= #{idLocalidadAVG, jdbcType=VARCHAR}</if>
+            <if test="updateFecha != null"> updateFecha= #{updateFecha, jdbcType=DATE}, </if>   
+            <if test="updateIdUsuario != null"> updateIdUsuario = #{updateIdUsuario, jdbcType=VARCHAR} </if>
+        </set>
+        WHERE  idMedicamento = #{ idMedicamento, jdbcType = VARCHAR}
+    </update>
+    
+    <select id="obtenerListaMedicamentos" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT refrigeracion as estatusRefrigeracion, sustanciaActiva, claveInstitucional, nombreCorto, activo, concentracion, sa.nombreSustanciaActiva as nombreSustanciaActiva, nombreLargo, indivisible, nombreUnidadConcentracion,
+        factorTransformacion, idCategoria, idPresentacionEntrada, idPresentacionSalida, idSubcategoria, uc.idUnidadConcentracion, m.idViaAdministracion, indivisible, 
+        medicamentoControlado, ca.nombreCategoriaMedicamento as nombreCategoria, pe.nombrePresentacion as presentacionEntrada, ps.nombrePresentacion as presentacionSalida,
+        sc.nombreSubcategoriaMedicamento subcategoria, va.nombreViaAdministracion as viaAdministracion
+        FROM medicamento m
+        INNER JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        LEFT JOIN sustanciaActiva sa ON m.sustanciaActiva = sa.idSustanciaActiva
+        LEFT JOIN categoriaMedicamento ca ON m.idCategoria = ca.idCategoriaMedicamento 
+        LEFT JOIN presentacionMedicamento pe ON m.idPresentacionEntrada = pe.idPresentacion
+        LEFT JOIN presentacionMedicamento ps ON m.idPresentacionSalida = ps.idPresentacion
+        LEFT JOIN subcategoriaMedicamento sc ON m.idSubcategoria = sc.idSubcategoriaMedicamento
+        LEFT JOIN viaAdministracion va ON m.idViaAdministracion = va.idViaAdministracion
+        WHERE 1 = 1
+        <if test=" claveInstitucional != null ">AND claveInstitucional = #{claveInstitucional, jdbcType=VARCHAR}</if>
+        <if test=" tipo != null "> AND tipo = #{tipo, jdbcType=VARCHAR} </if>
+        AND concentracion > 0
+    </select>
+
+    <select id="obtenerListInventario" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT claveInstitucional, est.claveEstructura, sum(i.cantidadActual) AS cantidadActual, m.activo, concentracion, nombreUnidadConcentracion
+        FROM medicamento m 
+        INNER JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        INNER JOIN inventario i ON m.idMedicamento = i.idInsumo
+        INNER JOIN estructura e ON i.idEstructura = e.idEstructura
+        INNER JOIN estructuraAlmacenServicio eas ON e.idEstructura = eas.idEstructuraAlmacen
+        INNER JOIN estructura es ON eas.idEstructuraServicio = es.idEstructuraPadre
+        INNER JOIN estructura est ON es.idEstructura = est.idEstructura
+        WHERE 1 = 1
+        <if test=" claveInstitucional != null ">AND m.claveInstitucional = #{claveInstitucional, jdbcType=VARCHAR}</if>
+        <if test=" claveAlmacen != null ">AND est.claveEstructura = #{claveAlmacen, jdbcType=VARCHAR}</if>
+        AND i.activo = 1 GROUP BY claveInstitucional, claveEstructura  ORDER BY i.fechaCaducidad ASC
+    </select>
+    
+    <select id="obtenerListInventarioSubAlmacen" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT claveInstitucional, e.claveEstructura, sum(i.cantidadActual) AS cantidadActual, m.activo, concentracion, nombreUnidadConcentracion
+        FROM medicamento m
+        INNER JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion 
+        INNER JOIN inventario i ON m.idMedicamento = i.idInsumo
+        INNER JOIN estructura e ON i.idEstructura = e.idEstructura
+        WHERE 1 = 1
+        <if test=" claveInstitucional != null ">AND m.claveInstitucional = #{claveInstitucional, jdbcType=VARCHAR}</if>
+        <if test=" claveAlmacen != null ">AND e.claveEstructura = #{claveAlmacen, jdbcType=VARCHAR}</if>
+        AND i.activo = 1 GROUP BY claveInstitucional, claveEstructura  ORDER BY i.fechaCaducidad ASC
+    </select>
+    
+    <select id="obtenerSelectCabiDrgList" resultType="mx.mc.model.IntipharmItem">
+        SELECT 
+        m.claveInstitucional,
+        m.nombreCorto,
+        m.nombreLargo,
+        m.factorTransformacion,
+        m.activo,
+        m.concentracion,
+        va.nombreViaAdministracion AS viaAdministracion,
+        pm.nombrePresentacion,
+        cg.idCatalogoGeneral AS tipoInsumos,
+        2 as tipoInsumo,
+        uc.nombreUnidadConcentracion as unidadMedida,
+        cm.sku
+        FROM
+        medicamento m			
+        LEFT JOIN
+        viaAdministracion va ON m.idViaAdministracion = va.idViaAdministracion
+        INNER JOIN
+        presentacionMedicamento pm ON m.idPresentacionEntrada = pm.idPresentacion
+        INNER JOIN
+        catalogoGeneral cg ON cg.idCatalogoGeneral = m.tipo
+        LEFT JOIN
+        claveMedicamentoSku cm ON cm.claveIssemym = m.claveInstitucional
+        LEFT JOIN unidadConcentracion uc on uc.idUnidadConcentracion = m.idUnidadConcentracion        
+        AND m.tipo = 38
+        AND m.activo = 1
+    </select>
+    
+    <select id="obtenerMedicamentosPorPrescripcionList" resultType="mx.mc.model.MedicamentoOff_Extended" parameterType="Map">
+        SELECT p.folio as folioPrescripcion , p.fechaPrescripcion
+        , CONCAT( u.apellidoPaterno , ' ' , u.apellidoMaterno , ' ' , u.nombre ) AS nombreMedico
+        , pi.idInsumo , pi.dosis , pi.frecuencia , pi.duracion , pi.indicaciones
+        , m.claveInstitucional , m.nombreCorto , m.nombreLargo 
+        , m.activo as medicamentoActivo
+        , su.nombreSustanciaActiva 
+        , pm.nombrePresentacion
+        , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' ' ,pa.nombreCompleto) AS nombrePaciente , pa.idPaciente
+        , c.nombreCama 
+        , sm.idMinistrado , sm.fechaProgramado,  sm.cantidad as cantidadActual, sm.dosis , sm.idEstatusSurtimiento as estatusMinistracion
+        , inv.lote , inv.fechaCaducidad, inv.activo , inv.idInventario
+        , uc.nombreUnidadConcentracion
+        , p.idTipoSolucion, s.claveAgrupada as codigoBarras        
+        FROM prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON si.idPrescripcionInsumo = pi.idPrescripcionInsumo AND si.idSurtimiento = s.idSurtimiento
+        
+        INNER JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        INNER JOIN inventario inv ON se.idInventarioSurtido = inv.idInventario
+        INNER JOIN surtimientoMinistrado sm ON sm.idSurtimientoEnviado = se.idSurtimientoEnviado
+        
+        INNER JOIN medicamento m ON pi.idInsumo = m.idMedicamento
+        INNER JOIN sustanciaActiva su ON m.sustanciaActiva = su.idSustanciaActiva
+        INNER JOIN presentacionMedicamento pm ON m.idPresentacionSalida = pm.idPresentacion
+        
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        LEFT JOIN pacienteUbicacion pu ON ps.idPacienteServicio = pu.idPacienteServicio
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        WHERE 1=1
+        AND pa.idPaciente IN
+        <foreach item="sId" collection="idPaciente" separator="," open="(" close=")">
+            #{sId , jdbcType = VARCHAR}
+        </foreach>
+        AND sm.idEstatusMinistracion IN 
+        <foreach item="item" index="index" collection="listEstatusMinistracion" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND ( sm.fechaProgramado  BETWEEN DATE_ADD( NOW(), INTERVAL #{ministraPrevDays} DAY ) AND DATE_ADD( NOW(), INTERVAL #{ministraLaterHours} HOUR ) )
+        ORDER BY sm.fechaProgramado ASC
+    </select>
+    
+    <select id="searchMedicamentoAutoComplete" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT 
+        m.idMedicamento
+        ,  i.idInsumo
+        , cpb.codigoBarras
+        , m.claveInstitucional
+        , i.cantidadActual
+        , i.lote
+        , i.fechaCaducidad
+        , m.nombreCorto 
+        , m.nombreLargo 
+        , m.activo as sustanciaActiva
+        , m.idViaAdministracion
+        , m.idUnidadConcentracion
+        , m.concentracion
+        , uc.nombreUnidadConcentracion
+        , i.idFabricante
+        , f.nombreFabricante
+        , i.noHorasestabilidad
+        , i.noHorasestabilidad AS hrsEstabilidad
+        FROM medicamento m 
+        INNER JOIN  inventario i ON i.idInsumo = m.idMedicamento 
+        INNER JOIN  almacenPuntosControl pc on pc.idMedicamento = m.idMedicamento AND pc.idAlmacen = i.idEstructura
+        LEFT JOIN claveProveedorBarras cpb ON m.claveInstitucional = cpb.claveInstitucional 
+        LEFT JOIN (SELECT pi.idInsumo, inv.lote, inv.fechaCaducidad, s.claveAgrupada
+        FROM prescripcionInsumo pi 
+        INNER JOIN surtimiento s ON s.idPrescripcion = pi.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON si.idSurtimiento = s.idSurtimiento AND si.idPrescripcionInsumo = pi.idPrescripcionInsumo
+        INNER JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        INNER JOIN inventario inv ON inv.idInventario = se.idInventarioSurtido
+        AND s.claveAgrupada = #{ cadena , jdbcType = VARCHAR }
+        AND pi.idTipoIngrediente = 1) z ON z.idInsumo = m.idMedicamento AND z.lote = i.lote AND z.fechaCaducidad = i.fechaCaducidad
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        LEFT JOIN fabricante f ON i.idFabricante = f.idFabricante
+        WHERE m.activo = 1
+        AND (
+        CONCAT( m.claveInstitucional , ',' , i.lote , ',' , DATE_FORMAT(i.fechaCaducidad, '%d%m%Y')) = '${ cadena }'
+        OR CONCAT( '(01)', m.claveInstitucional , '(10)' , i.lote , '(17)' , DATE_FORMAT(i.fechaCaducidad, '%y%m%d')) = '${ cadena }'
+        OR cpb.codigoBarras = #{ cadena , jdbcType = VARCHAR }
+        OR m.codigoBarrasAlterno = #{ cadena , jdbcType = VARCHAR }
+        OR z.claveAgrupada = #{ cadena , jdbcType = VARCHAR }
+        <if test="activa_autoCompleteInsumos == true">
+            OR m.nombreCorto LIKE '%${ cadena }%'
+            OR m.nombreLargo LIKE '%${ cadena }%'
+            OR m.claveAlterna LIKE '%${ cadena }%'
+            OR m.claveInstitucional LIKE '%${ cadena }%'
+        </if>
+        )
+        <if test="idEstructura != null">
+            AND pc.idAlmacen=#{idEstructura,jdbcType=VARCHAR} 
+        </if>
+        AND i.cantidadActual > 0
+        GROUP BY i.lote, m.claveInstitucional
+        ORDER BY i.fechaCaducidad ASC, i.cantidadActual DESC
+    </select>
+   
+    <select id="searchMedicamentoAutoCompleteMultipleAlm" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT 
+        m.idMedicamento
+        ,  i.idInsumo
+        , cpb.codigoBarras
+        , m.claveInstitucional
+        , i.cantidadActual
+        , i.lote
+        , i.fechaCaducidad
+        , m.nombreCorto 
+        , m.nombreLargo 
+        , m.activo as sustanciaActiva
+        , m.idViaAdministracion
+        , m.idUnidadConcentracion
+        , m.concentracion
+        , uc.nombreUnidadConcentracion
+        , i.idFabricante
+        , f.nombreFabricante
+        , i.noHorasestabilidad
+        , i.noHorasestabilidad AS hrsEstabilidad
+        , i.idInventario
+        , CASE WHEN SUM( IFNULL(i.cantidadActual,0) ) &lt; 0 THEN 0 ELSE SUM( IFNULL(i.cantidadActual,0) ) END AS cantidadActual
+            , CASE WHEN SUM( IFNULL(i.cantidadActual,0) ) &lt; 0 THEN 0 
+            	ELSE SUM( IFNULL(i.cantidadActual,0) ) - IFNULL( aic.cantidadComprometida , 0) END AS cantidadDisponible
+             , es.nombre AS nombreEstructura
+        , m.osmolaridad , m.densidad , m.noHorasestabilidad , m.cantPorEnvase 
+        , m.mezclaParental , m.calculoMezcla , m.incluyeDiluyente , m.requiereDiluyente , m.diluyente 
+        , m.densidad , m.noHorasEstabilidadAbierto , m.contenedor , m.dosisPorMl , m.idUnidadMedidaDosis, m.calcularNCA
+        , m.fotosensible , m.tempAmbiente , m.tempRefrigeracion , m.tipo , m.activo , m.calcularNCA , m.calorias , m.noAgitar
+        , uc.nombreUnidadConcentracion , m.idUnidadConcentracion 
+        , m.cantPorEnvase , m.idUnidadMedida , IFNULL(uc2.nombreUnidadConcentracion,'') AS unidadPorEnvase
+        FROM medicamento m 
+        INNER JOIN  inventario i ON i.idInsumo = m.idMedicamento 
+        LEFT JOIN unidadConcentracion uc2 ON m.idUnidadMedida = uc2.idUnidadConcentracion
+        LEFT JOIN estructura es ON i.idEstructura = es.idEstructura 
+        LEFT JOIN vwAlmacenInsumoComprometido aic ON i.idInsumo = aic.idInsumo AND i.idEstructura = aic.idEstructuraAlmacen
+        INNER JOIN  almacenPuntosControl pc on pc.idMedicamento = m.idMedicamento AND pc.idAlmacen = i.idEstructura
+        LEFT JOIN claveProveedorBarras cpb ON m.claveInstitucional = cpb.claveInstitucional 
+        LEFT JOIN (SELECT pi.idInsumo, inv.lote, inv.fechaCaducidad, s.claveAgrupada
+        FROM prescripcionInsumo pi 
+        INNER JOIN surtimiento s ON s.idPrescripcion = pi.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON si.idSurtimiento = s.idSurtimiento AND si.idPrescripcionInsumo = pi.idPrescripcionInsumo
+        INNER JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        INNER JOIN inventario inv ON inv.idInventario = se.idInventarioSurtido
+        AND s.claveAgrupada = #{ cadena , jdbcType = VARCHAR }
+        AND pi.idTipoIngrediente = 1) z ON z.idInsumo = m.idMedicamento AND z.lote = i.lote AND z.fechaCaducidad = i.fechaCaducidad
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        LEFT JOIN fabricante f ON i.idFabricante = f.idFabricante
+        WHERE m.activo = 1
+        AND ( CONCAT( m.claveInstitucional , ',' , i.lote , ',' , DATE_FORMAT(i.fechaCaducidad, '%d%m%Y')) = '${ cadena }'
+        OR CONCAT( '(01)', m.claveInstitucional , '(10)' , i.lote , '(17)' , DATE_FORMAT(i.fechaCaducidad, '%y%m%d')) = '${ cadena }'
+        OR cpb.codigoBarras = #{ cadena , jdbcType = VARCHAR }
+        OR m.codigoBarrasAlterno = #{ cadena , jdbcType = VARCHAR }
+        OR z.claveAgrupada = #{ cadena , jdbcType = VARCHAR }
+        <if test="activa_autoCompleteInsumos == true">
+            OR m.nombreCorto LIKE '%${ cadena }%'
+            OR m.nombreLargo LIKE '%${ cadena }%'
+            OR m.claveAlterna LIKE '%${ cadena }%'
+            OR m.claveInstitucional LIKE '%${ cadena }%'
+        </if>
+        )
+        <if test=" idEstructuraList != null ">
+            AND pc.idAlmacen  IN 
+            <foreach item="item" index="index" collection="idEstructuraList" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        AND i.cantidadActual > 0
+        GROUP BY i.idEstructura, i.idInsumo , i.lote , i.cantidadPorClave , i.claveProveedor
+        ORDER BY i.fechaCaducidad ASC, i.cantidadActual DESC
+    </select>
+   
+    <select id="searchMedicamentoRecepcionAutoComplete" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT 
+        m.idMedicamento
+        ,  i.idInsumo
+        , cpb.codigoBarras
+        , m.claveInstitucional
+        , i.cantidadActual
+        , i.lote
+        , i.fechaCaducidad
+        , m.nombreCorto 
+        , m.nombreLargo 
+        , m.activo as sustanciaActiva
+        , i.noHorasestabilidad
+        FROM medicamento m 
+        INNER JOIN  inventario i ON i.idInsumo = m.idMedicamento 
+        INNER JOIN  almacenPuntosControl pc on pc.idMedicamento = m.idMedicamento AND pc.idAlmacen = i.idEstructura
+        LEFT JOIN claveProveedorBarras cpb ON m.claveInstitucional = cpb.claveInstitucional 
+        WHERE m.activo = 1
+        AND (
+        CONCAT( m.claveInstitucional , ',' , i.lote , ',' , DATE_FORMAT(i.fechaCaducidad, '%d%m%Y')) = '${ cadena }'
+        OR CONCAT( '(01)', m.claveInstitucional , '(10)' , i.lote , '(17)' , DATE_FORMAT(i.fechaCaducidad, '%y%m%d')) = '${ cadena }'
+        OR cpb.codigoBarras = #{ cadena , jdbcType = VARCHAR }
+        OR m.codigoBarrasAlterno = #{ cadena , jdbcType = VARCHAR }
+        <if test="activa_autoCompleteInsumos == true">
+            OR m.nombreCorto LIKE '%${ cadena }%'
+            OR m.nombreLargo LIKE '%${ cadena }%'
+            OR m.claveAlterna LIKE '%${ cadena }%'
+            OR m.claveInstitucional LIKE '%${ cadena }%'
+        </if>
+        )
+        AND pc.idAlmacen=#{idEstructura,jdbcType=VARCHAR}             
+        GROUP BY i.lote, m.claveInstitucional
+        ORDER BY  i.cantidadActual DESC
+    </select>
+    
+    <select id="validarExistencia" resultType="String" parameterType="String">
+        SELECT claveInstitucional FROM medicamento 
+        WHERE 
+        claveInstitucional = #{ claveInstitucional, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtenerTipoMedicamento" resultType="mx.mc.model.Medicamento" parameterType="Map">
+        SELECT tipo FROM medicamento 
+        WHERE 
+        idMedicamento = #{ idMedicamento, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtenerMedicamentosPorPrescripcionSync" resultType="mx.mc.model.MedicamentoOff_Extended" parameterType="Map">
+        SELECT p.folio as folioPrescripcion , p.fechaPrescripcion
+        , CONCAT( u.apellidoPaterno , ' ' , u.apellidoMaterno , ' ' , u.nombre ) AS nombreMedico
+        , pi.idInsumo , pi.dosis , pi.frecuencia , pi.duracion , pi.indicaciones
+        , m.claveInstitucional , m.nombreCorto , m.nombreLargo 
+        , m.activo as medicamentoActivo
+        , su.nombreSustanciaActiva 
+        , pm.nombrePresentacion
+        , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' ' ,pa.nombreCompleto) AS nombrePaciente , pa.idPaciente
+        , c.nombreCama 
+        , sm.idMinistrado , sm.fechaProgramado,  sm.cantidad as cantidadActual, sm.dosis , sm.idEstatusSurtimiento as estatusMinistracion
+        , inv.lote , inv.fechaCaducidad, inv.activo , inv.idInventario
+        , uc.nombreUnidadConcentracion
+        FROM prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON si.idPrescripcionInsumo = pi.idPrescripcionInsumo AND si.idSurtimiento = s.idSurtimiento
+        
+        INNER JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        INNER JOIN inventario inv ON se.idInventarioSurtido = inv.idInventario
+        INNER JOIN surtimientoMinistrado sm ON sm.idSurtimientoEnviado = se.idSurtimientoEnviado
+        
+        INNER JOIN medicamento m ON pi.idInsumo = m.idMedicamento
+        INNER JOIN sustanciaActiva su ON m.sustanciaActiva = su.idSustanciaActiva
+        INNER JOIN presentacionMedicamento pm ON m.idPresentacionSalida = pm.idPresentacion
+        
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        LEFT JOIN pacienteUbicacion pu ON ps.idPacienteServicio = pu.idPacienteServicio
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        WHERE 1=1
+        <if test=" idsEstructura != null ">
+            AND pa.idEstructura IN 
+            <foreach item="item" index="index" collection="idsEstructura" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" listaEstatusPresc != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listaEstatusPresc" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" listEstatusMinistracion != null ">
+            AND sm.idEstatusMinistracion IN 
+            <foreach item="item" index="index" collection="listEstatusMinistracion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        AND ( sm.fechaProgramado  BETWEEN DATE_ADD( NOW(), INTERVAL #{ministraPrevDays} DAY ) AND DATE_ADD( NOW(), INTERVAL #{ministraLaterHours} HOUR ) )
+        ORDER BY sm.fechaProgramado ASC
+    </select>
+    
+    <select id="obtenerInsumoLikeClave" resultType="mx.mc.model.Medicamento" parameterType="Map">
+        select * from medicamento 
+        where claveInstitucional LIKE '%${valor}%'
+        and  activo = 1 
+    </select>
+    
+    <select id="obtenerMedicamentoByClaveSiam" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        select *, pm.nombrePresentacion from medicamento m 
+        join presentacionMedicamento pm on pm.idPresentacion = m.idPresentacionSalida
+        where replace(m.claveInstitucional,'.','') = #{claveInstitucional, jdbcType = VARCHAR}
+    </select>
+
+    <update id="updateEstatusInsumo" parameterType="mx.mc.model.Medicamento" >
+        UPDATE medicamento
+        <set>
+            <if test="activo != null"> activo = #{activo, jdbcType = INTEGER</if>
+            <if test="updateFecha != null"> updateFecha= #{updateFecha, jdbcType=DATE}, </if>   
+            <if test="updateIdUsuario != null"> updateIdUsuario = #{updateIdUsuario, jdbcType=VARCHAR} </if>
+        </set>
+        WHERE  idMedicamento = #{ idMedicamento, jdbcType = VARCHAR}
+    </update>
+     
+    <select id="obtenerXNombreTipoCatalog" resultType="mx.mc.model.Medicamento" parameterType="Map" >        
+        SELECT idMedicamento, claveInstitucional, nombreCorto, nombreLargo, tipo
+        FROM medicamento       
+        WHERE activo = 1 
+        <if test="tipo != null "> AND tipo = #{tipo,jdbcType=INTEGER} </if>            
+        <if test="cadena != null "> AND ( nombreCorto LIKE '%${cadena}%'
+            OR nombreLargo LIKE '%${cadena}%'
+            OR claveInstitucional LIKE '%${cadena}%' )
+        </if>
+    </select>       
+    
+    <select id="buscarSalMedicamento" resultType="mx.mc.model.VistaMedicamento" parameterType="Map" >        
+        SELECT idMedicamento,
+        claveInstitucional,
+        sustanciaActiva, 
+        nombreCorto, 
+        nombreLargo,
+        cuadroBasico,
+        activo,
+        tipo,
+        idLocalidadAVG
+        FROM viewMedicamentos
+        WHERE 1=1       
+        <if test="cadena != null ">
+            AND claveInstitucional LIKE '%${cadena}%'
+            OR sustanciaActiva LIKE '%${cadena}%'
+            OR viaAdministracion LIKE '%${cadena}%'
+            OR nombreCorto LIKE '%${cadena}%'
+            OR nombreLargo LIKE '%${cadena}%'
+            OR concentracion LIKE '%${cadena}%'
+            OR unidadConcentracion LIKE '%${cadena}%'
+            OR presentacionLaboratorio LIKE '%${cadena}%'
+            OR laboratorio LIKE '%${cadena}%'
+            OR presentacionEntrada LIKE '%${cadena}%'
+            OR factorTransformacion LIKE '%${cadena}%'
+            OR categoria LIKE '%${cadena}%'
+            OR subcategoria LIKE '%${cadena}%'
+            OR grupo LIKE '%${cadena}%'
+        </if>
+        group by sustanciaActiva
+        ORDER BY tipo ASC
+    </select>
+    
+    <select id="buscarMedicamentoPorId" resultType="mx.mc.model.VistaMedicamento" parameterType="Map" >
+        SELECT idMedicamento,
+        claveInstitucional,
+        sustanciaActiva, 
+        nombreCorto, 
+        nombreLargo,
+        unidadConcentracion,
+        cuadroBasico,
+        activo,
+        tipo,
+        idLocalidadAVG
+        FROM viewMedicamentos
+        WHERE idMedicamento = #{idMedicamento, jdbcType = VARCHAR};
+    </select>
+    
+    <select id="obtenerTodosMedicamentosActivos" resultType="mx.mc.model.Medicamento" parameterType="Map">
+        SELECT idMedicamento, claveInstitucional, sustanciaActiva, idViaAdministracion, nombreCorto, nombreLargo, concentracion, idUnidadConcentracion, presentacionLaboratorio, laboratorio, idPresentacionEntrada, factorTransformacion, idPresentacionSalida, idCategoria, idSubcategoria, grupo, indivisible, imagenPresentacion, nameImage, cuadroBasico, activo
+        FROM medicamento
+        WHERE activo=1
+    </select>    
+    
+    
+    <select id="obtenerInsumoLista" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT 
+        m.idMedicamento
+        , m.claveInstitucional
+        , m.sustanciaActiva
+        , m.idViaAdministracion
+        , m.nombreCorto
+        , m.nombreLargo
+        , m.concentracion
+        , m.idUnidadConcentracion
+        , m.presentacionLaboratorio
+        , m.laboratorio, m.idPresentacionEntrada
+        , m.factorTransformacion
+        , m.idPresentacionSalida
+        , m.idCategoria
+        , m.idSubcategoria
+        , m.grupo
+        , m.indivisible
+        , m.cuadroBasico
+        , m.activo
+        , m.tipo
+        , m.insertFecha
+        , m.insertIdUsuario
+        , m.updateFecha
+        , m.updateIdUsuario
+        , m.idEstatusGabinete
+        , m.tipoMedicacion
+        , m.refrigeracion
+        , m.medicamentoControlado
+        , m.claveAlterna
+        , m.codigoBarrasAlterno
+        , m.osmolaridad
+        , m.calorias
+        , m.densidad
+        , m.noHorasestabilidad
+        , m.cantPorEnvase
+        , m.idUnidadMedida    
+        , m.noAgitar
+        , m.tempRefrigeracion
+        , IFNULL(s.nombreSustanciaActiva, '') AS nombreSustanciaActiva
+        , IFNULL(v.nombreViaAdministracion, '') AS viaAdministracion
+        , IFNULL(u.nombreUnidadConcentracion, '')  AS nombreUnidadConcentracion
+        , IFNULL(c.nombreCategoriaMedicamento, '')  AS nombreCategoria
+        , IFNULL(sc.nombreSubcategoriaMedicamento, '')  AS subcategoria
+        , IFNULL(pe.nombrePresentacion, '')  AS presentacionEntrada
+        , IFNULL(ps.nombrePresentacion, '')  AS presentacionSalida 
+        , IFNULL(CONCAT(u1.nombre,' ',u1.apellidoPaterno,' ',u1.apellidoMaterno), '') AS nombreUsuarioRegistra
+        , IFNULL(CONCAT(u2.nombre, ' ',u2.apellidoPaterno, ' ', u2.apellidoMaterno), '') AS nombreUsuarioModifica
+        FROM medicamento m
+        LEFT JOIN sustanciaActiva s ON m.sustanciaActiva = s.idSustanciaActiva
+        LEFT JOIN viaAdministracion v ON m.idViaAdministracion = v.idViaAdministracion
+        LEFT JOIN unidadConcentracion u ON m.idUnidadConcentracion = u.idUnidadConcentracion
+        LEFT JOIN categoriaMedicamento c ON m.idCategoria = c.idCategoriaMedicamento
+        LEFT JOIN subcategoriaMedicamento sc ON m.idSubcategoria = sc.idSubcategoriaMedicamento
+        LEFT JOIN presentacionMedicamento pe ON m.idPresentacionEntrada = pe.idPresentacion
+        LEFT JOIN presentacionMedicamento ps ON m.idPresentacionSalida = ps.idPresentacion
+        LEFT JOIN usuarios u1 ON m.insertIdUsuario  = u1.idUsuario 
+        LEFT JOIN usuarios u2 ON m.updateIdUsuario  = u2.idUsuario
+        WHERE 1=1
+        <if test="paramBusquedaReporte.cadenaBusqueda != null ">
+            AND m.claveInstitucional LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR s.nombreSustanciaActiva LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR m.nombreCorto LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR m.nombreLargo LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR c.nombreCategoriaMedicamento LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR sc.nombreSubcategoriaMedicamento LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR m.grupo LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR m.claveAlterna LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR m.codigoBarrasAlterno LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+        </if>
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'claveInstitucional'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY m.claveInstitucional asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY m.claveInstitucional desc
+                </if>            
+            </if>
+            <if test="sortField == 'nombreCorto'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY m.nombreCorto asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY m.nombreCorto desc
+                </if>
+            </if>
+            <if test="sortField == 'nombreLargo'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY m.nombreLargo asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY m.nombreLargo desc
+                </if>            
+            </if>
+            <if test="sortField == 'sustanciaActiva'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY s.nombreSustanciaActiva asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY s.nombreSustanciaActiva desc
+                </if>            
+            </if>
+        </if>              
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}   
+    </select>
+    
+    <select id="obtenerInsumoListaNoTotal" resultType="Long" parameterType="Map">
+        SELECT COUNT(*)
+        FROM medicamento m
+        LEFT JOIN sustanciaActiva s ON m.sustanciaActiva = s.idSustanciaActiva
+        LEFT JOIN viaAdministracion v ON m.idViaAdministracion = v.idViaAdministracion
+        LEFT JOIN unidadConcentracion u ON m.idUnidadConcentracion = u.idUnidadConcentracion
+        LEFT JOIN categoriaMedicamento c ON m.idCategoria = c.idCategoriaMedicamento
+        LEFT JOIN subcategoriaMedicamento sc ON m.idSubcategoria = sc.idSubcategoriaMedicamento
+        LEFT JOIN presentacionMedicamento pe ON m.idPresentacionEntrada = pe.idPresentacion
+        LEFT JOIN presentacionMedicamento ps ON m.idPresentacionSalida = ps.idPresentacion
+        LEFT JOIN usuarios u1 ON m.insertIdUsuario  = u1.idUsuario 
+        LEFT JOIN usuarios u2 ON m.updateIdUsuario  = u2.idUsuario
+        WHERE 1=1
+        <if test="paramBusquedaReporte.cadenaBusqueda != null ">
+            AND m.claveInstitucional LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR s.nombreSustanciaActiva LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR m.nombreCorto LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR m.nombreLargo LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR c.nombreCategoriaMedicamento LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR sc.nombreSubcategoriaMedicamento LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR m.grupo LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR m.claveAlterna LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            OR m.codigoBarrasAlterno LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+        </if>
+    </select>
+    
+    <select id="obtenerMedicamentoPorIdInsumo" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map" >
+        SELECT m.idMedicamento , m.claveInstitucional , m.sustanciaActiva , m.idViaAdministracion , m.nombreCorto , m.nombreLargo 
+        , m.concentracion , m.idUnidadConcentracion , m.presentacionLaboratorio , m.laboratorio , m.idPresentacionEntrada , m.factorTransformacion 
+        , m.idPresentacionSalida , m.idCategoria , m.idSubcategoria , m.grupo , m.indivisible , m.imagenPresentacion , m.nameImage , m.cuadroBasico 
+        , m.activo , m.tipo , m.insertFecha , m.insertIdUsuario , m.updateFecha , m.updateIdUsuario , m.idEstatusGabinete , m.idLocalidadAVG 
+        , m.tipoMedicacion , m.costo , m.refrigeracion , m.medicamentoControlado , m.ubicacion , m.claveAlterna , m.codigoBarrasAlterno 
+        , m.osmolaridad , m.densidad , m.noHorasestabilidad , m.cantPorEnvase , m.idUnidadMedida, m.calorias, m.calcularNCA 
+        , m.tempAmbiente , m.fotosensible , m.tempRefrigeracion , m.noAgitar
+        , IFNULL(va.nombreViaAdministracion, '') AS viaAdministracion
+        , IFNULL(sa.nombreSustanciaActiva, '' ) AS nombreSustanciaActiva
+        , IFNULL(pm.nombrePresentacion,'') AS presentacionEntrada
+        , IFNULL(pm2.nombrePresentacion, '') AS presentacionSalida
+        , IFNULL(cm.nombreCategoriaMedicamento, '') AS nombreCategoria
+        , IFNULL(sm.nombreSubcategoriaMedicamento, '') AS subcategoria
+        , IFNULL(uc.nombreUnidadConcentracion, '') AS nombreUnidadConcentracion
+        , IFNULL(uc2.idUnidadConcentracion, '') AS nombreUnidadMedida
+        FROM medicamento m
+        LEFT JOIN viaAdministracion va ON m.idViaAdministracion = va.idViaAdministracion
+        LEFT JOIN sustanciaActiva sa ON m.sustanciaActiva = sa.idSustanciaActiva 
+        LEFT JOIN presentacionMedicamento pm ON m.idPresentacionEntrada = pm.idPresentacion
+        LEFT JOIN presentacionMedicamento pm2 ON m.idPresentacionSalida  = pm.idPresentacion
+        LEFT JOIN categoriaMedicamento cm ON m.idCategoria = cm.idCategoriaMedicamento
+        LEFT JOIN subcategoriaMedicamento sm ON m.idSubcategoria = sm.idSubcategoriaMedicamento
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        LEFT JOIN unidadConcentracion uc2 ON m.idUnidadMedida = uc2.idUnidadConcentracion
+        WHERE m.idMedicamento =#{ idMedicamento , jdbcType = VARCHAR }
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerMedicamentoCaloria" resultType="mx.mc.model.Medicamento" parameterType="Map">
+        SELECT me.* FROM medicamento m 
+        INNER JOIN medicamentoCalorias mc ON m.idMedicamento = mc.idMedicamento
+        INNER JOIN medicamento me ON mc.idInsumoCaloria = me.idMedicamento
+        WHERE mc.idMedicamento = #{idMedicamento, jdbcType = VARCHAR};
+    </select>
+    
+    <select id="obtenerCaloriasMedicamentos" resultType="mx.mc.model.Medicamento">
+        SELECT * FROM medicamento WHERE nombreCorto LIKE 'calorias%';
+    </select>
+        
+    <select id="obtenerMedicamentoByIdMedicamento" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map" >
+        SELECT idMedicamento, claveInstitucional, sustanciaActiva, idViaAdministracion, nombreCorto, nombreLargo, concentracion, idUnidadConcentracion, presentacionLaboratorio, laboratorio, idPresentacionEntrada, factorTransformacion, idPresentacionSalida, idCategoria, idSubcategoria, grupo, indivisible, nameImage, cuadroBasico, activo, tipo, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idEstatusGabinete, idLocalidadAVG, tipoMedicacion, costo, refrigeracion, medicamentoControlado, ubicacion, claveAlterna, codigoBarrasAlterno, osmolaridad, densidad, noHorasestabilidad, cantPorEnvase, idUnidadMedida, mezclaParental, calculoMezcla, incluyeDiluyente, requiereDiluyente, diluyente, fotosensible, tempAmbiente, tempRefrigeracion, densidad, noHorasEstabilidadAbierto, presentacion, contenedor, listaDiluyentes, dosificacion, riesgos, contraindicaciones, interacciones, composicion, precauciones, reacciones, farmacocinetica, farmacodinamica, indicacionesTerapeuticas, dosisPorMl, idUnidadMedidaDosis, calcularNCA , calorias , noAgitar
+        FROM medicamento
+        <where>            
+            <if test="idMedicamento != null"> idMedicamento = #{ idMedicamento, jdbcType = VARCHAR} </if>
+        </where>    
+        LIMIT 1;
+    </select>
+    
+    <select id="obtenerAutoCompleteMedicamento" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map" >
+        SELECT 
+            m.idMedicamento , m.claveInstitucional , m.nombreCorto , m.nombreLargo , m.concentracion 
+            , m.osmolaridad , m.densidad , m.noHorasestabilidad , m.cantPorEnvase 
+            , m.mezclaParental , m.calculoMezcla , m.incluyeDiluyente , m.requiereDiluyente , m.diluyente 
+            , m.densidad, m.noHorasEstabilidadAbierto, m.contenedor , m.dosisPorMl, m.idUnidadMedidaDosis, m.calcularNCA
+            , m.fotosensible , m.tempAmbiente , m.tempRefrigeracion  , m.tipo , m.activo , m.calcularNCA , m.calorias , m.noAgitar
+            , uc.nombreUnidadConcentracion           
+            , IFNULL( aic.cantidadComprometida , 0) AS cantidadComprometida
+            , CASE WHEN SUM( IFNULL(i.cantidadActual,0) ) &lt; 0 THEN 0 ELSE SUM( IFNULL(i.cantidadActual,0) ) END AS cantidadActual
+            , CASE WHEN SUM( IFNULL(i.cantidadActual,0) ) &lt; 0 THEN 0 
+            	ELSE SUM( IFNULL(i.cantidadActual,0) ) - IFNULL( aic.cantidadComprometida , 0) END AS cantidadDisponible
+            , e.nombre AS nombreEstructura , m.idUnidadConcentracion 
+            FROM medicamento m 
+            LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion 
+            LEFT JOIN claveProveedorBarras cpb ON m.claveInstitucional = cpb.claveInstitucional 
+            LEFT JOIN inventario i ON i.idInsumo = m.idMedicamento 
+            LEFT JOIN vwAlmacenInsumoComprometido aic ON i.idInsumo = aic.idInsumo AND i.idEstructura = aic.idEstructuraAlmacen
+            LEFT JOIN almacenPuntosControl pc ON m.idMedicamento = pc.idMedicamento AND i.idEstructura = pc.idAlmacen 
+            LEFT JOIN estructuraAlmacenServicio eas ON i.idEstructura = eas.idEstructuraAlmacen
+            LEFT JOIN estructura e ON eas.idEstructuraAlmacen = e.idEstructura
+            LEFT JOIN estructuraTipoSurtimiento ets ON eas.idEstructuraAlmacen = ets.idEstructuraAlmacen 
+            LEFT JOIN tipoSurtimiento ts ON ets.idTipoSurtimiento = ts.idTipoSurtimiento 
+            WHERE m.activo = 1
+                AND (
+                m.claveInstitucional LIKE '%${ cadena }%'
+                OR m.nombreCorto LIKE '%${ cadena }%'
+                OR m.nombreLargo LIKE '%${ cadena }%'
+                OR m.claveAlterna LIKE '%${ cadena }%'
+                OR cpb.codigoBarras LIKE '%${ cadena }%'
+                )
+                <if test=" idEstructuraServicio != null">
+                    AND eas.idEstructuraServicio = #{ idEstructuraServicio }
+                </if>
+                <if test=" listaTipoSurtimiento != null">
+                    AND ets.idTipoSurtimiento IN 
+                    <foreach item="item" index="index" collection="listaTipoSurtimiento" open="(" separator="," close=")">
+                        #{ item }
+                    </foreach>
+                </if>
+            GROUP BY m.idMedicamento, m.claveInstitucional, m.nombreCorto, m.nombreLargo, m.concentracion, uc.nombreUnidadConcentracion
+                , m.mezclaParental , m.calculoMezcla , m.incluyeDiluyente , m.requiereDiluyente , m.diluyente 
+                , m.fotosensible , m.tempAmbiente , m.tempRefrigeracion 
+                , e.nombre  
+            LIMIT 20;
+    </select>
+    
+    <select id="obtenerMedicamentosParentales" resultType="mx.mc.model.NutricionParenteralDetalleExtended">
+        SELECT m.idMedicamento, m.claveInstitucional AS claveMedicamento, m.nombreCorto, m.nombreLargo, m.concentRacion, pm.nombrePresentacion AS nombrePresentacion,
+        va.nombreViaAdministracion AS viaAdministracion, osmolaridad, densidad, calculoMezcla , uc.nombreUnidadConcentracion , m.calorias, m.calcularNCA, m.noAgitar , m.tempRefrigeracion, m.tempAmbiente , m.fotosensible
+        , m.ordenAdicion
+        FROM medicamento m 
+        INNER JOIN presentacionMedicamento pm ON m.idPresentacionEntrada = pm.idPresentacion
+        INNER JOIN viaAdministracion va ON m.idViaAdministracion = va.idViaAdministracion
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        WHERE m.activo = 1 
+        AND m.mezclaParental = 1 
+        ORDER BY m.ordenAdicion ASC;
+    </select>
+    
+<!--    <select id="obtenerMedicamentosParentales" resultType="mx.mc.model.NutricionParenteralDetalleExtended">
+        SELECT m.idMedicamento, m.claveInstitucional AS claveMedicamento, m.nombreCorto, m.nombreLargo, m.concentRacion, pm.nombrePresentacion AS nombrePresentacion,
+        va.nombreViaAdministracion AS viaAdministracion, osmolaridad, margenOsmolaridad, calculoMezcla , uc.nombreUnidadConcentracion
+        , m.ordenAdicion
+        FROM medicamento m
+        INNER JOIN presentacionMedicamento pm ON m.idPresentacionEntrada = pm.idPresentacion
+        INNER JOIN viaAdministracion va ON m.idViaAdministracion = va.idViaAdministracion
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        WHERE m.activo = 1
+        AND m.mezclaParental = 1
+        ORDER BY m.nombreCorto;
+    </select>-->
+
+    <select id="obtenerMedicamentoAdicionarParaPrepararAsc" resultType="mx.mc.model.Medicamento" parameterType="Map">
+        SELECT claveInstitucional, ordenAdicion , esAgua
+        FROM medicamento WHERE ordenAdicion > 0 and activo = 1 ORDER BY ordenAdicion ASC;
+    </select>
+
+    <select id="obtenerMedicamentoParaSRAM" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT 
+        m.idMedicamento
+        ,  i.idInsumo
+        , cpb.codigoBarras
+        , m.claveInstitucional
+        , i.cantidadActual
+        , i.lote
+        , i.fechaCaducidad
+        , m.nombreCorto 
+        , m.nombreLargo 
+        , m.activo 
+        , m.sustanciaActiva
+        , m.idViaAdministracion
+        , m.idUnidadConcentracion
+        , m.concentracion
+        , uc.nombreUnidadConcentracion
+        , i.idFabricante
+        , f.nombreFabricante
+        , i.noHorasestabilidad
+        , i.noHorasestabilidad AS hrsEstabilidad
+        FROM medicamento m 
+        INNER JOIN  inventario i ON i.idInsumo = m.idMedicamento 
+        LEFT JOIN claveProveedorBarras cpb ON m.claveInstitucional = cpb.claveInstitucional 
+        LEFT JOIN (SELECT pi.idInsumo, inv.lote, inv.fechaCaducidad, s.claveAgrupada
+        FROM prescripcionInsumo pi 
+        INNER JOIN surtimiento s ON s.idPrescripcion = pi.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON si.idSurtimiento = s.idSurtimiento AND si.idPrescripcionInsumo = pi.idPrescripcionInsumo
+        INNER JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        INNER JOIN inventario inv ON inv.idInventario = se.idInventarioSurtido
+        AND s.claveAgrupada = #{ cadena , jdbcType = VARCHAR }
+        AND pi.idTipoIngrediente = 1) z ON z.idInsumo = m.idMedicamento AND z.lote = i.lote AND z.fechaCaducidad = i.fechaCaducidad
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        LEFT JOIN fabricante f ON i.idFabricante = f.idFabricante
+        WHERE m.activo = 1
+        AND (
+        CONCAT( m.claveInstitucional , ',' , i.lote , ',' , DATE_FORMAT(i.fechaCaducidad, '%d%m%Y')) = '${ cadena }'
+        OR CONCAT( '(01)', m.claveInstitucional , '(10)' , i.lote , '(17)' , DATE_FORMAT(i.fechaCaducidad, '%y%m%d')) = '${ cadena }'
+        OR cpb.codigoBarras = #{ cadena , jdbcType = VARCHAR }
+        OR m.codigoBarrasAlterno = #{ cadena , jdbcType = VARCHAR }
+        OR z.claveAgrupada = #{ cadena , jdbcType = VARCHAR }
+        <if test="activa_autoCompleteInsumos == true">
+            OR m.nombreCorto LIKE '%${ cadena }%'
+            OR m.nombreLargo LIKE '%${ cadena }%'
+            OR m.claveAlterna LIKE '%${ cadena }%'
+            OR m.claveInstitucional LIKE '%${ cadena }%'
+        </if>
+        )
+        GROUP BY i.lote, m.claveInstitucional
+        ORDER BY i.fechaCaducidad ASC, i.cantidadActual DESC
+    </select>
+    
+    <select id="obtenerMedicamentoRemanente" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT m.idMedicamento , i.idInsumo , cpb.codigoBarras , m.claveInstitucional 
+           , i.cantidadActual 
+           , i.lote , i.fechaCaducidad , m.nombreCorto 
+           , m.nombreLargo , m.activo as sustanciaActiva , m.idViaAdministracion , m.idUnidadConcentracion , m.concentracion , uc.nombreUnidadConcentracion 
+           , i.idFabricante , f.nombreFabricante , i.noHorasestabilidad , i.noHorasestabilidad AS hrsEstabilidad , i.idInventario 
+           , es.nombre AS nombreEstructura , m.osmolaridad , m.densidad , m.noHorasestabilidad , m.cantPorEnvase , m.mezclaParental , m.calculoMezcla 
+           , m.incluyeDiluyente , m.requiereDiluyente , m.diluyente , m.densidad , m.noHorasEstabilidadAbierto , m.contenedor , m.dosisPorMl 
+           , m.idUnidadMedidaDosis, m.calcularNCA , m.fotosensible , m.tempAmbiente , m.tempRefrigeracion , m.tipo , m.activo , m.calcularNCA 
+           , m.calorias , m.noAgitar , uc.nombreUnidadConcentracion , m.idUnidadConcentracion 
+           , m.cantPorEnvase , m.idUnidadMedida , IFNULL(uc2.nombreUnidadConcentracion,'') AS unidadPorEnvase 
+           , i.noHorasestabilidad 
+           , sq1.fechaEnviada AS ultimaFechaUso 
+           , sq1.dosisPrescrita , sq1.dosisEnnviada , sq1.dosisSobrante 
+           , m.cantPorEnvase , m.concentracion 
+           , sq1.cantEnviadaSobrante AS cantidadActual 
+           , sq1.cantEnviadaSobrante AS cantidadDisponible 
+           , sq1.cantidadEnviada
+           FROM medicamento m 
+           INNER JOIN inventario i ON i.idInsumo = m.idMedicamento
+           JOIN (
+                   SELECT (m.concentracion * si.cantidadEnviada) AS dosisEnnviada
+				, pi2.dosis AS dosisPrescrita
+				, (m.concentracion * si.cantidadEnviada) - pi2.dosis AS dosisSobrante 
+				, ((m.concentracion * si.cantidadEnviada) - pi2.dosis) / m.cantPorEnvase  AS cantEnviadaSobrante 
+				, se.idInventarioSurtido 
+				, si.fechaEnviada , si.cantidadEnviada
+                   FROM prescripcion p 
+                   JOIN prescripcionInsumo pi2 ON p.idPrescripcion = pi2.idPrescripcion 
+                   JOIN medicamento m ON pi2.idInsumo = m.idMedicamento 
+                   JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion 
+                   JOIN surtimientoInsumo si ON (pi2.idPrescripcionInsumo = si.idPrescripcionInsumo AND s.idSurtimiento = si.idSurtimiento)
+                   JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo 
+                   WHERE 
+        <!--p.idPrescripcion = '0d168abd-92a3-4191-8114-4d33e91d75a5'-->
+                   (((m.concentracion  * si.cantidadEnviada) - pi2.dosis) / m.cantPorEnvase) > 0
+                ) AS sq1 ON i.idInventario = sq1.idInventarioSurtido
+           LEFT JOIN unidadConcentracion uc2 ON m.idUnidadMedida = uc2.idUnidadConcentracion 
+           LEFT JOIN estructura es ON i.idEstructura = es.idEstructura 
+           LEFT JOIN vwAlmacenInsumoComprometido aic ON i.idInsumo = aic.idInsumo AND i.idEstructura = aic.idEstructuraAlmacen 
+           INNER JOIN almacenPuntosControl pc on pc.idMedicamento = m.idMedicamento AND pc.idAlmacen = i.idEstructura 
+           LEFT JOIN claveProveedorBarras cpb ON m.claveInstitucional = cpb.claveInstitucional 
+           LEFT JOIN (SELECT pi.idInsumo, inv.lote, inv.fechaCaducidad, s.claveAgrupada 
+                                   FROM prescripcionInsumo pi 
+                                   INNER JOIN surtimiento s ON s.idPrescripcion = pi.idPrescripcion 
+                                   INNER JOIN surtimientoInsumo si ON si.idSurtimiento = s.idSurtimiento AND si.idPrescripcionInsumo = pi.idPrescripcionInsumo 
+                                   INNER JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo 
+                                   INNER JOIN inventario inv ON inv.idInventario = se.idInventarioSurtido 
+                                        AND s.claveAgrupada = #{ cadena , jdbcType = VARCHAR }
+<!--                                        AND pi.idTipoIngrediente = 1-->
+                                   ) z ON z.idInsumo = m.idMedicamento AND z.lote = i.lote AND z.fechaCaducidad = i.fechaCaducidad 
+           LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion 
+           LEFT JOIN fabricante f ON i.idFabricante = f.idFabricante 
+           WHERE m.activo = 1
+                AND (
+                    CONCAT( m.claveInstitucional , ',' , i.lote , ',' , DATE_FORMAT(i.fechaCaducidad, '%d%m%Y')) = '${ cadena }'
+                    OR CONCAT( '(01)', m.claveInstitucional , '(10)' , i.lote , '(17)' , DATE_FORMAT(i.fechaCaducidad, '%y%m%d')) = '${ cadena }'
+                    OR cpb.codigoBarras = #{ cadena , jdbcType = VARCHAR }
+                    OR m.codigoBarrasAlterno = #{ cadena , jdbcType = VARCHAR }
+                    OR z.claveAgrupada = #{ cadena , jdbcType = VARCHAR }
+                    <if test="activa_autoCompleteInsumos == true">
+                        OR m.nombreCorto LIKE '%${ cadena }%'
+                        OR m.nombreLargo LIKE '%${ cadena }%'
+                        OR m.claveAlterna LIKE '%${ cadena }%'
+                        OR m.claveInstitucional LIKE '%${ cadena }%'
+                    </if>
+                    )
+                <if test=" idEstructuraList != null ">
+                    AND pc.idAlmacen  IN 
+                    <foreach item="item" index="index" collection="idEstructuraList" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test=" remanetesSoluciones != null" >
+                    AND m.diluyente = #{ remanetesSoluciones }
+                </if>
+                <!--AND pc.idAlmacen IN ( 'c6365aac-5424-4632-9382-8e6c4a4bbe72', 'cd775aad-2b0d-4aaf-9e0a-d37cdc1b8dfe', 'bc23ea31-e62c-49a7-b8bc-c1b7ceb6a6ca' )--> 
+                <!--AND i.cantidadActual > 0--> 
+            GROUP BY i.lote, m.claveInstitucional 
+            ORDER BY i.fechaCaducidad ASC, i.cantidadActual DESC
+    </select>
+    
+    <select id="obtenerPorClaveInstitucional" resultType="mx.mc.model.Medicamento" parameterType="Map">
+        SELECT
+            idMedicamento
+            , claveInstitucional
+            , sustanciaActiva
+            , idViaAdministracion
+            , nombreCorto
+            , concentracion
+            , idUnidadConcentracion
+            , dosisPorMl
+            , idUnidadMedidaDosis
+            , cantPorEnvase
+            , idUnidadMedida
+        FROM medicamento
+        WHERE claveInstitucional IN 
+        <foreach item="item" index="index" collection="listaClaveInstitucional" open="(" separator="," close=")">
+            #{ item }
+        </foreach> 
+    </select>
+    
+    <select id="searchMedicamentoAutoCompleteMultipleAlmConsolida" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT 
+        m.idMedicamento
+        ,  i.idInsumo
+        , cpb.codigoBarras
+        , m.claveInstitucional
+        , m.nombreCorto 
+        , m.nombreLargo 
+        , m.activo as sustanciaActiva
+        , m.idViaAdministracion
+        , m.idUnidadConcentracion
+        , m.concentracion
+        , m.cantPorEnvase
+        , m.diluyente
+        , uc.nombreUnidadConcentracion
+        , CASE WHEN SUM( IFNULL(i.cantidadActual,0) ) &lt; 0 THEN 0 
+                ELSE SUM( IFNULL(i.cantidadActual,0) ) END AS cantidadActual
+        , CASE WHEN SUM( IFNULL(i.cantidadActual,0) ) &lt; 0 THEN 0 
+                ELSE SUM( IFNULL(i.cantidadActual,0) ) - IFNULL( aic.cantidadComprometida , 0) END AS cantidadDisponible
+        , m.tipo , m.activo 
+        , i.idInventario
+        FROM medicamento m 
+        INNER JOIN  inventario i ON i.idInsumo = m.idMedicamento 
+        LEFT JOIN unidadConcentracion uc2 ON m.idUnidadMedida = uc2.idUnidadConcentracion
+        LEFT JOIN estructura es ON i.idEstructura = es.idEstructura 
+        LEFT JOIN vwAlmacenInsumoComprometido aic ON i.idInsumo = aic.idInsumo AND i.idEstructura = aic.idEstructuraAlmacen
+        INNER JOIN  almacenPuntosControl pc on pc.idMedicamento = m.idMedicamento AND pc.idAlmacen = i.idEstructura
+        LEFT JOIN claveProveedorBarras cpb ON m.claveInstitucional = cpb.claveInstitucional 
+        LEFT JOIN (
+                SELECT pi.idInsumo, inv.lote, inv.fechaCaducidad, s.claveAgrupada
+                FROM prescripcionInsumo pi 
+                INNER JOIN surtimiento s ON s.idPrescripcion = pi.idPrescripcion
+                INNER JOIN surtimientoInsumo si ON si.idSurtimiento = s.idSurtimiento AND si.idPrescripcionInsumo = pi.idPrescripcionInsumo
+                INNER JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+                INNER JOIN inventario inv ON inv.idInventario = se.idInventarioSurtido
+                AND s.claveAgrupada = #{ cadena , jdbcType = VARCHAR }
+                AND pi.idTipoIngrediente = 1
+            ) z ON z.idInsumo = m.idMedicamento AND z.lote = i.lote AND z.fechaCaducidad = i.fechaCaducidad
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        LEFT JOIN fabricante f ON i.idFabricante = f.idFabricante
+        WHERE m.activo = 1 AND i.activo = 1 AND pc.activo = 1 and es.activa = 1 
+        AND (
+        CONCAT( m.claveInstitucional , ',' , i.lote , ',' , DATE_FORMAT(i.fechaCaducidad, '%d%m%Y')) = '${ cadena }'
+        OR CONCAT( '(01)', m.claveInstitucional , '(10)' , i.lote , '(17)' , DATE_FORMAT(i.fechaCaducidad, '%y%m%d')) = '${ cadena }'
+        OR cpb.codigoBarras = #{ cadena , jdbcType = VARCHAR }
+        OR m.codigoBarrasAlterno = #{ cadena , jdbcType = VARCHAR }
+        OR z.claveAgrupada = #{ cadena , jdbcType = VARCHAR }
+        <if test="activa_autoCompleteInsumos == true">
+            OR m.nombreCorto LIKE '%${ cadena }%'
+            <!--OR m.nombreLargo LIKE '%${ cadena }%'-->
+            OR m.claveAlterna LIKE '%${ cadena }%'
+            OR m.claveInstitucional LIKE '%${ cadena }%'
+        </if>
+        )
+        <if test=" idEstructuraList != null ">
+            AND pc.idAlmacen  IN 
+            <foreach item="item" index="index" collection="idEstructuraList" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        AND i.cantidadActual &gt; 0
+        GROUP BY m.claveInstitucional
+        ORDER BY m.cantPorEnvase ASC;
+    </select>
+    
+    <select id="obtenerMedicamentoExtended" resultType="mx.mc.model.Medicamento_Extended" parameterType="mx.mc.model.Medicamento">
+        SELECT m.claveInstitucional , m.nombreCorto 
+            , pm.nombrePresentacion 
+            , IFNULL(sa.nombreSustanciaActiva , m.nombreCorto) AS nombreSustanciaActiva
+            FROM medicamento m
+            LEFT JOIN presentacionMedicamento pm ON m.idPresentacionEntrada = pm.idPresentacion
+            LEFT JOIN sustanciaActiva sa ON m.sustanciaActiva = sa.idSustanciaActiva
+        WHERE claveInstitucional = #{ claveInstitucional, jdbcType = VARCHAR}         
+        LIMIT 1
+    </select>    
+
+    <select id="searchMedicamentAutoComplete" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map" >
+        SELECT * FROM medicamento m
+        WHERE m.activo = 1
+        AND m.claveInstitucional LIKE '%${ cadena }%'
+        OR m.nombreCorto LIKE '%${ cadena }%'
+        <if test=" tipo != null ">
+            AND m.tipo = #{ tipo }
+        </if>
+    </select>
+                
+</mapper>

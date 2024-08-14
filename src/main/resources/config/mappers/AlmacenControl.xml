@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.AlmacenControlMapper">
+    
+    <select id="obtener" resultType="mx.mc.model.AlmacenControl" parameterType="mx.mc.model.AlmacenControl">
+        SELECT idAlmacenPuntosControl, idAlmacen, idMedicamento, minimo, reorden, maximo, activo, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM almacenPuntosControl
+        WHERE 1=1
+        <if test="idAlmacenPuntosControl != null"> AND idAlmacenPuntosControl= #{idAlmacenPuntosControl,jdbcType=VARCHAR} </if>
+        <if test="idAlmacen != null">     AND idAlmacen = #{idAlmacen,jdbcType=VARCHAR} </if>
+        <if test="idMedicamento != null"> AND idMedicamento = #{idMedicamento,jdbcType=VARCHAR} </if>
+        <if test="minimo != null">        AND minimo  = #{minimo,jdbcType=INTEGER} </if>
+        <if test="reorden != null">       AND reorden  = #{reorden,jdbcType=INTEGER} </if>
+        <if test="maximo != null">        AND maximo  = #{maximo,jdbcType=INTEGER} </if>
+        <if test="dotacion != null">        AND dotacion  = #{dotacion,jdbcType=INTEGER} </if>
+        <if test="activo != null">        AND activo  = #{activo,jdbcType=INTEGER} </if>
+        <if test="insertFecha != null">   AND insertFecha = #{insertFecha,jdbcType=DATE} </if>
+        <if test="insertIdUsuario != null"> AND insertIdUsuario = #{insertIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="updateFecha != null">     AND updateFecha = #{updateFecha,jdbcType=DATE}</if>
+        <if test="updateIdUsuario != null"> AND updateIdUsuario =#{updateIdUsuario,jdbcType=VARCHAR}</if>        
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.AlmacenControl" parameterType="mx.mc.model.AlmacenControl">
+        SELECT a.idAlmacenPuntosControl, a.idAlmacen, e.nombre as almacen, a.idMedicamento, m.nombreCorto as insumo, a.minimo, a.reorden, a.maximo, a.dotacion, a.activo, a.insertFecha, a.insertIdUsuario, a.updateFecha, a.updateIdUsuario, m.nombreLargo as nombreLargo, m.claveInstitucional as claveInstitucional
+        FROM almacenPuntosControl as a
+            inner join estructura e on a.idAlmacen =  e.idEstructura
+            LEFT JOIN medicamento m ON a.idMedicamento = m.idMedicamento
+        WHERE 1=1 AND m.activo = 1 
+        <if test="idAlmacenPuntosControl != null"> AND idAlmacenPuntosControl= #{idAlmacenPuntosControl,jdbcType=VARCHAR} </if>
+        <if test="idAlmacen != null">     AND idAlmacen = #{idAlmacen,jdbcType=VARCHAR} </if>
+        <if test="idMedicamento != null"> AND idMedicamento = #{idMedicamento,jdbcType=VARCHAR} </if>
+        <if test="minimo != null">        AND minimo  = #{minimo,jdbcType=INTEGER} </if>
+        <if test="reorden != null">       AND reorden  = #{reorden,jdbcType=INTEGER} </if>
+        <if test="maximo != null">        AND maximo  = #{maximo,jdbcType=INTEGER} </if>
+        <if test="dotacion != null">        AND dotacion  = #{dotacion,jdbcType=INTEGER} </if>
+        <if test="insertFecha != null">   AND insertFecha = #{insertFecha,jdbcType=DATE} </if>
+        <if test="insertIdUsuario != null"> AND insertIdUsuario = #{insertIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="updateFecha != null">     AND updateFecha = #{updateFecha,jdbcType=DATE}</if>
+        <if test="updateIdUsuario != null"> AND updateIdUsuario =#{updateIdUsuario,jdbcType=VARCHAR}</if>                
+        ORDER BY insumo ASC
+    </select>
+    <select id="obtenerIdPuntosControl" resultType="mx.mc.model.AlmacenControl" parameterType="Map" >
+        SELECT * FROM almacenPuntosControl 
+        where idAlmacen=#{idAlmacen} 
+        and idMedicamento=#{idMedicamento} 
+        ;
+    </select>
+    <insert id="insertar" parameterType="mx.mc.model.AlmacenControl">
+        INSERT INTO almacenPuntosControl ( 
+            <if test="idAlmacenPuntosControl != null"> idAlmacenPuntosControl </if>
+            <if test="idAlmacen != null">       ,idAlmacen </if>
+            <if test="idMedicamento != null">   ,idMedicamento </if>
+            <if test="minimo != null">          ,minimo </if>
+            <if test="reorden != null">         ,reorden </if>
+            <if test="maximo != null">          ,maximo </if>
+            <if test="dotacion != null">          ,dotacion </if>
+            <if test="activo != null">          ,activo </if>
+            <if test="solicitud != null">       ,solicitud </if>
+            <if test="estatusGabinete != null"> ,estatusGabinete </if>
+            <if test="insertFecha != null">     ,insertFecha </if>
+            <if test="insertIdUsuario != null"> ,insertIdUsuario </if>
+            <if test="updateFecha != null">     ,updateFecha </if>
+            <if test="updateIdUsuario != null"> ,updateIdUsuario </if>
+        )
+        VALUES(
+            <if test="idAlmacenPuntosControl != null"> #{idAlmacenPuntosControl,jdbcType=VARCHAR}</if>
+            <if test="idAlmacen != null">       ,#{idAlmacen,jdbcType=VARCHAR} </if>
+            <if test="idMedicamento != null">   ,#{idMedicamento,jdbcType=VARCHAR} </if>
+            <if test="minimo != null">          ,#{minimo,jdbcType=INTEGER} </if>
+            <if test="reorden != null">         ,#{reorden,jdbcType=INTEGER} </if>
+            <if test="maximo != null">          ,#{maximo,jdbcType=INTEGER} </if>
+            <if test="dotacion != null">          ,#{dotacion,jdbcType=INTEGER} </if>
+            <if test="activo != null">          ,#{activo,jdbcType=INTEGER} </if>
+            <if test="solicitud != null">       ,#{solicitud,jdbcType=INTEGER} </if>
+            <if test="estatusGabinete != null"> ,#{estatusGabinete,jdbcType=INTEGER} </if>
+            <if test="insertFecha != null">     ,#{insertFecha,jdbcType=DATE} </if>
+            <if test="insertIdUsuario != null"> ,#{insertIdUsuario,jdbcType=VARCHAR}</if>
+            <if test="updateFecha != null">     ,#{updateFecha,jdbcType=DATE}</if>
+            <if test="updateIdUsuario != null"> ,#{updateIdUsuario,jdbcType=VARCHAR}</if>
+            )
+    </insert>
+    
+    <update id="actualizar" parameterType="mx.mc.model.AlmacenControl">
+        UPDATE almacenPuntosControl
+        <set>
+            updateFecha = #{updateFecha,jdbcType=DATE}
+            ,updateIdUsuario =#{updateIdUsuario,jdbcType=VARCHAR}        
+            <if test="idAlmacen != null">       ,idAlmacen = #{idAlmacen,jdbcType=VARCHAR} </if>
+            <if test="idMedicamento != null">   ,idMedicamento = #{idMedicamento,jdbcType=VARCHAR} </if>
+            <if test="minimo != null">          ,minimo  = #{minimo,jdbcType=INTEGER} </if>
+            <if test="reorden != null">         ,reorden  = #{reorden,jdbcType=INTEGER} </if>
+            <if test="maximo != null">          ,maximo  = #{maximo,jdbcType=INTEGER} </if>
+            <if test="dotacion != null">        ,dotacion  = #{dotacion,jdbcType=INTEGER} </if>
+            <if test="activo != null">          ,activo  = #{activo,jdbcType=INTEGER} </if>
+            <if test="solicitud != null">       ,solicitud = #{solicitud,jdbcType=INTEGER} </if>
+            <if test="estatusGabinete != null"> ,estatusGabinete = #{estatusGabinete,jdbcType=INTEGER} </if>
+            <if test="insertFecha != null">     ,insertFecha = #{insertFecha,jdbcType=DATE} </if>
+            <if test="insertIdUsuario != null"> ,insertIdUsuario = #{insertIdUsuario,jdbcType=VARCHAR}</if>            
+        </set>
+        WHERE idAlmacenPuntosControl = #{idAlmacenPuntosControl,jdbcType=VARCHAR}    
+    </update>
+    <update id="ctrlSurtido" parameterType="Map">
+        UPDATE almacenPuntosControl
+        <set>
+           solicitud = #{solicitud}
+        </set>
+        WHERE idAlmacenPuntosControl = #{idAlmacenPuntosControl}
+    </update>
+    
+    <update id="updateSolicitudByIdAlmacen" parameterType="mx.mc.model.AlmacenControl">
+        UPDATE almacenPuntosControl
+        <set>
+           solicitud = #{solicitud}
+        </set>
+        WHERE idAlmacen = #{idAlmacen}
+    </update>
+    
+    <update id="actualizarMasivo" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="list" item="item"  index="index"  separator=";">
+            UPDATE almacenPuntosControl
+            <set>
+                <if test="item.solicitud != null">
+                    solicitud = #{item.solicitud,jdbcType=INTEGER}
+                </if>
+                <if test="item.updateFecha != null">
+                    ,updateFecha = #{item.updateFecha,jdbcType=DATE}</if>
+                <if test="item.updateIdUsuario != null">
+                    ,updateIdUsuario =#{item.updateIdUsuario,jdbcType=VARCHAR}</if>
+            </set>
+            WHERE idAlmacenPuntosControl = #{item.idAlmacenPuntosControl,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <update id="actualizaEstatusGabinete" parameterType="Map">
+        UPDATE almacenPuntosControl
+        <set>
+           estatusGabinete = #{estatusGabinete}
+        </set>
+        WHERE idMedicamento = #{idMedicamento}
+    </update>
+    
+    <update id="actualizaListaAlmacenCtrl" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="list" item="item"  index="index"  separator=";">
+            UPDATE almacenPuntosControl
+            <set>
+                solicitud = #{item.solicitud,jdbcType=INTEGER}
+            </set>
+            WHERE idAlmacenPuntosControl = #{item.idAlmacenPuntosControl,jdbcType=VARCHAR}
+        </foreach>    
+    </update>    
+    
+    <select id="obtenerTotalInsumoAlmacen" parameterType="Map" resultType="mx.mc.model.AlmacenControl_Extended">
+        SELECT 
+            COUNT(*) AS total, c.idAlmacen,e.idTipoAlmacen
+        FROM almacenPuntosControl c
+            INNER join estructura e ON e.idEstructura = c.idAlmacen
+        WHERE 1=1
+            <if test=" estructuraList != null">
+                AND c.idAlmacen IN
+                <foreach item="item" collection="estructuraList" separator="," open="(" close=")">
+                    #{item.idEstructura , jdbcType = VARCHAR }
+                </foreach>
+            </if>
+            <if test=" insumoList != null">
+                AND c.idMedicamento IN
+                <foreach item="item" collection="insumoList" separator="," open="(" close=")">
+                    #{item , jdbcType = VARCHAR }
+                </foreach>
+            </if>                
+        GROUP BY c.idAlmacen ORDER BY e.idTipoAlmacen desc;
+    </select>
+    
+    <select id="obtenerIdPuntosControlServicio" resultType="mx.mc.model.AlmacenControl" parameterType="Map" >
+        SELECT * FROM almacenPuntosControl cl 
+            inner join estructuraAlmacenServicio es ON es.idEstructuraServicio = cl.idAlmacen
+        where 1=1 
+        and cl.solicitud = 1
+        and es.idEstructuraAlmacen = #{idAlmacen} 
+        and cl.idMedicamento=#{idMedicamento} 
+        ;
+    </select>
+    
+    <delete id="eliminar" parameterType="mx.mc.model.AlmacenControl"  >
+        DELETE FROM almacenPuntosControl 
+        WHERE idAlmacenPuntosControl = #{ idAlmacenPuntosControl , jdbcType = VARCHAR }
+    </delete>
+    
+</mapper>

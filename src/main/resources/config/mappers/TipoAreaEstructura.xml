@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TipoAreaEstructuraMapper" >
+	<select id="obtener" resultType="mx.mc.model.TipoAreaEstructura" parameterType="mx.mc.model.TipoAreaEstructura" >
+		SELECT idTipoAreaEstructura, nombreArea
+		FROM tipoAreaEstructura 
+		WHERE 1= 1
+		<if test=" idTipoAreaEstructura != null ">
+			AND idTipoAreaEstructura = #{ idTipoAreaEstructura , jdbcType = INTEGER }
+		</if>
+		<if test="nombreArea != null ">
+			AND nombreArea = #{ nombreArea , jdbcType = VARCHAR }
+		</if>
+	
+	</select>
+	<select id="obtenerLista" resultType="mx.mc.model.TipoAreaEstructura" parameterType="mx.mc.model.TipoAreaEstructura" >
+		SELECT idTipoAreaEstructura, nombreArea,area
+		FROM tipoAreaEstructura 
+		WHERE 1= 1			
+	</select>
+	<insert id="insertar" parameterType="mx.mc.model.TipoAreaEstructura" >
+		INSERT INTO tipoAreaEstructura (
+		<if test="idTipoAreaEstructura != null ">
+			idTipoAreaEstructura
+		</if>
+		<if test="nombreArea != null ">
+			, nombreArea
+		</if>
+		) VALUES (
+		<if test=" idTipoAreaEstructura != null ">
+			#{ idTipoAreaEstructura , jdbcType = INTEGER }
+		</if>
+		<if test="nombreArea != null ">
+			#{ nombreArea , jdbcType = VARCHAR }
+		</if>
+		)
+	</insert>
+	
+	<update id="actualizar" parameterType="mx.mc.model.TipoAreaEstructura" >
+		UPDATE tipoAreaEstructura
+		<if test="nombreArea != null ">
+			nombreArea = #{ nombreArea , jdbcType = VARCHAR }
+		</if>
+		WHERE idTipoAreaEstructura = #{ idTipoAreaEstructura , jdbcType = INTEGER }
+	</update>
+	
+	<delete id="eliminar" parameterType="mx.mc.model.TipoAreaEstructura" >
+		DELETE FROM tipoAreaEstructura
+		WHERE idTipoAreaEstructura = #{ idTipoAreaEstructura , jdbcType = INTEGER }
+	</delete>
+	
+    <select id="obtenerTodoByArea" resultType="mx.mc.model.TipoAreaEstructura" parameterType="Map">
+        SELECT idTipoAreaEstructura, nombreArea 
+        FROM tipoAreaEstructura
+        WHERE 1=1
+        <if test=" listTipoArea != null ">
+        	AND idTipoAreaEstructura IN
+        	<foreach item="item" index="index" collection="listTipoArea" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="area != null">
+        	AND area = #{ area, jdbcType = VARCHAR }
+        </if>
+         
+    </select>
+    <select id="obtenerPorNombre" resultType="mx.mc.model.TipoAreaEstructura" parameterType="Map">
+        SELECT idTipoAreaEstructura, nombreArea 
+        FROM tipoAreaEstructura
+        WHERE  nombreArea =  #{nombre}
+
+    </select>
+    
+    <select id="obtenerPorIdTipoArea" resultType="mx.mc.model.TipoAreaEstructura" parameterType="Map">
+        SELECT idTipoAreaEstructura, nombreArea 
+        FROM tipoAreaEstructura
+        WHERE  idTipoAreaEstructura =  #{idTipoArea, jdbcType = INTEGER}
+    </select>
+</mapper>

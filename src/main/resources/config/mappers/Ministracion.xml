@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.MinistracionMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Ministracion" parameterType="mx.mc.model.Ministracion" >
+        SELECT idMinistracion , idSurtimientoInsumo , fechaProgramada , fechaMinistracion , idUsuarioMinistracion , cantidadMinistracion , idEstatusPrescripcion , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario
+        FROM ministracion
+        <if test=" idMinistracion != null ">
+            AND idMinistracion = #{ idMinistracion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idSurtimientoInsumo != null ">
+            AND idSurtimientoInsumo = #{ idSurtimientoInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaProgramada != null ">
+            AND fechaProgramada = #{ fechaProgramada , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaMinistracion != null ">
+            AND fechaMinistracion = #{ fechaMinistracion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idUsuarioMinistracion != null ">
+            AND idUsuarioMinistracion = #{ idUsuarioMinistracion , jdbcType = VARCHAR }
+        </if>
+        <if test=" cantidadMinistracion != null ">
+            AND cantidadMinistracion = #{ cantidadMinistracion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatusPrescripcion != null ">
+            AND idEstatusPrescripcion = #{ idEstatusPrescripcion , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Ministracion" >
+        INSERT INTO ministracion (
+        <if test=" idMinistracion != null ">
+            idMinistracion
+        </if>
+        <if test=" idSurtimientoInsumo != null ">
+            , idSurtimientoInsumo
+        </if>
+        <if test=" fechaProgramada != null ">
+            , fechaProgramada
+        </if>
+        <if test=" fechaMinistracion != null ">
+            , fechaMinistracion
+        </if>
+        <if test=" idUsuarioMinistracion != null ">
+            , idUsuarioMinistracion
+        </if>
+        <if test=" cantidadMinistracion != null ">
+            , cantidadMinistracion
+        </if>
+        <if test=" idEstatusPrescripcion != null ">
+            , idEstatusPrescripcion
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario 
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , updateIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        ) VALUES (
+        <if test=" idMinistracion != null ">
+            #{ idMinistracion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idSurtimientoInsumo != null ">
+            , #{ idSurtimientoInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaProgramada != null ">
+            , #{ fechaProgramada , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" fechaMinistracion != null ">
+            , #{ fechaMinistracion , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idUsuarioMinistracion != null ">
+            , #{ idUsuarioMinistracion , jdbcType = VARCHAR }
+        </if>
+        <if test=" cantidadMinistracion != null ">
+            , #{ cantidadMinistracion , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstatusPrescripcion != null ">
+            , #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.Ministracion" >
+        UPDATE ministracion SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" fechaMinistracion != null ">
+            , fechaMinistracion = #{ fechaMinistracion , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idUsuarioMinistracion != null ">
+            , idUsuarioMinistracion = #{ idUsuarioMinistracion , jdbcType = VARCHAR }
+        </if>
+        <if test=" cantidadMinistracion != null ">
+            , cantidadMinistracion = #{ cantidadMinistracion , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idEstatusPrescripcion != null ">
+            , idEstatusPrescripcion = #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        </if>
+        WHERE idMinistracion = #{ idMinistracion , jdbcType = VARCHAR }
+    </update>
+    
+</mapper>

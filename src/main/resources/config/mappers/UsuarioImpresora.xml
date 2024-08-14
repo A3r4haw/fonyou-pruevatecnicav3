@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.UsuarioImpresoraMapper" >
+    
+    <select id="obtenerLista" resultType="mx.mc.model.UsuarioImpresora" parameterType="mx.mc.model.UsuarioImpresora" >
+        SELECT idUsuario, idImpresora
+        FROM usuarioImpresora
+        WHERE 1 = 1
+        <if test=" idUsuario != null ">
+            AND idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" idImpresora != null ">
+            AND idImpresora = #{ idImpresora , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.UsuarioImpresora">
+        INSERT INTO usuarioImpresora (
+            idUsuario,
+            idImpresora,
+            insertIdUsuario,
+            insertFecha
+        )
+        VALUES (
+            #{ idUsuario , jdbcType = VARCHAR },
+            #{ idImpresora , jdbcType = VARCHAR },
+            #{ insertIdUsuario , jdbcType = VARCHAR },
+            #{ insertFecha , jdbcType = DATE }
+        )
+    </insert>
+    
+    <insert id="insertarListaImpresoras" parameterType="java.util.List">
+        
+        
+            INSERT INTO usuarioImpresora (
+                idUsuario,
+                idImpresora,
+                insertIdUsuario,
+                insertFecha, 
+                updateIdUsuario,
+                updateFecha
+            ) VALUES 
+            
+        <foreach collection="list" item="item" separator="," index="index" >
+            (
+                #{ item.idUsuario , jdbcType = VARCHAR },
+                #{ item.idImpresora , jdbcType = VARCHAR },
+                #{ item.insertIdUsuario , jdbcType = VARCHAR },
+                #{ item.insertFecha , jdbcType = DATE },
+                #{ item.updateIdUsuario , jdbcType = VARCHAR },
+                #{ item.updateFecha , jdbcType = DATE }
+            )
+        </foreach>
+    </insert>
+    
+    <delete id="eliminarByIdUsuario" parameterType="Map">
+        DELETE FROM usuarioImpresora
+        WHERE idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+    </delete>
+    
+</mapper>

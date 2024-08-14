@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <div style="background: #808080;padding: 10px;">
+                            <p:outputLabel value="Ingreso Órdenes de Reabasto" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+                            <p:outputLabel value="Almacén" 
+                                           style="margin-right: 10px;margin-left: 10px;color: #FFF;font-size: 14px;font-weight: bold;"/>
+                            <p:outputLabel value="#{ordenIngresoMB.listaEstructuras.get(0).nombre}"
+                                           style="margin-right: 10px;color: #FFF;font-size: 16px  !important;font-weight: bold;"
+                                           rendered="#{!ordenIngresoMB.administrador and !ordenIngresoMB.jefeArea}"/>                       
+                            <p:selectOneMenu id="comboAlmacen" 
+                                             value="#{ordenIngresoMB.idEstructura}"
+                                             disabled="#{!ordenIngresoMB.permiso.puedeVer}"
+                                             style="vertical-align: middle;"
+                                             filter="true" 
+                                             filterMatchMode="contains" 
+                                             rendered="#{ordenIngresoMB.administrador or ordenIngresoMB.jefeArea}">
+                                <p:ajax listener="#{ordenIngresoMB.buscarOrdenesIngresar}" 
+                                        update="tblOrdenRecibir" />              
+                                <f:selectItem itemValue="#{null}" itemLabel="Seleccione una opción"   />  
+                                <f:selectItems value="#{ordenIngresoMB.listaEstructuras}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+                            <p:inputText id="textSearch" 
+                                         value="#{ordenIngresoMB.busquedaSolicitud}"                                         
+                                         style="width: 35%!important;border-radius:10px!important;margin-left: 30px;" 
+                                         placeholder="Buscar..."
+                                         />                   
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>
+                            </i>                            
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{ordenIngresoMB.buscarOrdenesIngresar}"
+                                             update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"                                             
+                                             oncomplete="PF('statusProcess').hide();"
+                                             style=" margin-left: 15px; margin-bottom: 8px;" />
+                        </div>                                                                                               
+                        <br/>
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <p:dataTable  emptyMessage="No se encontraron registros" rows="10" 
+                                      paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                      currentPageReportTemplate=" " 
+                                      paginator="true" reflow="true"
+                                      paginatorPosition="bottom" widgetVar="tblOrdenRecibir"
+                                      lazy="true" id="tblOrdenRecibir" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                      style="margin-bottom:5px; text-align: center;" selectionMode="single" 
+                                      value="#{ordenIngresoMB.ingresoReabastoLazy}" var="item"
+                                      selection="#{ordenIngresoMB.reabastoSelect}"
+                                      rowKey="#{item.idReabasto}" rowIndexVar="row">                        
+                            <p:ajax event="rowDblselect" oncomplete="PF('modalIngresarOrden').show();" 
+                                    update=":formRecibirOrden" 
+                                    listener="#{ordenIngresoMB.obtenerDetalleInsumos}"/>
+                            <p:column style="text-align: left;width: 30%;" sortBy="#{item.folio}"  headerText="Folio">
+                                <h:outputText value="#{item.folio}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left;width: 20%;" sortBy="#{item.fechaSolicitud}" headerText="Fecha" >
+                                <h:outputText value="#{item.fechaSolicitud}" class="altoColumn">
+                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
+                                </h:outputText>	
+                            </p:column>
+
+                            <p:column style="text-align: left;width: 20%;" sortBy="#{item.nombreUsrSolicitane}" headerText="Solicitante" >
+                                <h:outputText value="#{item.nombreUsrSolicitane}"  class="altoColumn" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left !important;width: 20%; " sortBy="#{item.nombreEstatus}" headerText="Estatus" >
+                                <h:outputText value="#{item.nombreEstatus}" class="altoColumn" />
+                            </p:column>
+
+                            <ui:remove><p:column style="text-align: left;width: 20%;" headerText="Acciones" >
+                                    <p:tooltip for="linkDetalle" value="Detalle" position="top"/>
+                                    <p:commandLink id="linkDetalle"                                               
+                                                   style="margin: 5px;text-decoration: none;"
+                                                   oncomplete="PF('modalIngresarOrden').show();"
+                                                   update=":formRecibirOrden"
+                                                   actionListener="#{ordenIngresoMB.obtenerDetalleInsumos(item.idReabasto)}">
+                                        <f:param name="idReabastoParam" value="#{item.idReabasto}"/>
+                                        <i class="fa fa-list" />
+                                    </p:commandLink>
+                                </p:column></ui:remove>
+
+                            <p:column style="text-align: left;width: 10%;" headerText="Acciones" >
+                                <p:tooltip for="linkEliminar" value="Eliminar" position="top"/>
+                                <p:commandLink id="linkEliminar"                                               
+                                               style="margin: 5px;text-decoration: none;"
+                                               onclick="PF('statusProcess').show();"
+                                               oncomplete="PF('statusProcess').hide();"
+                                               update=":mainForm"
+                                               rendered="#{ordenIngresoMB.permiso.puedeEliminar}" 
+                                               actionListener="#{ordenIngresoMB.eliminarOrden(item.idReabasto)}">
+                                    <i class="fa fa-trash-o" />
+                                    <p:confirm header="Confirmación" message="Está seguro que desea eliminar la orden ?" icon="ui-icon-alert"  />
+                                </p:commandLink> 
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>  
+                    <p:dialog header="Ingreso a Inventario de Ordenes de Reabasto"
+                              widgetVar="modalIngresarOrden"
+                              id="prueba23"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" width="98%" focus="">
+                        <h:form id="formRecibirOrden">
+                            <p:messages id="msgModal" closable="true" showDetail="false"/>
+                            <p:outputLabel value="Folio: "/>
+                                    <p:inputText id="folioModal" style="margin-right: 10px;"
+                                                 value="#{ordenIngresoMB.reabastoSelect.folio}"
+                                                 disabled="true"
+                                                 placeholder="Folio"
+                                                 title="Folio del Reabasto">
+                                    </p:inputText>
+                                    <p:outputLabel value="Fecha: "/>
+                                    <p:inputText id="fechaModal" style="margin-right: 10px;"
+                                                 value="#{ordenIngresoMB.reabastoSelect.fechaSolicitud}"
+                                                 disabled="true"
+                                                 placeholder="Fecha"
+                                                 title="Folio del Reabasto">
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                    </p:inputText>
+                                    <p:outputLabel value="Almacén solicitante: "/>
+                                    <p:inputText  id="almacenModal" style="margin-right: 10px;"
+                                                 value="#{ordenIngresoMB.reabastoSelect.nombreEstructura}"
+                                                 disabled="true"
+                                                 placeholder="Almacen"
+                                                 title="Almacen Solicitante">                                        
+                                    </p:inputText>
+                                    <p:outputLabel value="Estatus: "/>
+                                    <p:inputText  id="estatusModal" style="margin-right: 10px;"
+                                                 value="#{ordenIngresoMB.reabastoSelect.nombreEstatus}"
+                                                 disabled="true"
+                                                 placeholder="Estatus"
+                                                 title="Estatus Reabasto">                                        
+                                    </p:inputText>
+                                    <br /> <br />
+                            <p:selectBooleanCheckbox value="#{ordenIngresoMB.eliminarCodigo}" 
+                                                             id="checkEliminar"
+                                                             itemLabel="Eliminar"
+                                                             >
+                            <p:ajax  event="change" process="@this" />
+                            </p:selectBooleanCheckbox>
+                            <p:inputText id="xCantidad" style="width: 50px;" 
+                                         value="#{ordenIngresoMB.porCantidad}"
+                                         onkeypress="if (event.keyCode === 13) {
+                                                     return false;
+                                                 }"
+                                         validatorMessage="Sólo se permiten numeros !!!" 
+                                         placeholder="Cantidad"
+                                         title="Cantidad de medicamentos"
+                                         maxlength="5" >
+                                <p:keyFilter regEx="/[0-9]/i"/>
+                                <p:ajax  event="change" process="@this" />
+                            </p:inputText>
+                            <p:autoComplete id="autoCMedicamento" 
+                                            value="#{ordenIngresoMB.skuSap}"                                             
+                                                autocomplete="on" 
+                                                completeMethod="#{ordenIngresoMB.autocompleteMedicamento}" 
+                                                minQueryLength="4" 
+                                                forceSelection="true"
+                                                size="60"
+                                                var="skuSap"
+                                                itemValue="#{skuSap.idReabastoEnviado}" 
+                                                itemLabel="#{skuSap.nombreLargo}"
+                                                converter="skuSapConverter" tabindex="5"                                                 
+                                                placeholder="Escanear Insumo"
+                                                emptyMessage="Código de Barras desconocido." 
+                                                style="margin-right: 10px;"
+                                                scrollHeight="250" >
+                                <p:ajax event="itemSelect" update="tblDetalleInsumo,msgModal,xCantidad,autoCMedicamento,checkEliminar" 
+                                        listener="#{ordenIngresoMB.handleSelectMedicamento}" process="@form" 
+                                            ></p:ajax>
+                                    <p:ajax event="itemUnselect" 
+                                            listener="#{ordenIngresoMB.handleUnSelectMedicamento}" 
+                                            ></p:ajax>
+
+                                    <p:column style="width: 20px; font-size: small !important;" width="20px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave"  />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.claveInstitucional}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 20px; font-size: small !important;" width="20px" rendered="false">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave Proveedor" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.lote}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 350px; font-size: small !important;" width="350px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Descripción" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.nombreLargo}" style=" font-size: x-small;" />
+                                    </p:column>
+                                <p:column rendered="false" style="width: 10px; font-size: small !important; align-content: center; " width="10px" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Unidosis" />
+                                        </f:facet>
+                                        <h:outputText value="NO" rendered="#{skuSap.presentacionComercial eq 1}" style=" font-size: small; font-weight: bolder;" />
+                                        <h:outputText value="SI" rendered="#{skuSap.presentacionComercial ne 1}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 20px; font-size: small !important; " >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Lote" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.lote}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 20px; font-size: small !important; " >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Caducidad" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.fechaCaducidad}" style=" font-size: small; font-weight: bolder;" >
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                        </h:outputText>
+                                    </p:column>
+                                <p:column rendered="false" style="width: 15px; font-size: small !important; " >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Existencia&nbsp;DU" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.cantidadActual}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                <p:column rendered="false" style="width: 10px; font-size: small !important; "  >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Existencia&nbsp;Cajas" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.cantidadActual / skuSap.cantidadXCaja}" style=" font-size: small; font-weight: bolder;" >
+                                            <f:convertNumber locale="es_MX" pattern="#0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    
+                                </p:autoComplete>
+
+                            <br/> <br/>
+                            <p:dataTable id="tblDetalleInsumo"
+                                         var="insumo"
+                                         value="#{ordenIngresoMB.listaInsumoIngresar}"
+                                         style=""
+                                         scrollable="true" 
+                                         scrollHeight="450"
+                                         rowIndexVar="index"
+                                         expandedRow="#{false}"
+                                         emptyMessage="No se encontraron Registros">
+                                <p:ajax event="rowToggle" global="false" />
+                                <p:column style="width:2%">
+                                    <f:facet name="header" >
+                                        <i class="fa fa-toggle-right" id="btnCollapse" style="font-size: medium ; font-weight: bold;" title="Expandir todas las filas" />
+                                        <i class="fa fa-toggle-down"  id="btnExpand"   style="font-size: medium ; font-weight: bold;" title="Contraer todas las filas" />
+                                        <script>
+                                            jQuery('#btnCollapse').hide();
+                                            $("#btnCollapse").click(function (ev) {
+                                                jQuery('.ui-row-toggler').click();
+                                                jQuery('#btnExpand').show();
+                                                jQuery('#btnCollapse').hide();
+                                            })
+                                            $("#btnExpand").click(function (ev) {
+                                                jQuery('.ui-row-toggler').click();
+                                                jQuery('#btnExpand').hide();
+                                                jQuery('#btnCollapse').show();
+                                            })
+                                        </script>
+                                    </f:facet>
+                                    <p:rowToggler />
+                                </p:column>
+                                <p:column style="width:10%" headerText="Clave">
+                                    <h:outputText value="#{insumo.claveInstitucional}" />
+                                </p:column>
+                                <p:column style="width:36%" headerText="Descripción">
+                                    <h:outputLabel value="#{insumo.nombreCorto}" />
+                                </p:column>
+                                <p:column style="width:8%" headerText="Presentación">
+                                    <h:outputText value="#{insumo.nombrePresentacion}" />
+                                </p:column>
+                                <p:column style="width:5%" headerText="Pieza x caja">
+                                    <p:outputLabel value="#{insumo.cantidadXCaja}" />
+                                </p:column>
+                                <p:column style="width:6%" headerText="No DU Recibidas">
+                                    <p:outputLabel value="#{insumo.cantidadRecibida}" />
+                                </p:column>
+                                <p:column style="width:6%" headerText="No Cajas Recibidas">
+                                    <p:outputLabel value="#{insumo.cantidadRecibida / insumo.cantidadXCaja}" >
+                                        <f:convertNumber locale="es_MX" pattern="#0.00"/>
+                                    </p:outputLabel>    
+                                </p:column>
+                                <p:column style="width:7%" headerText="No DU a Ingresar">
+                                    <p:outputLabel value="#{insumo.cantidadIngresada}" style="font-weight: bolder;" />
+
+                                </p:column>
+                                <p:column style="width:7%" headerText="No Cajas a Ingresar">
+                                    <p:outputLabel value="#{insumo.cantidadIngresada / insumo.cantidadXCaja}" style="font-weight: bolder;" >
+                                        <f:convertNumber locale="es_MX" pattern="#0.00"/>
+                                    </p:outputLabel>    
+
+                                </p:column>
+                                <p:column style="width:6%" headerText="Costo">
+                                    <p:inputNumber value="#{insumo.costo}" 
+                                                   minValue="0" 
+                                                   size="6"
+                                                   decimalSeparator="."
+                                                   thousandSeparator=","
+                                                   />
+                                </p:column>
+                                <p:column style="width:12%" headerText="Observaciones">
+                                    <p:inputText    value="#{insumo.observaciones}" 
+                                                    style="width: 100%" />
+                                </p:column>
+                                <p:rowExpansion>
+                                    <p:dataTable var="insumoDetalle"
+                                                 value="#{insumo.listaDetalleReabIns}"
+                                                 rowIndexVar="index2" 
+                                                 scrollable="true" 
+                                                 emptyMessage="No se encontraron Registros" >
+                                        
+                                        <p:column headerText="Proveedor" style="width: 10%;">
+                                            <h:selectOneMenu value="#{insumoDetalle.idProveedor}" style="width:100%">
+                                                <f:selectItems value="#{ordenIngresoMB.listaProveedor}" var="provee"
+                                                               itemLabel="#{provee.nombreProveedor}" itemValue="#{provee.idProveedor}"/>
+                                                <f:selectItem itemValue="#{null}" itemLabel="Ninguno" />
+                                            </h:selectOneMenu>
+                                        </p:column>
+                                        
+                                        <p:column headerText="Fabricante" style="width: 10%;">
+                                            <h:selectOneMenu value="#{insumoDetalle.idFabricante}" style="width:100%">
+                                                <!--                                                <f:selectItem itemValue="# {null}" itemLabel="Seleccione una opción" />-->
+                                                <f:selectItems value="#{ordenIngresoMB.listaFabricante}" var="fabric"
+                                                               itemLabel="#{fabric.nombreFabricante}" itemValue="#{fabric.idFabricante}"/>
+                                                <f:selectItem itemValue="#{null}" itemLabel="Ninguno" />
+                                            </h:selectOneMenu>
+                                        </p:column>
+                                        
+                                        <p:column headerText="Clave Proveedor" style="width: 10%;">
+                                            <p:inputText value="#{insumoDetalle.claveProveedor}" size="6" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Estabilidad" style="width: 8%;">
+                                            <p:inputText value="#{insumoDetalle.noHorasEstabilidad}" size="6" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Osmolaridad" style="width: 8%;">
+                                            <p:inputText value="#{insumoDetalle.osmolaridad}" size="6" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Densidad" style="width: 8%;">
+                                            <p:inputText value="#{insumoDetalle.densidad}" size="6" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Lote" style="width: 8%;">
+                                            <p:inputText value="#{insumoDetalle.loteEnv}" size="6" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Fecha Caducidad" style="width: 8%;">
+                                            <p:calendar value="#{insumoDetalle.fechaCaducidad eq null ? insumoDetalle.fechaCad : insumoDetalle.fechaCaducidad}"
+                                                        mindate="#{ordenIngresoMB.fechaActual}"
+                                                        mask="true"  pattern="dd/MM/yyyy" 
+                                                        selectOtherMonths="true" showButtonPanel="true" showOtherMonths="true" size="6" 
+                                                        required="true"
+                                                        requiredMessage="Fecha de caducidad requerida" 
+                                                        validatorMessage="Fecha de caducidad incorrecta"
+                                                        converterMessage="Formato de fecha de caducidad incorrecta" >
+                                                <f:validator binding="#{validadorFecha}" />
+                                            </p:calendar>
+                                        </p:column>
+                                        
+                                        <p:column headerText="Cantidad Recibida" style="width: 10%" >
+                                            <h:outputLabel value="#{insumoDetalle.cantidadRecibida}" />
+                                        </p:column>
+                                        <p:column headerText="Cantidad Ingresada" style="width: 10%" >
+                                            <h:outputLabel value="#{insumoDetalle.cantidadIngresada}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:rowExpansion>
+                                <f:facet name="footer">
+                                    <p:outputLabel> </p:outputLabel>
+                                </f:facet>
+                            </p:dataTable>
+                            <br/>
+                            <p:commandButton value="Cancelar" 
+                                             icon="fa fa-times-circle" 
+                                             style="margin-right: 10px;float: right;"
+                                             oncomplete="PF('modalIngresarOrden').hide();"
+                                             actionListener="#{ordenIngresoMB.limpiarCampos}"
+                                             />
+                            <p:commandButton value="Ingresar"                                              
+                                             update="mainForm, formRecibirOrden"
+                                             actionListener="#{ordenIngresoMB.ingresarReabastoInsumo}"
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="if ( args.estatus ){ PF('modalIngresarOrden').hide();PF('modalImpresion').show();} PF('statusProcess').hide(); "
+                                             icon="fa fa-check-circle" 
+                                             style="margin-right: 10px;float: right;"
+                                             disabled="#{!ordenIngresoMB.permiso.puedeProcesar}"
+                                             styleClass="btnMusAzul">
+                                <p:confirm header="Ingreso de Reabasto" message="Desea registrar los insumos al inventario?" icon="ui-icon-alert"  />
+                            </p:commandButton>                 
+                            <ui:remove>
+                                <p:commandButton value="Guardar"
+                                                 update=":mainForm"
+                                                 actionListener="#{ordenIngresoMB.guardarRecepcion}"
+                                                 oncomplete="PF('modalIngresarOrden').hide();"
+                                                 style="margin-right: 10px;float: right;"
+                                                 disabled="#{!ordenIngresoMB.permiso.puedeEditar}"
+                                                 /></ui:remove>
+                        </h:form>
+                    </p:dialog> 
+                    <p:dialog header="Impresión de Orden"
+                              widgetVar="modalImpresion"
+                              closeOnEscape="false" modal="true"
+                              style="font-size:xx-small !important;" width="40%">
+                        <h:form id="formImpresion">
+                            <p:outputLabel value="¿Desea imprimir la orden de surtimiento?"/>
+                            <p:commandButton value="Si"
+                                             update=":formPDF"
+                                             onclick="PF('statusProcess').show()"
+                                             oncomplete="PF('statusProcess').hide(); PF('modalImpresion').hide(); PF('mdlReport').show(); "
+                                             actionListener="#{ordenIngresoMB.imprimir}"
+                                             icon="fa fa-print"
+                                             style="margin-right: 10px;float: right;"
+                                             disabled="#{!ordenIngresoMB.permiso.puedeEditar}"
+                                             />
+                            <p:commandButton value="No" 
+                                             icon="fa fa-times-circle" 
+                                             style="margin-right: 10px;float: right;"
+                                             oncomplete="PF('modalImpresion').hide();"
+                                             />   				 
+
+                        </h:form>                
+                    </p:dialog>
+
+                    <p:dialog widgetVar="mdlReport" width="820px" height="600px"
+                              closeOnEscape="false" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">
+                            <p:media value="/Reportes" player="pdf" width="800px" height="600px" cache="false" />
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

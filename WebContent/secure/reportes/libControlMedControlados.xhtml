@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title></title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="Libro de control de medicamentos controlados" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Inicio" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" value="#{libControlMedControladosMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{libControlMedControladosMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Fin" />
+                                            <br/>
+                                            <p:calendar id="txtFechaFin" value="#{libControlMedControladosMB.paramBusquedaReporte.fechaFin}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{libControlMedControladosMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade">
+                                            <p:ajax event="dateSelect" listener="#{libControlMedControladosMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                            </p:calendar>
+                                            
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <ui:remove>
+                                                <p:outputLabel style="margin-right: 10px;font-weight: bolder; margin-top: opx;" value="Tipo  de Movimiento" />
+                                                <br/>
+                                                <p:selectCheckboxMenu id="comboTipoMovimiento" label="Tipos de Movimiento"
+                                                                      value="#{libControlMedControladosMB.tipoMovimientoSelects}"
+                                                                      disabled="#{!libControlMedControladosMB.permiso.puedeVer}"
+                                                                      filter="true" filterMatchMode="contains" panelStyle="width:250px"> 
+                                                    <f:selectItems value="#{libControlMedControladosMB.listTipoMovimiento}"
+                                                                   var="tipoMovimiento"
+                                                                   itemValue="#{tipoMovimiento.idTipoMovimiento}"
+                                                                   itemLabel="#{tipoMovimiento.descripcion}"/>
+                                                </p:selectCheckboxMenu>
+                                            </ui:remove>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="margin-top: 0px">                                            
+                                            <p:commandButton id="btnGenerarReporte" 
+                                                             value="Generar Reporte"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{libControlMedControladosMB.consultar}"
+                                                             update=":mainForm:msg , resultadosDT"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"  
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Insumos Medicamento" />
+                                            <br/>
+                                            
+                                            <p:selectOneMenu id="medControlado" 
+                                                             value="#{libControlMedControladosMB.paramBusquedaReporte.idMedicamento}"
+                                                             
+                                                             style="width: 80%;"
+                                                             filter="true" 
+                                                             filterMatchMode="startsWith">
+                                                <f:selectItem value="#{null}"  >Todos</f:selectItem>
+                                                <f:selectItems value="#{libControlMedControladosMB.paramBusquedaReporte.listInsumos}"
+                                                               var="medicamento"
+                                                               itemValue="#{medicamento.idMedicamento}"
+                                                               itemLabel="#{medicamento.nombreCorto}"/>
+                                                 <p:ajax update="comboLote" 
+                                                         listener="#{libControlMedControladosMB.obtenerLotesPorMedicamento}" 
+                                                    global="false"/>
+                                            </p:selectOneMenu>
+
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Lote" />
+                                            <ui:remove>
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;"
+                                                           value="#{libControlMedControladosMB.usuarioSession.nombre} #{libControlMedControladosMB.usuarioSession.apellidoPaterno} #{libControlMedControladosMB.usuarioSession.apellidoMaterno}" 
+                                                           rendered="#{!libControlMedControladosMB.administrador}"/>
+                                            </ui:remove>
+                                            <br/>
+                                            <ui:remove>
+                                                <p:autoComplete id="txtUsuario" 
+                                                                multiple="true"
+                                                                class="autoComplete-Sum" 
+                                                                styleClass="autoComplete-Sum" 
+                                                                panelStyle="autoComplete-Sum" 
+                                                                inputStyleClass="autoComplete-Sum" 
+                                                                value="#{libControlMedControladosMB.paramBusquedaReporte.listUsuarios}"
+                                                                completeMethod="#{libControlMedControladosMB.autocompleteUsuario}"
+                                                                minQueryLength="4"
+                                                                queryDelay="500" 
+                                                                maxResults="50" 
+                                                                forceSelection="true" 
+                                                                cacheTimeout="0" 
+                                                                var="usr" 
+                                                                placeholder="Filtro Usuarios" 
+                                                                cache="false"
+                                                                emptyMessage="No se encontraron registros"
+                                                                itemLabel="#{usr.nombreUsuario}" itemValue="#{usr}" 
+                                                                converter="musGenericConverter"
+                                                                disabled="#{!libControlMedControladosMB.permiso.puedeEditar}" 
+                                                                rendered="#{libControlMedControladosMB.administrador}"
+                                                                scrollHeight = "350" >
+                                                    <p:column style="width: 80px; font-size: small;" width="20px">
+                                                        <f:facet name="header" >
+                                                            <h:outputText value="Nombre" />
+                                                        </f:facet>
+                                                        <h:outputText value="#{usr.nombreUsuario}" style=" font-size: small;" />
+                                                    </p:column>
+                                                    <p:column style="width: 80px; font-size: small;" width="20px">
+                                                        <f:facet name="header" >
+                                                            <h:outputText value="Nombre" />
+                                                        </f:facet>
+                                                        <h:outputText value="#{usr.nombre}" style=" font-size: small;" />
+                                                    </p:column>
+                                                    <p:column style="width:80px; font-size: small;" width="350px">
+                                                        <f:facet name="header" >
+                                                            <h:outputText value="Apellido Paterno" />
+                                                        </f:facet>
+                                                        <h:outputText value="#{usr.apellidoPaterno}" style=" font-size: small;" />
+                                                    </p:column>
+                                                    <p:column style="width: 80px; font-size: small;" width="350px">
+                                                        <f:facet name="header" >
+                                                            <h:outputText value="Apellido Materno" />
+                                                        </f:facet>
+                                                        <h:outputText value="#{usr.apellidoMaterno}" style=" font-size: small;" />
+                                                    </p:column>
+                                                </p:autoComplete>
+                                            </ui:remove>
+
+                                            <p:selectOneMenu id="comboLote" 
+                                                             value="#{libControlMedControladosMB.paramBusquedaReporte.idInventario}"
+                                                             autoWidth="false"
+                                                             style="width: 80%;"
+                                                             filter="true" 
+                                                             filterMatchMode="startsWith">
+                                                <f:selectItem value="#{null}"  >Todos</f:selectItem>
+                                                <f:selectItems value="#{libControlMedControladosMB.paramBusquedaReporte.listaInventarios}"
+                                                               var="medicamento"
+                                                               itemValue="#{medicamento.idInventario}"
+                                                               itemLabel="#{medicamento.lote}"/>
+                                            </p:selectOneMenu>   
+
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;" value="Almacén / Sub-Almacén" />
+                                            <br/>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{libControlMedControladosMB.estructuraUsuario.nombre}" 
+                                                           rendered="#{!libControlMedControladosMB.administrador}"/>
+                                            <p:selectOneMenu id="comboAlmacenSubAlmacen" 
+                                                             value="#{libControlMedControladosMB.idEstructura}"
+                                                             disabled="#{!libControlMedControladosMB.permiso.puedeVer}"
+                                                             style="vertical-align: middle; margin-right: 10px; width: 200px"
+                                                             rendered="#{libControlMedControladosMB.administrador}"
+                                                             filter="true" filterMatchMode="contains" panelStyle="width:250px"> 
+                                                >
+                                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                                <f:selectItems value="#{libControlMedControladosMB.listAlmacenesSubAlm}"
+                                                               var="almacen"
+                                                               itemValue="#{almacen.idEstructura}"
+                                                               itemLabel="#{almacen.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+
+                                            <p:menuButton value="Exportar Archivo" style="margin-top: 15px; width: 200px; margin-left: 8px">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{libControlMedControladosMB.imprimeReporte}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"
+                                                            />
+                                                <ui:remove>
+                                                <p:menuitem value="Formato EXCEL"
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false"
+                                                            actionListener="#{libControlMedControladosMB.generaExcelGeneral}"
+                                                            />
+                                                </ui:remove>
+                                            </p:menuButton>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    
+                    <br />
+                    <p:remoteCommand name="rc" update="resultadosDT,msg" 
+                     actionListener="#{libControlMedControladosMB.consultar}" />
+                        <p:dataTable id="resultadosDT"  
+                                     emptyMessage="" 
+                                     rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     value="#{libControlMedControladosMB.reporteLibroControladosLazy}" 
+                                     var="registro" 
+                                     lazy="true" 
+                                     editable="true"
+                                     scrollable="true" 
+                                     scrollWidth="100%" 
+                                     scrollHeight="350"
+                                     style="font-size: x-small !important; width: 100% !important;"
+                                     >
+                            
+                            <p:ajax event="rowEdit" listener="#{libControlMedControladosMB.onRowEdit}" oncomplete="rc()">
+                            </p:ajax>
+                            
+                            <p:ajax event="rowEditCancel" listener="#{libControlMedControladosMB.onRowCancel}" />
+                            
+                            <p:column class="" headerText="Lote" style="width: 10%; " >
+                                <h:outputText value="#{registro.lote}"/>
+                            </p:column>
+                            <p:column class="" headerText="Fecha de caducidad"  style="width: 10%;">
+                                <h:outputText value="#{registro.fechaCaducidad}">
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="Fecha y año" style="width: 10%; " >
+                                <h:outputText value="#{registro.fechaAno}">
+                                     <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="Procedencia"  style="width: 10%;">
+                                <h:outputText value="#{registro.procedencia}"/>
+                            </p:column>
+                            <p:column class="" headerText="Medico" style="width: 10%;">
+                                <h:outputText value="#{registro.nombreMedico}"/>
+                            </p:column>
+                            <p:column class="" headerText="Dirección" style="width: 10%;">
+                                <h:outputText value="#{registro.direccion}"/>
+                            </p:column>
+                            <p:column class="" headerText="Cedula profesional" style="width: 10%;">
+                                <h:outputText value="#{registro.cedula}" />
+                            </p:column>
+                            <p:column class="" headerText="Numero de factura" style="width: 10%;">
+                                <h:outputText value="#{registro.numFactura}"/>
+                            </p:column>
+                            <p:column class="" headerText="Numero de receta" style="width: 10%;">
+                                <h:outputText value="#{registro.numReceta}">
+                                    <f:convertNumber pattern="#0.0" locale="MX_es" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column class="" headerText="Cantidad adquirida" style="width: 10%;">
+                                <h:outputText value="#{registro.cantidadAdquirida}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="Cantidad vendida" style="width: 10%;">
+                                <h:outputText value="#{registro.cantidadVendida}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="Saldo" style="width: 10%;">
+                                <h:outputText value="#{registro.saldo}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="Firma" style="width: 10%;">
+                                <h:outputText value="#{registro.firma}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="Observaciones" style="width: 20%;">
+                                <p:cellEditor>
+                                    <f:facet name="output">
+                                        <h:outputText value="#{registro.observaciones}" />
+                                    </f:facet>
+                                    <f:facet name="input">
+                                        <p:inputText value="#{registro.observaciones}" style="width: 100%"/>
+                                    </f:facet>
+                                </p:cellEditor>
+                            </p:column>
+                            <p:column style="width: 5%;">
+                                <p:rowEditor />
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>	
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+                
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

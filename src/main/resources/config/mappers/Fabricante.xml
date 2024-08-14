@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.FabricanteMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Fabricante" parameterType="mx.mc.model.Fabricante" >
+        SELECT idFabricante, nombreFabricante, domicilio, idEstatus, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM fabricante
+        WHERE 1=1
+        <if test=" idFabricante != null ">
+            AND idFabricante = #{ idFabricante , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombreFabricante != null ">
+            AND nombreFabricante = #{ nombreFabricante , jdbcType = VARCHAR }
+        </if>
+        <if test=" domicilio != null ">
+            AND domicilio = #{ domicilio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatus != null ">
+            AND idEstatus = #{ idEstatus , jdbcType = INTEGER }
+        </if>
+        LIMIT 0, 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Fabricante" parameterType="mx.mc.model.Fabricante" >
+        SELECT idFabricante, nombreFabricante, domicilio, idEstatus, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM fabricante
+        WHERE 1=1
+        <if test=" idFabricante != null ">
+            AND idFabricante = #{ idFabricante , jdbcType = INTEGER }
+        </if>
+        <if test=" nombreFabricante != null ">
+            AND nombreFabricante = #{ nombreFabricante , jdbcType = VARCHAR }
+        </if>
+        <if test=" domicilio != null ">
+            AND domicilio = #{ domicilio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatus != null ">
+            AND idEstatus = #{ idEstatus , jdbcType = INTEGER }
+        </if>
+        ORDER BY nombreFabricante ASC;
+    </select>
+    
+    <select id="obtenerListaPorIdInsumo" resultType="mx.mc.model.Fabricante" parameterType="Map" >
+        SELECT f.idFabricante, f.nombreFabricante, f.domicilio, f.idEstatus, f.insertFecha, f.insertIdUsuario, f.updateFecha, f.updateIdUsuario
+        FROM fabricante f 
+        JOIN fabricanteInsumo fi ON f.idFabricante = fi.idFabricante
+        WHERE 
+            f.idEstatus = 1
+            AND fi.idInsumo = #{ fi.idInsumo , jdbcType = INTEGER }
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Fabricante" >
+        INSERT INTO fabricante (
+        <if test=" idFabricante != null ">
+            idFabricante
+        </if>
+        <if test=" nombreFabricante != null ">
+            , nombreFabricante
+        </if>
+        <if test=" domicilio != null ">
+            , domicilio
+        </if>
+        <if test=" idEstatus != null ">
+            , idEstatus
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario
+        </if>
+        ) VALUES (
+        <if test=" idFabricante != null ">
+            #{ idFabricante , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombreFabricante != null ">
+            , #{ nombreFabricante , jdbcType = VARCHAR }
+        </if>
+        <if test=" domicilio != null ">
+            , #{ domicilio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatus != null ">
+            , #{ idEstatus , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.Fabricante"  >
+        UPDATE fabricante SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" nombreFabricante != null ">
+            , nombreFabricante = #{ nombreFabricante , jdbcType = VARCHAR }
+        </if>
+        <if test=" domicilio != null ">
+            , domicilio = #{ domicilio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatus != null ">
+            , idEstatus = #{ idEstatus , jdbcType = INTEGER }
+        </if>
+        WHERE idFabricante = #{ idFabricante , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.Fabricante"  >
+        DELETE FROM fabricante 
+        WHERE idFabricante = #{ idFabricante , jdbcType = VARCHAR }
+    </delete>
+    
+    <select id="obtenerSiguienteId" parameterType="Map" resultType="Integer">
+        SELECT max(idFabricante) + 1 AS idFabricante FROM fabricante;
+    </select>
+    
+    <select id="obtenerListaFabricantes" resultType="mx.mc.model.Fabricante" parameterType="Map">
+        SELECT * FROM fabricante
+        WHERE 1 = 1 
+        <if test=" cadenaBusqueda != null ">
+            AND nombreFabricante like '%${ cadenaBusqueda }%'
+            OR domicilio like '%${ cadenaBusqueda }%'
+        </if>
+        
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'nombreGenerico'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY e.nombreGenerico asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY e.nombreGenerico desc
+                </if>            
+            </if>
+            <if test="sortField == 'nombreFabricante'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY f.nombreFabricante asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY f.nombreFabricante desc
+                </if>            
+            </if>
+        </if>
+        <if test="maxPerPage != -1">
+            LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        </if>    
+    </select>
+    
+    <select id="obtenerTotalFabricantes" resultType="Long" parameterType="Map"> 
+        SELECT count(*) FROM fabricante
+        WHERE 1= 1
+        <if test=" cadenaBusqueda != null ">
+            AND nombreFabricante like '%${ cadenaBusqueda }%'
+            OR domicilio like '%${ cadenaBusqueda }%'
+        </if>
+    </select>    
+    
+</mapper>

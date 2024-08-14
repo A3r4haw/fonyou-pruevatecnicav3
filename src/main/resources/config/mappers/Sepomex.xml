@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.SepomexMapper" >
+
+    <select id="obtenerEstados" resultType="mx.mc.model.Sepomex" parameterType="mx.mc.model.Sepomex" >
+        SELECT DISTINCT cEstado,dEstado FROM sepomex 
+        ORDER BY dEstado ASC;
+    </select>
+    
+    <select id="obtenerMunicipios" resultType="mx.mc.model.Sepomex" parameterType="mx.mc.model.Sepomex" >
+       SELECT DISTINCT cEstado, cMnpio,dMnpio FROM sepomex
+       WHERE cEstado = #{idEstado , jdbcType = VARCHAR}
+       ORDER BY dMnpio ASC;
+    </select>
+    
+    <select id="obtenerColonias" resultType="mx.mc.model.Sepomex" parameterType="mx.mc.model.Sepomex" >
+        SELECT cEstado, cMnpio, dAsenta, idAsentaCpcons FROM sepomex
+        WHERE cMnpio = #{idMunicipio , jdbcType = VARCHAR}
+        AND cEstado = #{idEstado , jdbcType = VARCHAR}
+        ORDER BY dAsenta ASC;
+    </select>
+    
+    <select id="obtenerCodPost" resultType="mx.mc.model.Sepomex" parameterType="mx.mc.model.Sepomex" >
+        SELECT dCodigo FROM sepomex 
+        WHERE cMnpio = #{idMunicipio , jdbcType = VARCHAR}
+        AND cEstado = #{idEstado , jdbcType = VARCHAR}
+        AND idAsentaCpcons = #{idColonia , jdbcType = VARCHAR};
+    </select>
+    
+    <select id="obtenerEstadoMunYColByCodPost" resultType="mx.mc.model.Sepomex" parameterType="Map">
+        SELECT dAsenta,dCodigo,cEstado,cMnpio,idAsentaCpcons 
+        FROM sepomex
+        WHERE dCodigo = #{ codigoPostal , jdbcType = VARCHAR };
+    </select>
+    
+</mapper>

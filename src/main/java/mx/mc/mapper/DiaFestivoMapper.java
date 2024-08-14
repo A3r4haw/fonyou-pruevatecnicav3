@@ -1,0 +1,24 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package mx.mc.mapper;
+
+import java.util.Date;
+import java.util.List;
+import mx.mc.model.DiaFestivo;
+import mx.mc.model.DiaFestivo_Extended;
+import org.apache.ibatis.annotations.Param;
+
+/**
+ *
+ * @author bbautista
+ */
+public interface DiaFestivoMapper extends GenericCrudMapper<DiaFestivo, String>{
+    List<DiaFestivo> feriadosAnoActual(@Param("anoActul") String anoActul ); 
+    List<DiaFestivo> topDiasFeriados(); 
+    List<DiaFestivo_Extended> obtenerDiasFeriadosByMes(DiaFestivo_Extended diasFestivo_Extended ); 
+    boolean deleteDiaFeriadoDate(String idDia);
+    DiaFestivo_Extended validaExistenciaFestiva(@Param("fechaFestiva") Date fechaFestiva,@Param("numeroDia") int numeroDia);
+}

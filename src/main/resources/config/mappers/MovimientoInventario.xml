@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.MovimientoInventarioMapper">
+    <insert id="insertar" parameterType="mx.mc.model.MovimientoInventario">
+        INSERT INTO movimientoInventario(
+                <if test="idMovimientoInventario != null">idMovimientoInventario</if>
+                <if test="idTipoMotivo != null">,idTipoMotivo</if>
+                <if test="fecha != null">,fecha</if>
+                <if test="idUsuarioMovimiento != null">,idUsuarioMovimiento</if>
+                <if test="idEstrutcuraOrigen != null">,idEstrutcuraOrigen</if>
+                <if test="idEstrutcuraDestino != null">,idEstrutcuraDestino</if>
+                <if test="idInventario != null">,idInventario</if>
+                <if test="cantidad != null">,cantidad</if>
+                <if test="fechaCaducidad != null">,fechaCaducidad</if>
+                <if test="folioDocumento != null">,folioDocumento</if>
+            )
+            VALUES (
+                <if test="idMovimientoInventario != null"> #{idMovimientoInventario,jdbcType = VARCHAR}</if>
+                <if test="idTipoMotivo != null">,#{idTipoMotivo,jdbcType = INTEGER}</if>
+                <if test="fecha != null"> ,#{fecha,jdbcType = TIMESTAMP}</if>
+                <if test="idUsuarioMovimiento != null">,#{idUsuarioMovimiento,jdbcType = VARCHAR}</if>
+                <if test="idEstrutcuraOrigen != null">,#{idEstrutcuraOrigen,jdbcType = VARCHAR}</if>
+                <if test="idEstrutcuraDestino != null"> ,#{idEstrutcuraDestino,jdbcType = VARCHAR}</if>
+                <if test="idInventario != null">,#{idInventario,jdbcType = VARCHAR}</if>
+                <if test="cantidad != null">,#{cantidad,jdbcType = INTEGER}</if>
+                <if test="fechaCaducidad != null">,#{fechaCaducidad,jdbcType = TIMESTAMP}</if>
+                <if test="folioDocumento != null">,#{folioDocumento,jdbcType = VARCHAR}</if>
+            )
+    </insert>
+    
+    <insert id="insertarMovimientosInventarios" parameterType="Map">
+        <foreach collection="listaMovimientos" item="item" separator=";">
+            INSERT INTO movimientoInventario(
+                <if test="item.idMovimientoInventario != null">idMovimientoInventario</if>
+                <if test="item.idTipoMotivo != null">,idTipoMotivo</if>
+                <if test="item.fecha != null">,fecha</if>
+                <if test="item.idUsuarioMovimiento != null">,idUsuarioMovimiento</if>
+                <if test="item.idEstrutcuraOrigen != null">,idEstrutcuraOrigen</if>
+                <if test="item.idEstrutcuraDestino != null">,idEstrutcuraDestino</if>
+                <if test="item.idInventario != null">,idInventario</if>
+                <if test="item.cantidad != null">,cantidad</if>
+                <if test="item.fechaCaducidad != null">,fechaCaducidad</if>
+                <if test="item.folioDocumento != null">,folioDocumento</if>
+                ,saldoAlmacen, saldoServicio
+            )
+            VALUES (
+                <if test="item.idMovimientoInventario != null"> #{item.idMovimientoInventario,jdbcType = VARCHAR}</if>
+                <if test="item.idTipoMotivo != null">,#{item.idTipoMotivo,jdbcType = INTEGER}</if>
+                <if test="item.fecha != null"> ,#{item.fecha,jdbcType = TIMESTAMP}</if>
+                <if test="item.idUsuarioMovimiento != null">,#{item.idUsuarioMovimiento,jdbcType = VARCHAR}</if>
+                <if test="item.idEstrutcuraOrigen != null">,#{item.idEstrutcuraOrigen,jdbcType = VARCHAR}</if>
+                <if test="item.idEstrutcuraDestino != null"> ,#{item.idEstrutcuraDestino,jdbcType = VARCHAR}</if>
+                <if test="item.idInventario != null">,#{item.idInventario,jdbcType = VARCHAR}</if>
+                <if test="item.cantidad != null">,#{item.cantidad,jdbcType = INTEGER}</if>
+                <if test="item.fechaCaducidad != null">,#{item.fechaCaducidad,jdbcType = TIMESTAMP}</if>
+                <if test="item.folioDocumento != null">,#{item.folioDocumento,jdbcType = VARCHAR}</if>
+                , ifnull((SELECT ( 
+                    CASE WHEN ( SELECT tmo.tipoMovimiento AS tipo 
+                                    FROM tipoMotivo tp 
+                                        INNER JOIN tipoMovimiento tmo ON tp.idTipoMovimiento = tmo.idTipoMovimiento
+                                WHERE tp.idTipoMotivo = #{item.idTipoMotivo,jdbcType = INTEGER}) = 'E' 
+                    THEN cantidadActual - #{item.cantidad,jdbcType = INTEGER} 
+                        ELSE cantidadActual + #{item.cantidad,jdbcType = INTEGER} end )
+                 from inventario where idInventario = #{item.idInventario,jdbcType = VARCHAR} limit 1),0)
+                , (SELECT 
+                    CASE
+                      WHEN IFNULL(SUM(cantidadRecepcion), 0) - IFNULL(SUM(sm.cantidadMinistrada), 0) &lt; 0 THEN 0
+                        ELSE IFNULL(SUM(cantidadRecepcion), 0) - IFNULL(SUM(sm.cantidadMinistrada), 0) END
+                  FROM
+                      surtimiento s   JOIN   surtimientoInsumo si ON s.idSurtimiento = si.idsurtimiento
+                          JOIN   surtimientoEnviado se on si.idSurtimientoInsumo = se.idSurtimientoInsumo
+                          JOIN    surtimientoMinistrado sm ON se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+                          JOIN   prescripcionInsumo pi ON si.idPrescripcionInsumo = pi.idPrescripcionInsumo
+                          JOIN    prescripcion p on pi.idPrescripcion = p.idPrescripcion
+                  WHERE    DATE_FORMAT(si.fechaEnviada, '%y%m%d') = DATE_FORMAT(NOW(), '%y%m%d')
+                          AND pi.idInsumo = (SELECT             idInsumo
+                          FROM   inventario    WHERE   idInventario = #{item.idInventario,jdbcType = VARCHAR}
+                          LIMIT 1)
+                  and sm.ministracionConfirmada = 1
+                  and p.idEstructura = #{item.idEstrutcuraDestino,jdbcType = VARCHAR} )                   
+            )
+        </foreach>
+    </insert>
+</mapper>   

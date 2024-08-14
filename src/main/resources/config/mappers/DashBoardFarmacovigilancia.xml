@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http, jdbcType = VARCHAR//mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DashBoardFarmacovigilanciaMapper">
+	
+    <select id="getTopFarmacosMayorReaccion" resultType="mx.mc.model.DashboardResult" >
+        SELECT nombreSustanciaActiva AS nombreCorto, total AS cantidad FROM viewTopFarmacoReaccionTotal;
+    </select>
+    
+    <select id="getTopTiposHipersensibilidad" resultType="mx.mc.model.DashboardResult" >
+        SELECT nombreTipoHiper AS nombre, cantidad FROM viewTopTipoHipersensibilidad;
+    </select>
+    
+    <select id="getTopFarmacosRAM" resultType="mx.mc.model.DashboardResult" >
+        SELECT nombreSustanciaActiva AS nombreCorto, cantidad FROM viewTopFarmacoRAM;
+    </select>
+    
+    <select id="getTopPacientesReaccion" resultType="mx.mc.model.DashboardResult" >
+        SELECT nombrePaciente AS nombre, pacienteNumero AS clave, total AS cantidad FROM viewTopPacientesReaccionTotal;
+    </select>
+    
+    <select id="getTopUsuariosReaccion" resultType="mx.mc.model.DashboardResult" >
+        SELECT nombreUsuario AS nombre, fecha, total AS cantidad FROM viewTopUsuariosReaccion;
+    </select>
+    
+    <select id="getTopPacientesReaccionByIdPaciente" parameterType="Map" resultType="mx.mc.model.DashboardResult">
+        SELECT nombrePaciente AS nombre, pacienteNumero as clave, fecha, folio 
+        FROM viewTopPacientesReaccionSinAgrupar 
+        WHERE 1 = 1
+        <if test="cadena != null ">
+            AND pacienteNumero LIKE '%${cadena}%'
+            OR nombrePaciente LIKE '%${cadena}%'            
+        </if>
+        ORDER BY fecha DESC;
+    </select>
+</mapper>

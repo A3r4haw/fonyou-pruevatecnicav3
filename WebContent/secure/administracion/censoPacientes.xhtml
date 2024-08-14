@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" > 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:head>
+        <title>Censo Pacientes</title>
+        <h:outputScript library="primefaces" name="jquery/jquery.js" target="body" />
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="padding: 10px;">
+
+                    <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+                    <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                        <p:graphicImage name="/img/cargando.gif" />
+                    </p:dialog>
+
+                    <h:form id="formPrincipal" enctype="multipart/form-data">
+                        <p:messages id="msg" globalOnly="false" closable="true" showDetail="true"/>
+                        <div style="background: #808080;padding: 10px;">
+                            <p:outputLabel value="Censo de Pacientes"
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+                            <p:inputText id="busqueda" 
+                                         value="#{censoPacienteMB.textoBusqueda}" 
+                                         style="width: 50%!important;border-radius:10px!important;" 
+                                         placeholder="Buscar por nombre, rfc, clave de derechohabiencia..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15" style=""/>
+                            </i>
+
+                            <p:commandButton value="Buscar" 
+                                             actionListener="#{censoPacienteMB.buscarRegistros}"
+                                             icon="fa fa-search" 
+                                             style="margin-left: 20px;"
+                                             update="tablaCensoPacientes"
+                                             global="false"
+                                             disabled="#{!censoPacienteMB.permiso.puedeVer}">
+                            </p:commandButton>
+                            <p:spacer width="20px"/>
+                            <p:commandButton value="Registrar Censo" 
+                                          icon="fa fa-plus"
+                                          update="formPrincipal"
+                                          oncomplete="PF('modalCensoPaciente').show();"
+                                          disabled="#{!censoPacienteMB.permiso.puedeCrear}"
+                                          actionListener="#{censoPacienteMB.mostrarModalRegistrarCenso}"
+                                          style="margin-right: 10px;">
+                            </p:commandButton>
+                            <p:menuButton value="Exportar" 
+                                          style="">
+                                <p:menuitem value="Excel"  
+                                            icon="fa fa-file-excel-o"
+                                            ajax="false">
+                                    <p:dataExporter type="xls" target="tablaCensoPacientes" fileName="test" />
+                                </p:menuitem>
+                                <p:menuitem value="Pdf" 
+                                            icon="fa fa-file-pdf-o" 
+                                            ajax="false"> 
+                                    <p:dataExporter type="pdf" target="tablaCensoPacientes" fileName="test" />
+                                </p:menuitem>
+                            </p:menuButton>
+                        </div>
+                        <p:dataTable id="tablaCensoPacientes"
+                                     var="censoPaciente" 
+                                     value="#{censoPacienteMB.censoPacientesLazy}" 
+                                     lazy="true"
+                                     selectionMode="single"
+                                     selection="#{censoPacienteMB.censoPacienteSelect}"
+                                     rowKey="#{censoPaciente.idCensoPaciente}"
+                                     style="text-align: center;"
+                                     scrollHeight="300"
+                                     scrollable="true"
+                                     scrollRows="10"
+                                     emptyMessage="No se encontraron Registros"
+                                     reflow="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorPosition="bottom">
+
+                            <p:ajax event="rowDblselect" oncomplete="PF('modalCensoPaciente').show();" 
+                                    update="formPrincipal" listener="#{censoPacienteMB.mostrarModalDetalleCenso}"/>
+                            <p:column headerText="Nombre" style="text-align: left;" sortBy="#{censoPaciente.apellidoPaterno}" >
+                                <p:outputLabel value="#{censoPaciente.nombreCompleto} #{censoPaciente.apellidoPaterno} #{censoPaciente.apellidoMaterno}"/>
+                            </p:column>
+                            <p:column headerText="Fecha Registro" style="text-align: left; width: 15%;" sortBy="#{censoPaciente.insertFecha}" >
+                                <h:outputText value="#{censoPaciente.insertFecha}">
+                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="RFC" style="text-align: left; width: 10%;" sortBy="#{censoPaciente.rfc}" >
+                                <h:outputText value="#{censoPaciente.rfc}"/>
+                            </p:column>
+                            <p:column headerText="Clave Derechohabiencia" style="text-align: left;" sortBy="#{censoPaciente.claveDerechohabiencia}" >
+                                <h:outputText value="#{censoPaciente.claveDerechohabiencia}"/>
+                            </p:column>
+                            <p:column headerText="Número Paciente" style="text-align: left;" sortBy="#{censoPaciente.pacienteNumero}" >
+                                <h:outputText value="#{censoPaciente.pacienteNumero}"/>
+                            </p:column>
+                            <p:column headerText="Opciones" exportable="false" style="text-align: center !important; width: 10%;">
+                                <p:tooltip for="linkEditar" value="Editar" position="top"/>
+                                <p:commandLink  id="linkEditar"
+                                                actionListener="#{censoPacienteMB.mostrarModalActualizarCenso(censoPaciente)}"
+                                                style="margin: 5px;text-decoration: none;"
+                                                oncomplete="PF('modalCensoPaciente').show();"
+                                                update=":formPrincipal"
+                                                styleClass="iconMusAzul"
+                                                disabled="#{!censoPacienteMB.permiso.puedeEditar}">
+                                    <i class="fa fa-pencil-square-o"/>
+                                </p:commandLink>
+                                <p:tooltip for="linkDetalle" value="Detalle" position="top"/>
+                                <p:commandLink id="linkDetalle"
+                                               actionListener="#{censoPacienteMB.mostrarModalDetalleCenso}"
+                                               style="margin: 5px;text-decoration: none;"
+                                               oncomplete="PF('modalCensoPaciente').show();"
+                                               styleClass="iconMusAzul"
+                                               update=":formPrincipal">
+                                    <i class="fa fa-list" />
+                                </p:commandLink>
+                            </p:column>
+                        </p:dataTable>
+                        <p:dialog header="CENSO DE PACIENTES: REGISTRO"
+                                  widgetVar="modalCensoPaciente"
+                                  modal="true"
+                                  resizable="false"
+                                  width="98%"
+                                  styleClass="zeroHPadding-dialog"
+                                  closeOnEscape="true"
+                                  closable="true">
+
+                            <p:messages id="msgModalRegistro" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:focus for="auto-paciente"/>
+                            <p:panelGrid columns="1" style="width: 100% !important;">
+                                <p:panel header="ASIGNACIÓN DE PACIENTE" styleClass="zeroHPadding-panel">
+                                    <p:panelGrid columns="8" layout="grid" styleClass="noborder-panelgrid">
+                                        <p:outputLabel value="Paciente"/>
+                                        <p:autoComplete id="auto-paciente" value="#{censoPacienteMB.pacienteSelected}"
+                                                        completeMethod="#{censoPacienteMB.autoCompletePaciente}"
+                                                        minQueryLength="4" 
+                                                        cache="false"
+                                                        forceSelection="true"
+                                                        var="paciente" 
+                                                        itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}"
+                                                        itemValue="#{paciente}" 
+                                                        converter="musGenericConverter"
+                                                        placeholder="Buscar por nombre, rfc, derechohabiencia..."
+                                                        emptyMessage="No se encontro registro." 
+                                                        size="30"
+                                                        tabindex="0"
+                                                        scrollHeight = "250"
+                                                        disabled="#{censoPacienteMB.vistaDetalle}">
+                                            <p:ajax event="itemSelect" update="auto-paciente rfc claveDerechohabiencia derechohabiente tablaHistoricoCenso genero"
+                                                    global="false" listener="#{censoPacienteMB.selectPaciente}" />
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Nombre" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" style="font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="RFC" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.rfc}" style="font-size: x-small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Cve Derechohabiencia" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.claveDerechohabiencia}" style="font-size: x-small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Número Paciente" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.pacienteNumero}" style="font-size: x-small;" >
+                                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                </h:outputText>
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:outputLabel value="RFC"/>
+                                        <p:inputText id="rfc" value="#{censoPacienteMB.pacienteSelected.rfc}" size="15" disabled="true" tabindex="-1"/>
+                                        <p:outputLabel value="Derechohabiencia"/>
+                                        <p:inputText id="claveDerechohabiencia" value="#{censoPacienteMB.pacienteSelected.claveDerechohabiencia}" size="30" disabled="true" tabindex="-1"/>
+                                        <p:outputLabel value="Titular"/>
+                                        <p:selectOneMenu id="derechohabiente" value="#{censoPacienteMB.derechohabienteSelected}" style="width: 200px;" disabled="#{censoPacienteMB.vistaDetalle}" tabindex="1">
+                                            <f:selectItem itemLabel="Titular/Derechohabiente" itemValue="#{null}"/>
+                                            <f:selectItems value="#{censoPacienteMB.listaDerechohabientes}" var="derecho" itemLabel="#{derecho.nombreCompleto} #{derecho.apellidoPaterno} #{derecho.apellidoMaterno}" itemValue="#{derecho}"/>
+                                        </p:selectOneMenu>
+                                    </p:panelGrid>
+                                    <p:spacer height="10" rendered="false"/>
+                                    <p:panel header="HISTÓRICO DE REGISTROS DEL DERECHOHABIENTE EN EL CENSO">
+                                        <p:dataTable id="tablaHistoricoCenso" scrollable="true" emptyMessage="No se encontraron Registros en el Histórico"
+                                                     reflow="true" paginator="false" rows="0" var="historico"
+                                                     value="#{censoPacienteMB.listaCensoHistorico}">
+                                            <p:column headerText="Nombre" style="text-align: left;">
+                                                <p:outputLabel value="#{historico.nombreCompleto} #{historico.apellidoPaterno} #{historico.apellidoMaterno}"/>
+                                            </p:column>
+                                            <p:column headerText="Fecha Registro" style="text-align: left; width: 15%;">
+                                                <h:outputText value="#{historico.insertFecha}">
+                                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Medicamento" style="text-align: left;">
+                                                <h:outputText value="#{historico.descripcionMedicamento}"/>
+                                            </p:column>
+                                            <p:column headerText="Diagnóstico" style="text-align: left;">
+                                                <h:outputText value="#{historico.descripcionDiagnostico}"/>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
+                                </p:panel>
+                            </p:panelGrid>
+                            <p:panelGrid columns="2" layout="grid" styleClass="noborder-panelgrid" columnClasses="ui-grid-col-5, ui-grid-col-7">
+                                <p:panel header="INSUMO CENSADO">
+                                    <p:panelGrid columns="2" layout="grid" columnClasses="ui-grid-col-2, ui-grid-col-10">
+                                        <p:outputLabel value="Medicamento"/>
+                                        <p:autoComplete id="auto-medicamento" 
+                                                    value="#{censoPacienteMB.medicamentoSelected}" 
+                                                    completeMethod="#{censoPacienteMB.autoCompleteMedicamento}"
+                                                    minQueryLength="4" 
+                                                    forceSelection="true"
+                                                    cache="false"
+                                                    var="insumo" 
+                                                    itemLabel="#{insumo.nombreCorto}" 
+                                                    itemValue="#{insumo}" 
+                                                    converter="medicamentoExtendedHashConverter"
+                                                    placeholder="Buscar / Escanear Insumo"
+                                                    emptyMessage="No se encontro registro." 
+                                                    size="50"
+                                                    tabindex="2"
+                                                    scrollHeight = "250"
+                                                    disabled="#{censoPacienteMB.vistaDetalle}">
+                                            <p:ajax event="itemSelect" update="auto-medicamento" global="false" 
+                                                    listener="#{censoPacienteMB.validaLecturaPorCodigo}" />
+
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave Institucional" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.claveInstitucional}" style="font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.nombreCorto}" style="font-size: x-small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Lote" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.lote}" style="font-size: x-small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Fecha de Caducidad" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.fechaCaducidad}" style="font-size: x-small;" >
+                                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                </h:outputText>
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:outputLabel value="Diagnóstico"/>
+                                        <p:autoComplete id="auto-diagnostico"
+                                                placeholder="Seleccione un Diagnóstico" 
+                                                value="#{censoPacienteMB.diagnosticoSelected}"
+                                                completeMethod="#{censoPacienteMB.autoCompleteDiagnostico}"
+                                                minQueryLength="4"
+                                                forceSelection="true" 
+                                                cache="false"
+                                                var="diagnos" 
+                                                itemLabel="#{diagnos.nombre}"
+                                                itemValue="#{diagnos.idDiagnostico}" 
+                                                converter="diagnosticoConverter"
+                                                size="50"
+                                                tabindex="3"
+                                                scrollHeight = "250"
+                                                disabled="#{censoPacienteMB.vistaDetalle}">
+                                            <p:ajax event="itemSelect" global="false" listener="#{censoPacienteMB.selectDiagnostico}" 
+                                                    update="tablaReglas"/>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave" />
+                                                </f:facet>
+                                                <h:outputText value="#{diagnos.clave}" style="font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{diagnos.nombre}" style="font-size: x-small;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </p:panelGrid>
+                                    <p:spacer height="10"/>
+                                    <p:dataTable id="tablaReglas" scrollable="true" emptyMessage="No se encontraron Reglas para este Diagnóstico"
+                                                 styleClass="centeredColumn" var="regla" value="#{censoPacienteMB.censoRegla.listaCensoReglaDetalle}" reflow="true" paginator="false" rows="0">
+                                        <p:column style="text-align: center !important;">
+                                            <f:facet name="header">
+                                                <h:outputText value="Surtimiento" />
+                                            </f:facet>
+                                            <h:outputText value="#{regla.numeroSurtimiento}"/>
+                                        </p:column>
+                                        <p:column style="text-align: center !important;">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Mínimo" />
+                                            </f:facet>
+                                            <h:outputText value="#{regla.minimo}"/>
+                                        </p:column>
+                                        <p:column style="text-align: center !important;">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Máximo" />
+                                            </f:facet>
+                                            <h:outputText value="#{regla.maximo}"/>
+                                        </p:column>
+                                        <p:column style="text-align: center !important;">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Días" />
+                                            </f:facet>
+                                            <h:outputText value="#{regla.numeroDias}"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                                <p:panel header="CONFIGURACIÓN DEL CENSO">
+                                    <p:panelGrid columns="4">
+                                        <p:outputLabel value="Delegación"/>
+                                        <p:selectOneMenu value="#{censoPacienteMB.censoInsumo.idDelegacion}" style="width: 200px;" disabled="#{censoPacienteMB.vistaDetalle}" tabindex="4">
+                                            <f:selectItem itemLabel="Central" itemValue="3d23ea14-1ac9-11"/>
+                                        </p:selectOneMenu>
+                                        <p:outputLabel value="Unidad"/>
+                                        <p:selectOneMenu value="#{censoPacienteMB.censoInsumo.idEntidadHospitalaria}" style="width: 200px;" disabled="#{censoPacienteMB.vistaDetalle}" tabindex="5">
+                                            <f:selectItems value="#{censoPacienteMB.listaEntidadHospitalaria}" var="entidad" 
+                                                           itemLabel="#{entidad.claveEntidad} #{entidad.nombre}" itemValue="#{entidad.idEntidadHospitalaria}"/>
+                                        </p:selectOneMenu>
+                                        
+                                        <p:outputLabel value="Cantidad"/>
+                                        <p:selectOneRadio id="cantidad" value="#{censoPacienteMB.censoInsumo.cantidadMinima}" disabled="#{censoPacienteMB.vistaDetalle}" tabindex="6">
+                                            <f:selectItem itemLabel="Mínima" itemValue="#{true}" />
+                                            <f:selectItem itemLabel="Máxima" itemValue="#{false}" />
+                                        </p:selectOneRadio>
+                                        <p:outputLabel value="Género"/>
+                                        <p:selectOneRadio id="genero" value="#{censoPacienteMB.censoInsumo.sexo}" disabled="true">
+                                            <f:selectItem itemLabel="Masculino" itemValue="M" />
+                                            <f:selectItem itemLabel="Femenino" itemValue="F" />
+                                        </p:selectOneRadio>
+    
+                                        <p:outputLabel value="Desde"/>
+                                        <p:calendar value="#{censoPacienteMB.censoInsumo.vigenciaInicio}" tabindex="7"
+                                                    showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                                    pages="1" mask="true" disabled="#{censoPacienteMB.vistaDetalle}"/>
+                                        <p:outputLabel value="Hasta"/>
+                                        <p:calendar value="#{censoPacienteMB.censoInsumo.vigenciaFin}" tabindex="8"
+                                                    showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"                                                  
+                                                    pages="1" mask="true" disabled="#{censoPacienteMB.vistaDetalle}"/>
+                                   
+                                        <p:outputLabel value="Dosis"/>
+                                        <p:inputNumber id="dosis" value="#{censoPacienteMB.censoInsumo.dosis}" maxlength="6" size="4" minValue="1" decimalPlaces="0" padControl="false" disabled="#{censoPacienteMB.vistaDetalle}" tabindex="9"/>
+                                        <p:outputLabel value="Frecuencia"/>
+                                        <p:inputNumber id="frecuencia" value="#{censoPacienteMB.censoInsumo.frecuencia}" maxlength="3" size="4" minValue="1" decimalPlaces="0" padControl="false" disabled="#{censoPacienteMB.vistaDetalle}" tabindex="10"/>
+                                        
+                                        <p:outputLabel value="Duración"/>
+                                        <p:inputNumber id="duracion" value="#{censoPacienteMB.censoInsumo.periodo}" maxlength="3" size="4" minValue="1" decimalPlaces="0" padControl="false" disabled="#{censoPacienteMB.vistaDetalle}" tabindex="11"/>
+                                        <p:spacer width="5"/>
+                                        <p:spacer width="5"/>
+                                   
+                                        <p:outputLabel value="Oficio"/>
+                                        <p:fileUpload auto="true" label="Seleccionar archivo" accept=".pdf" sizeLimit="12582912"
+                                                      allowTypes="/(\.|\/)(pdf)$/" invalidFileMessage="Archivo no válido"
+                                                      update="msgModalRegistro, lnkPreview" fileUploadListener="#{censoPacienteMB.uploadOficio}"
+                                                      disabled="#{censoPacienteMB.vistaDetalle}"/>
+                                        <p:outputLabel value="Autorización"/>
+                                        <p:inputText value="#{censoPacienteMB.censoInsumo.autorizacion}" maxlength="20" size="22" disabled="#{censoPacienteMB.vistaDetalle}" tabindex="12"/>
+                                        
+                                        <p:spacer width="5"/>
+                                        <p:commandLink id="lnkPreview" style="margin: 5px;text-decoration: none;"
+                                                       actionListener="#{censoPacienteMB.generaOficioStreamed()}" oncomplete="PF('mdlPreview').show();">
+                                             <p:outputLabel id="file-name" value="#{censoPacienteMB.censoInsumo.fileName}"/>
+                                        </p:commandLink>
+                                    </p:panelGrid>
+                                </p:panel>
+                            </p:panelGrid>
+                            <p:commandButton id="buttonGuardar" value="Guardar" style="float: right;margin: 10px;" 
+                                             action="#{censoPacienteMB.registrarCensoPaciente}"
+                                             oncomplete="if(args.estatusModal){ PF('modalCensoPaciente').hide();}"
+                                             update="tablaCensoPacientes, msg"
+                                             rendered="#{censoPacienteMB.renderBotonGuardar}"/>
+                            <p:commandButton id="buttonActualizar"
+                                             value="Actualizar" 
+                                             style="float: right;margin: 10px;" 
+                                             action="#{censoPacienteMB.actualizarCensoPaciente()}"
+                                             update="tablaCensoPacientes, msg"
+                                             rendered="#{censoPacienteMB.renderBotonActualizar}"
+                                             oncomplete="if(args.estatusModal){ PF('modalCensoPaciente').hide(); }"/>
+                            <p:commandButton id="buttonCerrar" value="Cerrar" style="float: right;margin: 10px;"
+                                             immediate="true"
+                                             oncomplete="PF('modalCensoPaciente').hide();"
+                                             rendered="#{censoPacienteMB.vistaDetalle}"/>
+                        </p:dialog>
+                        
+                        <p:dialog id="formPDF" widgetVar="mdlPreview" width="820px" height="600px" closeOnEscape="false" modal="true"
+                                  styleClass="no-scroll-dialog">
+                          
+                              <p:media value="/stream.pdf" player="pdf" width="800px" height="600px" cache="false" />
+                          
+                      </p:dialog>
+                    </h:form>
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

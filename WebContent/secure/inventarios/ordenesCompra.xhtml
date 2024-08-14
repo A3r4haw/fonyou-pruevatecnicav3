@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" > 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="padding: 10px;">
+                    <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+                    <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                        <p:graphicImage name="/img/cargando.gif" />
+                    </p:dialog>
+                    
+                    <h:form id="formOrdenesCompra">
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                            <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>                                              
+                        <div style="background: #808080;padding: 10px;margin-bottom: 10px;">
+                            <p:outputLabel value="Órdenes de compra" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+                            <p:outputLabel value="Almacén:"  style="color: #FFFFFF;font-size: medium !important;font-weight: bold;margin-right: 10px;" />
+                            <p:outputLabel value="#{ordenCompraMB.nombreEstructura}"  style="color: #FFFFFF;font-size: medium !important;font-weight: bold;margin-right: 50px;" rendered="#{!ordenCompraMB.esAdministrador or !ordenCompraMB.esJefeArea}" />
+                            <p:selectOneMenu style="width: 200px;vertical-align: middle;margin-right: 10px;" 
+                                             value="#{ordenCompraMB.idEstructura}" 
+                                             rendered="#{ordenCompraMB.esAdministrador or ordenCompraMB.esJefeArea}"
+                                             filter="true" filterMatchMode="contains" >
+                                <p:ajax listener="#{ordenCompraMB.buscarRegistros()}" 
+                                        update=":formOrdenesCompra:tablaOrdenes" />
+                                <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true" />
+                                <f:selectItems value="#{ordenCompraMB.listaEstructuras}" var="estructura" itemLabel="#{estructura.nombre}" itemValue="#{estructura.idEstructura}" />                                
+
+                            </p:selectOneMenu>
+                            <p:inputText id="busqueda" style="margin-top:20px;width: 40%!important;" 
+                                         value="#{ordenCompraMB.textoBusqueda}" class="textSearch"                                         
+                                         placeholder="Buscar folio de orden, folio reabasto..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15" style=""/>
+                            </i>
+                           
+                            <p:commandButton value="Buscar" 
+                                             actionListener="#{ordenCompraMB.buscarRegistros}"
+                                             icon="fa fa-search" 
+                                             style="margin-left: 20px;"
+                                             update="tablaOrdenes">
+                            </p:commandButton>
+                        </div>
+                       
+                        <p:commandButton value="Crear Orden"
+                                         icon="fa fa-plus" 
+                                         actionListener="#{ordenCompraMB.iniciarOrdenCompra}"
+                                         oncomplete="PF('modalOrdenCompra').show();"
+                                         update="formOrdenCompra"  styleClass="btnMusAzul"
+                                         disabled="#{!ordenCompraMB.permiso.puedeCrear}" />
+                        &nbsp;&nbsp;
+                        <p:commandButton value="Agregar Proveedor" 
+                                         oncomplete="PF('modalProveedor').show();"
+                                         actionListener="#{ordenCompraMB.obtenerListaProveedores}"
+                                         update="formProveedores"
+                                         disabled="#{!ordenCompraMB.permiso.puedeCrear}"/> 
+                        <br/><br/>
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <p:dataTable emptyMessage="No se encontraron registros" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"  reflow="true"                                       
+                                     paginatorPosition="bottom" widgetVar="tablaOrdenes" 
+                                     value="#{ordenCompraMB.ordenCompraLazy}" var="orden" 
+                                     lazy="true" id="tablaOrdenes" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" selectionMode="single" 
+                                     selection="#{ordenCompraMB.ordenCompraSelect}"
+                                     rowKey="#{orden.idOrdenCompra}" rowIndexVar="row"
+                                     >
+                            <!--p:ajax event="rowEdit" 
+                                    listener="# {ordenCompraMB.onCellEdit}" 
+                                    update=":formOrdenesCompra:mainMsg,tablaOrdenes" /-->
+
+                            <p:column headerText="Fecha" style="width: 10%" sortBy="#{orden.fecha}">
+                                <h:outputLabel value="#{orden.fecha}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy hh:mm" />
+                                </h:outputLabel>
+                            </p:column>
+                            
+                            <p:column headerText="Folio O. Copmra" style="width: 10%" sortBy="#{orden.folioOrdenCompra}">
+                                <h:outputText value="#{orden.folioOrdenCompra}" />
+                            </p:column>
+                            
+                            <p:column headerText="Folio O. Reabasto" style="width: 10%" sortBy="#{orden.folioReabasto}">
+                                 <p:outputLabel value="#{orden.folioReabasto}" />
+                            </p:column>
+                            
+                            <p:column headerText="No. Documento" style="width: 10%">
+                                <h:outputText value="" />
+                            </p:column>
+                            
+                            <p:column headerText="Proveedor" style="width: 20%">
+                                <p:cellEditor>
+                                    <f:facet name="output">
+                                        <p:outputLabel value="#{orden.nombreProveedor}" />
+                                    </f:facet>
+                                    <f:facet name="input">
+                                        <p:selectOneMenu id="proveedorCombo" 
+                                                         value="#{ordenCompraMB.proveedorId}"
+                                                         style="">
+                                            <f:selectItems value="#{ordenCompraMB.listaProveedores}"
+                                                           var="proveedor"
+                                                           itemValue="#{proveedor.idProveedor}"
+                                                           itemLabel="#{proveedor.nombreProveedor}"/>
+                                        </p:selectOneMenu>
+                                    </f:facet>
+                                </p:cellEditor>
+                            </p:column>
+
+                             <p:column headerText="Almacén / Servicio" style="width: 30%">
+                                <p:outputLabel value="#{orden.nombreEstructura}" />
+                            </p:column>
+                            
+                            <p:column headerText="Estatus" style="width: 10%">
+                                <p:outputLabel value="#{orden.nombreEstatus}" />
+                            </p:column>
+                            
+                            <p:column style="width: 10%">
+                                <!--p:rowEditor styleClass="rowEditStyle" /-->
+                                <p:tooltip for="linkEditar" value="Editar" position="top"/>
+                                <p:commandLink id="linkEditar"
+                                               style="margin: 5px;text-decoration: none;"
+                                               actionListener="#{ordenCompraMB.obtenerOrdenCompra(orden.idOrdenCompra)}"
+                                               update="formOrdenCompra"
+                                               oncomplete="PF('modalOrdenCompra').show();"
+                                               styleClass="iconMusAzul"                                               
+                                               disabled="#{!ordenCompraMB.permiso.puedeEditar}">
+                                    <i class="fa fa-edit iconMusAzul" />
+                                </p:commandLink>
+                                <p:tooltip for="linkImprimir" value="Imprimir" position="top"/>
+                                <h:commandLink  id="linkImprimir"
+                                                styleClass="iconMusAzul"
+                                                style="margin: 5px;text-decoration: none;"
+                                                rendered="false">
+                                    <p:dataExporter type="pdf" target="tablaOrdenes" fileName="Orden_Compra" />
+                                    <i class="fa fa-print"/>
+                                </h:commandLink>
+                                <p:tooltip for="linkCancelar" value="Cancelar" position="top"/>
+                                <p:commandLink id="linkCancelar"
+                                               style="margin: 5px;text-decoration: none;"
+                                               actionListener="#{ordenCompraMB.cancelarOrdenCompra(orden.idOrdenCompra)}"
+                                               update="tablaOrdenes"
+                                               styleClass="iconMusAzul"
+                                               disabled="#{!ordenCompraMB.permiso.puedeEliminar}"
+                                               rendered="#{orden.idEstatusOrdenCompra eq 1 ? true : false}">
+                                    <p:confirm header="Confirmación" message="Desea cancelar la Orden ?" icon="ui-icon-alert" />
+                                    <f:param name="idOrdenCompraParam" value="#{orden.idOrdenCompra}"/>
+                                    <i class="fa fa-ban" />
+                                </p:commandLink>
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                    
+                    <p:dialog header="Información de Orden Compra"
+                              widgetVar="modalOrdenCompra"
+                              modal="true"
+                              resizable="false"
+                              closeOnEscape="true"
+                              closable="true"
+                              width="90%" focus="formOrdenCompra" >
+                        
+                        <h:form id="formOrdenCompra">
+                             <p:messages id="modalMsgDetalle" globalOnly="false" closable="true" showDetail="false"  />
+                            
+                            <p:panelGrid>                                
+                                <div class="ui-g panelGris" >
+                                        <div class="ui-g-12" >
+                                            <div class="ui-g-12 " style="padding: 0em !important;">
+                                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                                    <p:outputLabel value="Folio: " />
+                                                    <p:outputLabel value="#{ordenCompraMB.ordenCompraSelect.folioOrdenCompra}" style="font-weight: bolder;"/>                                                    
+                                                </div>
+                                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                                    <p:outputLabel value="Fecha * " />
+                                                    <p:calendar id="txtFecha" value="#{ordenCompraMB.ordenCompraSelect.fecha}" tabindex="1" 
+                                                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                                                                mindate="" maxdate="#{ordenCompraMB.fechaActual}" style=" width: 100px"
+                                                                                pages="1" mask="true" showButtonPanel="true" effect="fade"/>  
+                                                </div>
+                                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                                    <p:outputLabel value="Estatus: " />
+                                                    <p:outputLabel value="#{ordenCompraMB.ordenCompraSelect.nombreEstatus}" style="font-weight: bolder;"/>                                                    
+                                                    <!--p:selectOneMenu id="comboEstatus" value="# {ordenCompraMB.idEstatusOrdenCompra}" 
+                                                                     style="vertical-align: middle; margin-right: 10px; width: 150px" 
+                                                                     filter="true" filterMatchMode="contains" panelStyle="width:150px">                                                        
+                                                        <f:selectItems value="# {ordenCompraMB.listaEstatusOrdenes}" />
+                                                    </p:selectOneMenu -->
+                                                    
+                                                    <!--p:selectOneMenu id="comboEstatus" 
+                                                                     value="# {ordenCompraMB.ordenCompraSelect.idEstatusOrdenCompra}"
+                                                                    disabled="" converter="javax.faces.Integer"
+                                                                    style="vertical-align: middle; margin-right: 10px; width: 200px"                                                                    
+                                                                    filter="true" filterMatchMode="contains" panelStyle="width:250px"> 
+
+                                                        <f:selectItem itemLabel="Seleccione un estatus..."  value="# {null}"/>
+                                                        <f:selectItems value="# {ordenCompraMB.listaEstatusOrdenes}"
+                                                                       var="estatus"
+                                                                       itemValue="# {estatus.idEstatusOrdenCompra}"
+                                                                       itemLabel="# {esattus.nombreEstatus}"/>
+                                                    </p:selectOneMenu -->
+                                                </div>                                                                                                
+                                            </div>
+                                            <div class="ui-g-12 " style="padding: 0em !important;">
+                                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                                     <p:outputLabel value="Proveedor * " />
+                                                     <p:selectOneMenu id="comboProveedor" tabindex="2" 
+                                                                     value="#{ordenCompraMB.ordenCompraSelect.idProveedor}"
+                                                                    disabled=""
+                                                                    style="vertical-align: middle; margin-right: 10px; width: 150px"                                                                    
+                                                                    filter="true" filterMatchMode="contains" panelStyle="width:200px"> 
+
+                                                        <f:selectItem itemLabel="Seleccione un proveedor..."  value="#{null}"/>
+                                                        <f:selectItems value="#{ordenCompraMB.listaProveedores}"
+                                                                       var="proveedor"
+                                                                       itemValue="#{proveedor.idProveedor}"
+                                                                       itemLabel="#{proveedor.nombreProveedor}"/>
+                                                    </p:selectOneMenu>                                                    
+                                                </div>   
+                                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                                    <p:outputLabel value="Almacén / Servicio * " />
+                                                    <p:outputLabel value="#{ordenCompraMB.nombreEstructura}"  rendered="#{!ordenCompraMB.esAdministrador or !ordenCompraMB.esJefeArea}" style="font-weight: bolder;"/>
+                                                    <p:selectOneMenu id="comboEstructura"  tabindex="3"
+                                                                     value="#{ordenCompraMB.ordenCompraSelect.idEstructura}"                                                                    
+                                                                    style="vertical-align: middle; margin-right: 10px; width: 150px"                                                                    
+                                                                    filter="true" filterMatchMode="contains" panelStyle="width:200px"
+                                                                    rendered="#{ordenCompraMB.esAdministrador or ordenCompraMB.esJefeArea}"> 
+                                                        <f:selectItem itemLabel="Seleccione un almacén/servicio..."  value="#{null}"/>
+                                                        <f:selectItems value="#{ordenCompraMB.listaEstructuras}"
+                                                                       var="servicio"
+                                                                       itemValue="#{servicio.idEstructura}"
+                                                                       itemLabel="#{servicio.nombre}"/>
+                                                    </p:selectOneMenu>
+                                                </div>
+                                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                                    <p:outputLabel value="Tipo Orden * " />
+                                                    <p:selectOneMenu id="comboTipoOrden" tabindex="4" 
+                                                                     value="#{ordenCompraMB.ordenCompraSelect.idTipoOrigen}"
+                                                                    disabled="" converter="javax.faces.Integer"
+                                                                    style="vertical-align: middle; margin-right: 10px; width: 200px"                                                                    
+                                                                    filter="true" filterMatchMode="contains" panelStyle="width:250px">  
+                                                        <f:selectItem itemLabel="Seleccione un tipo   "  value="#{null}"/>
+                                                        <f:selectItems value="#{ordenCompraMB.listaTipoOrigen}"
+                                                                       var="tipo"
+                                                                       itemValue="#{tipo.idTipoOrigen}"
+                                                                       itemLabel="#{tipo.nombre}"/>
+                                                    </p:selectOneMenu>
+                                                </div>                                                                                               
+                                            </div>                                                                                                                                              
+                                        </div>                                    
+                               </div>
+                            </p:panelGrid>
+                            <p:panelGrid id="addInsumo" >
+                                <div  style="background-color:grey  !important; padding: 5px;  ">
+                                    <p:outputLabel value="Cantidad" style="color:#fff" />&nbsp;&nbsp;
+                                    <p:inputNumber id="numSoli"  decimalPlaces="0" minValue="0" tabindex="5" 
+                                                   maxValue="9999999" decimalSeparator="." thousandSeparator="," 
+                                                   value="#{ordenCompraMB.cantidad}"/>
+                                    <!--p:inputText id="numSoli" value="# {ordenCompraMB.cantidad}" size="7"  tabindex="5" >
+                                        <p:keyFilter regEx="# {ordenCompraMB.regexNumber}"  />                                
+                                    </p:inputText--> &nbsp;&nbsp;
+                                    <p:outputLabel value="Insumo"  style="color:#fff" /> &nbsp;&nbsp;
+                                    <p:autoComplete id="txtInsumo" 
+                                                    class="autoComplete-Sum" 
+                                                    styleClass="autoComplete-Sum" 
+                                                    panelStyle="autoComplete-Sum" 
+                                                    inputStyleClass="autoComplete-Sum" 
+                                                    value="#{ordenCompraMB.medicamento}"
+                                                    completeMethod="#{ordenCompraMB.autocompleteInsumo}"
+                                                    minQueryLength="4" scrollHeight="350" 
+                                                    queryDelay="500" 
+                                                    maxResults="50" 
+                                                    forceSelection="true" 
+                                                    cacheTimeout="0" 
+                                                    var="insumo" 
+                                                    placeholder="Buscar Insumos" 
+                                                    cache="false"
+                                                    emptyMessage="No se encontraron registros"
+                                                    itemLabel="#{insumo.nombreCorto}" itemValue="#{insumo}" 
+                                                    converter="insumoConverter" size="20"
+                                                    tabindex="6" >
+                                        <p:ajax event="itemSelect" listener="#{ordenCompraMB.handleSelect}"  ></p:ajax>
+                                        <p:ajax event="itemUnselect" listener="#{ordenCompraMB.handleUnSelect}"  ></p:ajax>
+                                        <p:column style="width: 20px; font-size: small;" width="20px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Clave Institucional" />
+                                            </f:facet>
+                                            <h:outputText value="#{insumo.claveInstitucional}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width: 350px; font-size: small;" width="350px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Descripción" />
+                                            </f:facet>
+                                            <h:outputText value="#{insumo.nombreCorto}" style=" font-size: x-small;" />
+                                        </p:column>
+                                    </p:autoComplete>&nbsp;&nbsp;
+                                    <p:outputLabel value="Precio" style="color:#fff" />&nbsp;&nbsp;
+                                    <p:inputNumber id="precio" value="#{ordenCompraMB.precio}" minValue="0" tabindex="7" 
+                                                   size="7" decimalSeparator="." decimalPlaces="2"
+                                                   thousandSeparator=","/>&nbsp;&nbsp;
+                                        
+                                    <p:commandButton id="btnAdd"  tabindex="8" 
+                                                     value="Agregar" style="margin:0; width:100px;"
+                                                     actionListener="#{ordenCompraMB.addDetalleOrdenCompra()}" 
+                                                     onclick="PF('statusProcess').show();" update="formOrdenCompra" 
+                                                     oncomplete="PF('statusProcess').hide();"
+                                                     disabled="#{ordenCompraMB.ordenCompraSelect.idEstatusOrdenCompra ne 1 and ordenCompraMB.editarOrdenCompra ? true : false}"
+                                                     />
+                                </div>
+                            </p:panelGrid>    
+                             <p:dataTable id="tblOrdenCompraDetalle" tabindex="7" 
+                                         var="item" 
+                                         value="#{ordenCompraMB.listaOrdenCompraDetalle}" 
+                                         styleClass="styleEventosPlanPrestacion" reflow="true"
+                                         emptyMessage="" 
+                                         style="margin-bottom:5px;" scrollRows="150" scrollable="true" liveScroll="true" scrollHeight="250" >
+
+                                <!-- p:ajax event="cellEdit" listener="# {ordenCompraMB.onCellEdit}" update="tblOrdenCompraDetalle"  / -->
+                                
+                                <p:column style="text-align: left; width: 10%" headerText="Cantidad" >
+                                    <!--h:outputText value="# {item.cantidad}" class="altoColumn" /-->
+                                    <p:cellEditor >
+                                        <f:facet name="output">
+                                            <h:outputText value="#{item.cantidad}" id="tblColCantSol" class="altoColumn" title="Cantidad Requerida" style="font-weight: bolder;" /> 
+                                            <p:tooltip value="Cantidad Requerida" 
+                                                       for="tblColCantSol" 
+                                                       position="bottom" />
+                                        </f:facet>
+                                        <f:facet name="input">
+                                            <p:inputNumber value="#{item.cantidad}" padControl="false" style="width:90%" label="Cantidad Solicitada"/>
+                                        </f:facet>
+                                    </p:cellEditor>
+                                </p:column>
+                                 <p:column style="text-align: left; width: 10%" headerText="Presentación" >
+                                     <h:outputText value="#{item.presentacion}" class="altoColumn" />
+                                </p:column>
+                                 <p:column style="text-align: left; width: 10%" headerText="Clave Medicamento" >
+                                     <h:outputText value="#{item.claveInstitucional}" class="altoColumn" />
+                                </p:column>
+                                 <p:column style="text-align: left; width: 60%" headerText="Descripción" >
+                                     <h:outputText value="#{item.nombreCorto}" class="altoColumn" />
+                                </p:column>
+                                 <p:column style="text-align: left; width: 10%" headerText="Precio" >
+                                     <h:outputText value="#{item.precio}" class="altoColumn" />
+                                </p:column>
+                            </p:dataTable>  
+                            <p:panel class="pnlActions">
+                                <p:commandButton id="btnRegCancel" class="btnItem" value="Cancelar" style="width: 100px;"   tabindex="12"
+                                                 ajax="true" onclick="PF('modalOrdenCompra').hide();"  validateClient="false" />&nbsp;&nbsp;
+                                <p:commandButton id="btnRegistrar"  styleClass="btnMusAzul"  tabindex="13"
+                                                 value="Guardar" style="margin:0; width: 100px;"                                        
+                                                 onclick="PF('statusProcess').show();"
+                                                 actionListener="#{ordenCompraMB.crearOrdenCompra(true)}"
+                                                 disabled="#{ordenCompraMB.ordenCompraSelect.idEstatusOrdenCompra ne 1 and ordenCompraMB.editarOrdenCompra ? true : false}"
+                                                 update="formOrdenesCompra, formOrdenCompra"
+                                                 oncomplete="if(args.estatus){PF('modalOrdenCompra').hide();}PF('statusProcess').hide();"/>&nbsp;&nbsp;
+                                <p:commandButton id="btnEnviar"  styleClass="btnMusAzul"  tabindex="13"
+                                                 value="Enviar" style="margin:0; width: 100px;"                                        
+                                                 onclick="PF('statusProcess').show();" 
+                                                 actionListener="#{ordenCompraMB.crearOrdenCompra(false)}"
+                                                 disabled="#{ordenCompraMB.ordenCompraSelect.idEstatusOrdenCompra ne 1 and ordenCompraMB.editarOrdenCompra ? true : false}"
+                                                 update="formOrdenesCompra, formOrdenCompra"
+                                                 oncomplete="if(args.estatus){PF('modalOrdenCompra').hide();}PF('statusProcess').hide();"/>&nbsp;&nbsp;
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+                    
+                    <p:dialog header="Registro de Proveedores" 
+                              widgetVar="modalProveedor"
+                              modal="true"
+                              resizable="false"
+                              closeOnEscape="true"
+                              closable="true" width="90%" 
+                              >
+                        <h:form id="formProveedores">
+                            <p:messages id="modalMsg" closable="true" showDetail="true"/>
+                            <p:outputLabel value="Nombre *" styleClass="bloques"/>
+                            <p:inputText value="#{ordenCompraMB.proveedor.nombreProveedor}"> 
+                            </p:inputText>
+                            <p:outputLabel value="Télefono *" styleClass="bloques"/>
+                            <p:inputText value="#{ordenCompraMB.proveedor.telefono}" maxlength="10"> 
+                                <p:keyFilter regEx="/[0-9]/i"/>
+                            </p:inputText>
+                            <p:outputLabel value="Empresa *" styleClass="bloques"/>
+                            <p:inputText value="#{ordenCompraMB.proveedor.empresa}" />
+                            <br/>
+                            <p:outputLabel value="Domicilio *" styleClass="bloques"/>
+                            <p:inputText value="#{ordenCompraMB.proveedor.domicilio}"/>
+                            <p:outputLabel value="Correo *" styleClass="bloques"/>
+                            <p:inputText value="#{ordenCompraMB.proveedor.correo}" />
+                            <p:outputLabel value="rfc" styleClass="bloques"/>
+                            <p:inputText value="#{ordenCompraMB.proveedor.rfc}" maxlength="13"/> 
+                            <br/>
+                            <p:commandButton value="Limpiar" 
+                                             style="float: right;margin: 5px;"
+                                             actionListener="#{ordenCompraMB.limpiar}"
+                                             icon="fa fa-eraser"
+                                             update="formProveedores"/>
+                            <p:commandButton value="Guardar" 
+                                             style="float: right;margin: 5px;"
+                                             actionListener="#{ordenCompraMB.validarOperacion}"
+                                             update="formProveedores"
+                                             styleClass="btnMusAzul"
+                                             icon="fa fa-floppy-o"
+                                             disabled="#{!ordenCompraMB.permiso.puedeEditar}"/>
+                            <br/><br/><br/>
+                            <p:dataTable id="tablaProveedores"
+                                         var="proveedor"
+                                         value="#{ordenCompraMB.listaProveedores}"
+                                         rowKey="#{proveedor.idProveedor}"
+                                         style="text-align: center;"
+                                         scrollable="true" 
+                                         scrollHeight="200"
+                                         emptyMessage="No existen registros para mostrar."
+                                         editable="true"
+                                         selectionMode="single"  
+                                         selection="#{ordenCompraMB.proveedorSelected}">
+                                
+                                <p:ajax event="rowDblselect" 
+                                        update="formProveedores" 
+                                        listener="#{ordenCompraMB.obtenerProveedorSeleccionado}"/>
+                                
+                                <p:column headerText="Nombre" style="width: 10%;" sortBy="#{proveedor.nombreProveedor}" styleClass="columnContentLeft" >
+                                    <p:cellEditor>
+                                        <f:facet name="output">
+                                            <h:outputText value="#{proveedor.nombreProveedor}" />
+                                        </f:facet>
+                                        <f:facet name="input">
+                                            <p:inputText value="#{proveedor.nombreProveedor}" />
+                                        </f:facet>
+                                    </p:cellEditor>
+                                </p:column>
+                                
+                                <p:column headerText="rfc" style="width: 10%">
+                                    <p:outputLabel value="#{proveedor.rfc}" />
+                                </p:column>
+                                
+                                <p:column headerText="Empresa" style="width: 25%" sortBy="#{proveedor.empresa}"  styleClass="columnContentLeft" >
+                                    <h:outputText value="#{proveedor.empresa}" />
+                                </p:column>
+                                
+                                <p:column headerText="Teléfono" style="width: 10%">
+                                    <h:outputLabel value="#{proveedor.telefono}" />
+                                </p:column>                                
+                                
+                                <p:column headerText="Domicilio" style="width: 20%"  styleClass="columnContentLeft" >
+                                    <p:outputLabel value="#{proveedor.domicilio}" />
+                                </p:column>
+                                
+                                <p:column headerText="Correo" style="width: 10%"  styleClass="columnContentLeft" >
+                                    <p:outputLabel value="#{proveedor.correo}" />
+                                </p:column>
+                                
+                                <p:column style="width: 5%"> 
+                                    <p:tooltip for="linkEliminar" value="Eliminar" position="top"/>
+                                    <p:commandLink id="linkEliminar"
+                                                   style="margin: 5px;text-decoration: none;"
+                                                   actionListener="#{ordenCompraMB.eliminarProveedor}"
+                                                   styleClass="iconMusAzul"
+                                                   update="formProveedores"
+                                                   disabled="#{!ordenCompraMB.permiso.puedeEliminar}">
+                                        <p:confirm header="Confirmación" message="Desea eliminar el proveedor ?" icon="ui-icon-alert" />
+                                        <f:param name="idProveedorParam" value="#{proveedor.idProveedor}"/>
+                                        <i class="fa fa-trash" />
+                                    </p:commandLink>
+                                </p:column>
+                            </p:dataTable>
+                        </h:form>
+                    </p:dialog>
+                </div>
+            </ui:define>
+
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

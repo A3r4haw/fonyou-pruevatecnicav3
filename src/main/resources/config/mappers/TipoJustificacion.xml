@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TipoJustificacionMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.TipoJustificacion" parameterType="mx.mc.model.TipoJustificacion" >
+        SELECT idTipoJustificacion , descripcion , activo 
+        FROM tipoJustificacion
+        WHERE 1=1
+        <if test=" idTipoJustificacion != null ">
+            AND idTipoJustificacion = #{ idTipoJustificacion , jdbcType = INTEGER }
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.TipoJustificacion" parameterType="mx.mc.model.TipoJustificacion">
+        SELECT idTipoJustificacion , descripcion , activo 
+        FROM tipoJustificacion
+        WHERE 1=1
+        <if test=" listTipoJustificacion != null ">
+            AND idTipoJustificacion IN 
+            <foreach item="item" index="index" collection="listTipoJustificacion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <select id="obtenerActivosPorListId" resultType="mx.mc.model.TipoJustificacion" parameterType="mx.mc.model.TipoJustificacion">
+        SELECT idTipoJustificacion , descripcion , activo 
+        FROM tipoJustificacion
+        WHERE 1=1
+        <if test=" listTipoJustificacion != null ">
+            AND idTipoJustificacion IN 
+            <foreach item="item" index="index" collection="listTipoJustificacion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+</mapper>

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ReporteHistoricoSolucionesMapper" >
+    
+    <select id="obtenerHistoricoSoluciones" parameterType="Map" resultType="mx.mc.model.HistoricoSolucion">
+        SELECT 'Prescribe Mezcla' AS fase, fechaPrescripcion AS fecha
+            , folio AS folio
+            , 'Prescrita' AS estatus 
+            , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS usuario
+            , comentarios AS nota, e.nombre AS servicio
+            FROM prescripcion p 
+            INNER JOIN estatusPrescripcion ep ON p.idEstatusPrescripcion = ep.idEstatusPrescripcion 
+            INNER JOIN usuarios u ON p.idMedico = u.idUsuario 
+            INNER JOIN estructura e ON p.idEstructura = e.idEstructura
+            WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        UNION 
+        SELECT 'Autorización' AS fase , fechaAutoriza AS fecha , s.folio AS folio ,
+            CASE WHEN so.idEstatusSolucion > 1 then ('Autorizada') END AS estatus, CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS usuario , 
+            IFNULL(comentarioAutoriza,'') AS nota, e.nombre AS servicio FROM prescripcion p INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion 
+            INNER JOIN solucion so ON s.idSurtimiento = so.idSurtimiento INNER JOIN estatusSolucion es2 ON so.idEstatusSolucion = es2.idEstatusSolucion 
+            INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento 
+            INNER JOIN usuarios u ON so.idUsuarioAutoriza = u.idUsuario INNER JOIN estructura e ON p.idEstructura = e.idEstructura 
+            WHERE so.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+        UNION 
+        SELECT 'No autorizada' AS fase , so.updateFecha AS fecha , s.folio AS folio , CASE WHEN so.idUsuarioNoAutoriza != null then ('No Autorizada') END AS estatus, 
+            CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS usuario , IFNULL(motivoNoAutoriza,'') AS nota, e.nombre AS servicio 
+            FROM prescripcion p INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion INNER JOIN solucion so ON s.idSurtimiento = so.idSurtimiento 
+            INNER JOIN estatusSolucion es2 ON so.idEstatusSolucion = es2.idEstatusSolucion 
+            INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento 
+            INNER JOIN usuarios u ON so.idUsuarioNoAutoriza = u.idUsuario INNER JOIN estructura e ON p.idEstructura = e.idEstructura 
+            WHERE so.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+        UNION
+        SELECT 'Registrar / validar Orden de Mezcla' AS fase
+            , fechaProgramada AS fecha
+            , s.folio AS folio
+            , CASE WHEN so.idEstatusSolucion &gt; 4 
+            	then (SELECT descripcion from estatusSolucion  where idEstatusSolucion = 5) 
+            	else es2.descripcion END AS estatus
+            , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS usuario
+            , IFNULL(comentario,'') AS nota, e.nombre AS servicio
+            FROM prescripcion p 
+            INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion 
+            INNER JOIN solucion so ON s.idSurtimiento = so.idSurtimiento
+            INNER JOIN estatusSolucion es2 ON so.idEstatusSolucion = es2.idEstatusSolucion
+            INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+            INNER JOIN usuarios u ON so.idUsuarioValPrescr = u.idUsuario 
+            INNER JOIN estructura e ON u.idEstructura = e.idEstructura
+            WHERE so.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+        UNION
+        SELECT 'Validar Orden de Prepparación' AS fase
+        , so.fechaValida AS fecha
+        , s.folio AS folio
+        , CASE WHEN so.idEstatusSolucion &gt; 6   
+            	then (SELECT descripcion from estatusSolucion  where idEstatusSolucion = 7) 
+            	else es2.descripcion END AS estatus
+        , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) as usuario
+        , IFNULL(so.observaciones,'') AS nota
+        , e.nombre AS servicio
+            FROM surtimiento s 
+            INNER JOIN solucion so ON s.idSurtimiento = so.idSurtimiento 
+            INNER JOIN usuarios u ON so.idUsuarioValida = u.idUsuario
+            INNER JOIN estatusSolucion es2 ON so.idEstatusSolucion = es2.idEstatusSolucion 
+            INNER JOIN estructura e ON u.idEstructura = e.idEstructura
+            WHERE so.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+        UNION
+        SELECT 'Dispensar Insumos' AS fase, fechaInsSanitDisp AS fecha
+        , su.folio  AS folio
+        , 'Insumos Sanitizados' AS estatus
+        , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS usuario 
+        , 'Insumos fueron Sanitizados' AS nota
+        , e.nombre AS servicio
+            FROM solucion s 
+            INNER JOIN usuarios u ON s.idUsuarioInsSanitDisp = u.idUsuario 
+            INNER JOIN estatusSolucion es ON s.idEstatusSolucion = es.idEstatusSolucion
+            INNER JOIN surtimiento su ON s.idSurtimiento = su.idSurtimiento
+            INNER JOIN estructura e ON u.idEstructura = e.idEstructura
+            WHERE s.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+        UNION
+        SELECT 'Confirma Sanitización' AS fase, fechaPrepara AS fecha
+        , su.folio  AS folio
+        , 'Insumos Sanitizados Confirmados' AS estatus
+        , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS usuario 
+        , 'Confirmación de Sanitización de Insumos' AS nota
+        , e.nombre AS servicio
+            FROM solucion s 
+            INNER JOIN usuarios u ON s.idUsuarioInsSanitPrep = u.idUsuario 
+            INNER JOIN estatusSolucion es ON s.idEstatusSolucion = es.idEstatusSolucion
+            INNER JOIN surtimiento su ON s.idSurtimiento = su.idSurtimiento
+            INNER JOIN estructura e ON u.idEstructura = e.idEstructura
+            WHERE s.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+        UNION 
+        SELECT 'Preparación de Mezcla' AS fase, fechaPrepara AS fecha
+        , su.folio  AS folio
+        , CASE WHEN s.idEstatusSolucion &gt; 9 
+            	then (SELECT descripcion from estatusSolucion  where idEstatusSolucion = 10) 
+            	else es.descripcion END AS estatus
+        , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS usuario 
+        , IFNULL(comentariosPreparacion,'') AS nota
+        , e.nombre AS servicio
+            FROM solucion s 
+            INNER JOIN usuarios u ON s.idUsuarioPrepara = u.idUsuario 
+            INNER JOIN estatusSolucion es ON s.idEstatusSolucion = es.idEstatusSolucion
+            INNER JOIN surtimiento su ON s.idSurtimiento = su.idSurtimiento
+            INNER JOIN estructura e ON u.idEstructura = e.idEstructura
+            WHERE s.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+        UNION 
+        SELECT 'Inspeccionar Mezcla' AS fase
+            , fechaInspeccion AS fecha
+            , su.folio AS folio
+            , CASE WHEN es.idEstatusSolucion &gt; 11 
+            	then (SELECT descripcion from estatusSolucion  where idEstatusSolucion = 12) 
+            	else es.descripcion END AS estatus
+            , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS usuario
+            , IFNULL(comentarioInspeccion,'') AS nota, e.nombre AS servicio
+            FROM solucion s 
+            INNER JOIN usuarios u ON idUsuarioInspeccion = u.idUsuario 
+            INNER JOIN estatusSolucion es ON s.idEstatusSolucion = es.idEstatusSolucion
+            INNER JOIN surtimiento su ON s.idSurtimiento = su.idSurtimiento
+            INNER JOIN estructura e ON u.idEstructura = e.idEstructura
+            WHERE s.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+        UNION
+        SELECT 'Acondicionar Mezcla' AS fase
+            , fechaAcondicionamiento
+            , su.folio AS folio
+            , CASE WHEN es.idEstatusSolucion &gt; 13 
+            	then (SELECT descripcion from estatusSolucion  where idEstatusSolucion = 14) 
+            	else es.descripcion END AS estatus
+            , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS usuario
+            , ifnull(comentarioAcondicionada,'') AS nota
+            , e.nombre AS servicio
+            FROM solucion s 
+            INNER JOIN usuarios u ON idUsuarioAcondiciona = u.idUsuario 
+            INNER JOIN estatusSolucion es ON s.idEstatusSolucion = es.idEstatusSolucion
+            INNER JOIN surtimiento su ON s.idSurtimiento = su.idSurtimiento
+            INNER JOIN estructura e ON u.idEstructura = e.idEstructura
+            WHERE s.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+        UNION
+        SELECT 'Distribuir Mezcla' AS fase
+                , ndc.fechaDispensa AS fecha
+                , su.folio AS folio
+                , es.descripcion AS estatus
+                , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS usuario, IFNULL(comentarioRecibe,'') AS nota
+                , e.nombre AS servicio
+                FROM solucion s
+                INNER JOIN estatusSolucion es ON s.idEstatusSolucion = es.idEstatusSolucion
+            INNER JOIN surtimiento su ON s.idSurtimiento = su.idSurtimiento
+            INNER JOIN notaDispenColectDetalle ndcd ON s.idSurtimiento = ndcd.idSurtimiento and s.idSolucion = ndcd.idSolucion
+            INNER JOIN notaDispenColect ndc ON ndcd.idNotaDispenColect = ndc.idNotaDispenColect
+            INNER JOIN usuarios u ON ndc.idUsuarioDispensa = u.idUsuario
+            INNER JOIN estructura e ON u.idEstructura = e.idEstructura
+            WHERE s.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }    
+        UNION 
+        SELECT 'Entregar Mezcla' AS fase
+	, ndc.fechaDistribuye AS fecha
+	, su.folio AS folio
+	, 'Mezcla Entregada' AS estatus
+	, ndc.userRecibe AS usuario, IFNULL(comentarioRecibe,'') AS nota
+	, e.nombre AS servicio
+        FROM solucion s
+	INNER JOIN estatusSolucion es ON s.idEstatusSolucion = es.idEstatusSolucion
+	INNER JOIN surtimiento su ON s.idSurtimiento = su.idSurtimiento
+        INNER JOIN notaDispenColectDetalle ndcd ON s.idSurtimiento = ndcd.idSurtimiento and s.idSolucion = ndcd.idSolucion
+        INNER JOIN notaDispenColect ndc ON ndcd.idNotaDispenColect = ndc.idNotaDispenColect
+	INNER JOIN usuarios u ON ndc.idUsuarioDistribuye = u.idUsuario
+        INNER JOIN estructura e ON u.idEstructura = e.idEstructura
+        WHERE s.idSurtimiento =  #{ idSurtimiento , jdbcType = VARCHAR }
+        UNION 
+        SELECT * FROM (
+        SELECT 'Mezcla cancelada' AS fase, s.updateFecha AS fecha , su.folio AS folio , CASE WHEN s.idEstatusSolucion > 20 then 
+            (SELECT descripcion from estatusSolucion where idEstatusSolucion = 20) else es.descripcion END AS estatus , 
+            CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS usuario , IFNULL(comentariosCancelacion,'') AS nota , e.nombre AS servicio
+            FROM solucion s INNER JOIN usuarios u ON s.idUsuarioCancela = u.idUsuario INNER JOIN estatusSolucion es ON s.idEstatusSolucion = es.idEstatusSolucion 
+            INNER JOIN surtimiento su ON s.idSurtimiento = su.idSurtimiento INNER JOIN estructura e ON u.idEstructura = e.idEstructura 
+            WHERE s.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }   )
+        <!--UNION
+        SELECT * FROM (
+            SELECT 'Ministración de Mezcla' AS fase
+                , CASE WHEN (sm.fechaMinistrado is not null) THEN sm.fechaMinistrado ELSE sm.fechaProgramado END AS fecha
+                , s.folio AS folio, es.descripcion AS estatus,
+                 IFNULL(CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno), '') AS usuario
+                 , IFNULL( CASE WHEN sm.ministracionConfirmada = 1 THEN sm.comentarios ELSE 'Pendiente de Ministrar' END ,'') AS nota
+                 , IFNULL(e.nombre,'') AS servicio
+               FROM surtimiento s
+               JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+               JOIN surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento
+               JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+               JOIN surtimientoMinistrado sm ON se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+               LEFT JOIN usuarios u ON sm.idUsuario = u.idUsuario 
+               LEFT JOIN solucion s2 ON s.idSurtimiento = s2.idSurtimiento
+               LEFT JOIN estatusSolucion es ON s2.idEstatusSolucion = es.idEstatusSolucion
+               LEFT JOIN estructura e ON u.idEstructura  = e.idEstructura
+               WHERE s.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+               LIMIT 1
+           ) --> AS s1
+    </select>
+</mapper>    

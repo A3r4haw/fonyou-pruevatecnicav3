@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.com.avg.mapper.DoveTrackMapper" >
+ 
+    <select id="getDoveTrack" resultType="mx.com.avg.model.DoveTrack" parameterType="Map">  
+        select distinct
+	oh.Order_Number AS folio
+	, oh.Downloaded_Date AS fechaSolicitada 
+	, s1.servicio
+	, s1.cama
+	, s1.paciente
+        , s1.nombre
+	, R.claveMedicamento AS clave
+	, pm.Description AS medicamento
+	, od.Order_Quantity AS cantidadSolicitada
+	, od.Completed_Date AS fechaSurtida
+	, od.User_Name AS usuario
+	, od.Picked_Quantity AS cantidadSurtida
+	, ROW_NUMBER() OVER (ORDER BY oh.Order_Status, pm.Description ASC) AS rowNumber
+        from DoveTrack.dovetrack.ORDER_HEADER oh
+         join dovetrack.ORDER_DETAIL od on oh.Order_Number = od.Order_Number
+         join dovetrack.PART_MASTER pm on od.Part_Number = pm.Part_Number
+         JOIN DBO.RecetaOrdenNumber R ON (OH.Order_Number = R.orderNumber AND OD.Line_Number = R.LineNumber AND OD.Part_Number = R.claveMedicamento )
+         JOIN (SELECT * FROM OPENQUERY (MUS, '
+		SELECT 
+			pi.idPrescripcion
+			,pi.comentarios
+			,concat(pa.nombreCompleto, pa.apellidoPaterno, pa.apellidoMaterno) as nombre
+			,pa.pacienteNumero as paciente
+			,e.nombre as servicio
+			,c.nombreCama as cama
+			,e.idEstructura
+		  FROM prescripcion  p
+		  join prescripcionInsumo  pi on pi.idPrescripcion = p.idPrescripcion
+		  join estructura e on p.idEstructura = e.idEstructura AND  e.idEstructura = p.idEstructura
+		  join pacienteServicio ps on p.idPacienteServicio = ps.idPacienteServicio  AND p.idEstructura = ps.idEstructura
+		  left join pacienteUbicacion pu on pu.idPacienteServicio = ps.idPacienteServicio
+		  join cama c on c.idCama = pu.idCama AND ps.idEstructura = c.idEstructura
+		  join visita v on ps.idVisita = v.idVisita 
+		  join paciente pa on pa.idPaciente = v.idPaciente 
+		  where 1=1 
+                    <if test=" paramBusquedaReporte.listaEstructuras != null">
+                        AND e.idEstructura IN
+                        <foreach item="item" index="index" collection="paramBusquedaReporte.listaEstructuras" open="(" separator="," close=")">
+                            ''${item}''
+                        </foreach>
+                    </if>
+                    AND pi.comentarios is not null') ) AS s1 ON CONVERT(varchar(20), R.idMedicacion)  = CONVERT(varchar(20), s1.comentarios)
+          WHERE R.fechaLlegada >= '${paramBusquedaReporte.fechaConvertInicio}' and R.fechaLlegada <![CDATA[ <= ]]> '${paramBusquedaReporte.fechaConvertFin}'
+          AND (
+              pm.Part_Number LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+              OR oh.Order_Number LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+              OR pm.Description LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+              OR r.idMedicacion LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'	
+          )
+    </select>
+    
+    <select id="getAllEstructura" resultType="mx.mc.model.Estructura" parameterType="Map">
+        SELECT * FROM OPENQUERY (MUS, '
+            SELECT 
+		*
+            FROM estructura WHERE 
+                idTipoAreaEstructura IN
+                <foreach item="item" index="index" collection="listTiposAreaEstructura" open="(" separator="," close=")">
+                    ''${item}''
+                </foreach>
+            AND activa = 1')
+    </select>
+    
+</mapper>

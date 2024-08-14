@@ -1,0 +1,961 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" > 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:head>
+        <title>Pacientes</title>
+        <h:outputScript library="primefaces" name="jquery/jquery.js" target="body" />
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="padding: 10px;">
+                    <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+                    <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                        <p:graphicImage name="/img/cargando.gif" />
+                    </p:dialog>
+
+                    <h:form id="formPrincipal">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <div style="background: #808080;padding: 10px;">
+                            <p:outputLabel value="Ingreso / Egreso de Paciente" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+                            <p:inputText id="busqueda" 
+                                         value="#{pacienteEgresoIngresoMB.textoBusqueda}" 
+                                         style="width: 50%!important;border-radius:10px!important;" 
+                                         placeholder="Buscar por nombre, clave de derechohabiencia..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15" style=""/>
+                            </i>
+
+                            <p:commandButton value="Buscar" 
+                                             actionListener="#{pacienteEgresoIngresoMB.buscarRegistros}"
+                                             icon="fa fa-search" 
+                                             style="margin-left: 20px;"
+                                             update="tablaPacientes"
+                                             global="false"
+                                             disabled="#{!pacienteEgresoIngresoMB.permiso.puedeVer}">
+                            </p:commandButton>
+                        </div>
+
+                        <p:dataTable id="tablaPacientes"
+                                     var="paciente" 
+                                     value="#{pacienteEgresoIngresoMB.listaPacientes}" 
+                                     selectionMode="single"
+                                     selection="#{pacienteEgresoIngresoMB.pacienteSelect}"
+                                     rowKey="#{paciente.idPaciente}"
+                                     style="text-align: center;"
+                                     emptyMessage="No existen registros para mostrar."
+                                     scrollHeight="300"
+                                     scrollable="true"
+                                     reflow="true"
+                                     paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorPosition="bottom"
+                                     >
+
+                            <p:ajax event="rowDblselect" oncomplete="PF('modalPaciente').show();" 
+                                    update="formPrincipal" 
+                                    listener="#{pacienteEgresoIngresoMB.mostrarDetallePacienteSelect}"/>
+                            <p:column headerText="Nombre" style="text-align: left; width: 30%;"
+                                      sortBy="#{paciente.apellidoPaterno}" >
+                                <h:outputText value="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" />
+                            </p:column>
+                            <p:column headerText="Número de paciente"  style="text-align: left; width: 15%;"
+                                      sortBy="#{paciente.pacienteNumero}" >
+                                <h:outputText value="#{paciente.pacienteNumero}" />
+                            </p:column>
+                            <p:column headerText="Ubicación" style="text-align: left; width: 20%;"
+                                      sortBy="#{paciente.nombreEstructura}" >
+                                <h:outputText value="#{paciente.claveEstructura} - #{paciente.nombreEstructura}" />
+                            </p:column>
+                            <p:column headerText="Periférico" style="text-align: left; width: 15%;"
+                                      sortBy="#{paciente.nombreEstructura}" >
+                                <h:outputText value="#{paciente.nombreEstructuraPeriferico}" />
+                            </p:column>
+                            <p:column headerText="Estatus" sortBy="#{paciente.estatusPaciente}" style="width: 10%; text-align: left; " >
+                                <h:outputText value="#{paciente.estatusPaciente}" />
+                            </p:column>
+                            <p:column headerText="Acciones" exportable="false"  style="width: 10%;">
+                                <p:tooltip for="linkDetalle" value="Detalle" position="top"/>
+                                <p:commandLink id="linkDetalle"
+                                               actionListener="#{pacienteEgresoIngresoMB.mostrarDetallePacienteBotonRegistro(paciente.idPaciente)}" 
+                                               style="margin: 5px;text-decoration: none;"
+                                               styleClass="iconMusAzul"
+                                               oncomplete="PF('modalPaciente').show();"
+                                               update=":formPrincipal">
+                                    <i class="fa fa-list" />
+                                </p:commandLink>
+                                <p:tooltip for="linkEgresoServ" value="Egreso de Servicio" position="top"/>
+                                <p:commandLink id="linkEgresoServ"
+                                               style="margin: 5px;text-decoration: none;color: #EC1527;"
+                                               actionListener="#{pacienteEgresoIngresoMB.cargarModalEgreso(paciente)}"
+                                               oncomplete="PF('modalEgresoServ').show();"
+                                               rendered="#{paciente.idEstatusPaciente eq 3 or paciente.idEstatusPaciente eq 4}"
+                                               update="formEgresoServ">
+                                    <i class="fa fa-sign-out" />
+                                </p:commandLink>
+                                <p:tooltip for="linkIngresoServ" value="Ingreso de Servicio" position="top"/>
+                                <p:commandLink id="linkIngresoServ"
+                                               style="margin: 5px;text-decoration: none;color: #4FB954;"
+                                               actionListener="#{pacienteEgresoIngresoMB.cargarModalIngreso(paciente)}"
+                                               oncomplete="PF('modalIngresoServ').show();"
+                                               rendered="#{paciente.idEstatusPaciente eq 1 or paciente.idEstatusPaciente eq 5}"
+                                               update="formIngresoServ">
+                                    <i class="fa fa-sign-in" />
+                                </p:commandLink>
+                                <p:tooltip for="linkImprimir" value="Imprimir identificación paciente" position="top"/>
+                                <p:tooltip for="linkImprimir" value="Imprimir" position="top"/>
+                                <p:commandLink id="linkImprimir"
+                                               style="margin: 5px;text-decoration: none;"
+                                               actionListener="#{pacienteEgresoIngresoMB.cargarPaciente(paciente)}"
+                                               styleClass="iconMusAzul"
+                                               oncomplete="PF('modalImpresion').show();"
+                                               update=":formPrincipal"
+                                               >
+                                    <i class="fa fa-print" />
+                                    <ui:remove><p:confirm header="Impresion de Etiqueta" message="Desea imprimir la etiqueta ?" icon="ui-icon-alert"  /></ui:remove>
+                                </p:commandLink>
+
+
+
+                                <p:tooltip for="linkEgresoServPerif" value="Egreso de Servicio Periférico" position="top"/>
+                                <p:commandLink id="linkEgresoServPerif"
+                                               style="margin: 5px;text-decoration: none;color: #EC1527;"
+                                               actionListener="#{pacienteEgresoIngresoMB.cargarModalEgreso(paciente)}"
+                                               oncomplete="PF('modalEgresoServPerif').show();"                                               
+                                               rendered="#{paciente.idEstructuraPeriferico  ne null}"                                               
+                                               update="formEgresoServPerif,formPrincipal">
+                                    <i class="fa fa-sign-out" />
+                                </p:commandLink>
+
+                                <p:tooltip for="linkIngresoServPerif" value="Ingreso de Servicio Periférico" position="top"/>
+                                <p:commandLink id="linkIngresoServPerif"
+                                               style="margin: 5px;text-decoration: none;color: #4FB954;"
+                                               actionListener="#{pacienteEgresoIngresoMB.cargarModalIngreso(paciente)}"
+                                               oncomplete="PF('modalIngresoServPerif').show();"                                               
+                                               rendered="#{paciente.idEstructuraPeriferico  eq null}"                                               
+                                               update="formIngresoServPerif">
+                                    <i class="fa fa-sign-in" />
+                                </p:commandLink>
+
+
+                            </p:column>
+                        </p:dataTable>
+                        
+                        <p:dialog header="Datos de Paciente" 
+                                  widgetVar="modalPaciente"
+                                  modal="true"
+                                  resizable="false"
+                                  closeOnEscape="true"
+                                  closable="true">
+
+                            <p:tabView id="tabContainer" activeIndex="#{pacienteEgresoIngresoMB.tabIndex}">
+                                <p:tab>
+                                    <f:facet name="title">
+                                        <h:outputText value="Datos Personales" style="margin-right: 5px;"/>
+                                        <p:graphicImage name="/img/green_check.jpg" />
+                                    </f:facet>
+                                    <p:panelGrid columns="3" styleClass="ui-noborder">
+                                        <p:outputLabel>
+                                            Clave de Paciente *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Poliza de seguro *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Tipo de Paciente *
+                                        </p:outputLabel>
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.pacienteNumero}"
+                                                     disabled="true">
+                                        </p:inputText>
+                                        <p:inputText id="polizaSeguro"
+                                                     style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.claveDerechohabiencia}"
+                                                     disabled="true"/>
+                                        <p:inputText id="tipoPaciente" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.tipoPaciente}"
+                                                     style="width: 350px;"
+                                                     disabled="true" />
+                                        <p:outputLabel>
+                                            Unidad Médica de Referencia *
+                                        </p:outputLabel >
+                                        <p:outputLabel>
+                                            Nombre(s) *
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            Apellido Paterno *
+                                        </p:outputLabel>    
+
+                                        <p:inputText id="unidadMedica" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.unidadMedica}"
+                                                     style="width: 332px;"
+                                                     disabled="true" />
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.nombreCompleto}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.apellidoPaterno}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel>
+                                            Apellido Materno 
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            Sexo *
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            Fecha de nacimiento *
+                                        </p:outputLabel>    
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.apellidoMaterno}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.sexo}"
+                                                     disabled="true" />
+                                        <p:calendar id="fechaNac" 
+                                                    value="#{pacienteEgresoIngresoMB.pacienteDetalle.fechaNacimiento}"
+                                                    size="56"
+                                                    disabled="true"
+                                                    navigator="true"
+                                                    yearRange="c-100:c"
+                                                    readonly="true"
+                                                    pattern="dd/MM/yyyy"
+                                                    locale="es"/>
+
+                                        <p:outputLabel>
+                                            rfc 
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            curp
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            Ocupación *
+                                        </p:outputLabel >
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.rfc}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.curp}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.ocupacion}"
+                                                     disabled="true"/>
+                                        <p:outputLabel>
+                                            Grupo Étnico *
+                                        </p:outputLabel >
+                                        <p:outputLabel>
+                                            Estado Civil *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Escolaridad *
+                                        </p:outputLabel >
+
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.grupoEtnico}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.estadoCivil}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.escolaridad}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel>
+                                            Religión *
+                                        </p:outputLabel >
+                                        <p:outputLabel>
+                                            Grupo Sanguíneo *
+                                        </p:outputLabel >
+                                        <p:outputLabel>
+                                            Nivel Socioeconómico *
+                                        </p:outputLabel >
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.religion}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.grupoSanguineo}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.nivelSocioeconomico}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel>
+                                            Tipo de vivienda *
+                                        </p:outputLabel>
+                                        <p:outputLabel />      
+                                        <p:outputLabel />      
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.tipoVivienda}"
+                                                     disabled="true"/>
+
+                                    </p:panelGrid>
+                                </p:tab>
+
+                                <p:tab id="tabDireccion">
+                                    <f:facet name="title">
+                                        <h:outputText value="Dirección" style="margin-right: 5px;"/>
+                                        <p:graphicImage name="/img/green_check.jpg" rendered="true"/>
+                                    </f:facet>
+                                    <p:panelGrid styleClass="ui-noborder" id="panelDireccion">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Calle *
+                                                </p:outputLabel >
+                                            </p:column>
+                                            <p:column> 
+                                                <p:outputLabel>
+                                                    No. Ext. *
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    No. Int. 
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteEgresoIngresoMB.pacienteDetalle.calle}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteEgresoIngresoMB.pacienteDetalle.numeroExterior}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteEgresoIngresoMB.pacienteDetalle.numeroInterior}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Teléfono Principal (10 Dígitos) *
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Teléfono Secundario (10 Dígitos) 
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Extensión 
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:inputText id="telPrincipal"
+                                                             style="width: 350px;" 
+                                                             value="#{pacienteEgresoIngresoMB.pacienteDetalle.telefonoCasa}"
+                                                             disabled="true" 
+                                                             validatorMessage="Solo se permiten numeros !!!" 
+                                                             maxlength="10">
+                                                    <p:keyFilter regEx="/[0-9]/i"/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteEgresoIngresoMB.pacienteDetalle.telefonoOficina}"
+                                                             disabled="true"
+                                                             maxlength="10">
+                                                    <p:keyFilter regEx="/[0-9]/i"/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteEgresoIngresoMB.pacienteDetalle.extension}"
+                                                             disabled="true"
+                                                             maxlength="10"/>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Teléfono Celular (10 Dígitos) 
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Correo Electronico 
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Cuenta de Facebook  
+                                                </p:outputLabel>   
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteEgresoIngresoMB.pacienteDetalle.telefonoCelular}"
+                                                             disabled="true"
+                                                             maxlength="10">
+                                                    <p:keyFilter regEx="/[0-9]/i"/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteEgresoIngresoMB.pacienteDetalle.correoElectronico}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value=""
+                                                             disabled="true"/>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Pais  *
+                                                </p:outputLabel>   
+                                            </p:column>
+
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Estado *
+                                                </p:outputLabel>   
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Municipio *
+                                                </p:outputLabel>    
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteEgresoIngresoMB.pacienteDetalle.pais}"
+                                                             disabled="true"/>
+                                            </p:column>
+
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteEgresoIngresoMB.pacienteDetalle.estado}"
+                                                             disabled="true"/>
+                                            </p:column>
+
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteEgresoIngresoMB.pacienteDetalle.municipio}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Colonia *
+                                                </p:outputLabel>  
+                                            </p:column>                                            
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Código Postal 
+                                                </p:outputLabel>     
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteEgresoIngresoMB.pacienteDetalle.colonia}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="codPostal"
+                                                             style="width: 350px;" 
+                                                             value="#{pacienteEgresoIngresoMB.pacienteDetalle.codigoPostal}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                </p:tab>   
+
+                                <p:tab>
+                                    <f:facet name="title">
+                                        <h:outputText value="Datos de Responsable Familiar" style="margin-right: 5px;"/>
+                                        <p:graphicImage name="/img/green_check.jpg" rendered="true"/>
+                                    </f:facet>
+                                    <p:panelGrid columns="3" styleClass="ui-noborder">
+                                        <p:outputLabel>
+                                            Nombre(s) *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Apellido Paterno *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Apellido Materno 
+                                        </p:outputLabel>
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.nombreResponsable}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.apellidoPaternoResponsable}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.apellidoMaternoResponsable}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel>
+                                            Parentesco *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            rfc 
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            curp
+                                        </p:outputLabel>
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.parentesco}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.rfcResponsable}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.curpResponsable}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel>
+                                            Teléfono Principal (10 Dígitos) *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Teléfono Secundario (10 Dígitos) 
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Correo electrónico 
+                                        </p:outputLabel>
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.telefonoPrincipalResponsable}"
+                                                     disabled="true"
+                                                     maxlength="10">
+                                            <p:keyFilter regEx="/[0-9]/i"/>
+                                        </p:inputText>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.telefonoSecundarioResponsable}"
+                                                     disabled="true"
+                                                     maxlength="10">
+                                            <p:keyFilter regEx="/[0-9]/i"/>
+                                        </p:inputText>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.correoElectronicoResponsable}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel>
+                                            Responsable Legal *
+                                        </p:outputLabel>
+                                        <p:outputLabel />
+                                        <p:outputLabel />
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteEgresoIngresoMB.pacienteDetalle.responsableLegal}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel />
+                                        <p:outputLabel />
+                                    </p:panelGrid>
+                                </p:tab>
+
+                            </p:tabView>
+                        </p:dialog>
+
+                    </h:form>
+                    
+                    <p:dialog header="Impresión de Etiqueta de Brazalete"
+                                  widgetVar="modalImpresion"
+                                  modal="true"
+                                  resizable="false"
+                                  closeOnEscape="true"
+                                  closable="true">
+                        <h:form id="frmPrint">
+                            <h:outputText value="Desea imprimir la etiqueta #{pacienteEgresoIngresoMB.pacienteSelect.nombreCompleto} ?" />
+                            <br />
+                            <p:panelGrid columns="2">
+                                <p:outputLabel value="Seleccione una impresora:" />
+                                <p:selectOneMenu style="width: 200px;" value="#{pacienteEgresoIngresoMB.idImpresora}">
+                                    <f:selectItem itemLabel="Seleccione una Opción" itemValue="" noSelectionOption="true" />
+                                    <f:selectItems value="#{pacienteEgresoIngresoMB.listImpresora}" var="impresora" itemLabel="#{impresora.descripcion}" 
+                                                   itemValue="#{impresora.idImpresora}" />
+                                </p:selectOneMenu>
+                                <p:commandButton value="Imprimir"
+                                                 actionListener="#{pacienteEgresoIngresoMB.imprimirEtiqueta}" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalImpresion').hide();"
+                                                 style=" margin: 5px 0; " />
+                                <p:commandButton value="Cancelar"
+                                                 oncomplete="PF('modalImpresion').hide();"
+                                                 style=" margin: 5px 0; "  />
+                            </p:panelGrid>
+                        </h:form>        
+                    </p:dialog>
+                    <p:dialog header="Egreso de Paciente de Servicio" 
+                              widgetVar="modalEgresoServ"
+                              modal="true"
+                              resizable="false" width="35%"
+                              closeOnEscape="true">
+                        <h:form id="formEgresoServ">
+                            <p:messages id="msgModalEgresoServ" closable="true" showDetail="false" />
+
+                            <div style="width: 500px !important; text-align: center">
+                                <p:column>
+                                    <p:outputLabel value="#{pacienteEgresoIngresoMB.ubicacionPaciente}" />
+                                </p:column>
+                            </div>
+                            <br/>
+
+                            <p:panelGrid columns="2">
+
+
+                                <p:column style="width: 50%">
+                                    <p:outputLabel value="Diagnostico" style="font-weight: bold" />
+                                </p:column>
+                                <p:column style="width: 50%">
+                                    <p:dataList value="#{pacienteEgresoIngresoMB.listaDiagnosticos}" 
+                                                var="diagnostico" 
+                                                type="ordered"
+                                                emptyMessage="Sin diagnostico">
+                                        #{diagnostico.nombre}
+                                    </p:dataList>
+                                </p:column>
+
+
+                                <p:outputLabel value="Cama" style="font-weight: bold">
+                                    <i class="fa fa-bed" style="margin-right: 10px;"></i>
+                                </p:outputLabel>
+                                <p:outputLabel value="Sin asignar" rendered="#{empty pacienteEgresoIngresoMB.cama.nombreCama}"/>
+                                
+                                <p:outputLabel value="#{pacienteEgresoIngresoMB.cama.nombreCama}" rendered="#{ not empty pacienteEgresoIngresoMB.cama.nombreCama}"/>
+                                <p:outputLabel value="Paciente:"  style="font-weight:bold" />
+                                <p:outputLabel value="#{pacienteEgresoIngresoMB.pacienteSelect.nombreCompleto} #{pacienteEgresoIngresoMB.pacienteSelect.apellidoPaterno} #{pacienteEgresoIngresoMB.pacienteSelect.apellidoMaterno}"/>
+
+                                <p:outputLabel value="Clave de derechohabiencia:" style="font-weight: bold"/>
+                                <p:outputLabel value="#{pacienteEgresoIngresoMB.pacienteSelect.claveDerechohabiencia}"/>
+
+                                <p:outputLabel value="Justificacion de la salida" style="font-weight: bold"/>
+
+                                <p:inputTextarea style="width: 95%" value="#{pacienteEgresoIngresoMB.justificacion}"/>
+
+
+                                <p:outputLabel value="* Motivo de la salida" style="font-weight: bold"/> 
+                                <p:selectOneMenu 
+                                    value="#{pacienteEgresoIngresoMB.idMotivoMovPaciente}" 
+                                    autoWidth="false"
+                                    filter="true" 
+                                    filterMatchMode="contains" 
+                                    style="width: 90%;">
+                                    <p:ajax listener="#{pacienteEgresoIngresoMB.cargarComboServicios}"
+                                            update="formEgresoServ"
+                                            global="false"
+                                            process="formEgresoServ"/>
+                                    <f:selectItem itemLabel="" itemValue="0"/>
+                                    <f:selectItems value="#{pacienteEgresoIngresoMB.listaMotivos}"
+                                                   var="motivo"
+                                                   itemValue="#{motivo.idmotivoPacienteMovimiento}"
+                                                   itemLabel="#{motivo.nombreMotivoPacienteMovimiento}"/>
+                                </p:selectOneMenu>
+
+                                    <p:outputLabel value="* Medico que autoriza" style="font-weight: bold" />
+                                        <p:selectOneMenu 
+                                            value="#{pacienteEgresoIngresoMB.idMedico}"
+                                            autoWidth="false"
+                                            style="width: 90%;" >
+                                            <f:selectItem itemLabel="" itemValue="0"/>
+                                            <f:selectItems value="#{pacienteEgresoIngresoMB.listaUsuarios}"
+                                                           var="usuario"
+                                                           itemValue="#{usuario.idUsuario}"
+                                                           itemLabel="#{usuario.nombre} #{usuario.apellidoPaterno} #{usuario.apellidoMaterno}"/>
+                                        </p:selectOneMenu>
+
+                            </p:panelGrid>
+                            
+                            
+                            <p:commandButton value="Registrar egreso" 
+                                             icon="fa fa-sign-out"
+                                             style="margin: 10px;float: right;"
+                                             styleClass="btnMusAzul"
+                                             actionListener="#{pacienteEgresoIngresoMB.egresarPaciente}"
+                                             oncomplete="if(!args.errorValidacion) PF('modalEgresoServ').hide()" 
+                                             disabled="#{!pacienteEgresoIngresoMB.permiso.puedeProcesar}"
+                                             update="formEgresoServ,formPrincipal:tablaPacientes"/>
+                            <p:commandButton value="Cancelar" style="margin: 10px;float: right;"
+                                             icon="fa fa-ban"
+                                             oncomplete="PF('modalEgresoServ').hide()"
+                                             global="false"
+                                             validateClient="false"/>
+                        </h:form>
+                    </p:dialog>
+
+
+
+                    <p:dialog header="Ingreso de Paciente a Servicio" 
+                              widgetVar="modalIngresoServ"
+                              modal="true" width="30%"
+                              resizable="false"
+                              closeOnEscape="true">
+
+                        <hr/>
+                        <h4 style="margin: 5px;">Motivo de consulta</h4>
+                        <br/>
+                        <h:form id="formIngresoServ">
+                            <p:messages id="msgModalIngresoServ" closable="true" showDetail="true" />
+                            <div style="background-color: #EEF2F4;padding: 10px;">
+                                <p:outputLabel value="#{pacienteEgresoIngresoMB.pacienteSelect.nombreCompleto} #{pacienteEgresoIngresoMB.pacienteSelect.apellidoPaterno} #{pacienteEgresoIngresoMB.pacienteSelect.apellidoMaterno} | #{pacienteEgresoIngresoMB.pacienteSelect.edadPaciente} años"/>
+                            </div>
+                            <br/>
+                            <p:outputLabel  style="margin-right: 10px;">Servicio</p:outputLabel>
+                            <br/>
+                            <p:selectOneMenu 
+                                value="#{pacienteEgresoIngresoMB.idEstructura}"
+                                autoWidth="false"
+                                filter="true" 
+                                filterMatchMode="contains"  
+                                style="width: 95%">
+                                <f:selectItem itemLabel="" itemValue="0"/>
+                                <f:selectItems value="#{pacienteEgresoIngresoMB.listaEstructuras}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+                            <br/>
+                            <p:outputLabel style="margin-right: 10px;">Motivo de consulta</p:outputLabel>
+                            <br/>
+                            <p:selectOneMenu 
+                                value="#{pacienteEgresoIngresoMB.idMotivoMovPaciente}"
+                                autoWidth="false"
+                                style="width: 95%;">
+                                <f:selectItem itemLabel="" itemValue="0"/>
+                                <f:selectItems value="#{pacienteEgresoIngresoMB.listaMotivos}"
+                                               var="motivo"
+                                               itemValue="#{motivo.idmotivoPacienteMovimiento}"
+                                               itemLabel="#{motivo.nombreMotivoPacienteMovimiento}"/>
+                            </p:selectOneMenu>
+                            <br/>
+                            <p:outputLabel style="margin-right: 10px;">Descripción de Motivo de consulta</p:outputLabel>
+                            <br/>
+                            <p:inputTextarea value="#{pacienteEgresoIngresoMB.motivoConsulta}" style="width: 100%"/>
+                            <br/>
+                            <p:commandButton value="Aceptar" 
+                                             icon="fa fa-check"
+                                             style="margin: 10px;float: right;" 
+                                             styleClass="btnMusAzul"
+                                             actionListener="#{pacienteEgresoIngresoMB.ingresarPaciente}"
+                                             update="formIngresoServ,formPrincipal"
+                                             disabled="#{!pacienteEgresoIngresoMB.permiso.puedeProcesar}"
+                                             oncomplete="if(!args.errorValidacion) PF('modalIngresoServ').hide()"/>
+                            <p:commandButton value="Cancelar" style="margin: 10px;float: right;"
+                                             icon="fa fa-ban"
+                                             oncomplete="PF('modalIngresoServ').hide()"
+                                             global="false"
+                                             validateClient="false"/>
+                        </h:form>
+                    </p:dialog>
+
+                    <p:dialog header="Egreso de Paciente de Servicio Periférico" 
+                              widgetVar="modalEgresoServPerif"
+                              modal="true" width="35%"
+                              resizable="false"
+                              closeOnEscape="true">
+
+                        <h:form id="formEgresoServPerif">
+                            <p:messages id="msgModalEgresoServPerif" closable="true" showDetail="false" />
+                            <div style="text-align: center; width: 500px">
+                                <p:column>
+                                    <p:outputLabel value="#{pacienteEgresoIngresoMB.ubicacionPaciente}" />
+                                </p:column>
+                            </div>
+
+                            <p:panelGrid columns="2">
+
+
+                                <p:column style="width: 50%">
+                                    <p:outputLabel value="Diagnostico" style="font-weight: bold" />
+                                </p:column>
+                                <p:column style="width: 50%">
+                                    <p:dataList value="#{pacienteEgresoIngresoMB.listaDiagnosticos}" 
+                                                var="diagnostico" 
+                                                type="ordered"
+                                                emptyMessage="Sin diagnostico">
+                                        #{diagnostico.nombre}
+                                    </p:dataList>
+                                </p:column>
+
+
+                                <p:outputLabel value="Cama" style="font-weight: bold">
+                                    <i class="fa fa-bed" style="margin-right: 10px;"></i>
+                                </p:outputLabel>
+                                <p:outputLabel value="Sin asignar" rendered="#{empty pacienteEgresoIngresoMB.cama.nombreCama}"/>
+                                
+                                <p:outputLabel value="#{pacienteEgresoIngresoMB.cama.nombreCama}" rendered="#{ not empty pacienteEgresoIngresoMB.cama.nombreCama}"/>
+                                <p:outputLabel value="Paciente:"  style="font-weight:bold" />
+                                <p:outputLabel value="#{pacienteEgresoIngresoMB.pacienteSelect.nombreCompleto} #{pacienteEgresoIngresoMB.pacienteSelect.apellidoPaterno} #{pacienteEgresoIngresoMB.pacienteSelect.apellidoMaterno}"/>
+
+                                <p:outputLabel value="Clave de derechohabiencia:" style="font-weight: bold"/>
+                                <p:outputLabel value="#{pacienteEgresoIngresoMB.pacienteSelect.claveDerechohabiencia}"/>
+
+                                <p:outputLabel value="Justificacion de la salida" style="font-weight: bold"/>
+
+                                <p:inputTextarea style="width: 95%" value="#{pacienteEgresoIngresoMB.justificacion}"/>
+
+
+                                <p:outputLabel value="* Motivo de la salida" style="font-weight: bold"/> 
+                                <p:selectOneMenu 
+                                    value="#{pacienteEgresoIngresoMB.idMotivoMovPaciente}" 
+                                    autoWidth="false"
+                                    filter="true" 
+                                    filterMatchMode="contains" 
+                                    style="width: 90%;">
+                                    <p:ajax listener="#{pacienteEgresoIngresoMB.cargarComboServicios}"
+                                            update="formEgresoServPerif"
+                                            global="false"
+                                            process="formEgresoServPerif"/>
+                                    <f:selectItem itemLabel="" itemValue="0"/>
+                                    <f:selectItems value="#{pacienteEgresoIngresoMB.listaMotivos}"
+                                                   var="motivo"
+                                                   itemValue="#{motivo.idmotivoPacienteMovimiento}"
+                                                   itemLabel="#{motivo.nombreMotivoPacienteMovimiento}"/>
+                                </p:selectOneMenu>
+                                   
+                                    <p:outputLabel value="* Medico que autoriza" style="font-weight: bold" />
+                                        <p:selectOneMenu 
+                                            value="#{pacienteEgresoIngresoMB.idMedico}"
+                                            autoWidth="false"
+                                            style="width: 90%;" >
+                                            <f:selectItem itemLabel="" itemValue="0"/>
+                                            <f:selectItems value="#{pacienteEgresoIngresoMB.listaUsuarios}"
+                                                           var="usuario"
+                                                           itemValue="#{usuario.idUsuario}"
+                                                           itemLabel="#{usuario.nombre} #{usuario.apellidoPaterno} #{usuario.apellidoMaterno}"/>
+                                        </p:selectOneMenu>
+
+                            </p:panelGrid>
+                            
+                            
+                            <p:commandButton value="Registrar egreso" 
+                                             icon="fa fa-sign-out"
+                                             style="margin: 10px;float: right;"
+                                             styleClass="btnMusAzul"
+                                             actionListener="#{pacienteEgresoIngresoMB.egresarPacienteServicioPeriferico()}"
+                                             oncomplete="if(!args.errorValidacion) PF('modalEgresoServPerif').hide()" 
+                                             disabled="#{!pacienteEgresoIngresoMB.permiso.puedeProcesar}"
+                                             update="formPrincipal,formPrincipal:tablaPacientes,formEgresoServPerif"/>
+                            <p:commandButton value="Cancelar" style="margin: 10px;float: right;"
+                                             icon="fa fa-ban"
+                                             oncomplete="PF('modalEgresoServPerif').hide()"
+                                             global="false"
+                                             validateClient="false"/>
+                        </h:form>
+                    </p:dialog>
+
+
+
+                    <p:dialog header="Ingreso de Paciente a Servicio Periférico" 
+                              widgetVar="modalIngresoServPerif"
+                              modal="true" width="30%"
+                              resizable="false"
+                              closeOnEscape="true">
+
+                        <hr/>
+                        <h4 style="margin: 5px;">Motivo de consulta</h4>
+                        <br/>
+                        <h:form id="formIngresoServPerif">
+                            <p:messages id="msgModalIngresoServPerif" closable="true" showDetail="true" />
+                            <div style="background-color: #EEF2F4;padding: 10px;">
+                                <p:outputLabel value="#{pacienteEgresoIngresoMB.pacienteSelect.nombreCompleto} #{pacienteEgresoIngresoMB.pacienteSelect.apellidoPaterno} #{pacienteEgresoIngresoMB.pacienteSelect.apellidoMaterno} | #{pacienteEgresoIngresoMB.pacienteSelect.edadPaciente} años"/>
+                            </div>
+                            <br/>
+                            <p:outputLabel  style="margin-right: 10px;">Servicio Periférico</p:outputLabel>
+                            <br/>
+                            <p:selectOneMenu 
+                                value="#{pacienteEgresoIngresoMB.idEstructura}"
+                                autoWidth="false"
+                                filter="true" 
+                                filterMatchMode="contains"  
+                                style="width: 95%">
+                                <f:selectItem itemLabel="" itemValue="0"/>
+                                <f:selectItems value="#{pacienteEgresoIngresoMB.listaEstructuras}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+                            <br/>
+                            <p:outputLabel style="margin-right: 10px;">Motivo de consulta</p:outputLabel>
+                            <br/>
+                            <p:selectOneMenu 
+                                value="#{pacienteEgresoIngresoMB.idMotivoMovPaciente}"
+                                autoWidth="false"
+                                style="width: 95%;">
+                                <f:selectItem itemLabel="" itemValue="0"/>
+                                <f:selectItems value="#{pacienteEgresoIngresoMB.listaMotivos}"
+                                               var="motivo"
+                                               itemValue="#{motivo.idmotivoPacienteMovimiento}"
+                                               itemLabel="#{motivo.nombreMotivoPacienteMovimiento}"/>
+                            </p:selectOneMenu>
+                            <br/>
+                            <br/>
+                            <p:inputTextarea value="#{pacienteEgresoIngresoMB.motivoConsulta}" style="width: 100%"/>
+                            <br/>
+                            <p:commandButton value="Aceptar" 
+                                             icon="fa fa-check"
+                                             style="margin: 10px;float: right;" 
+                                             styleClass="btnMusAzul"
+                                             actionListener="#{pacienteEgresoIngresoMB.ingresarPacientePeriferico}"
+                                             update="formIngresoServPerif,formPrincipal,formPrincipal:tablaPacientes,formIngresoServPerif"
+                                             disabled="#{!pacienteEgresoIngresoMB.permiso.puedeProcesar}"
+                                             oncomplete="if(!args.errorValidacion) PF('modalIngresoServPerif').hide()"/>
+                            <p:commandButton value="Cancelar" style="margin: 10px;float: right;"
+                                             icon="fa fa-ban"
+                                             oncomplete="PF('modalIngresoServPerif').hide()"
+                                             global="false"
+                                             validateClient="false"/>
+                        </h:form>
+                    </p:dialog>
+
+
+                    <p:dialog widgetVar="mdlReport" width="820px" height="600px"
+                              closeOnEscape="false" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">
+                            <p:media value="/Reportes" player="pdf" width="800px" height="600px" cache="false" />
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>
+
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

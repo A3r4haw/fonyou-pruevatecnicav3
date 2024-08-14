@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.OrdenCompraDetalleMapper" >
+    
+    <insert id="insertarListOrdenDetalleCompra" parameterType="map">
+        <foreach collection="listOrdenDetalle" item="item" separator=";">
+            INSERT INTO ordenCompraDetalle (
+            <if test="item.idOrdenCompraDetalle != null">    idOrdenCompraDetalle</if>
+            <if test="item.idOrdenCompra != null">          ,idOrdenCompra</if>
+            <if test="item.idInsumo != null">            ,idInsumo</if>            
+            <if test="item.idPresentacionEntrada != null">       ,idPresentacionEntrada</if>
+            <if test="item.cantidad != null">  ,cantidad</if>
+            <if test="item.precio != null">,precio</if>
+            <if test="item.insertFecha != null">         ,insertFecha</if>
+            <if test="item.insertIdUsuario != null">     ,insertIdUsuario</if>            
+            ) VALUES (
+            <if test="item.idOrdenCompraDetalle != null">    #{item.idOrdenCompraDetalle,jdbcType=VARCHAR}</if>
+            <if test="item.idOrdenCompra != null">          ,#{item.idOrdenCompra,jdbcType=VARCHAR}</if>
+            <if test="item.idInsumo != null">            ,#{item.idInsumo,jdbcType=VARCHAR}</if>
+            <if test="item.idPresentacionEntrada != null">       ,#{item.idPresentacionEntrada,jdbcType=INTEGER}</if>
+            <if test="item.cantidad != null">  ,#{item.cantidad,jdbcType=DECIMAL}</if>
+            <if test="item.precio != null">,#{item.precio,jdbcType=DECIMAL}</if>
+            <if test="item.insertFecha != null">         ,#{item.insertFecha,jdbcType=TIMESTAMP}</if>
+            <if test="item.insertIdUsuario != null">     ,#{item.insertIdUsuario,jdbcType=VARCHAR}</if>
+            )
+        </foreach>    
+    </insert>
+    
+    <select id="obtenerListaDetalleOrden" parameterType="String" resultType="mx.mc.model.OrdenCompraDetalleExtended">
+        SELECT ocd.idOrdenCompraDetalle, ocd.idOrdenCompra, ocd.idInsumo, ocd.idPresentacionEntrada, ocd.cantidad, 
+                ocd.precio, ocd.insertFecha, ocd.insertIdUsuario, pm.nombrePresentacion as presentacion,
+                m.claveInstitucional, m.nombreCorto
+        FROM ordenCompraDetalle  ocd 
+            INNER JOIN medicamento m ON ocd.idInsumo = m.idMedicamento
+            INNER JOIN presentacionMedicamento pm ON ocd.idPresentacionEntrada = pm.idPresentacion
+        WHERE idOrdenCompra = #{idOrdenCompra,jdbcType=VARCHAR}
+        
+    </select>
+    
+    <select id="obtener" parameterType="mx.mc.model.OrdenCompraDetalle" resultType="mx.mc.model.OrdenCompraDetalle">
+        SELECT idOrdenCompraDetalle, idOrdenCompra, idInsumo, idPresentacionEntrada, cantidad, precio, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM ordenCompraDetalle 
+        WHERE 1=1
+        <if test=" idOrdenCompraDetalle != null">
+            AND idOrdenCompraDetalle = #{ idOrdenCompra , jdbcType = VARCHAR }
+        </if>
+        <if test=" idOrdenCompra != null">
+            AND idOrdenCompra = #{ idOrdenCompra , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInsumo != null">
+            AND idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+        </if>
+        LIMIT 1
+    </select>
+    
+    <update id="actualizar" parameterType="mx.mc.model.OrdenCompraDetalle">
+            UPDATE ordenCompraDetalle
+            <set>
+                updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+                , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+                <if test=" cantidad != null">
+                    , cantidad = #{ cantidad , jdbcType = DECIMAL }
+                </if>
+                <if test=" precio != null">
+                    , precio = #{ precio , jdbcType = DECIMAL }
+                </if>
+                <if test=" idPresentacionEntrada != null">
+                    , idPresentacionEntrada = #{ idPresentacionEntrada , jdbcType = INTEGER }
+                </if>
+            </set>               
+            WHERE idOrdenCompraDetalle = #{ idOrdenCompraDetalle , jdbcType = VARCHAR }
+    </update>
+    
+    <update id="insertar" parameterType="mx.mc.model.OrdenCompraDetalle">
+            INSERT INTO ordenCompraDetalle (
+                idOrdenCompraDetalle
+                , idOrdenCompra
+                , idInsumo
+                , idPresentacionEntrada
+                , cantidad
+                , precio
+                , insertFecha
+                , insertIdUsuario
+            ) VALUES (
+                #{ idOrdenCompraDetalle , jdbcType = VARCHAR }
+                , #{ idOrdenCompra , jdbcType = VARCHAR }
+                , #{ idInsumo , jdbcType = VARCHAR }
+                , #{ idPresentacionEntrada , jdbcType = INTEGER }
+                , #{ cantidad ,jdbcType = DECIMAL }
+                , #{ precio , jdbcType = DECIMAL }
+                , #{ insertFecha , jdbcType = TIMESTAMP }
+                , #{ insertIdUsuario , jdbcType=VARCHAR }
+            )
+    </update>
+    
+    
+</mapper>    

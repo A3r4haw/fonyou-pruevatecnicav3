@@ -1,0 +1,1324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanelAmplio" >
+                    <h:form id="mainForm">
+                        <p:focus context="mainForm"/>
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value="Recetas de Consulta Externa" style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+
+                            <p:inputText id="busqueda" 
+                                         value="#{prescripcionExtMB.cadenaBusqueda}" 
+                                         class="textSearch"
+                                         style="width: 50% !important;" 
+                                         placeholder="Buscar..." />
+                            <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />
+                            <p:spacer width="12px" />
+
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); "
+                                             actionListener="#{prescripcionExtMB.obtenerPacientes}"
+                                             update="@form"  />
+                        </div>
+
+                        <p:toolbar rendered="false">
+                            <p:toolbarGroup id="toolbar"  >
+                                <p:commandButton id="btnCrear" value="Crear"
+                                                 title="Crear Nueva"
+                                                 icon="ui-icon-document"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalListaPrescripciones').show(); "
+                                                 actionListener="#{prescripcionExtMB.creaRegistro}" 
+                                                 update=":formListaPrescripciones"
+                                                 disabled="#{!prescripcionExtMB.permiso.puedeCrear}"
+                                                 rendered="false" />
+
+                                <p:commandButton id="btnModificar" value="Modificar"
+                                                 title="Modificar" icon="ui-icon-pencil"
+                                                 onclick="PF('statusProcess').show()"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalListaPrescripciones').show();"
+                                                 actionListener="#{prescripcionExtMB.editaRegistro}" 
+                                                 update=":formListaPrescripciones"
+                                                 disabled="#{!prescripcionExtMB.permiso.puedeEditar or !prescripcionExtMB.elementoSeleccionado}"
+                                                 rendered="false" />
+
+                                <p:commandButton id="btnEliminar" value="Eliminar"
+                                                 title="Eliminar" icon="ui-icon-trash" 
+                                                 update="@form"
+                                                 disabled="#{!prescripcionExtMB.permiso.puedeEliminar or !prescripcionExtMB.elementoSeleccionado}"
+                                                 rendered="false" />
+
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:messages id="validaMsg" globalOnly="true" showSummary="true" closable="true" showDetail="false"  />
+
+                        <p:panel id="dataTable">
+                            <p:dataGrid id="tblPacientes1"
+                                        var="item" value="#{prescripcionExtMB.pacienteExtendList}"
+                                        columns="4" rows="3"
+                                        layout="grid"
+                                        rowIndexVar="row"  
+                                        rendered="#{prescripcionExtMB.sizePacienteList eq -1}" >
+                                <f:facet name="header">
+                                    Pacientes Registrados
+                                </f:facet>
+
+                                <p:panel header="#{item.nombreCompleto} #{item.apellidoPaterno} #{item.apellidoMaterno}" style="text-align: left; color: #101010 !important;">
+                                    <h:panelGrid columns="1" style="width:100%">
+
+                                        <h:outputText value="#{item.pacienteNumero}" />
+                                        <br/>
+                                        <h:outputText value="Cama:" />
+                                        <br/>
+                                        <h:outputText value="Unidad:" />
+                                        <br/>
+                                        <h:outputText value="Unidad Periferica:" />
+
+                                        <p:commandLink update=":form:carDetail" oncomplete="PF('carDialog').show()" title="View Detail">
+                                            <h:outputText styleClass="ui-icon ui-icon-search" style="margin:0 auto;" />
+                                            <f:setPropertyActionListener value="#{car}" target="#{dataGridView.selectedCar}" />
+                                        </p:commandLink>
+                                    </h:panelGrid>
+                                </p:panel>
+
+                            </p:dataGrid>
+
+                            <p:dataTable id="tblPacientes" 
+                                         widgetVar="tblPacientes" 
+                                         value="#{prescripcionExtMB.pacienteExtendList}"
+                                         selection="#{prescripcionExtMB.pacienteExtendSelected}"
+                                         var="item" 
+                                         rowKey="#{item.idPaciente}"
+                                         rowIndexVar="row"
+                                         selectionMode="single"
+                                         style="margin-bottom:5px;"
+                                         styleClass="mystyle"
+                                         scrollRows="10" scrollable="true" scrollHeight="350"
+                                         emptyMessage="No se encontraron Registros"
+                                         reflow="true"
+                                         paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                         currentPageReportTemplate=" "
+                                         paginator="true"
+                                         rows="10"
+                                         paginatorPosition="bottom"
+                                         rendered="#{prescripcionExtMB.sizePacienteList gt 0}" >
+
+                                <p:ajax event="rowUnselect" listener="#{prescripcionExtMB.onRowUnselectPaciente}" update=":mainForm:btnModificar  "  />
+                                <p:ajax event="rowSelect" listener="#{prescripcionExtMB.onRowSelectPaciente}" update=":mainForm:btnModificar " />
+                                <p:ajax event="rowDblselect" onstart="PF('statusProcess').show()"
+                                        oncomplete="PF('statusProcess').hide(); PF('modalListaPrescripciones').show();"
+                                        listener="#{prescripcionExtMB.verEditarPaciente}" 
+                                        update=":formListaPrescripciones" />
+
+                                <!--                                <p:column style="width:16px;text-align:center" exportable="false" >
+                                                                    <h:outputText value="# {row + 1}"/>  
+                                                                </p:column>-->
+
+                                <f:facet name="{Records}">
+                                    <div style="float:left;">
+                                        <p:outputLabel class="footerLabel" value="Pacientes Encontrados #{prescripcionExtMB.sizePacienteList}" rendered="true" />
+                                    </div>
+                                </f:facet>
+
+                                <f:facet name="{Exporters}">
+                                    <div style="float:right">
+                                        <h:commandLink >
+                                            <img src="#{request.contextPath}/resources/img/btnxls.png" style="height: 25px !important; margin-left: 5px !important;" title="Exportar" />
+                                            <p:dataExporter type="xls" target="tblPacientes" fileName="pacientes" />
+                                        </h:commandLink>
+                                        <h:commandLink>
+                                            <img src="#{request.contextPath}/resources/img/btnpdf.png" style="height: 25px !important; margin-left: 5px !important;" title="Exportar" />
+                                            <p:dataExporter type="pdf" target="tblPacientes" fileName="pacientes"/>
+                                        </h:commandLink>
+                                    </div>
+                                </f:facet>
+                                <p:column class="columnLeft25"
+                                          sortBy="#{item.nombreCompleto} #{item.apellidoPaterno} #{item.apellidoMaterno}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Paciente" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombreCompleto} #{item.apellidoPaterno} #{item.apellidoMaterno}" />
+                                </p:column>
+                                <p:column class="columnLeft15"
+                                          sortBy="#{item.pacienteNumero}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Número Paciente" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.pacienteNumero}" />
+                                </p:column>
+                                <p:column class="columnLeft20" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Ubicación" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombreEstructura}" />
+                                </p:column>
+                                <p:column class="columnLeft20" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Periférico" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombreEstructuraPeriferico}" />
+                                </p:column>
+                                <p:column class="columnLeft10" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Estatus" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.estatusPaciente}" />
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:contextMenu for="tblPacientes">
+                                <p:menuitem id="btnModificarContext" value="Ver / Modificar"
+                                            icon="ui-icon-pencil" class="menu-ctx-sum" styleClass="menu-ctx-sum" 
+                                            onclick="PF('statusProcess').show()"
+                                            actionListener="#{prescripcionExtMB.verEditarPaciente}" 
+                                            oncomplete="PF('statusProcess').hide(); PF('modalListaPrescripciones').show();"
+                                            update=":formListaPrescripciones"
+                                            disabled="#{!prescripcionExtMB.permiso.puedeEditar}" />
+                            </p:contextMenu>
+
+                        </p:panel>
+
+                    </h:form>
+                </div>
+
+
+                <p:dialog header="Recetas Consulta Externa"
+                          widgetVar="modalListaPrescripciones"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="formListaPrescripciones" >
+                        <p:focus context="formListaPrescripciones"/>
+
+                        <p:messages id="msgValidaRegistro" globalOnly="false" showDetail="false" closable="true" />
+
+                        <p:panel style="border: 0px #EEEEEE !important;" >
+                            <div align="left">
+                                <div class="ui-g" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <div class="ui-g" >
+                                            <p:outputLabel id="lblPaciente" value="Paciente: " />
+                                            <p:outputLabel id="lblNombrePaciente" class="textoNegrita" value="#{prescripcionExtMB.pacienteExtendSelected.nombreCompleto} #{prescripcionExtMB.pacienteExtendSelected.apellidoPaterno} #{prescripcionExtMB.pacienteExtendSelected.apellidoMaterno}"  />
+                                        </div>
+                                        <div class="ui-g" >
+                                            <p:outputLabel id="lblClavePaciente" value="Número:  " />
+                                            <p:outputLabel id="lblClaveValorPrescripcion" class="textoNegrita" value="#{prescripcionExtMB.pacienteExtendSelected.pacienteNumero}" />
+                                        </div>
+                                        <ui:remove>
+                                        <div class="ui-g" >
+                                            <i class="fa fa-bed" aria-hidden="true" />
+                                            &nbsp;<p:outputLabel id="lblNumeroCamaPaciente" 
+                                                                 value="#{prescripcionExtMB.pacienteExtendSelected.pacienteNumero}" />
+                                        </div>
+                                        </ui:remove>
+                                        <br/>
+                                        <div class="ui-g" >
+                                            <p:outputLabel id="lblCrearPrescripcion" value="Realizar Receta"  style="font-weight: bolder !important;" />
+                                        </div>
+                                        <br/>
+                                        <div class="ui-g" >
+                                            <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                                <p:commandLink id="prescripcionNormal" class="btnBlue" value="Normal"
+                                                               onclick="PF('statusProcess').show();"
+                                                               actionListener="#{prescripcionExtMB.creaPrescripcionNormal}"
+                                                               oncomplete="PF('statusProcess').hide(); if (args.estatus) {PF('modalPrescripcion').show(); } "
+                                                               update=":formListaPrescripciones:msgValidaRegistro,:formPrescripcion " />
+                                                <br/>
+                                                <br/>
+                                                <br/>
+                                                <ui:remove>
+                                                <p:commandLink id="prescripcionUnica" class="btnVerde" value="Única"
+                                                               onclick="PF('statusProcess').show();"
+                                                               actionListener="#{prescripcionExtMB.creaPrescripcionDosisUnica}"
+                                                               oncomplete="PF('statusProcess').hide(); if (args.estatus) {PF('modalPrescripcion').show(); } "
+                                                               update=":formListaPrescripciones:msgValidaRegistro,:formPrescripcion " />
+                                                </ui:remove>
+                                                <br/>
+                                                <br/>
+                                                <br/>
+                                                <ui:remove>
+                                                <p:commandLink id="prescripcionUrgente" class="btnRed" value="Urgente"
+                                                               onclick="PF('statusProcess').show();"
+                                                               actionListener="#{prescripcionExtMB.creaPrescripcionUrgente}"
+                                                               oncomplete="PF('statusProcess').hide(); if (args.estatus) {PF('modalPrescripcion').show(); } "
+                                                               update=":formListaPrescripciones:msgValidaRegistro,:formPrescripcion " />
+                                                </ui:remove>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-10">
+                                        <p:tabView id="tabPrescripcionesPaciente" >
+                                            <p:tab title="Historial de Recetas" id="tabPrescripciones" class="tab-title-Sum" >
+                                                <p:dataTable id="tblPrescripciones" 
+                                                             widgetVar="tblPrescripciones" 
+                                                             value="#{prescripcionExtMB.prescripcionExtendedList}"
+                                                             selection="#{prescripcionExtMB.prescripcionExtendedSelected}"
+                                                             var="presc" 
+                                                             rowKey="#{presc.idPrescripcion}"
+                                                             rowIndexVar="row"
+                                                             selectionMode="single"
+                                                             style="margin-bottom:5px; "
+                                                             reflow="true"
+                                                             emptyMessage=" " 
+                                                             scrollRows="10" scrollable="true" scrollHeight="350"
+                                                             paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                                             currentPageReportTemplate=" "
+                                                             paginator="true"
+                                                             rows="10"
+                                                             paginatorPosition="bottom" >
+                                                    <f:facet name="{Records}">
+                                                        <div style="float:left;">
+                                                            <p:outputLabel class="footerLabel" value=" Prescripciones Encontradas #{prescripcionExtMB.sizePrescripcionList}" />
+                                                        </div>
+                                                    </f:facet>
+
+                                                    <f:facet name="{Exporters}">
+                                                        <div style="float:right">
+                                                            <h:commandLink >
+                                                                <img src="#{request.contextPath}/resources/img/btnxls.png" style="height: 25px !important; margin-left: 5px !important;" title="Exportar" />
+                                                                <p:dataExporter type="xls" target="tblPrescripciones" fileName="pacientes" />
+                                                            </h:commandLink>
+                                                            <h:commandLink>
+                                                                <img src="#{request.contextPath}/resources/img/btnpdf.png" style="height: 25px !important; margin-left: 5px !important;" title="Exportar" />
+                                                                <p:dataExporter type="pdf" target="tblPrescripciones" fileName="pacientes"/>
+                                                            </h:commandLink>
+                                                        </div>
+                                                    </f:facet>
+
+                                                    <p:ajax event="rowUnselect" listener="#{prescripcionExtMB.onRowUnselectPrescripcion}" update=":mainForm:btnModificar " />
+                                                    <p:ajax event="rowSelect" listener="#{prescripcionExtMB.onRowSelectPrescripcion}" update=":mainForm:btnModificar " />
+                                                    <p:ajax event="rowDblselect" 
+                                                            onstart="PF('statusProcess').show()"
+                                                            oncomplete="PF('statusProcess').hide(); PF('modalPrescripcion').show();"
+                                                            listener="#{prescripcionExtMB.verEditarPrescripcion}"
+                                                            update=":formPrescripcion" />
+
+                                                    <p:column class="columnLeft10" sortBy="#{presc.folio}" >
+                                                        <f:facet name="header" >
+                                                            <h:outputText value="Folio" />
+                                                        </f:facet>
+                                                        <h:outputText value="#{presc.folio}" />
+                                                    </p:column>
+
+                                                    <p:column class="columnLeft15" sortBy="#{presc.fechaPrescripcion}" >
+                                                        <f:facet name="header" >
+                                                            <h:outputText value="Fecha" />
+                                                        </f:facet>
+                                                        <h:outputText value="#{presc.fechaPrescripcion}" >
+                                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                                        </h:outputText>
+                                                    </p:column>
+
+                                                    <p:column class="columnLeft45" sortBy="#{presc.nombreMedico}" >
+                                                        <f:facet name="header" >
+                                                            <h:outputText value="Médico" />
+                                                        </f:facet>
+                                                        <h:outputText value="#{presc.nombreMedico}" />
+                                                    </p:column>
+
+                                                    <p:column class="columnLeft10" sortBy="#{presc.tipoPrescripcion}" >
+                                                        <f:facet name="header" >
+                                                            <h:outputText value="Tipo" />
+                                                        </f:facet>
+                                                        <h:outputText value="Normal" rendered="#{presc.tipoPrescripcion eq 'N'}" />
+                                                        <h:outputText value="Urgente" rendered="#{presc.tipoPrescripcion eq 'U'}" />
+                                                        <h:outputText value="Dósis Única" rendered="#{presc.tipoPrescripcion eq 'D'}" />
+                                                    </p:column>
+
+                                                    <p:column class="columnLeft10" sortBy="#{presc.estatusPrescripcion}" >
+                                                        <f:facet name="header" >
+                                                            <h:outputText value="Estatus" />
+                                                        </f:facet>
+                                                        <h:outputText value="#{presc.estatusPrescripcion}" />
+                                                    </p:column>
+
+                                                </p:dataTable>
+
+                                                <p:contextMenu for="tblPrescripciones">
+                                                    <p:menuitem id="btnModificarPrescripcion" value="Ver / Modificar" 
+                                                                onclick="PF('statusProcess').show()"
+                                                                oncomplete="PF('statusProcess').hide(); PF('modalPrescripcion').show();"
+                                                                actionListener="#{prescripcionExtMB.verEditarPrescripcion}" 
+                                                                update=":formPrescripcion"
+                                                                icon="ui-icon-pencil"
+                                                                disabled="#{!prescripcionExtMB.permiso.puedeEditar}" />
+                                                    <p:menuitem id="btnCancelarPrescripcion" value="Cancelar" 
+                                                                onclick="PF('statusProcess').show()"
+                                                                oncomplete="PF('statusProcess').hide();"
+                                                                actionListener="${prescripcionExtMB.validaCancelarPrescripcion}" 
+                                                                rendered="#{presc.idEstatusPrescripcion ne 10 and presc.idEstatusPrescripcion ne 12}"
+                                                                update="tblPrescripciones"
+                                                                icon="fa fa-minus-circle"
+                                                                disabled="#{!prescripcionExtMB.permiso.puedeEliminar}" />
+                                                    <p:menuitem id="linkImpresion" value="Imprimir"
+                                                                onclick="PF('statusProcess').show()"
+                                                                oncomplete="PF('statusProcess').hide(); PF('mdlReport').show(); "
+                                                                actionListener="${prescripcionExtMB.imprimir}" 
+                                                                update=":formPDF"
+                                                                icon="fa fa-print"
+                                                                style="margin: 3px;text-decoration: none; " />
+
+                                                </p:contextMenu>
+
+                                            </p:tab>
+                                            <p:tab title="Información General" id="tabInformacion" >
+
+                                                <div class="ui-g" >
+                                                    <div style="float:left;overflow-y: auto;height: 420px;">
+                                                        <p:outputLabel value="Datos Generales" class="lbl-subtitulo" />
+                                                        <br/>
+                                                        <div class="ui-g-12" >
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.apellidoPaterno}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Apellido Paterno" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.apellidoMaterno}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Apellido Materno" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.nombreCompleto}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Nombre(s)" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.pacienteNumero}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Número de Paciente" class="lbl-etiqueta" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="ui-g-12" >
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.sexo}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Sexo" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.fechaNacimiento}" class="lbl-data" >
+                                                                    <f:convertDateTime pattern="dd-MM-yyyy" />
+                                                                </p:outputLabel>
+                                                                <br />
+                                                                <p:outputLabel value="Fecha de Nacimiento" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.rfc}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="RFC" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.curp}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="CURP" class="lbl-etiqueta" />
+                                                            </div>
+                                                        </div>
+                                                        <p:outputLabel value="Datos Personales" class="lbl-subtitulo" />
+                                                        <br/>
+                                                        <div class="ui-g-12" >
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.estadoCivil}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Estado civil" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.escolaridad}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Escolaridad" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.grupoEtnico}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Grupo Étnico" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.grupoSanguineo}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Grupo Sanguíneo" class="lbl-etiqueta" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="ui-g-12" >
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.religion}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Religión" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.nivelSocioeconomico}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Nivel Socioeconómico" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.ocupacion}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Ocupación" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.tipoVivienda}" title="#{prescripcionExtMB.pacienteExtendSelected.tipoVivienda}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Tipo de Vivienda" class="lbl-etiqueta" />
+                                                            </div>
+                                                        </div>
+                                                        <p:outputLabel value="Dirección" class="lbl-subtitulo" />
+                                                        <br/>
+                                                        <div class="ui-g-12" >
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.calle}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Calle" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.numeroInterior}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="No. Int." class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.numeroExterior}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="No. Ext." class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.colonia}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Colonia" class="lbl-etiqueta" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="ui-g-12" >
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.codigoPostal}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Código Postal" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.municipio}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Municipio" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.estado}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Estado" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.pais}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="País" class="lbl-etiqueta" />
+                                                            </div>
+                                                        </div>
+                                                        <p:outputLabel value="Datos de Contacto" class="lbl-subtitulo" />
+                                                        <br/>
+                                                        <div class="ui-g-12" >
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.telefonoCasa}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Teléfono Casa" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.telefonoOficina}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Teléfono Oficina" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.extension}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Extensión" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.telefonoCelular}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Teléfono Celular" class="lbl-etiqueta" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="ui-g-12" >
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.correoElectronico}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Correo electrónico" class="lbl-etiqueta" />
+                                                            </div>
+                                                        </div>
+                                                        <p:outputLabel value="Datos de Responsable o Familiar" class="lbl-subtitulo" />
+                                                        <br/>
+                                                        <div class="ui-g-12" >
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.apellidoPaternoResponsable}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Apellido Paterno" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.apellidoMaternoResponsable}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Apellido Materno" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.nombreResponsable}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Nombre(s)" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.responsableLegal}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Responsable Legal(s)" class="lbl-etiqueta" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="ui-g-12" >
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.parentesco}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Parentesco" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.rfcResponsable}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="RFC" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.curpResponsable}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="CURP" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+
+                                                            </div>
+                                                        </div>
+                                                        <div class="ui-g-12" >
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.telefonoPrincipalResponsable}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Teléfono Principal" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.telefonoSecundarioResponsable}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Teléfono Secundario" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.correoElectronicoResponsable}" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Correo electrónico" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </p:tab>
+
+                                            <p:tab title="Vitales" id="tabSignosVitales" >
+                                                <div class="ui-g" >
+                                                    <div style="float:left;overflow-y: auto;height: 350px;">
+                                                        <div class="ui-g-12" >
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                                                <p:outputLabel value="Última Actualización" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="22-08-2017" class="lbl-etiqueta" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                                                <p:outputLabel value="Motivo de hospitalización" class="lbl-data" />
+                                                                <br />
+                                                                <p:outputLabel value="Consulta General" class="lbl-etiqueta" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="ui-g-12" >
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="Peso" class="lbl-data-gris" />
+                                                                <br />
+                                                                <h1>
+                                                                    75
+                                                                </h1>                                                            
+                                                                <br />
+                                                                <p:outputLabel value="Kilogramos" class="lbl-data-gris" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="Estatura" class="lbl-data-gris" />
+                                                                <br />
+                                                                <h1>
+                                                                    1.68
+                                                                </h1>
+                                                                <br />
+                                                                <p:outputLabel value="Metros" class="lbl-data-gris" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="Temperatura" class="lbl-data-gris" />
+                                                                <br />
+                                                                <h1>
+                                                                    36.5
+                                                                </h1>
+                                                                <br />
+                                                                <p:outputLabel value="Grados" class="lbl-data-gris" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="Frec. Cardiaca" class="lbl-data-gris" />
+                                                                <br />
+                                                                <h1>
+                                                                    65
+                                                                </h1>
+                                                                <br />
+                                                                <p:outputLabel value="LPM" class="lbl-data-gris" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                                <p:outputLabel value="Presión Arterial" class="lbl-data-gris" />
+                                                                <br />
+                                                                <h1>
+                                                                    120/90
+                                                                </h1>
+                                                                <br />
+                                                                <p:outputLabel value="MMHG" class="lbl-data-gris" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </p:tab>
+                                        </p:tabView>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="Receta"
+                          widgetVar="modalPrescripcion"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formPrescripcion" >
+                        <p:messages id="msgValidaPrescripcion" globalOnly="false" showDetail="false" closable="true" />
+                        <div class="ui-g">
+                            <div class="ui-g-12 panelGris" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                    <p:outputLabel value="Receta : " style="font-size: 1.0em !important; font-weight: normal !important;" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel value="#{prescripcionExtMB.tipoPrescripcion}" style="font-size: 1.0em !important; font-weight: bolder !important;" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                    <p:outputLabel value="Paciente : " style="font-size: 1.0em !important; font-weight: normal !important;" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.nombreCompleto} #{prescripcionExtMB.pacienteExtendSelected.apellidoPaterno} #{prescripcionExtMB.pacienteExtendSelected.apellidoMaterno}" style="font-size: 1.0em !important; font-weight: bolder !important;" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                    <p:outputLabel value="#{prescripcionExtMB.pacienteExtendSelected.edadPaciente} Años"  style="font-size: 1.0em !important; font-weight: bolder !important;" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                    <p:outputLabel id="lblClavePaciente" value="No. Paciente" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                    <p:outputLabel id="lblClaveValorPrescripcion" value="#{prescripcionExtMB.pacienteExtendSelected.pacienteNumero}" style="font-size: 1.0em !important; font-weight: bolder !important;" />
+                                </div>
+                                <div style="padding: 7px;">
+                                    <h:outputText value="Resurtimiento: " />
+                                    <p:selectBooleanCheckbox value="#{prescripcionExtMB.checkResurtimiento}"
+                                                             id="checkResurtimiento">
+                                        <p:ajax event="change" update="cantResurtimiento,formPrescripcion:tabLlenaPrescripcion:formMedicamentos:txtInsumoDuracion" listener="#{prescripcionExtMB.habilitarResurtimiento}"/>
+                                    </p:selectBooleanCheckbox>
+                                    <p:spinner style="margin-left: 10px;"
+                                               id="cantResurtimiento"
+                                               value="#{prescripcionExtMB.resurtimiento}"
+                                               min="1"
+                                               max="2"
+                                               size="2"
+                                               disabled="#{prescripcionExtMB.resurtimientoDisabled}"/>
+                                </div>
+                            </div>
+                            <div class="ui-g" >
+                                <p:tabView id="tabLlenaPrescripcion">
+                                    <p:tab title="Diagnósticos" id="tabDiagnostico" >
+                                        <div class="ui-g">
+                                            <h:form id="formDiagnostico">
+                                                <p:messages id="msjValidaDiagnostico" globalOnly="false" closable="true" showDetail="false" />
+                                                <div class="ui-g-12 " >
+                                                    <p:inputTextarea id="txtNotas"
+                                                                     value="#{prescripcionExtMB.notaMedica}"
+                                                                     rows="1"
+                                                                     class="textArea-Sum" 
+                                                                     placeholder="Notas"
+                                                                     disabled="#{!prescripcionExtMB.editable}" />
+                                                </div>
+                                                <div class="ui-g-12 " >
+                                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                                        <p:autoComplete id="txtDiagnostico"
+                                                                        class="autoComplete-Sum" 
+                                                                        styleClass="autoComplete-Sum" 
+                                                                        panelStyle="autoComplete-Sum" 
+                                                                        inputStyleClass="autoComplete-Sum" 
+                                                                        placeholder="Agregar Diagnósticos" 
+                                                                        value="#{prescripcionExtMB.diagnosticoDeterminado}"
+                                                                        completeMethod="#{prescripcionExtMB.autocompleteDiagnostico}"
+                                                                        minQueryLength="4"
+                                                                        queryDelay="500" 
+                                                                        maxResults="10" 
+                                                                        forceSelection="true" 
+                                                                        cache="false"
+                                                                        cacheTimeout="0" 
+                                                                        var="diagnos" 
+                                                                        itemLabel="#{diagnos.nombre}" itemValue="#{diagnos.idDiagnostico}" 
+                                                                        converter="diagnosticoConverter"
+                                                                        disabled="#{!prescripcionExtMB.editable}"
+                                                                        scrollHeight = "150"  >
+                                                            <p:column style="width: 20px; font-size: small;" width="20px">
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Clave" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{diagnos.clave}" style=" font-size: small;" />
+                                                            </p:column>
+                                                            <p:column style="width: 350px; font-size: small;" width="350px">
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Descripción" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{diagnos.nombre}" style=" font-size: x-small;" />
+                                                            </p:column>
+                                                        </p:autoComplete>
+                                                        <p:column style="width: 600px;" width="600px">
+                                                            <h:outputText value="#{insumo.nombreCorto}" />
+                                                        </p:column>
+                                                        <i class="iconInputDiagnostic fa fa-search" aria-hidden="true" />
+                                                    </div>
+                                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                                        <p:commandLink title="Agregar" value="Agregar"
+                                                                       class="btnGris"
+                                                                       update="msjValidaDiagnostico txtDiagnostico :formPrescripcion:tabLlenaPrescripcion:formDiagnostico:tblDiagnosticos :formPrescripcion:tabLlenaPrescripcion:formPrescripConfirm "
+                                                                       actionListener="#{prescripcionExtMB.validaDiagnostico}"
+                                                                       rendered="#{prescripcionExtMB.editable}"  >
+                                                            <i class="fa fa-check" />
+                                                        </p:commandLink>
+                                                    </div>
+                                                    <div class="ui-g-12 " >
+                                                        <p:dataTable id="tblDiagnosticos" 
+                                                                     widgetVar="tblDiagnosticos" 
+                                                                     value="#{prescripcionExtMB.diagnosticoList}"
+                                                                     selection="#{prescripcionExtMB.diagnosticoSelected}"
+                                                                     var="diags" 
+                                                                     rowKey="#{diags.idDiagnostico}"
+                                                                     rowIndexVar="rowd"
+                                                                     selectionMode="single"
+                                                                     style="margin-bottom:5px; "
+                                                                     reflow="true" 
+                                                                     emptyMessage=" "
+                                                                     scrollRows="5" scrollable="true" scrollHeight="150"
+                                                                     paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+                                                                     currentPageReportTemplate=" "
+                                                                     paginator="true"
+                                                                     rows="5"
+                                                                     paginatorPosition="bottom" >
+                                                            <f:facet name="{Records}">
+                                                                <div style="float:left;">
+                                                                    <p:outputLabel class="footerLabel" value=" Diagnósticos Registrados #{prescripcionExtMB.sizeDiagnosticoList}" /> 
+                                                                </div>
+                                                            </f:facet>
+                                                            <p:column style="text-align: left; width: 20%;"
+                                                                      sortBy="#{diags.nombre}" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Clave CIE" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{diags.clave}" />
+                                                            </p:column>
+                                                            <p:column style="text-align: left; width: 60%;"
+                                                                      sortBy="#{diags.nombre}" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Diagnóstico" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{diags.nombre}" />
+                                                            </p:column>
+                                                            <p:column style="text-align: center; width: 10%;">
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="" />
+                                                                </f:facet>
+                                                                <p:commandLink title="Eliminar Diagnóstico"  
+                                                                               actionListener="#{prescripcionExtMB.validaEliminaDiagnostico(diags.idDiagnostico)}" 
+                                                                               onclick="PF('statusProcess').show();" 
+                                                                               oncomplete="PF('statusProcess').hide();"
+                                                                               update=":formPrescripcion:tabLlenaPrescripcion:formDiagnostico:msjValidaDiagnostico :formPrescripcion:tabLlenaPrescripcion:formDiagnostico:tblDiagnosticos :formPrescripcion:tabLlenaPrescripcion:formDiagnostico :formPrescripcion:tabLlenaPrescripcion:formPrescripConfirm"
+                                                                               rendered="#{prescripcionExtMB.editable}"   >
+                                                                    <i class="fa fa-trash iconElimina"  style="font-size: x-large" />
+                                                                </p:commandLink>
+                                                            </p:column>
+
+                                                        </p:dataTable>
+                                                    </div>
+                                                </div>
+                                            </h:form >
+                                        </div>
+
+                                    </p:tab>
+
+                                    <p:tab title="Medicamentos" id="tabMedicamentos" >
+                                        <div class="ui-g">
+                                            <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                <h:form id="formDiagnosticoRead">
+                                                    <p:scrollPanel class="panelScroll-Sum" >
+                                                        <p:outputLabel value="Diagnostico" style="font-size: 1.2em !important; font-weight: bolder !important;" />
+                                                        <p:repeat id="tblDiagnosticosRead" var="diagr" 
+                                                                  value="#{prescripcionExtMB.diagnosticoList}" varStatus="diagConfirm" >
+                                                            <br />
+                                                            <p:outputLabel value="#{diagConfirm.index + 1}" />
+                                                            <p:spacer width="10px" />
+                                                            <p:outputLabel value="#{diagr.nombre}" />
+                                                        </p:repeat>                                                                
+                                                    </p:scrollPanel >
+                                                    <div class="ui-g-12 ">
+                                                        <p:outputLabel value="Nota" style=" font-size: 1.4em !important ;font-weight: bolder !important;" />
+                                                        <br />
+                                                        <p>
+                                                            #{prescripcionExtMB.notaMedica}
+                                                        </p>
+                                                    </div>
+                                                </h:form>
+                                            </div>
+
+                                            <div class="ui-g-12 ui-md-6 ui-lg-10 ">
+                                                <h:form id="formMedicamentos">
+                                                    <p:messages id="msgValidaMedicamento" globalOnly="false" showDetail="false" closable="true" />
+                                                    <div class="ui-g-12 panelGris" >
+                                                        <div class="ui-g-12 " style="padding: 0em !important;">
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-4 ">
+                                                                <p:outputLabel value="Medicamento" style="font-weight: bolder !important;" />
+                                                                <br/>
+                                                                <p:autoComplete id="txtInsumo" 
+                                                                                class="autoComplete-Sum" 
+                                                                                styleClass="autoComplete-Sum" 
+                                                                                panelStyle="autoComplete-Sum" 
+                                                                                inputStyleClass="autoComplete-Sum" 
+                                                                                value="#{prescripcionExtMB.insumoExtendedSelected}"
+                                                                                completeMethod="#{prescripcionExtMB.autocompleteInsumo}"
+                                                                                minQueryLength="4"
+                                                                                queryDelay="500" 
+                                                                                maxResults="50" 
+                                                                                forceSelection="true" 
+                                                                                cacheTimeout="0" 
+                                                                                var="insum" 
+                                                                                placeholder="Agregar Medicamentos" 
+                                                                                cache="false"
+                                                                                emptyMessage="No se encontraron registros"
+                                                                                itemLabel="#{insum.nombreCorto}" itemValue="#{insum}" 
+                                                                                converter="medicamentoExtendedHashConverter"
+                                                                                disabled="#{!prescripcionExtMB.editable}" >
+                                                                    <p:column style="width: 20px; font-size: small;" width="20px">
+                                                                        <f:facet name="header" >
+                                                                            <h:outputText value="Clave" />
+                                                                        </f:facet>
+                                                                        <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                                                    </p:column>
+                                                                    <p:column style="width: 350px; font-size: small;" width="350px">
+                                                                        <f:facet name="header" >
+                                                                            <h:outputText value="Descripción" />
+                                                                        </f:facet>
+                                                                        <h:outputText value="#{insum.nombreLargo}" style=" font-size: x-small;" />
+                                                                    </p:column>
+                                                                </p:autoComplete>
+                                                                <i class="iconInputDiagnostic fa fa-search" aria-hidden="true" />
+                                                            </div>
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-4 ">
+                                                                <p:outputLabel value="Indicaciones" style="font-weight: bolder !important;" />
+                                                                <br/>
+                                                                <p:inputText id="txtIndicaciones" 
+                                                                             value="#{prescripcionExtMB.prescripcionInsumo.indicaciones}"
+                                                                             class="txtLargo"
+                                                                             placeholder="Indicaciones de Receta" 
+                                                                             disabled="#{!prescripcionExtMB.editable}"
+                                                                             maxlength="100" />
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="ui-g-12 " style="padding: 0em !important;" >
+                                                            <!--todo: activar fecha y duracion de tratamiento-->
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-3" >
+                                                                <p:outputLabel value="Inicio de Tratamiento"  style="font-weight: bolder !important;" />
+                                                                <br/>
+                                                                <p:calendar id="txtInsumoInicioTratamiento" 
+                                                                            value="#{prescripcionExtMB.prescripcionInsumo.fechaInicio}" 
+                                                                            pattern="dd/MM/yyyy HH:mm"
+                                                                            mask="true"
+                                                                            mindate="#{prescripcionExtMB.fechaActual}"
+                                                                            locale="es"
+                                                                            readonly="#{!prescripcionExtMB.editable}" />
+                                                            </div>
+
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2" >
+                                                                <p:outputLabel value="Dosis" style="font-weight: bolder !important;" />
+                                                                <br/>
+                                                                <p:spinner id="txtInsumoCantidad" 
+                                                                           value="#{prescripcionExtMB.prescripcionInsumo.dosis}"
+                                                                           min="0"
+                                                                           size="10"
+                                                                           disabled="#{!prescripcionExtMB.editable}"/>
+                                                            </div>
+
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2" >
+                                                                <p:outputLabel value="Frecuencia"  style="font-weight: bolder !important;" />
+                                                                <br/>
+                                                                <p:spinner id="txtInsumoFrecuencia" 
+                                                                           value="#{prescripcionExtMB.prescripcionInsumo.frecuencia}"
+                                                                           min="0" max="24"
+                                                                           size="10"
+                                                                           disabled="#{!prescripcionExtMB.editable}"/>
+                                                            </div>
+
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2"  >
+                                                                <p:outputLabel value="Duración" style="font-weight: bolder !important;" rendered="#{prescripcionExtMB.prescripcionMayor24Horas}" />
+                                                                <br/>
+                                                                <p:spinner id="txtInsumoDuracion" 
+                                                                           value="#{prescripcionExtMB.prescripcionInsumo.duracion}"
+                                                                           min="0"
+                                                                           size="10"
+                                                                           disabled="#{!prescripcionExtMB.editable}"
+                                                                           rendered="#{prescripcionExtMB.prescripcionMayor24Horas}" />
+                                                            </div>
+
+                                                            <div class="ui-g-12 ui-md-6 ui-lg-2" >
+                                                                <br/>
+                                                                <p:commandLink title="Agregar" value="Agregar"
+                                                                               class="btnGris"
+                                                                               process="@form" 
+                                                                               onclick="PF('statusProcess').show();"
+                                                                               oncomplete="PF('statusProcess').hide(); "
+                                                                               actionListener="#{prescripcionExtMB.validaMedicamento}"
+                                                                               update="tblIsumos msgValidaMedicamento txtIndicaciones txtInsumoDuracion txtInsumoFrecuencia txtInsumoCantidad txtInsumoInicioTratamiento txtInsumo :formPrescripcion:tabLlenaPrescripcion:formPrescripConfirm" 
+                                                                               rendered="#{prescripcionExtMB.editable}" >
+                                                                    <i class="fa fa-check" />
+                                                                </p:commandLink>
+                                                            </div>
+                                                        </div>
+                                                    </div>                                                
+                                                    <div class="ui-g-12" >
+                                                        <p:dataTable id="tblIsumos" 
+                                                                     widgetVar="tblIsumos" 
+                                                                     value="#{prescripcionExtMB.prescripcionInsumoExtendedList}"
+                                                                     var="ins" 
+                                                                     selection="#{prescripcionExtMB.prescripcionInsumoExtendedSelected}"              
+                                                                     rowKey="#{ins.idInsumo}"
+                                                                     rowIndexVar="rowI"
+                                                                     selectionMode="single"
+                                                                     style="margin-bottom:5px; "
+                                                                     reflow="true" 
+                                                                     emptyMessage=" "
+                                                                     scrollRows="5" scrollable="true" scrollHeight="150"
+                                                                     paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+                                                                     currentPageReportTemplate=" "
+                                                                     paginator="true"
+                                                                     rows="5"
+                                                                     paginatorPosition="bottom"
+                                                                     >
+
+                                                            <f:facet name="{Records}">
+                                                                <div style="float:left;">
+                                                                    <p:outputLabel class="footerLabel" value=" Medicamentos Registrados #{prescripcionExtMB.sizePrescripcionInsumoExtendedList}" /> 
+                                                                </div>
+                                                            </f:facet>
+                                                            <p:column style="text-align: left; width: 55%;"
+                                                                      sortBy="#{ins.nombreCorto}" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Clave - Nombre - Indicación" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{ins.claveInstitucional} - #{ins.nombreCorto}" />
+                                                                <br/>
+                                                                <h:outputText value="#{ins.indicaciones}" class="lbl-data-small" />
+                                                            </p:column>
+
+                                                            <p:column style="text-align: left; width: 10%;" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Dosis" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{ins.dosis}" />
+                                                            </p:column>
+
+                                                            <p:column style="text-align: left; width: 10%;" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Frecuencia" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{ins.frecuencia}" />
+                                                            </p:column>
+
+                                                            <p:column style="text-align: left; width: 10%;" rendered="#{prescripcionExtMB.prescripcionMayor24Horas}" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Duración" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{ins.duracion}" />
+                                                            </p:column>
+
+                                                            <p:column style="text-align: left; width: 10%;" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Total 24 Hrs" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{ins.cantidad24Horas}" />
+                                                            </p:column>
+
+                                                            <p:column style="text-align: left; width: 5%;" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="" />
+                                                                </f:facet>
+                                                                <p:commandLink title="Eliminar Medicamento"  
+                                                                               actionListener="#{prescripcionExtMB.validaEliminaInsumo(ins.idInsumo)}" 
+                                                                               onclick="PF('statusProcess').show();" 
+                                                                               oncomplete="PF('statusProcess').hide();"
+                                                                               process="@this"
+                                                                               update=":formPrescripcion:tabLlenaPrescripcion:formMedicamentos:msgValidaMedicamento :formPrescripcion:tabLlenaPrescripcion:formMedicamentos:tblIsumos :formPrescripcion:tabLlenaPrescripcion:formPrescripConfirm:tblIsumosConfirm"
+                                                                               rendered="#{prescripcionExtMB.editable}" >
+                                                                    <i class="fa fa-trash iconElimina" style="font-size: x-large" />
+                                                                </p:commandLink>
+                                                            </p:column>
+
+                                                        </p:dataTable>
+                                                    </div>
+                                                </h:form>
+                                            </div>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab id="tabConfirma" title="Confirmación" >
+                                        <div class="ui-g">
+                                            <h:form id="formPrescripConfirm">
+                                                <p:messages id="msgConfirmaMedicamento" globalOnly="false" showDetail="false" closable="true" />
+                                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                                    <p:scrollPanel class="panelScroll-Sum">
+                                                        <p:outputLabel value="Diagnostico" style="font-size: 1.2em !important; font-weight: bolder !important;" />
+                                                        <p:repeat id="tblDiagnosticosConfirm" var="diagrc" value="#{prescripcionExtMB.diagnosticoList}" varStatus="diagConfirm" >
+                                                            <br />
+                                                            <p:outputLabel value="#{diagConfirm.index + 1}" />
+                                                            <p:spacer width="10px" />
+                                                            <p:outputLabel value="#{diagrc.nombre}" />
+                                                        </p:repeat>
+                                                    </p:scrollPanel>
+                                                    <div class="ui-g-12 ">
+                                                        <p:outputLabel value="Nota" style=" font-size: 1.4em !important ;font-weight: bolder !important;" />
+                                                        <br />
+                                                        <p>
+                                                            #{prescripcionExtMB.notaMedica}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="ui-g-12 ui-md-6 ui-lg-10 ">
+                                                    <div class="ui-g-12" >
+                                                        <p:dataTable id="tblIsumosConfirm" 
+                                                                     widgetVar="tblIsumosConfirm" 
+                                                                     value="#{prescripcionExtMB.prescripcionInsumoExtendedList}"
+                                                                     var="insC" 
+                                                                     style="margin-bottom:5px; "
+                                                                     reflow="true" 
+                                                                     emptyMessage=" "
+                                                                     scrollRows="10" scrollable="true" scrollHeight="200"
+                                                                     paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+                                                                     currentPageReportTemplate=" "
+                                                                     paginator="true"
+                                                                     rows="10"
+                                                                     paginatorPosition="bottom"
+                                                                     >
+
+                                                            <f:facet name="{Records}">
+                                                                <div style="float:left;">
+                                                                    <p:outputLabel class="footerLabel" value=" Medicamentos Registrados #{prescripcionExtMB.sizePrescripcionInsumoExtendedList}" /> 
+                                                                </div>
+                                                            </f:facet>
+
+                                                            <p:column style="text-align: left; width: 70%;"
+                                                                      sortBy="#{insC.nombreCorto}" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Clave - Nombre - Indicación" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{insC.claveInstitucional} - #{insC.nombreCorto}" />
+                                                                <br/>
+                                                                <h:outputText value="#{insC.indicaciones}" class="lbl-data-small" />
+                                                            </p:column>
+
+                                                            <p:column style="text-align: left; width: 10%;" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Dosis" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{insC.dosis}" />
+                                                            </p:column>
+
+                                                            <p:column style="text-align: left; width: 10%;" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Frecuencia" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{insC.frecuencia}" />
+                                                            </p:column>
+
+                                                            <p:column style="text-align: left; width: 10%;" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Total 24 Hrs" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{insC.cantidad24Horas}" />
+                                                            </p:column>
+                                                            <!--todo: activar fecha y duracion de tratamiento-->
+                                                            <p:column style="text-align: left; width: 10%;" rendered="false" >
+                                                                <f:facet name="header" >
+                                                                    <h:outputText value="Inicio Tratamiento" />
+                                                                </f:facet>
+                                                                <h:outputText value="#{insC.fechaInicio}"  >
+                                                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                                                </h:outputText>
+                                                            </p:column>
+
+                                                        </p:dataTable>
+                                                    </div>
+                                                </div>
+                                                <div class="ui-g-12 " align="right">
+                                                    <h:form id="formConfirmPrescripcion">
+                                                        <p:commandLink id="prescripcionCancela" class="btnGris" 
+                                                                       value="Cancelar"
+                                                                       actionListener="#{prescripcionExtMB.cancelaPrescripcion}"
+                                                                       update="@parent"
+                                                                       onclick="PF('modalPrescripcion').hide();"
+                                                                       rendered="#{prescripcionExtMB.editable}"  
+                                                                       />
+                                                        <p:spacer width="10px" />
+
+                                                        <p:commandLink id="prescripcionFirma" class="btnBlue" 
+                                                                       value="Firmar"
+                                                                       title="Firma Receta"
+                                                                       onclick="PF('statusProcess').show();"
+                                                                       oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('modalConfirmPrescripcion').show(); } "
+                                                                       actionListener="#{prescripcionExtMB.validaPrescripcion}"
+                                                                       process="@parent "
+                                                                       update=":formPrescripcion:msgValidaPrescripcion,:formConfirmPrescripcion"
+                                                                       ajax="true"
+                                                                       rendered="#{prescripcionExtMB.editable}"  
+                                                                       >
+                                                            <i class="fa fa-check" />
+                                                        </p:commandLink>
+                                                    </h:form>
+                                                </div>
+                                            </h:form>
+                                        </div>
+                                    </p:tab>
+
+                                </p:tabView>
+
+                            </div>
+                        </div>
+
+
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="Firmar Receta"
+                          widgetVar="modalConfirmPrescripcion"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          style="font-size:xx-small !important; " >
+                    <h:form id="formConfirmPrescripcion" onsubmit="return false;" >
+                        <p:focus context="formConfirmPrescripcion"/>
+                        <div class="ui-g">
+                            <div class="ui-g-12">
+                                <p:outputLabel value="Ingrese su clave de usuario:" />
+                            </div>
+                            <div class="ui-g-12" >
+                                <p:password id="txtFirma" value="#{prescripcionExtMB.firmaMedico}" required="true" requiredMessage="Ingrese su clave" >
+                                    <f:ajax event="keyup" delay="50" render="prescripcionConfirma" />
+                                </p:password>
+                            </div>
+                            <div class="ui-g-12" >
+                                <p:commandLink id="prescripcionConfirma" class="btnVerde" 
+                                               value="Firmar"
+                                               title="Firma Receta"
+                                               onclick="PF('statusProcess').show();"
+                                               oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('modalConfirmPrescripcion').hide(); PF('modalPrescripcion').hide(); }"
+                                               update=":formPrescripcion:tabLlenaPrescripcion:formPrescripConfirm:msgConfirmaMedicamento, :formListaPrescripciones:tabPrescripcionesPaciente"
+                                               ajax="true"
+                                               process="@parent "
+                                               actionListener="#{prescripcionExtMB.guardarPrescripcion}"
+                                               disabled="#{empty prescripcionExtMB.firmaMedico}"
+                                               >
+                                    <i class="fa fa-check" />
+                                </p:commandLink>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog widgetVar="mdlReport" width="820px" height="600px"
+                          closeOnEscape="false" modal="true"                          
+                          style="font-size:xx-small !important;" >
+                    <h:form id="formPDF">
+                        <p:media value="#{prescripcionExtMB.archivo}" player="pdf" width="800px" height="600px" cache="false" />
+                    </h:form>
+                </p:dialog>
+
+
+                <p:dialog header="Información de Registro"
+                          widgetVar="modalEliminaDiagnosticoConfirm"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          style="font-size:xx-small !important; " >
+                </p:dialog>
+
+                <p:dialog header="Información de Registro"
+                          widgetVar="modalEliminaInsumoConfirm"
+                          closeOnEscape="true"
+                          closable="false"
+                          modal="true" 
+                          style="font-size:xx-small !important; " >
+
+                </p:dialog>
+
+
+                <p:dialog header="Información de Registro"
+                          widgetVar="modalInactiva"
+                          closeOnEscape="true"
+                          closable="false"
+                          modal="true" 
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formInactiva" >
+
+                        <p:focus context="formInactiva"/>
+
+                        <p:messages id="msgValidaInactiva" globalOnly="false" showDetail="false" closable="true" />
+
+                        <p:panel >
+                            <div align="center">
+
+                                <br/>
+                                <p:outputLabel value="#{prescripcionExtMB.prescripcionSelected.folio}" 
+                                               style="font-size: 1.0em !important;" />
+                                <br/>
+                                <p:outputLabel value="Está seguro de Eliminar la Receta ?" 
+                                               style="font-size: 1.0em !important; font-weight: bolder !important; color: red !important"/>
+                                <br/>
+                                <br/>
+
+                                <p:commandButton id="btnInactiva" widgetVar="btnInactiva" 
+                                                 value="Guardar" icon="ui-icon-circle-check" style="margin:0"
+                                                 actionListener="#{prescripcionExtMB.eliminaPrescripcion}"
+                                                 update=":mainForm:tblPacientes,:mainForm:validaMsg,:formListaPrescripciones:msgValidaRegistro "
+                                                 process="@form"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('modalInactiva').hide(); } " />
+
+                                <br/>
+                                <br/>
+                            </div>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+
+</html>

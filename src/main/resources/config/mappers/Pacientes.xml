@@ -1,0 +1,1291 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.PacienteMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Paciente" parameterType="mx.mc.model.Paciente" >
+        SELECT idPaciente, nombreCompleto, apellidoPaterno, apellidoMaterno, sexo, fechaNacimiento, rfc, curp,
+               idTipoPaciente, idUnidadMedica, claveDerechohabiencia, idEstatusPaciente, pacienteParticular,
+               pacienteNumero, idEstadoCivil, idEscolaridad, idGrupoEtnico, idGrupoSanguineo, idReligion,
+               idNivelSocioeconomico, idTipoVivienda, idOcupacion, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+               , lugarNacimiento , paisResidencia , presentaDiscapacidad , descripcionDiscapacidad
+        FROM paciente
+        WHERE 1=1
+        <if test=" idPaciente != null ">
+            AND idPaciente = #{ idPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombreCompleto != null ">
+            AND nombreCompleto = #{ nombreCompleto, , jdbcType = VARCHAR }
+        </if>
+        <if test=" pacienteNumero != null ">
+            AND pacienteNumero = #{ pacienteNumero , jdbcType = VARCHAR }
+        </if>
+        
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Paciente" parameterType="mx.mc.model.Paciente" >
+        SELECT idpaciente, nombreCompleto, apellidoPaterno, apellidoMaterno, sexo, fechaNacimiento, rfc, curp,
+               idTipoPaciente, idUnidadMedica, claveDerechohabiencia, idEstatusPaciente, pacienteParticular,
+               pacienteNumero, idEstadoCivil, idEscolaridad, idGrupoEtnico, idGrupoSanguineo, idReligion,
+               idNivelSocioeconomico, idTipoVivienda, idOcupacion, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+               , lugarNacimiento , paisResidencia , presentaDiscapacidad , descripcionDiscapacidad
+        FROM paciente
+        WHERE 1=1
+        <if test=" idPaciente != null ">
+            AND idpaciente = #{ idPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombreCompleto != null ">
+            AND ( nombreCompleto LIKE '%${ nombreCompleto }%'
+            OR apellidoPaterno LIKE '%${ nombreCompleto }%'
+            OR apellidoMaterno LIKE '%${ nombreCompleto }%'
+            OR claveDerechohabiencia LIKE '%${ nombreCompleto }%' )
+        </if>
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR}
+        </if>
+    </select>
+
+    <select id="obtenerUltimosRegistros" resultType="mx.mc.model.Paciente" parameterType="Map" >
+        SELECT idpaciente, nombreCompleto, apellidoPaterno, apellidoMaterno, sexo, fechaNacimiento, rfc, curp,
+               idTipoPaciente, idUnidadMedica, claveDerechohabiencia, idEstatusPaciente, pacienteParticular,
+               pacienteNumero, idEstadoCivil, idEscolaridad, idGrupoEtnico, idGrupoSanguineo, idReligion,
+               idNivelSocioeconomico, idTipoVivienda, idOcupacion, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM paciente p
+        WHERE 1=1
+        ORDER BY p.insertFecha
+        LIMIT #{numRegistros , jdbcType = INTEGER};
+    </select>
+    
+    <select id="obtenerUltimosRegistrosPacienteExtended" resultType="mx.mc.model.Paciente_Extended" parameterType="Map" >
+        SELECT p.idpaciente, p.nombreCompleto, p.apellidoPaterno, p.apellidoMaterno, p.sexo, p.fechaNacimiento, p.rfc, p.curp,p.idEstructuraPeriferico,
+               p.idTipoPaciente, p.idUnidadMedica, p.claveDerechohabiencia, p.idEstatusPaciente, p.pacienteParticular,
+               p.pacienteNumero, p.idEstadoCivil, p.idEscolaridad, p.idGrupoEtnico, p.idGrupoSanguineo, p.idReligion,
+               p.idNivelSocioeconomico, p.idTipoVivienda, p.idOcupacion,p.idEstructura ,p.insertFecha, p.insertIdUsuario, p.updateFecha, 
+               p.updateIdUsuario, ep.idEstatusPaciente, ep.estatusPaciente ,  TIMESTAMPDIFF(YEAR,fechaNacimiento,CURDATE()) AS edadPaciente,
+               es.nombre AS nombreEstructura,es.claveEstructura, esp.nombre as nombreEstructuraPeriferico
+        FROM paciente p 
+        INNER JOIN estatusPaciente ep
+        ON p.idEstatusPaciente = ep.idEstatusPaciente
+        LEFT JOIN estructura es 
+        ON es.idEstructura = p.idEstructura
+        LEFT JOIN estructura esp
+        ON esp.idEstructura = p.idEstructuraPeriferico
+        WHERE 1=1
+        ORDER BY p.insertFecha DESC
+        LIMIT #{numRegistros};
+    </select>
+    
+    <select id="obtenerPacientesYCamas" resultType="mx.mc.model.Paciente_Extended" parameterType="Map" >
+        SELECT * FROM (
+            SELECT 
+            p.idpaciente,
+            p.nombreCompleto,
+            p.apellidoPaterno,
+            p.apellidoMaterno,
+            p.sexo,
+            p.fechaNacimiento,
+            p.rfc,
+            p.curp,    
+            p.idTipoPaciente,
+            p.idUnidadMedica,
+            p.claveDerechohabiencia,
+            p.idEstatusPaciente,
+            p.pacienteParticular,
+            p.pacienteNumero,
+            p.idEstadoCivil,
+            p.idEscolaridad,
+            p.idGrupoEtnico,
+            p.idGrupoSanguineo,
+            p.idReligion,
+            p.idNivelSocioeconomico,
+            p.idTipoVivienda,
+            p.idOcupacion,
+            p.idEstructura,
+            p.insertFecha,
+            p.insertIdUsuario,
+            p.updateFecha,
+            e.nombre as nombreEstructura,
+            e.claveEstructura,    
+            etr.nombre as nombreEstructuraPeriferico,
+            p.idEstructuraPeriferico,
+            p.updateIdUsuario,
+            ep.estatusPaciente,
+            TIMESTAMPDIFF(YEAR,
+                fechaNacimiento,
+                CURDATE()) AS edadPaciente,
+            IFNULL(c.idCama, 'Sin asignar') AS idCama,
+            IFNULL(c.nombreCama, 'Sin asignar') AS nombreCama,
+            IFNULL(c.ubicacion, 'Sin asignar') AS ubicacion,
+            v.idVisita
+        FROM
+            paciente p
+            INNER JOIN estructura e ON e.idEstructura = p.idEstructura
+            LEFT JOIN estructura etr ON p.idEstructuraPeriferico = etr.idEstructura
+            INNER JOIN estatusPaciente ep ON p.idEstatusPaciente = ep.idEstatusPaciente
+            LEFT JOIN visita v ON (v.idPaciente = p.idPaciente AND v.fechaEgreso IS NULL)
+            LEFT JOIN pacienteServicio ps ON (ps.idVisita = v.idVisita AND ps.fechaAsignacionFin IS NULL )
+            LEFT JOIN pacienteUbicacion pu ON (pu.idPacienteServicio = ps.idPacienteServicio and pu.fechaUbicaFin IS NULL)
+            LEFT JOIN cama c ON c.idCama = pu.idCama
+        WHERE 1=1
+        <if test=" idEstructura != null ">
+                    AND p.idEstructura = #{ idEstructura , jdbcType = VARCHAR}
+        </if>
+        <if test=" listaidEstructura != null ">
+                AND p.idEstructura IN
+        <foreach item="item" index="index" collection="listaidEstructura" open="(" separator="," close=")">
+                        #{ item.idEstructura }
+        </foreach>
+        </if>
+            GROUP BY v.fechaIngreso 
+            ORDER BY v.fechaIngreso desc , ps.fechaAsignacionInicio desc, pu.fechaUbicaInicio desc
+        LIMIT #{numRegistros , jdbcType = INTEGER} ) AS resul
+        GROUP BY resul.idPaciente; 
+    </select>
+    
+    <select id="obtenerPacientesYCamasPorCriterioBusqueda" resultType="mx.mc.model.Paciente_Extended" parameterType="Map" >
+        SELECT p.idpaciente, p.nombreCompleto, p.apellidoPaterno, p.apellidoMaterno, p.sexo, p.fechaNacimiento, p.rfc, p.curp,
+	   p.idTipoPaciente, p.idUnidadMedica, p.claveDerechohabiencia, p.idEstatusPaciente, p.pacienteParticular,
+	   p.pacienteNumero, p.idEstadoCivil, p.idEscolaridad, p.idGrupoEtnico, p.idGrupoSanguineo, p.idReligion,
+	   p.idNivelSocioeconomico, p.idTipoVivienda, p.idOcupacion,p.idEstructura ,p.insertFecha, p.insertIdUsuario, p.updateFecha, 
+	   p.updateIdUsuario, ep.idEstatusPaciente, ep.estatusPaciente ,  TIMESTAMPDIFF(YEAR,fechaNacimiento,CURDATE()) AS edadPaciente,
+           IFNULL(c.idCama,'Sin asignar') as idCama , IFNULL(c.nombreCama,'Sin asignar') as nombreCama , IFNULL(c.ubicacion,'Sin asignar') as ubicacion, v.idVisita
+        FROM paciente p 
+        INNER JOIN estatusPaciente ep ON p.idEstatusPaciente = ep.idEstatusPaciente
+        LEFT JOIN visita v ON (v.idPaciente = p.idPaciente AND v.fechaEgreso IS NULL)
+        LEFT JOIN pacienteServicio ps ON (ps.idVisita = v.idVisita AND ps.fechaAsignacionFin IS NULL)
+        LEFT JOIN pacienteUbicacion pu ON pu.idPacienteServicio = ps.idPacienteServicio
+        LEFT JOIN cama c ON c.idCama = pu.idCama
+        WHERE 1=1
+        AND p.idEstructura = #{idEstructura , jdbcType = VARCHAR}
+        AND ( p.nombreCompleto LIKE '%${criterioBusqueda}%'
+        OR p.apellidoPaterno LIKE '%${criterioBusqueda}%'
+        OR p.apellidoMaterno LIKE '%${criterioBusqueda}%'
+        OR p.claveDerechohabiencia LIKE '%${criterioBusqueda}%' )
+        GROUP BY p.idPaciente
+        ORDER BY p.insertFecha
+        LIMIT #{numRegistros , jdbcType = INTEGER};
+    </select>
+    
+    <select id="obtenerRegistrosPorCriterioDeBusqueda" resultType="mx.mc.model.Paciente_Extended" parameterType="Map" >
+       SELECT 
+    p.idpaciente,
+    p.nombreCompleto,
+    p.apellidoPaterno,
+    p.apellidoMaterno,
+    p.sexo,
+    p.fechaNacimiento,
+    p.rfc,
+    p.curp,
+    p.idTipoPaciente,
+    p.idUnidadMedica,
+    p.claveDerechohabiencia,
+    p.idEstatusPaciente,
+    p.pacienteParticular,
+    p.pacienteNumero,
+    p.idEstadoCivil,
+    p.idEscolaridad,
+    p.idGrupoEtnico,
+    p.idGrupoSanguineo,
+    p.idReligion,
+    p.idNivelSocioeconomico,
+    p.idTipoVivienda,
+    p.idOcupacion,
+    p.idEstructura,
+    p.insertFecha,
+    p.insertIdUsuario,
+    p.updateFecha,
+    p.updateIdUsuario,
+    ep.idEstatusPaciente,
+    ep.estatusPaciente,
+    concat(p.nombreCompleto,' ',p.apellidoPaterno,' ', p.apellidoMaterno) as nombres,
+    TIMESTAMPDIFF(YEAR,
+        fechaNacimiento,
+        CURDATE()) AS edadPaciente,
+    es.nombre AS nombreEstructura,
+    esp.nombre AS nombreEstructuraPeriferico
+FROM
+    paciente p
+        INNER JOIN
+    estatusPaciente ep ON p.idEstatusPaciente = ep.idEstatusPaciente
+        LEFT JOIN
+    estructura es ON es.idEstructura = p.idEstructura
+        LEFT JOIN
+    estructura esp ON esp.idEstructura = p.idEstructuraPeriferico
+WHERE
+    1 = 1
+        having nombres like '%${criterioBusqueda}%'
+         OR p.claveDerechohabiencia like '%${criterioBusqueda}%'
+         OR p.pacienteNumero like '%${criterioBusqueda}%'
+         OR p.rfc like '%${criterioBusqueda}%'
+ORDER BY p.insertFecha DESC
+        <if test=" numRegistros > 0 ">
+            LIMIT #{numRegistros , jdbcType = INTEGER};
+        </if>
+    </select>
+    
+    <select id="obtenerRegistrosPorCriterioDeBusqueda2" resultType="mx.mc.model.Paciente" parameterType="Map" >
+       SELECT 
+    p.idpaciente,
+    p.nombreCompleto,
+    p.apellidoPaterno,
+    p.apellidoMaterno,
+    p.sexo,
+    p.fechaNacimiento,
+    p.rfc,
+    p.curp,
+    p.idTipoPaciente,
+    p.idUnidadMedica,
+    p.claveDerechohabiencia,
+    p.idEstatusPaciente,
+    p.pacienteParticular,
+    p.pacienteNumero,
+    p.idEstadoCivil,
+    p.idEscolaridad,
+    p.idGrupoEtnico,
+    p.idGrupoSanguineo,
+    p.idReligion,
+    p.idNivelSocioeconomico,
+    p.idTipoVivienda,
+    p.idOcupacion,
+    p.idEstructura,
+    p.insertFecha,
+    p.insertIdUsuario,
+    p.updateFecha,
+    p.updateIdUsuario,
+    ep.idEstatusPaciente,
+    ep.estatusPaciente,
+    concat(p.nombreCompleto,' ',p.apellidoPaterno,' ', p.apellidoMaterno) as nombres,
+    
+    TIMESTAMPDIFF(YEAR,
+        fechaNacimiento,
+        CURDATE()) AS edadPaciente,
+    es.nombre AS nombreEstructura,
+    esp.nombre AS nombreEstructuraPeriferico
+FROM
+    paciente p
+        INNER JOIN
+    estatusPaciente ep ON p.idEstatusPaciente = ep.idEstatusPaciente
+        LEFT JOIN
+    estructura es ON es.idEstructura = p.idEstructura
+        LEFT JOIN
+    estructura esp ON esp.idEstructura = p.idEstructuraPeriferico
+WHERE
+    1 = 1
+        having nombres like '%${criterioBusqueda}%'
+         OR p.claveDerechohabiencia like '%${criterioBusqueda}%'
+         OR p.pacienteNumero like '%${criterioBusqueda}%'
+ORDER BY p.insertFecha DESC
+        LIMIT #{numRegistros , jdbcType = INTEGER};                
+    </select>
+    
+    <select id="obtenerPacienteByIdPaciente" resultType="mx.mc.model.Paciente" parameterType="Map" >
+        SELECT idpaciente,nombreCompleto,apellidoPaterno,apellidoMaterno,sexo,fechaNacimiento
+               ,rfc,curp,idTipoPaciente,idUnidadMedica,claveDerechohabiencia,idEstatusPaciente
+               ,pacienteParticular,pacienteNumero,idEstadoCivil,idEscolaridad,idGrupoEtnico
+               ,idGrupoSanguineo,idReligion,idNivelSocioeconomico,idTipoVivienda,idOcupacion
+               ,insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+               , lugarNacimiento , paisResidencia , presentaDiscapacidad , descripcionDiscapacidad
+        FROM paciente p
+        WHERE 1=1
+        AND idPaciente = #{idPaciente , jdbcType = VARCHAR};
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Paciente" >
+        INSERT INTO paciente (
+            idPaciente, nombreCompleto, apellidoPaterno, apellidoMaterno, sexo
+            , fechaNacimiento, rfc, curp, idTipoPaciente, idUnidadMedica, claveDerechohabiencia
+            , idEstatusPaciente, pacienteNumero, idEstadoCivil
+            , idEscolaridad, idGrupoEtnico, idGrupoSanguineo, idReligion, idNivelSocioEconomico
+            , idTipoVivienda, idOcupacion, idEstructura, insertFecha, insertIdUsuario
+            , updateFecha, updateIdUsuario
+        ) VALUES (
+            #{ idPaciente , jdbcType = VARCHAR }
+            , #{ nombreCompleto , jdbcType = VARCHAR }
+            , #{ apellidoPaterno , jdbcType = VARCHAR }
+            , #{ apellidoMaterno , jdbcType = VARCHAR }
+            , #{ sexo , jdbcType = VARCHAR }
+            , #{ fechaNacimiento , jdbcType = TIMESTAMP }
+            , #{ rfc , jdbcType = VARCHAR }
+            , #{ curp , jdbcType = VARCHAR }
+            , #{ idTipoPaciente , jdbcType = INTEGER }
+            , #{ idUnidadMedica , jdbcType = INTEGER }
+            , #{ claveDerechohabiencia , jdbcType = VARCHAR }
+            , #{ idEstatusPaciente , jdbcType = INTEGER }
+            , #{ pacienteNumero , jdbcType = VARCHAR }
+            , #{ idEstadoCivil , jdbcType = INTEGER }
+            , #{ idEscolaridad , jdbcType = INTEGER }
+            , #{ idGrupoEtnico , jdbcType = INTEGER }
+            , #{ idGrupoSanguineo , jdbcType = INTEGER }
+            , #{ idReligion , jdbcType = INTEGER }
+            , #{ idNivelSocioEconomico , jdbcType = INTEGER }
+            , #{ idTipoVivienda , jdbcType = INTEGER }
+            , #{ idOcupacion , jdbcType = INTEGER }
+            , #{ idEstructura , jdbcType = VARCHAR }
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        )
+    </insert>
+    
+    <insert id="insertarPaciente" parameterType="mx.mc.model.Paciente" >
+        INSERT INTO paciente (
+            idPaciente, nombreCompleto, apellidoPaterno, apellidoMaterno, sexo
+            , fechaNacimiento, rfc, curp, idTipoPaciente, idUnidadMedica, claveDerechohabiencia
+            , idEstatusPaciente, pacienteNumero, idEstadoCivil
+            , idEscolaridad, idGrupoEtnico, idGrupoSanguineo, idReligion, idNivelSocioEconomico
+            , idTipoVivienda, idOcupacion, idEstructura, insertFecha, insertIdUsuario
+            , updateFecha, updateIdUsuario
+            , lugarNacimiento , paisResidencia , presentaDiscapacidad , descripcionDiscapacidad
+        ) VALUES (
+            #{ idPaciente , jdbcType = VARCHAR }
+            , #{ nombreCompleto , jdbcType = VARCHAR }
+            , #{ apellidoPaterno , jdbcType = VARCHAR }
+            , #{ apellidoMaterno , jdbcType = VARCHAR }
+            , #{ sexo , jdbcType = VARCHAR }
+            , #{ fechaNacimiento , jdbcType = TIMESTAMP }
+            , #{ rfc , jdbcType = VARCHAR }
+            , #{ curp , jdbcType = VARCHAR }
+            , #{ idTipoPaciente , jdbcType = INTEGER }
+            , #{ idUnidadMedica , jdbcType = INTEGER }
+            , #{ claveDerechohabiencia , jdbcType = VARCHAR }
+            , #{ idEstatusPaciente , jdbcType = INTEGER }
+            , #{ pacienteNumero , jdbcType = VARCHAR }
+            , #{ idEstadoCivil , jdbcType = INTEGER }
+            , #{ idEscolaridad , jdbcType = INTEGER }
+            , #{ idGrupoEtnico , jdbcType = INTEGER }
+            , #{ idGrupoSanguineo , jdbcType = INTEGER }
+            , #{ idReligion , jdbcType = INTEGER }
+            , #{ idNivelSocioEconomico , jdbcType = INTEGER }
+            , #{ idTipoVivienda , jdbcType = INTEGER }
+            , #{ idOcupacion , jdbcType = INTEGER }
+            , #{ idEstructura , jdbcType = VARCHAR }
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+            , #{ lugarNacimiento  , jdbcType = VARCHAR }
+            , #{ paisResidencia  , jdbcType = VARCHAR }
+            , #{ presentaDiscapacidad  , jdbcType = INTEGER }
+            , #{ descripcionDiscapacidad , jdbcType = VARCHAR }
+        )
+    </insert>
+    
+    <insert id="insertarPacienteDomicilio" parameterType="mx.mc.model.PacienteDomicilio" >        
+        INSERT INTO pacienteDomicilio (
+            idPacienteDomicilio,idPaciente,idPais,idEstado,idMunicipio,idColonia,calle
+            ,codigoPostal,numeroExterior,numeroInterior,telefonoCasa,telefonoOficina
+            ,extension,telefonoCelular,correoElectronico,cuentaFacebook,domicilioActual
+            ,insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+        ) VALUES (
+            #{ idPacienteDomicilio , jdbcType = VARCHAR }
+            , #{ idPaciente , jdbcType = VARCHAR }
+            , #{ idPais , jdbcType = INTEGER }
+            , #{ idEstado , jdbcType = INTEGER }
+            , #{ idMunicipio , jdbcType = INTEGER }
+            , #{ idColonia , jdbcType = INTEGER }
+            , #{ calle , jdbcType = VARCHAR }
+            , #{ codigoPostal , jdbcType = VARCHAR }
+            , #{ numeroExterior , jdbcType = VARCHAR }
+            , #{ numeroInterior , jdbcType = VARCHAR }
+            , #{ telefonoCasa , jdbcType = VARCHAR }
+            , #{ telefonoOficina , jdbcType = VARCHAR }
+            , #{ extension , jdbcType = VARCHAR }
+            , #{ telefonoCelular , jdbcType = VARCHAR }
+            , #{ correoElectronico , jdbcType = VARCHAR }
+            , #{ cuentaFacebook , jdbcType = VARCHAR }
+            , #{ domicilioActual , jdbcType = INTEGER }
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        )
+    </insert>
+    
+    <select id="obtenerPacientesPorIdUnidad" resultType="mx.mc.model.Paciente_Extended" parameterType="Map" >
+        SELECT p.idPaciente , p.nombreCompleto , p.apellidoPaterno , p.apellidoMaterno , p.idTipoPaciente , p.idEstatusPaciente , p.idUnidadMedica
+            , p.claveDerechohabiencia , p.pacienteNumero
+            , ep.estatusPaciente , g.nombreCatalogo as tipoPaciente , e.nombre as nombreEstructura , es.nombre as nombreEstructuraPeriferico 
+        FROM paciente p
+        INNER JOIN estatusPaciente ep ON p.idEstatusPaciente = ep.idEstatusPaciente
+        INNER JOIN catalogoGeneral g ON ( p.idTipoPaciente = g.idCatalogoGeneral and idGrupo = 1)
+        LEFT JOIN estructura e ON p.idEstructura = e.idEstructura
+        LEFT JOIN estructura es ON p.idEstructuraPeriferico = es.idEstructura
+        WHERE 1=1
+            <if test="idEstructura != null " >
+                AND (
+                        (
+                            p.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+                            <!-- TODO Hacer la consulta Recursivs -->
+                        )
+                        <if test="idEstructuraPeriferico != null " >
+                            OR (
+                                p.idEstructuraPeriferico = #{ idEstructuraPeriferico , jdbcType = VARCHAR }
+                                <!-- TODO Hacer la consulta Recursivs -->
+                                
+                                )
+                        </if>
+                    )
+            </if>
+        <if test="cadenaBusqueda != null" >
+            AND (
+                p.nombreCompleto LIKE '%${ cadenaBusqueda }%'
+                OR p.apellidoPaterno LIKE '%${ cadenaBusqueda }%'
+                OR p.apellidoMaterno LIKE '%${ cadenaBusqueda }%'
+                OR p.claveDerechohabiencia LIKE '%${ cadenaBusqueda }%'
+                OR p.pacienteNumero LIKE '%${ cadenaBusqueda }%'
+                OR g.nombreCatalogo LIKE '%${ cadenaBusqueda }%'
+                OR e.nombre LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND p.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY p.insertFecha DESC
+        LIMIT #{ numRegistros , jdbcType = INTEGER }
+    </select>
+    
+    <select id="obtenerPacientePorIdUnidadAct" resultType="mx.mc.model.Paciente_Extended" parameterType="Map" >
+        SELECT p.idPaciente , p.nombreCompleto , p.apellidoPaterno , p.apellidoMaterno , p.idTipoPaciente , p.idEstatusPaciente , p.idUnidadMedica
+            , p.claveDerechohabiencia , p.pacienteNumero
+            , ep.estatusPaciente , g.nombreCatalogo as tipoPaciente , e.nombre as nombreEstructura , es.nombre as nombreEstructuraPeriferico 
+        FROM paciente p
+        INNER JOIN estatusPaciente ep ON p.idEstatusPaciente = ep.idEstatusPaciente
+        INNER JOIN catalogoGeneral g ON ( p.idTipoPaciente = g.idCatalogoGeneral and idGrupo = 1)
+        LEFT JOIN estructura e ON p.idEstructura = e.idEstructura
+        LEFT JOIN estructura es ON p.idEstructuraPeriferico = es.idEstructura
+        WHERE 1=1
+            <if test="listaEstructuras != null " >
+                AND (
+                        (
+                            p.idEstructura IN
+                            <!-- TODO Hacer la consulta Recursivs -->
+                            <foreach collection="listaEstructuras" item="item" open="(" separator="," close=")">                                
+                                  #{ item.idEstructura}
+                            </foreach>
+                        )
+                        <if test="idEstructuraPeriferico != null " >
+                            OR (
+                                p.idEstructuraPeriferico = #{ idEstructuraPeriferico , jdbcType = VARCHAR }
+                                <!-- TODO Hacer la consulta Recursivs -->
+                                
+                                )
+                        </if>
+                    )
+            </if>
+        <if test="cadenaBusqueda != null" >
+            AND (
+                p.nombreCompleto LIKE '%${ cadenaBusqueda }%'
+                OR p.apellidoPaterno LIKE '%${ cadenaBusqueda }%'
+                OR p.apellidoMaterno LIKE '%${ cadenaBusqueda }%'
+                OR p.claveDerechohabiencia LIKE '%${ cadenaBusqueda }%'
+                OR p.pacienteNumero LIKE '%${ cadenaBusqueda }%'
+                OR g.nombreCatalogo LIKE '%${ cadenaBusqueda }%'
+                OR e.nombre LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND p.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY p.insertFecha DESC
+        <!--Se elimino la parte del limite en esta Consulta-->
+        <!--<LIMIT #{ numRegistros , jdbcType = INTEGER }-->
+    </select>
+    
+    <select id="obtenerPacientePorIdUnidadActLazy" resultType="mx.mc.model.Paciente_Extended" parameterType="Map">
+         SELECT p.idPaciente , p.nombreCompleto , p.apellidoPaterno , p.apellidoMaterno , p.idTipoPaciente , p.idEstatusPaciente , p.idUnidadMedica
+            , p.claveDerechohabiencia , p.pacienteNumero
+            , ep.estatusPaciente , g.nombreCatalogo as tipoPaciente , e.nombre as nombreEstructura , es.nombre as nombreEstructuraPeriferico 
+        FROM paciente p
+        INNER JOIN estatusPaciente ep ON p.idEstatusPaciente = ep.idEstatusPaciente
+        LEFT JOIN catalogoGeneral g ON ( p.idTipoPaciente = g.idCatalogoGeneral and g.idGrupo = 1)
+        LEFT JOIN estructura e ON p.idEstructura = e.idEstructura
+        LEFT JOIN estructura es ON p.idEstructuraPeriferico = es.idEstructura
+        WHERE 1=1
+            <if test="listaEstructuras != null " >
+                AND (
+                        (
+                            p.idEstructura IN
+                            <!-- TODO Hacer la consulta Recursivs -->
+                            <foreach collection="listaEstructuras" item="item" open="(" separator="," close=")">                                
+                                  #{ item.idEstructura}
+                            </foreach>
+                        )
+                        <if test="idEstructuraPeriferico != null " >
+                            OR (
+                                p.idEstructuraPeriferico = #{ idEstructuraPeriferico , jdbcType = VARCHAR }
+                                <!-- TODO Hacer la consulta Recursivs -->
+                                
+                                )
+                        </if>
+                    )
+            </if>
+        <if test="paramBusquedaReporte.cadenaBusqueda != null" >
+            AND (
+                p.nombreCompleto LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.apellidoPaterno LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.apellidoMaterno LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.claveDerechohabiencia LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.pacienteNumero LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR g.nombreCatalogo LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            )
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND p.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY p.insertFecha DESC
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+       
+    </select>
+    
+    <select id="obtenerTotalPacientePorIdUnidadActLazy" resultType="Long" parameterType="Map" >
+        SELECT 
+        count(*)
+        FROM paciente p
+        INNER JOIN estatusPaciente ep ON p.idEstatusPaciente = ep.idEstatusPaciente
+        INNER JOIN catalogoGeneral g ON ( p.idTipoPaciente = g.idCatalogoGeneral and idGrupo = 1)
+        LEFT JOIN estructura e ON p.idEstructura = e.idEstructura
+        LEFT JOIN estructura es ON p.idEstructuraPeriferico = es.idEstructura
+        WHERE 1=1
+            <if test="listaEstructuras != null " >
+                AND (
+                        (
+                            p.idEstructura IN
+                            <!-- TODO Hacer la consulta Recursivs -->
+                            <foreach collection="listaEstructuras" item="item" open="(" separator="," close=")">                                
+                                  #{ item.idEstructura}
+                            </foreach>
+                        )
+                        <if test="idEstructuraPeriferico != null " >
+                            OR (
+                                p.idEstructuraPeriferico = #{ idEstructuraPeriferico , jdbcType = VARCHAR }
+                                <!-- TODO Hacer la consulta Recursivs -->
+                                
+                                )
+                        </if>
+                    )
+            </if>
+        <if test="paramBusquedaReporte.cadenaBusqueda != null" >
+            AND (
+                p.nombreCompleto LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.apellidoPaterno LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.apellidoMaterno LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.claveDerechohabiencia LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.pacienteNumero LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR g.nombreCatalogo LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+            )
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND p.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY p.insertFecha DESC
+    </select>
+    
+    <select id="obtenerPacientesPorIdUnidadConsExt" resultType="mx.mc.model.Paciente_Extended" parameterType="Map" >
+        SELECT p.idPaciente , p.nombreCompleto , p.apellidoPaterno , p.apellidoMaterno , p.idTipoPaciente , p.idEstatusPaciente , p.idUnidadMedica
+            , p.claveDerechohabiencia , p.pacienteNumero
+            , ep.estatusPaciente , g.nombreCatalogo as tipoPaciente , e.nombre as nombreEstructura , es.nombre as nombreEstructuraPeriferico 
+        FROM paciente p
+        INNER JOIN estatusPaciente ep ON p.idEstatusPaciente = ep.idEstatusPaciente
+        INNER JOIN catalogoGeneral g ON ( p.idTipoPaciente = g.idCatalogoGeneral and idGrupo = 1)
+        LEFT JOIN estructura e ON p.idEstructura = e.idEstructura
+        LEFT JOIN estructura es ON p.idEstructuraPeriferico = es.idEstructura
+        WHERE 1=1
+        <if test="idEstructura != null " >
+            AND (
+                    (
+                        p.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+                        <!-- TODO Hacer la consulta Recursivs -->
+                    )
+                    <if test="idEstructuraPeriferico != null " >
+                        OR (
+                            p.idEstructuraPeriferico = #{ idEstructuraPeriferico , jdbcType = VARCHAR }
+                            <!-- TODO Hacer la consulta Recursivs -->
+
+                            )
+                    </if>
+                )
+        </if>
+        <if test="cadenaBusqueda != null" >
+            AND (
+                p.nombreCompleto LIKE '%${ cadenaBusqueda }%'
+                OR p.apellidoPaterno LIKE '%${ cadenaBusqueda }%'
+                OR p.apellidoMaterno LIKE '%${ cadenaBusqueda }%'
+                OR p.claveDerechohabiencia LIKE '%${ cadenaBusqueda }%'
+                OR p.pacienteNumero LIKE '%${ cadenaBusqueda }%'
+                OR g.nombreCatalogo LIKE '%${ cadenaBusqueda }%'
+                OR e.nombre LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND p.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY p.idPaciente
+        ORDER BY p.insertFecha DESC
+        LIMIT #{ numRegistros , jdbcType = INTEGER }
+    </select>
+    
+    <select id="obtenerPacietesConPrescripcion" resultType="mx.mc.model.Paciente_Extended" parameterType="Map">
+        SELECT pa.idPaciente , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' ' ,pa.nombreCompleto) AS nombrePaciente
+             , pr.idPrescripcion , pa.claveDerechohabiencia, pa.pacienteNumero, c.nombreCama
+             , IFNULL(c.nombreCama , '') AS nombreCama, pa.fechaNacimiento , pa.sexo 
+            FROM paciente pa
+            INNER JOIN visita vi ON pa.idPaciente = vi.idPaciente
+            INNER JOIN pacienteServicio ps ON ps.idVisita = vi.idVisita
+            LEFT JOIN pacienteUbicacion pu ON pu.idPacienteServicio = ps.idPacienteServicio
+            LEFT JOIN cama c ON c.idCama = pu.idCama AND c.idEstructura = ps.idEstructura
+            INNER JOIN estructura es ON es.idEstructura = pa.idEstructura
+            INNER JOIN prescripcion pr ON pr.idPacienteServicio = ps.idPacienteServicio
+            INNER JOIN surtimiento s ON pr.idPrescripcion = s.idPrescripcion
+            INNER JOIN surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento
+            INNER JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+            INNER JOIN surtimientoMinistrado sm ON se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+            WHERE 1 = 1
+                <if test=" idsEstructura != null ">
+                    AND pa.idEstructura IN 
+                    <foreach item="item" index="index" collection="idsEstructura" open="(" separator="," close=")">
+                        #{ item }
+                    </foreach>
+            <if test = "textoBusqueda != null">
+                AND (
+                pa.nombreCompleto LIKE '%${ textoBusqueda }%'
+                OR pa.apellidoPaterno LIKE '%${ textoBusqueda }%'
+                OR pa.apellidoMaterno LIKE '%${ textoBusqueda }%'
+                OR CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' ' ,pa.nombreCompleto) LIKE '%${textoBusqueda}%'
+                OR pa.claveDerechohabiencia LIKE '%${ textoBusqueda }%'
+                OR pa.pacienteNumero LIKE '%${textoBusqueda}%'
+                OR c.nombreCama LIKE '%${textoBusqueda}%'
+                OR s.folio LIKE '%${textoBusqueda}%'
+            )
+            </if>
+            AND pr.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listaEstatusPresc" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+            AND sm.idEstatusMinistracion = 1
+            GROUP BY pa.idPaciente
+            ORDER BY pr.idEstatusPrescripcion ASC, s.fechaProgramada ASC
+            <!-- LIMIT #{ numRegistros , jdbcType = INTEGER } -->
+        </if>
+    </select>
+    
+    <select id="obtenerPacietesConPrescripcionList" resultType="mx.mc.model.Paciente" parameterType="Map">
+        SELECT pa.idPaciente , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' ' ,pa.nombreCompleto) AS nombrePaciente
+            , pr.idPrescripcion , pa.claveDerechohabiencia, pa.pacienteNumero
+            FROM paciente pa
+            INNER JOIN visita vi ON pa.idPaciente = vi.idPaciente
+            INNER JOIN pacienteServicio ps ON ps.idVisita = vi.idVisita
+            INNER JOIN pacienteUbicacion pu ON pu.idPacienteServicio = ps.idPacienteServicio
+            INNER JOIN cama c ON c.idCama = pu.idCama AND c.idEstructura = ps.idEstructura
+            INNER JOIN estructura es ON es.idEstructura = pa.idEstructura
+            INNER JOIN prescripcion pr ON pr.idPacienteServicio = ps.idPacienteServicio
+            WHERE 1 = 1
+                <if test=" idsEstructura != null ">
+                    AND pa.idEstructura IN 
+                    <foreach item="item" index="index" collection="idsEstructura" open="(" separator="," close=")">
+                        #{ item }
+                    </foreach>
+            <if test = "textoBusqueda != null">
+                AND (
+                pa.nombreCompleto LIKE '%${ textoBusqueda }%'
+                OR pa.apellidoPaterno LIKE '%${ textoBusqueda }%'
+                OR pa.apellidoMaterno LIKE '%${ textoBusqueda }%'
+                OR CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' ' ,pa.nombreCompleto) LIKE '%${textoBusqueda}%'
+                OR pa.claveDerechohabiencia LIKE '%${ textoBusqueda }%'
+                OR pa.pacienteNumero LIKE '%${textoBusqueda}%'
+                OR c.nombreCama LIKE '%${textoBusqueda}%'
+                OR s.folio LIKE '%${textoBusqueda}%'
+            )
+            </if>
+            AND pr.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listaEstatusPresc" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+            GROUP BY pa.idPaciente
+        </if>
+    </select>
+    
+    <select id="obtenerNumeroMaximoPaciente" parameterType="Map" resultType="Integer">
+        SELECT MAX(pacienteNumero) FROM paciente;
+    </select>
+    
+    <insert id="insertarPacienteResponsable" parameterType="mx.mc.model.PacienteResponsable" >        
+        INSERT INTO pacienteResponsable (       
+            idPacienteResponsable,idPaciente,nombreCompleto,apellidoPaterno,apellidoMaterno
+            ,telefonoCasa,telefonoCelular,correoElectronico,idParentesco,responsableLegal
+            ,rfc,curp,domicilio,comentarios,insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+        ) VALUES (        
+            #{ idPacienteResponsable , jdbcType = VARCHAR }
+            , #{ idPaciente , jdbcType = VARCHAR }
+            , #{ nombreCompleto , jdbcType = VARCHAR }
+            , #{ apellidoPaterno , jdbcType = VARCHAR }
+            , #{ apellidoMaterno , jdbcType = VARCHAR }
+            , #{ telefonoCasa , jdbcType = VARCHAR }
+            , #{ telefonoCelular , jdbcType = VARCHAR }
+            , #{ correoElectronico , jdbcType = VARCHAR }
+            , #{ idParentesco , jdbcType = INTEGER }
+            , #{ responsableLegal , jdbcType = VARCHAR }
+            , #{ rfc , jdbcType = VARCHAR }
+            , #{ curp , jdbcType = VARCHAR }
+            , #{ domicilio , jdbcType = VARCHAR }
+            , #{ comentarios , jdbcType = VARCHAR }
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        )
+    </insert>
+    
+    <update id="actualizar" parameterType="mx.mc.model.Paciente">
+        UPDATE paciente SET
+        updateFecha = #{updateFecha , jdbcType = TIMESTAMP }
+        ,updateIdUsuario = #{updateIdUsuario , jdbcType = VARCHAR }
+        <if test="nombreCompleto != null" >
+            ,nombreCompleto = #{nombreCompleto , jdbcType = VARCHAR }
+        </if>
+        <if test="apellidoPaterno != null" >
+            ,apellidoPaterno = #{apellidoPaterno , jdbcType = VARCHAR }
+        </if>
+        <if test="apellidoMaterno != null ">
+            ,apellidoMaterno = #{apellidoMaterno , jdbcType = VARCHAR }
+        </if>    
+        <if test="sexo != '\0' ">
+            ,sexo = #{sexo , jdbcType = VARCHAR }
+        </if>    
+        <if test="rfc != null ">
+            ,rfc = #{rfc , jdbcType = VARCHAR }
+        </if>    
+        <if test="curp != null ">
+            ,curp = #{curp , jdbcType = VARCHAR }
+        </if>    
+        <if test="idTipoPaciente != null ">
+            ,idTipoPaciente = #{idTipoPaciente , jdbcType = INTEGER }
+        </if>    
+        <if test="idUnidadMedica != null ">
+            ,idUnidadMedica = #{idUnidadMedica , jdbcType = INTEGER }
+        </if>    
+        <if test="claveDerechohabiencia != null ">
+            ,claveDerechohabiencia = #{claveDerechohabiencia , jdbcType = VARCHAR }
+        </if>    
+        <if test="idEstatusPaciente != null ">
+            ,idEstatusPaciente = #{idEstatusPaciente , jdbcType = INTEGER }
+        </if>
+        <if test="pacienteNumero != null ">
+            ,pacienteNumero = #{pacienteNumero , jdbcType = VARCHAR }
+        </if>    
+        <if test="idEstadoCivil != null ">
+            ,idEstadoCivil = #{idEstadoCivil , jdbcType = INTEGER }
+        </if>    
+        <if test="idEstadoCivil != null ">
+            ,idEstadoCivil = #{idEstadoCivil , jdbcType = INTEGER }
+        </if>    
+        <if test="idEstadoCivil != null ">
+            ,idEstadoCivil = #{idEstadoCivil , jdbcType = INTEGER }
+        </if>    
+        <if test="idEscolaridad != null ">
+            ,idEscolaridad = #{idEscolaridad , jdbcType = INTEGER }
+        </if>    
+        <if test="idGrupoEtnico != null ">
+            ,idGrupoEtnico = #{idGrupoEtnico , jdbcType = INTEGER }
+        </if>    
+        <if test="idGrupoSanguineo != null ">
+            ,idGrupoSanguineo = #{idGrupoSanguineo , jdbcType = INTEGER }
+        </if>    
+        <if test="idReligion  != null ">
+            ,idReligion = #{idReligion , jdbcType = INTEGER }
+        </if>    
+        <if test="idNivelSocioEconomico != null ">
+            ,idNivelSocioEconomico = #{idNivelSocioEconomico , jdbcType = INTEGER }
+        </if>
+        <if test="idTipoVivienda != null ">
+            ,idTipoVivienda = #{idTipoVivienda , jdbcType = INTEGER }
+        </if>    
+        <if test="idOcupacion != null ">
+             ,idOcupacion = #{idOcupacion , jdbcType = INTEGER }
+        </if>    
+        <if test="idEstructura != null ">
+            ,idEstructura = #{idEstructura , jdbcType = VARCHAR }
+        </if>    
+        <if test="idEstructuraPeriferico != null ">
+            ,idEstructuraPeriferico = #{idEstructuraPeriferico , jdbcType = VARCHAR }
+        </if>        
+        <if test="insertFecha != null ">
+            ,insertFecha = #{insertFecha , jdbcType = TIMESTAMP }
+        </if>    
+        <if test="insertIdUsuario != null ">
+             ,insertIdUsuario = #{insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test="estatusGabinete != null ">
+             , estatusGabinete = #{ estatusGabinete , jdbcType = VARCHAR }
+        </if>
+        
+        <if test="lugarNacimiento != null ">
+        , lugarNacimiento = #{ lugarNacimiento , jdbcType = VARCHAR }
+        </if>
+        <if test="paisResidencia != null ">
+            , paisResidencia = #{ paisResidencia , jdbcType = VARCHAR }
+        </if>
+        <if test="presentaDiscapacidad != null ">
+            , presentaDiscapacidad = #{ presentaDiscapacidad , jdbcType = INTEGER }
+        </if>
+        <if test="descripcionDiscapacidad != null ">
+            , descripcionDiscapacidad = #{ descripcionDiscapacidad , jdbcType = VARCHAR }
+        </if>    
+            
+        
+        WHERE idPaciente = #{idPaciente , jdbcType = VARCHAR}
+    </update>
+    
+    <update id="actualizarPaciente" parameterType="mx.mc.model.Paciente">
+        UPDATE paciente 
+        SET 
+        updateFecha = #{updateFecha , jdbcType = TIMESTAMP }
+        ,updateIdUsuario = #{updateIdUsuario , jdbcType = VARCHAR }
+        <if test="nombreCompleto != null">
+            ,nombreCompleto = #{nombreCompleto , jdbcType = VARCHAR }
+        </if>
+        <if test="apellidoPaterno != null">
+            ,apellidoPaterno = #{apellidoPaterno , jdbcType = VARCHAR }
+        </if>
+        <if test="apellidoMaterno != null">
+            ,apellidoMaterno = #{apellidoMaterno , jdbcType = VARCHAR }
+        </if>
+        <if test="sexo != null">
+            ,sexo = #{sexo , jdbcType = VARCHAR  }
+        </if>
+        <if test="fechaNacimiento != null">
+            ,fechaNacimiento = #{fechaNacimiento , jdbcType = TIMESTAMP }
+        </if>
+        <if test="rfc != null">
+            ,rfc = #{rfc , jdbcType = VARCHAR }
+        </if>
+        <if test="curp != null">
+            ,curp = #{curp , jdbcType = VARCHAR }
+        </if>   
+        <if test="idTipoPaciente != null">
+            ,idTipoPaciente = #{idTipoPaciente , jdbcType = INTEGER }
+        </if>
+        <if test="idUnidadMedica != null">
+            ,idUnidadMedica = #{idUnidadMedica , jdbcType = INTEGER }
+        </if>
+        <if test="claveDerechohabiencia != null">
+            ,claveDerechohabiencia = #{claveDerechohabiencia , jdbcType = VARCHAR }
+        </if>
+        <if test="idEstatusPaciente != null">
+            ,idEstatusPaciente = #{idEstatusPaciente , jdbcType = INTEGER }
+        </if>
+        <if test="pacienteNumero != null">
+            ,pacienteNumero = #{pacienteNumero , jdbcType = VARCHAR }
+        </if>
+        <if test="idEstadoCivil != null">
+            ,idEstadoCivil = #{idEstadoCivil , jdbcType = INTEGER }
+        </if>
+        <if test="idEscolaridad  != null">
+            ,idEscolaridad = #{idEscolaridad , jdbcType = INTEGER }
+        </if>
+        <if test="idGrupoEtnico != null">
+            ,idGrupoEtnico = #{idGrupoEtnico , jdbcType = INTEGER }
+        </if>
+        <if test="idGrupoSanguineo != null">
+            ,idGrupoSanguineo = #{idGrupoSanguineo , jdbcType = INTEGER }
+        </if>
+        <if test="idReligion != null">
+            ,idReligion = #{idReligion , jdbcType = INTEGER }
+        </if>
+        <if test="idNivelSocioEconomico != null">
+            ,idNivelSocioEconomico = #{idNivelSocioEconomico , jdbcType = INTEGER }
+        </if>
+        <if test="idTipoVivienda != null">
+            ,idTipoVivienda = #{idTipoVivienda , jdbcType = INTEGER }
+        </if>
+        <if test="idOcupacion != null">
+            ,idOcupacion = #{idOcupacion , jdbcType = INTEGER }                
+        </if>
+        <if test="estatusGabinete != null">
+            ,estatusGabinete = #{ estatusGabinete , jdbcType = VARCHAR }
+        </if>
+        
+        <if test="lugarNacimiento != null ">
+        , lugarNacimiento = #{ lugarNacimiento , jdbcType = VARCHAR }
+        </if>
+        <if test="paisResidencia != null ">
+            , paisResidencia = #{ paisResidencia , jdbcType = VARCHAR }
+        </if>
+        <if test="presentaDiscapacidad != null ">
+            , presentaDiscapacidad = #{ presentaDiscapacidad , jdbcType = INTEGER }
+        </if>
+        <if test="descripcionDiscapacidad != null ">
+            , descripcionDiscapacidad = #{ descripcionDiscapacidad , jdbcType = VARCHAR }
+        </if>
+        WHERE idPaciente = #{idPaciente , jdbcType = VARCHAR };
+    </update>
+    
+    <update id="actualizarPacienteDomicilio" parameterType="mx.mc.model.PacienteDomicilio">
+        UPDATE pacienteDomicilio
+            SET updateFecha = #{updateFecha , jdbcType = TIMESTAMP }        
+                , updateIdUsuario = #{updateIdUsuario , jdbcType = VARCHAR  }
+            <if test="idPaciente != null">
+                , idPaciente = #{idPaciente , jdbcType = VARCHAR  }
+            </if><if test="idPais != null">
+                , idPais = #{idPais , jdbcType = INTEGER }
+            </if><if test="idEstado != null">
+                , idEstado = #{idEstado , jdbcType = INTEGER }
+            </if><if test="idMunicipio != null">
+                , idMunicipio = #{idMunicipio , jdbcType = INTEGER }
+            </if><if test="idColonia != null">
+                , idColonia = #{idColonia , jdbcType = INTEGER }
+            </if><if test="calle != null">
+                , calle = #{calle , jdbcType = VARCHAR  }
+            </if><if test="codigoPostal != null">
+                , codigoPostal = #{codigoPostal , jdbcType = VARCHAR  }
+            </if><if test="numeroExterior != null">
+                , numeroExterior = #{numeroExterior , jdbcType = VARCHAR  }
+            </if><if test="numeroInterior != null">
+                , numeroInterior = #{numeroInterior , jdbcType = VARCHAR  }
+            </if><if test="telefonoCasa != null">
+                , telefonoCasa = #{telefonoCasa , jdbcType = VARCHAR  }
+            </if><if test="telefonoOficina != null">
+                , telefonoOficina = #{telefonoOficina , jdbcType = VARCHAR  }
+            </if><if test="extension != null">
+                , extension = #{extension , jdbcType = VARCHAR  }
+            </if><if test="telefonoCelular != null">
+                , telefonoCelular = #{telefonoCelular , jdbcType = VARCHAR  }
+            </if><if test="correoElectronico != null">
+                , correoElectronico = #{correoElectronico , jdbcType = VARCHAR  }
+            </if><if test="cuentaFacebook != null">
+                , cuentaFacebook = #{cuentaFacebook , jdbcType = VARCHAR  }
+            </if><if test="domicilioActual != null">
+                , domicilioActual = #{domicilioActual , jdbcType = INTEGER }
+            </if>
+            WHERE idPacienteDomicilio = #{idPacienteDomicilio , jdbcType = VARCHAR  };
+    </update>
+    
+    <update id="actualizarPacienteResponsable" parameterType="mx.mc.model.PacienteResponsable">
+        UPDATE pacienteResponsable
+            SET idPaciente = #{idPaciente , jdbcType = VARCHAR  },
+                nombreCompleto = #{nombreCompleto , jdbcType = VARCHAR  },
+                apellidoPaterno = #{apellidoPaterno , jdbcType = VARCHAR  },
+                apellidoMaterno = #{apellidoMaterno , jdbcType = VARCHAR  },
+                telefonoCasa = #{telefonoCasa , jdbcType = VARCHAR  },
+                telefonoCelular = #{telefonoCelular , jdbcType = VARCHAR  },
+                correoElectronico = #{correoElectronico , jdbcType = VARCHAR  },
+                idParentesco = #{idParentesco , jdbcType = INTEGER },
+                responsableLegal = #{responsableLegal , jdbcType = VARCHAR  },
+                rfc = #{rfc , jdbcType = VARCHAR  },
+                curp = #{curp , jdbcType = VARCHAR  },
+                domicilio = #{domicilio , jdbcType = VARCHAR  },
+                comentarios = #{comentarios , jdbcType = VARCHAR  },
+                updateFecha = #{updateFecha , jdbcType = TIMESTAMP },
+                updateIdUsuario = #{updateIdUsuario , jdbcType = VARCHAR  }
+            WHERE idPacienteResponsable = #{idPacienteResponsable , jdbcType = VARCHAR  };
+    </update>
+    
+    
+    <select id="obtenerPacienteCompletoPorId" resultType="mx.mc.model.Paciente_Extended" parameterType="Map" >
+        SELECT p.idPaciente , p.nombreCompleto , p.apellidoPaterno , p.apellidoMaterno , p.claveDerechohabiencia , p.pacienteNumero , p.sexo , p.fechaNacimiento , p.rfc 
+                , p.curp
+                , p.idEstatusPaciente
+		, pd.calle
+		, pd.numeroInterior
+		, pd.numeroExterior
+		, se.dAsenta AS colonia
+		, pd.codigoPostal
+		, se.dMnpio AS municipio
+		, se.dEstado AS estado
+		, pa.nombrePais AS pais
+                , pd.telefonoCasa
+                , pd.telefonoCelular
+                , pd.telefonoOficina
+                , pd.extension
+                , pd.correoElectronico
+
+		, pr.apellidoPaterno AS apellidoPaternoResponsable
+		, pr.apellidoMaterno AS apellidoMaternoResponsable
+		, pr.nombreCompleto AS nombreResponsable
+		, CASE WHEN pr.responsableLegal = 1 THEN 'SI' ELSE 'NO' END AS responsableLegal
+		, pr.rfc AS rfcResponsable
+		, pr.curp AS curpResponsable
+		, pr.telefonoCasa AS telefonoPrincipalResponsable
+		, pr.telefonoCelular AS telefonoSecundarioResponsable
+		, pr.correoElectronico AS correoElectronicoResponsable 
+        
+                , ep.estatusPaciente AS estatusPaciente
+                , tc.nombreCatalogo AS tipoPaciente
+		, ec.nombreCatalogo AS estadoCivil
+		, es.nombreCatalogo AS escolaridad
+		, ge.nombreCatalogo AS grupoEtnico
+		, gs.nombreCatalogo AS grupoSanguineo
+		, re.nombreCatalogo AS religion
+		, ns.nombreCatalogo AS nivelSocioeconomico
+		, oc.nombreCatalogo AS ocupacion
+		, tv.nombreCatalogo AS tipoVivienda
+                , tp.nombreCatalogo AS parentesco
+                , CASE WHEN p.fechaNacimiento is null THEN 0
+                    ELSE TIMESTAMPDIFF(YEAR, p.fechaNacimiento, CURDATE())
+                    END as edadPaciente
+        FROM paciente p
+        LEFT JOIN pacienteResponsable pr ON p.idPaciente = pr.idPaciente
+        LEFT JOIN pacienteDomicilio pd ON p.idPaciente = pd.idPaciente
+        LEFT JOIN sepomex se ON (pd.idColonia = se.idAsentaCpcons AND pd.idMunicipio = se.cMnpio AND pd.idEstado = se.cEstado AND pd.codigoPostal = se.dCp)
+        LEFT JOIN pais pa ON pd.idPais = pa.idPais
+        
+        LEFT JOIN estatusPaciente ep ON p.idEstatusPaciente = ep.idEstatusPaciente
+        LEFT JOIN catalogoGeneral tc ON ( p.idTipoPaciente = tc.idCatalogoGeneral and tc.idGrupo = 1)	
+        <!--  Paciente Particular-->
+        LEFT JOIN catalogoGeneral um ON ( p.idTipoPaciente = um.idCatalogoGeneral and um.idGrupo = 2)
+        <!--Unidad Medica-->
+        LEFT JOIN catalogoGeneral ec ON ( p.idEstadoCivil = ec.idCatalogoGeneral and ec.idGrupo = 3) 
+        <!--Estado civil-->
+        LEFT JOIN catalogoGeneral es ON ( p.idEscolaridad = es.idCatalogoGeneral and es.idGrupo = 4) 
+        <!--Escolaridad-->
+        LEFT JOIN catalogoGeneral oc ON ( p.idOcupacion = oc.idCatalogoGeneral and oc.idGrupo = 5) 
+        <!--Ocupación--> 
+        LEFT JOIN catalogoGeneral ge ON ( p.idGrupoEtnico = ge.idCatalogoGeneral and ge.idGrupo = 6) 
+        <!--Grupo Étnico-->
+        LEFT JOIN catalogoGeneral re ON ( p.idReligion = re.idCatalogoGeneral and re.idGrupo = 7) 
+        <!--Religión-->
+        LEFT JOIN catalogoGeneral gs ON ( p.idGrupoSanguineo = gs.idCatalogoGeneral and gs.idGrupo = 8) 
+        <!--Grupo Sanguíneo-->
+        LEFT JOIN catalogoGeneral ns ON ( p.idNivelSocioEconomico = ns.idCatalogoGeneral and ns.idGrupo = 9) 
+        <!--Nivel Socioeconómico-->
+        LEFT JOIN catalogoGeneral tv ON ( p.idTipoVivienda = tv.idCatalogoGeneral and tv.idGrupo = 10) 
+        <!--Tipo de vivienda-->
+        LEFT JOIN catalogoGeneral tp ON ( pr.idParentesco = tp.idCatalogoGeneral and tp.idGrupo = 11) 
+        <!--TipoParentesco-->
+        WHERE 
+            p.idPaciente = #{idPaciente , jdbcType = VARCHAR }
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerNombreEstructurabyIdpaciente" resultType="mx.mc.model.Paciente_Extended" parameterType="Map" >
+        select e.nombre as nombreEstructura from paciente p inner join estructura e
+        on e.idEstructura = p.idEstructura
+        where idPaciente = #{idPaciente , jdbcType = VARCHAR }
+        LIMIT 1
+    </select>
+    
+    <update id="actualizarIdEstructuraPeriferico" parameterType="mx.mc.model.PacienteServicioPeriferico">
+        UPDATE paciente
+            SET idEstructuraPeriferico = #{idEstructura , jdbcType = VARCHAR  }                
+            WHERE idPaciente = #{idPaciente , jdbcType = VARCHAR  };
+    </update>
+    
+    <select id="obtenerRegistrosPorCriterioDeBusquedaLazy" resultType="mx.mc.model.Paciente_Extended" parameterType="Map" >
+        SELECT p.idpaciente, p.nombreCompleto, p.apellidoPaterno, p.apellidoMaterno, p.sexo, p.fechaNacimiento, p.rfc, p.curp,
+               p.idTipoPaciente, p.idUnidadMedica, p.claveDerechohabiencia, p.idEstatusPaciente, p.pacienteParticular,
+               p.pacienteNumero, p.idEstadoCivil, p.idEscolaridad, p.idGrupoEtnico, p.idGrupoSanguineo, p.idReligion,
+               p.idNivelSocioeconomico, p.idTipoVivienda, p.idOcupacion,p.idEstructura ,p.insertFecha, p.insertIdUsuario, p.updateFecha, 
+               p.updateIdUsuario, ep.idEstatusPaciente, ep.estatusPaciente ,  TIMESTAMPDIFF(YEAR,fechaNacimiento,CURDATE()) AS edadPaciente,
+               es.nombre AS nombreEstructura, esp.nombre as nombreEstructuraPeriferico
+               , CASE WHEN cg.nombreCatalogo IS NULL THEN '' ELSE cg.nombreCatalogo END  AS tipoPaciente
+        FROM paciente p 
+        LEFT JOIN catalogoGeneral cg ON (cg.idGrupo= 1 and p.idTipoPaciente = cg.idCatalogoGeneral)
+        INNER JOIN estatusPaciente ep ON p.idEstatusPaciente = ep.idEstatusPaciente
+        LEFT JOIN estructura es  ON es.idEstructura = p.idEstructura
+        LEFT JOIN estructura esp ON esp.idEstructura = p.idEstructuraPeriferico
+        WHERE 1=1
+        
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">        
+            AND  nombreCompleto LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR apellidoPaterno LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR apellidoMaterno LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR claveDerechohabiencia LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR pacienteNumero LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+        </if>    
+        <if test=" sortField == null" > 
+            ORDER BY p.insertFecha DESC
+        </if>
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'pacienteNumero'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY p.pacienteNumero asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY p.pacienteNumero desc
+                </if>            
+            </if>
+            <if test="sortField == 'claveDerechohabiencia'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY p.claveDerechohabiencia asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY p.claveDerechohabiencia desc
+                </if>
+            </if>
+            <if test="sortField == 'nombreCompleto'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY p.nombreCompleto asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY p.nombreCompleto desc
+                </if>            
+            </if>
+            <if test="sortField == 'fechaNacimiento'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY p.fechaNacimiento asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY p.fechaNacimiento desc
+                </if>
+            </if>
+            <if test="sortField == 'idTipoPaciente'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY p.idTipoPaciente asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY p.idTipoPaciente desc
+                </if>
+            </if>
+            <if test="sortField == 'insertFecha'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY p.insertFecha asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY p.insertFecha desc
+                </if>
+            </if>
+            <if test="sortField == 'idEstatusPaciente'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY p.idEstatusPaciente asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY p.idEstatusPaciente desc
+                </if>
+            </if>
+        </if>
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    
+    <select id="obtenerTotalRegistrosPorCriterioDeBusquedaLazy" resultType="Long" parameterType="Map" >
+        SELECT 
+            count(*)
+        FROM paciente p 
+        LEFT JOIN catalogoGeneral cg ON (cg.idGrupo= 1 and p.idTipoPaciente = cg.idCatalogoGeneral)
+        INNER JOIN estatusPaciente ep ON p.idEstatusPaciente = ep.idEstatusPaciente
+        LEFT JOIN estructura es  ON es.idEstructura = p.idEstructura
+        LEFT JOIN estructura esp ON esp.idEstructura = p.idEstructuraPeriferico
+        WHERE 1=1
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">        
+            AND  nombreCompleto LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR apellidoPaterno LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR apellidoMaterno LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR claveDerechohabiencia LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR pacienteNumero LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+        </if>
+        ORDER BY p.insertFecha DESC
+    </select>
+    
+    <select id="obtenerPacientes" resultType="mx.mc.model.Paciente" parameterType="Map">
+        select DISTINCT * from paciente p
+        where 1 = 1 
+        <if test="cadenaBusqueda != null">
+            and (p.nombreCompleto like '%${ cadenaBusqueda }%' OR
+            p.apellidoPaterno like '%${ cadenaBusqueda }%'OR
+            p.apellidoMaterno like '%${ cadenaBusqueda }%'
+            OR CONCAT(p.nombreCompleto,' ', p.apellidoPaterno ,' ',p.apellidoMaterno) LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+    </select>
+    
+    <select id="obtenerRegistrosPorCriterioDeBusquedaYEstructura" resultType="mx.mc.model.Paciente_Extended" parameterType="Map" >
+       SELECT 
+            p.idpaciente,p.nombreCompleto, p.apellidoPaterno, p.apellidoMaterno, p.sexo, p.fechaNacimiento, p.rfc, p.curp,
+            p.idTipoPaciente, p.idUnidadMedica, p.claveDerechohabiencia, p.idEstatusPaciente, p.pacienteParticular, p.pacienteNumero,
+            p.idEstadoCivil, p.idEscolaridad, p.idGrupoEtnico, p.idGrupoSanguineo, p.idReligion, p.idNivelSocioeconomico, p.idTipoVivienda,
+            p.idOcupacion, p.idEstructura, p.insertFecha, p.insertIdUsuario, p.updateFecha, p.updateIdUsuario, ep.idEstatusPaciente,
+            ep.estatusPaciente, concat(p.nombreCompleto,' ',p.apellidoPaterno,' ', p.apellidoMaterno) as nombres,
+            TIMESTAMPDIFF(YEAR,
+                fechaNacimiento,
+                CURDATE()) AS edadPaciente,
+            es.nombre AS nombreEstructura,
+            esp.nombre AS nombreEstructuraPeriferico
+        FROM
+            paciente p INNER JOIN estatusPaciente ep ON p.idEstatusPaciente = ep.idEstatusPaciente
+            LEFT JOIN estructura es ON es.idEstructura = p.idEstructura
+            LEFT JOIN estructura esp ON esp.idEstructura = p.idEstructuraPeriferico
+        WHERE
+            1 = 1
+                <if test="idEstructura != null " >
+                    AND (
+                            p.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+                        )
+                </if>
+                having nombres like '%${criterioBusqueda}%'
+                 OR p.claveDerechohabiencia like '%${criterioBusqueda}%'
+                 OR p.pacienteNumero like '%${criterioBusqueda}%'
+        ORDER BY p.insertFecha DESC
+                LIMIT #{numRegistros , jdbcType = INTEGER};                
+    </select>
+    
+    
+    <select id="obtenerPacienteByNumeroPaciente" resultType="mx.mc.model.Paciente" parameterType="Map" >
+        select * from paciente where pacienteNumero = #{numeroPaciente , jdbcType = VARCHAR};
+    </select>
+
+    <select id="obtenerDerechohabientes" resultType="mx.mc.model.Paciente" parameterType="mx.mc.model.Paciente" >
+        SELECT idpaciente, nombreCompleto, apellidoPaterno, apellidoMaterno, sexo, fechaNacimiento, rfc, curp,
+               idTipoPaciente, idUnidadMedica, claveDerechohabiencia, idEstatusPaciente, pacienteParticular,
+               pacienteNumero, idEstadoCivil, idEscolaridad, idGrupoEtnico, idGrupoSanguineo, idReligion,
+               idNivelSocioeconomico, idTipoVivienda, idOcupacion, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM paciente
+        WHERE claveDerechohabiencia = #{ claveDerechohabiencia , jdbcType = VARCHAR }
+            AND idpaciente != #{ idPaciente , jdbcType = VARCHAR }
+    </select>
+    
+    <select id="obtenerPacienteByRfcCvDehCurp" resultType="mx.mc.model.Paciente" parameterType="Map" >
+        select * from paciente
+        where 1 = 1
+          <if test="rfc != null">
+            and  rfc = #{rfc , jdbcType = VARCHAR }
+        </if>
+        <if test="curp != null">
+            and curp = #{curp , jdbcType = VARCHAR }
+        </if>  
+        <if test="claveDerechohabiencia != null">
+            and claveDerechohabiencia = #{ claveDerechohabiencia , jdbcType = INTEGER }
+        </if>          
+    </select>
+    
+    <select id="obtenerPacienteByIdPrescripcion" parameterType="Map" resultType="mx.mc.model.Paciente_Extended">
+        SELECT pa.idPaciente
+        , CONCAT(pa.nombreCompleto, ' ', pa.apellidoPaterno, ' ', pa.apellidoMaterno) AS nombreCompleto
+        , pa.fechaNacimiento
+        , pa.rfc
+        , pa.curp
+        , pa.pacienteNumero
+        , pa.claveDerechohabiencia
+        , es.nombre AS nombreEstructura
+        , c.nombreCama
+        , v.idVisita
+        , TIMESTAMPDIFF(YEAR,fechaNacimiento,CURDATE()) AS edadPaciente
+        FROM prescripcion p 
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN estructura es ON ps.idEstructura = es.idEstructura
+        LEFT JOIN pacienteUbicacion pu ON ps.idPacienteServicio = pu.idPacienteServicio
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        WHERE p.idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+<!--TODO:  debe corregirse este query, y guardar la cama a novel prescripción para detectar la prescripcion-->
+        LIMIT 1;
+    </select>
+    
+</mapper>

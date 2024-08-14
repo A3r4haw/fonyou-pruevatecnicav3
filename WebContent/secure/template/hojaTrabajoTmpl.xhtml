@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+    
+    <div class="mainPanelAmplio" >
+        <h:form id="mainForm">
+            <div id="busqueda" style="padding-bottom: 0px;">
+                <p:outputLabel value="Lista de Trabajo" style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+
+                <p:outputLabel value="Estudio: " style="color: #FFFFFF;"/>
+                <p:selectOneMenu style="width: 120px;" value="#{procedimientoMB.estudioSelect}" >
+                    <f:selectItem itemLabel="TODOS" itemValue="#{null}" />
+                    <f:selectItems value="#{procedimientoMB.estudiosList}" var="estudio" itemLabel="#{estudio.descripcion}" itemValue="#{estudio.idEstudio}" />
+                    <!-- p:ajax update="tblMedicamentos" listener=" # {procedimientoMB.obtenEstudios()}" /-->
+                </p:selectOneMenu>
+                <p:spacer width="10"/>
+                <p:inputText id="textSearch" style="width: 50%!important;border-radius:10px!important;" 
+                             value="#{procedimientoMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar..." />
+                <i class="iconSearch">
+                    <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>
+                </i>
+                <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{procedimientoMB.obtenEstudios()}"
+                                 update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                 oncomplete="PF('statusProcess').hide();" style=" margin-left: 15px; margin-bottom: 8px;" />
+            </div>
+
+            <p:messages id="messages" showDetail="false" globalOnly="true" closable="true" >
+                <p:autoUpdate />
+            </p:messages>
+
+            <p:commandButton class="btnNew" value="Agregar" disabled="#{procedimientoMB.btnNew}" icon="fa fa-plus" rendered="#{procedimientoMB.permiso.puedeCrear}"
+                             onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                             oncomplete="PF('statusProcess').hide(); PF('modalProcedimiento').show();"
+                             ajax="true"                                style=" margin: 5px 0; " resetValues="true" />
+                                         <!-- update=":formModal" -->
+            <br/>
+
+            <p:tabView id="procedimientos" effect="fold" styleClass="tabViewGris" >
+                <p:tab title="Todos" titleStyleClass="tabGris" >
+                    <p:dataTable  id="tblProcedimientos" styleClass="cabecera"
+                                  var="item" reflow="true"
+                                  lazy="true"
+                                  value="#{procedimientoMB.procedimientosLazy}"
+                                  style="margin-bottom:5px;"
+                                  scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350"
+                                  paginatorPosition="bottom"
+                                  rows="10"
+                                  paginator="true"
+                                  paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                  >
+                        <p:column headerText="Folio" style="width: 120px;" sortBy="#{item.folio}" >
+                            <h:outputText value="#{item.folio}" class="altoColumn" />
+                        </p:column>
+                        <p:column headerText="Solicitud" sortBy="#{item.tipoSolicitud}">
+                            <h:outputText value="#{item.tipoSolicitud}" title="#{item.tipoSolicitud}" class="altoColumn" />
+                        </p:column>
+                        <p:column headerText="F. Programada" sortBy="#{item.fechaProgramada}">
+                            <h:outputText value="#{item.fechaProgramada}" title="#{item.fechaProgramada}" class="altoColumn" >
+                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Estudio" sortBy="#{item.descEstudio}">
+                            <h:outputText value="#{item.descEstudio}" title="#{item.descEstudio}" class="altoColumn" />
+                        </p:column>
+                        <p:column headerText="Modalidad" sortBy="#{item.idModalidad}">
+                            <h:outputText value="#{item.idModalidad}" title="#{item.idModalidad}" class="altoColumn" />
+                        </p:column>
+                        <p:column headerText="Estatus" sortBy="#{item.estatusProced}">
+                            <h:outputText value="#{item.estatusProced}" title="#{item.estatusProced}" class="altoColumn" />
+                        </p:column>
+                        <p:column headerText="Paciente" sortBy="#{item.nombrePaciente}">
+                            <h:outputText value="#{item.nombrePaciente}" title="#{item.nombrePaciente}" class="altoColumn" />
+                        </p:column>
+                        <p:column headerText="Sexo" sortBy="#{item.sexo}">
+                            <h:outputText value="#{item.sexo}" title="#{item.sexo}" class="altoColumn" />
+                        </p:column>
+                        <p:column headerText="F. Nac" sortBy="#{item.fechaNacimiento}">
+                            <h:outputText value="#{item.fechaNacimiento}" title="#{item.fechaNacimiento}" class="altoColumn" >
+                                <f:convertDateTime pattern="yyyy-MM-dd" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Servicio" sortBy="#{item.servicioSolicita}">
+                            <h:outputText value="#{item.servicioSolicita}" title="#{item.servicioSolicita}" class="altoColumn" />
+                        </p:column>
+                        <p:column headerText="Solicitante" sortBy="#{item.usuarioSolicita}">
+                            <h:outputText value="#{item.usuarioSolicita}" title="#{item.usuarioSolicita}" class="altoColumn" />
+                        </p:column>
+                        <!-- p:column headerText="Acciones" style="width: 70px;" >
+                            <p:commandLink title="Ver" actionListener="#{estudioMB.obtenerEstudio(item.idEstudio)}" rendered="#{estudioMB.permiso.puedeVer}"
+                                           onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('modalEstudio').show();" update=":formModal" >
+                                <i class="fa fa-eye  iconMusAzul" />
+                            </p:commandLink>
+                            <p:commandLink title="#{item.activo > 0 ? 'Desactivar' : 'Activar'}" actionListener="#{estudioMB.statusEstudio(item.idEstudio, item.activo)}" 
+                                           rendered="#{estudioMB.permiso.puedeEditar}" style="margin-left: 10px;"
+                                           onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":mainForm:tblEstudios " >
+                                <i class="#{item.activo > 0 ? 'fa fa-toggle-on' : 'fa fa-toggle-off'} iconMusAzul" />
+                            </p:commandLink>
+                        </p:column-->
+                    </p:dataTable>
+                </p:tab>
+                <p:tab title="Programado" titleStyleClass="tabGris">
+                </p:tab>
+                <p:tab title="Arrivado" titleStyleClass="tabGris">
+                </p:tab>
+                <p:tab title="Preparando" titleStyleClass="tabGris">
+                </p:tab>
+                <p:tab title="En Proceso" titleStyleClass="tabGris">
+                </p:tab>
+                <p:tab title="Interpretado" titleStyleClass="tabGris">
+                </p:tab>
+                <p:tab title="Terminado" titleStyleClass="tabGris">
+                </p:tab>
+                <p:tab title="Distribuído" titleStyleClass="tabGris">
+                </p:tab>
+                <p:tab title="Cancelado" titleStyleClass="tabGris">
+                </p:tab>
+            </p:tabView>
+        </h:form>
+    </div>
+    
+    <style>
+        .ui-tabs .ui-tabs-nav li {
+            width: 10%;
+            padding-left: 0% !important;
+            padding-right: 0% !important;
+        }
+    </style>
+</html>

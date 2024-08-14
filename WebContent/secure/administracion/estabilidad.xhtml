@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title></title>
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">                    
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" closeOnEscape="true" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Estabilidades"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;" />
+                            <p:inputText id="textSearch" style="margin-top:20px;width: 40%!important;" 
+                                         value="#{estabilidadMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar...." />
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>                                
+                            </i>                            
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{estabilidadMB.buscarEstabilidades()}"
+                                             update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();" style=" margin-left: 20px; margin-bottom: 8px;" />
+                        </div>
+                        <p:commandButton class="btnNew" value="Nuevo Registro" icon="fa fa-file-o" 
+                                         style=" margin: 5px 0; " styleClass="btnMusAzul"
+                                         rendered="#{estabilidadMB.permiso.puedeCrear}"
+                                         onclick="PF('statusProcess').show();" 
+                                         actionListener="#{estabilidadMB.nuevaEstabilidad}" 
+                                         oncomplete="PF('statusProcess').hide(); PF('mdlNuevaEstabilidad').show();" 
+                                         update=":frmNuevaEstabilidad"
+                                         ajax="true" />  &nbsp;&nbsp;
+                        <ui:remove>
+                            <p:commandButton class="btnNew" value="Cargar Layout" icon="fa fa-plus" 
+                                             style=" margin: 5px 0; " styleClass="btnMusAzul" 
+                                             rendered="#{estabilidadMB.permiso.puedeProcesar || false}"
+                                             actionListener="#{estabilidadMB.nuevaEstabilidad}" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); PF('modalLayout').show();"
+                                             ajax="true" update=":frmLayout" 
+                                             tabindex="4"/>&nbsp;&nbsp;
+                        </ui:remove>
+                        <p:commandButton class="btnNew" value="Nuevo Fabricante" icon="fa fa-file-o" 
+                                         style=" margin: 5px 0; " styleClass="btnMusAzul"
+                                         rendered="#{estabilidadMB.permiso.puedeCrear}"
+                                         actionListener="#{estabilidadMB.nuevoFabricante}"
+                                         onclick="PF('statusProcess').show();" 
+                                         oncomplete="PF('statusProcess').hide(); PF('mdlNuevoFabricante').show(); " 
+                                         update=":frmNuevoFabricante"
+                                         ajax="true" />
+                        <br/>
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <p:outputLabel value="No tiene Permiso para esta Transacción"
+                                       rendered="#{!estabilidadMB.permiso.puedeVer}"
+                                       style="color: red; font-weight: bolder;"  />
+
+                        <p:dataTable id="tblEstabilidades"  
+                                     value="#{estabilidadMB.estabilidadLazy}" var="item"                                     
+                                     lazy="true" 
+                                     scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" 
+                                     reflow="true" paginator="true" paginatorPosition="bottom" 
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     emptyMessage="No se encontraron registros" rows="10"
+                                     rendered="#{estabilidadMB.permiso.puedeVer}"    > 
+
+                            <p:column headerText="Clave" style="text-align: center;" width="10%" >
+                                <h:outputText value="#{item.claveInstitucional}" class="" />
+                            </p:column>
+
+                            <p:column headerText="Nombre Genérico" style="text-align: left;" width="10%" >
+                                <h:outputText value="#{item.nombreGenerico}" class="" />
+                            </p:column>
+
+                            <p:column headerText="Fabricante" style="text-align: left;" width="15%" >
+                                <h:outputText value="#{item.nombreFabricante}" class="" />
+                            </p:column>
+
+                            <p:column headerText="Presentación" style="text-align: left;" width="8%" >
+                                <h:outputText value="#{item.presentacionEnvase}" class="" />
+                            </p:column>
+
+                            <p:column headerText="Soluciones Compatibles" style="text-align: center;" width="20%" >
+                                <h:outputText value="#{item.solucionesCompatibles}" class="" title="#{item.solucionesCompatibles}" />
+                            </p:column>
+
+                            <p:column headerText="Vía de Admon" style="text-align: left;" width="8%" >
+                                <h:outputText value="#{item.viaAdministracion}" class="" />
+                            </p:column>
+
+                            <p:column headerText="Contenedor" style="text-align: left;" width="8%" >
+                                <h:outputText value="#{item.nombreContenedor}" class="" />
+                            </p:column>
+
+                            <p:column style="text-align: left;" headerText="Acciones"  width="5%">
+                                <p:commandLink title="Editar"  
+                                               actionListener="#{estabilidadMB.obtenerEstabilidad(item.idEstabilidad)}"
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('mdlNuevaEstabilidad').show(); }" 
+                                               update=":frmNuevaEstabilidad" >
+                                    <i class="fa fa-edit" />
+                                </p:commandLink>
+                                <!--<p:commandLink title="Eliminar" 
+                                               actionListener="# {estabilidadMB.borrarEstabilidad(item.idEstabilidad)}"
+                                               rendered="# {estabilidadMB.permiso.puedeEliminar}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":mainForm:tblEstabilidades" >
+                                    <i class="fa fa-trash-o iconMusAzul" />
+                                    <p:confirm header="Confirmación" message="Está seguro que desea eliminar la estabilidad ?" icon="ui-icon-alert"  />
+                                </p:commandLink -->&nbsp;
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                        
+                    <p:dialog header="Datos de Estabilidad"
+                              widgetVar="mdlNuevaEstabilidad" 
+                              closeOnEscape="true" modal="true" resizable="false" 
+                              closable="true"
+                              style="font-size:xx-small !important;" 
+                              width="98%" height="800px" > 
+                        <h:form id="frmNuevaEstabilidad">
+                            <p:messages globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+
+                            <div class="ui-g">
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Medicamento * : "  class="plabel" />
+                                        <br/>
+                                        <p:autoComplete size="20" id="txtInsumo"
+                                                        class="autoComplete-InsProtocolo" styleClass="autoComplete-InsProtocolo" 
+                                                        panelStyle="autoComplete-InsProtocolo" inputStyleClass="autoComplete-InsProtocolo" 
+                                                        value="#{estabilidadMB.medicamento}"  autocomplete="on" 
+                                                        completeMethod="#{estabilidadMB.autoCompleteMedicamentos}"
+                                                        scrollHeight="350" queryDelay="500"  maxResults="50" 
+                                                        minQueryLength="3"  forceSelection="true" 
+                                                        cacheTimeout="0" cache="false"
+                                                        var="insumo" placeholder="Buscar Medicamento" 
+                                                        emptyMessage="No se encontraron registros"
+                                                        itemValue="#{insumo}" 
+                                                        itemLabel="#{insumo.claveInstitucional} - #{insumo.nombreCorto}"
+                                                        converter="insumoConverter" >
+                                            <p:ajax event="itemSelect"
+                                                    listener="#{estabilidadMB.selectMedicamento}"
+                                                    process=" " update="txtNombreGenerico"/>
+
+                                            <p:column style="width: 100px;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.claveInstitucional}" style=" font-size: small;" />
+                                            </p:column>
+
+                                            <p:column style="width: 300px;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.nombreCorto}" style=" font-size: small;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:tooltip for="txtInsumo" showEffect="clip" hideEffect="fold"
+                                                   value="Todas las reglas de estabilidad y de preparación se buscan por clave de medicamento." position="right"/>
+                                    </div>
+
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel value="Nombre Genérico : "  />
+                                        <br/>
+                                        <p:inputText id="txtNombreGenerico"
+                                                     placeholder="Nombre genérico de Medicamento" 
+                                                     value="#{estabilidadMB.estabilidadSelect.nombreGenerico}"
+                                                     maxlength="45" size="20" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel value="Presentación envase : "  />
+                                        <br/>
+                                        <p:inputText id="txtPresentEnvase"
+                                                     placeholder="Presentación de envase de Medicamento" 
+                                                     value="#{estabilidadMB.estabilidadSelect.presentacionEnvase}"
+                                                     maxlength="45" size="6" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Fabricante * : "  class="plabel" />
+                                        <br/>
+                                        <p:selectOneMenu id="cmbFabricante" style="width: 300px;vertical-align: middle;margin-right: 10px;" 
+                                                         value="#{estabilidadMB.estabilidadSelect.idFabricante}" 
+                                                         placeholder="Seleccione Fabricante" 
+                                                         filter="true" filterMatchMode="contains" filterPlaceholder="fabricante" >
+                                            <f:selectItem itemLabel="Seleccione Fabricante" itemValue="#{null}" />
+                                            <f:selectItems value="#{estabilidadMB.listaFabricantes}" 
+                                                           var="fabricante" itemLabel="#{fabricante.nombreFabricante}"
+                                                           itemValue="#{fabricante.idFabricante}" />
+                                        </p:selectOneMenu>
+                                        <p:tooltip for="cmbFabricante" showEffect="clip" hideEffect="fold"
+                                                   value="Las estabilidades de medicamento difiere por laboratorio fabricante, para cada clave debe seleccionar un laboratorio." position="right"/>
+                                    </div>
+
+                                </div>
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Diluyente Reconstitución : " />
+                                        <br/>
+                                        <p:inputText id="txtDiluyRecons"
+                                                     placeholder="Capture nombre"
+                                                     value="#{estabilidadMB.estabilidadSelect.diluyenteReconst}"
+                                                     maxlength="45" size="20" />
+                                        <p:tooltip for="txtDiluyRecons" showEffect="clip" hideEffect="fold"
+                                                   value="En caso de que el medicamento requiera reconstituirse, capture el nombre, ejemplo: Agua Inyectable." position="right"/>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Volumen Reconstitución : "  />
+                                        <br/>
+                                        <p:inputNumber id="txtVolumRecons"
+                                                       value="#{estabilidadMB.estabilidadSelect.volumenReconst}"
+                                                       placeholder="Capture valor"
+                                                       decimalSeparator="." thousandSeparator="," decimalPlaces="2"
+                                                       minValue="0" maxlength="20" size="10" >
+                                            <p:keyFilter mask="num" />
+                                        </p:inputNumber> mL
+                                        <p:tooltip for="txtVolumRecons" showEffect="clip" hideEffect="fold"
+                                                   value="En caso de que el medicamento deba reconstituirse, capture el volumende del diluyente, ejemplo: 5." position="right"/>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel value="Concentración Reconstitución * : "  class="plabel" />
+                                        <br/>
+                                        <p:inputNumber id="txtConceRecons"
+                                                       placeholder="Capture valor"
+                                                       value="#{estabilidadMB.estabilidadSelect.concentracionReconst}"
+                                                       decimalSeparator="." thousandSeparator="," decimalPlaces="2"
+                                                       minValue="0" maxlength="20" size="10" >
+                                            <p:keyFilter mask="num" />
+                                        </p:inputNumber>
+                                        <p:tooltip for="txtConceRecons" showEffect="clip" hideEffect="fold"
+                                                   value="Valor de la concentración del medicamento, ejemplo: 5." position="right"/>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                        <p:outputLabel value="Unidad * : "  class="plabel" />
+                                        <br/>
+                                        <p:selectOneMenu id="cmbUniReconst"
+                                                         style="width: 50px;vertical-align: middle;margin-right: 10px;" 
+                                                         value="#{estabilidadMB.estabilidadSelect.idUnidadReconst}" 
+                                                         placeholder="Seleccione unidad" 
+                                                         filter="true" filterMatchMode="contains" filterPlaceholder="fabricante" >
+                                            <f:selectItem itemLabel="Seleccione " itemValue="#{null}" />
+                                            <f:selectItems value="#{estabilidadMB.listaUnidadConcentracion}" 
+                                                           var="unidad" itemLabel="#{unidad.nombreUnidadConcentracion}"
+                                                           itemValue="#{unidad.idUnidadConcentracion}" />
+                                        </p:selectOneMenu>
+                                        <p:tooltip for="cmbUniReconst" showEffect="clip" hideEffect="fold"
+                                                   value="Unidad de la concentración del medicamento, ejemplo: mg/mL" position="right"/>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Almacenamiento : " />
+                                        <br/>
+                                        <p:inputTextarea id="txtAlmacen"
+                                                         placeholder="Capture condiciones de almacenamiento"
+                                                         value="#{estabilidadMB.estabilidadSelect.almaceamiento}"
+                                                         rows="3" cols="50" style="margin-bottom: 5px;" 
+                                                         maxlength="199" />
+                                        <p:tooltip for="txtAlmacen" showEffect="clip" hideEffect="fold"
+                                                   value="Considera las condiciones de almacenamieto del envase" position="right"/>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Soluciones Compatibles : " />
+                                        <br/>
+                                        <p:inputTextarea id="txtSolucCompat"
+                                                         placeholder="Capture claves de soluciones compatibles separados por ';' "
+                                                         value="#{estabilidadMB.estabilidadSelect.solucionesCompatibles}"
+                                                         rows="3" cols="50" style="margin-bottom: 5px;" 
+                                                         maxlength="199" />
+                                        <p:tooltip for="txtSolucCompat" showEffect="clip" hideEffect="fold"
+                                                   value="Considera las claves de las soluciones compatibles como diluyente, Ejemplo: 010.00.3601.00;010.000.3608 " position="right"/>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel value="Fotosensible : " />
+                                        <br/>
+                                        <p:selectOneButton id="chkFotosen"
+                                                           value="#{estabilidadMB.estabilidadSelect.fotosensible}">
+                                            <f:selectItem itemLabel="Si" itemValue="1" />
+                                            <f:selectItem itemLabel="No" itemValue="0" />
+                                        </p:selectOneButton>
+                                        <p:tooltip for="chkFotosen" showEffect="clip" hideEffect="fold"
+                                                   value="Mezcla fotosensible " position="right"/>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel value="No Agitar : " />
+                                        <br/>
+                                        <p:selectOneButton id="chNoAgit"
+                                                           value="#{estabilidadMB.estabilidadSelect.noAgitar}">
+                                            <f:selectItem itemLabel="Si" itemValue="1" />
+                                            <f:selectItem itemLabel="No" itemValue="0" />
+                                        </p:selectOneButton>
+                                        <p:tooltip for="chNoAgit" showEffect="clip" hideEffect="fold"
+                                                   value="Mezcla no debe agitarse " position="right"/>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Vía de Administración * : "  class="plabel" />
+                                        <br/>
+                                        <p:selectOneMenu id="viaAdministracion"  style="width: 200px;vertical-align: middle;margin-right: 10px;" 
+                                                         value="#{estabilidadMB.estabilidadSelect.idViaAdministracion}"
+                                                         placeholder="Seleccione Vía" 
+                                                         label="Vía de Administración" title="Vía de Administración" 
+                                                         autoWidth="true" 
+                                                         filter="true" filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Seleccione Vía" itemValue="#{null}"/>
+                                            <f:selectItems value="#{estabilidadMB.listaViasAdmon}" var="via"
+                                                           itemLabel="#{via.nombreViaAdministracion}" itemValue="#{via.idViaAdministracion}"/>
+                                        </p:selectOneMenu>
+                                        <p:tooltip for="viaAdministracion" showEffect="clip" hideEffect="fold"
+                                                   value="La vía de administración define la regla de estabilidad. " position="right"/>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Concentración Mínima Mezcla * : "  class="plabel" />
+                                        <br/>
+                                        <p:inputNumber id="txtConcenMinMez"
+                                                       value="#{estabilidadMB.estabilidadSelect.concentMinMezcla}"
+                                                       placeholder="Capture valor"
+                                                       decimalSeparator="." thousandSeparator="," decimalPlaces="2"
+                                                       minValue="0" maxlength="10" size="10" >
+                                            <p:keyFilter mask="num" />
+                                        </p:inputNumber> (mg/mL)
+                                        <p:tooltip for="txtConcenMinMez" showEffect="clip" hideEffect="fold"
+                                                   value="La concetración mínima de la mezcla. " position="right"/>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Concentración Máxima Mezcla * : "  class="plabel" />
+                                        <br/>
+                                        <p:inputNumber id="txtConcenMaxMez"
+                                                       value="#{estabilidadMB.estabilidadSelect.concentMaxMezclat}"
+                                                       placeholder="Capture valor"
+                                                       decimalSeparator="." thousandSeparator="," decimalPlaces="2"
+                                                       minValue="0" maxlength="10" size="10" >
+                                            <p:keyFilter mask="num" />
+                                        </p:inputNumber> (mg/mL)
+                                        <p:tooltip for="txtConcenMaxMez" showEffect="clip" hideEffect="fold"
+                                                   value="La concetración Máxima de la mezcla. " position="right"/>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" >    
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Contenedor : "  />
+                                        <br/>
+                                        <p:selectOneMenu id="cmbIdContenedor"  style="width: 200px;vertical-align: middle;margin-right: 10px;" 
+                                                         value="#{estabilidadMB.estabilidadSelect.idContenedor}"
+                                                         filter="true" filterMatchMode="contains" >
+                                            <!--<f:selectItem itemLabel="Seleccione una opción" itemValue="# {0}"/>-->
+                                            <f:selectItem itemLabel="No definido" itemValue="#{null}"/>
+                                            <f:selectItems value="#{estabilidadMB.envaseList}" var="tipo" 
+                                                           itemLabel="#{tipo.descripcion}" itemValue="#{tipo.idEnvaseContenedor}" />
+                                        </p:selectOneMenu>
+                                        <p:tooltip for="cmbIdContenedor" showEffect="clip" hideEffect="fold"
+                                                   value="El contenedor define la estabilidad y regla de la mezcla. Asegúerese de indicar correctamente los contenedores Infusor y Jeringa si es que corresponde." position="right"/>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Límite uso Temp. Ambiente : " />
+                                        <br/>
+                                        <p:inputNumber id="txtLimUsoTA"
+                                                       value="#{estabilidadMB.estabilidadSelect.limHrsUsoRedSeca}"
+                                                       placeholder="Capture valor"
+                                                       decimalSeparator="." thousandSeparator="," decimalPlaces="0"
+                                                       minValue="0" maxlength="10" size="10" >
+                                            <p:keyFilter mask="num" />
+                                        </p:inputNumber> (hrs)
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Límite uso Red Fría : " />
+                                        <br/>
+                                        <p:inputNumber id="txtLimUsoRF"
+                                                       value="#{estabilidadMB.estabilidadSelect.limHrsUsoRedFria}"
+                                                       placeholder="Capture valor"
+                                                       decimalSeparator="." thousandSeparator="," decimalPlaces="0"
+                                                       minValue="0" maxlength="10" size="10" >
+                                            <p:keyFilter mask="num" />
+                                        </p:inputNumber> (hrs)
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Observaciones de Preparación : " />
+                                        <br/>
+                                        <p:inputTextarea id="txtObserPrepa"
+                                                         placeholder="Capture las observaciones o sugerencias de preparación"
+                                                         value="#{estabilidadMB.estabilidadSelect.observacionesPreparacion}"
+                                                         rows="3" cols="50" style="margin-bottom: 5px;" 
+                                                         maxlength="300" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel id="lblRegPrep" value="Reglas de Preparación ** : "  class="plabel" />
+                                        <br/>
+                                        <p:inputTextarea id="txtReglaPrepa"
+                                                         placeholder="Capture las instrucciones de preparación."
+                                                         value="#{estabilidadMB.estabilidadSelect.reglasDePreparacion}"
+                                                         rows="3" cols="50" style="margin-bottom: 5px;" 
+                                                         maxlength="1999" />
+                                        <p:tooltip for="txtReglaPrepa" showEffect="clip" hideEffect="fold"
+                                                   value="Ejemplo:Tomar [NO_FRASCOS] frasco(s) de [NOMBRE_FARMACO] y reconstituir cada frasco con [VOLUMEN_RECONST] mL de [DILUYENTE_RECONST] para obtener una concentración de [CONCET_RECONST] [UNI_CONCEN_RECONS]. Del contenedor de la solución [CONTENEDOR_SOLUCION] desplazar el volumen de [VOLUMEN_POR_DESPLAZAR] mL y adicionar el volumen de [DOSIS_CALCULADA] mL de medicamento. Verificar el aforo a [VOLUMEN_TOTAL] mL de volumen final. Mezclar suavemente y sellar sitio de punción del contenedor de la mezcla." position="right"/>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Referencia Bibliográfica : "  />
+                                        <br/>
+                                        <p:inputTextarea id="txtReferBibli"
+                                                         placeholder="Capture las instrucciones de preparación"
+                                                         value="#{estabilidadMB.estabilidadSelect.referenciaBibliografica}"
+                                                         rows="3" cols="50" style="margin-bottom: 5px;" 
+                                                         maxlength="3999" />
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-9">
+                                        <p:outputLabel value="** : Para una correcta definición hay textos fijos que pueden modificarse libremente, pero las siguientes etiquetas son textos que no podrán cambiar, " 
+                                                       style="color: red !important; font-size: 8px !important;" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="   [NOMBRE_FARMACO] : Nombre del medicamento. " style="color: blue !important; font-size: 8px !important; " />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="   [NO_FRASCOS] : Cálculo del número de frascos. " style="color: blue !important; font-size: 8px !important;" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="   [VOLUMEN_RECONST] : Valor del volumen de recostitución capturado en la regla . " style="color: blue !important; font-size: 8px !important;" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="   [DILUYENTE_RECONST] : Nombre del diluyente de reconstitución capturado en la regla . " style="color: blue !important; font-size: 8px !important;" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="   [CONCET_RECONST] : Valor concetració de recostitución capturado en la regla . " style="color: blue !important; font-size: 8px !important;" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="   [DILUYENTE_RECONST] : Nombre del diluyente de reconstitución capturado en la regla . " style="color: blue !important; font-size: 8px !important;" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="   [UNI_CONCEN_RECONS] : Nombre de la unidad de reconstitución capturado en la regla . " style="color: blue !important; font-size: 8px !important;" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="   [CONTENEDOR_SOLUCION] : Nombre del contenedor capturado en la mezcla . " style="color: blue !important; font-size: 8px !important;" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="   [VOLUMEN_POR_DESPLAZAR] : Valor del volumen calculado del residual que debe desecharse de la solución . " style="color: blue !important; font-size: 8px !important;" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="   [DOSIS_CALCULADA] : Valor de la dosis calculada en volumen (mL) del medicamento prescrito en la mezcla . " style="color: blue !important; font-size: 8px !important;" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="   [VOLUMEN_TOTAL] : Valor del volumen (mL) indicado por el médico en la mezcla . " style="color: blue !important; font-size: 8px !important;" />
+                                    </div>
+                                </div>
+                                <ui:remove>
+                                    <div class="ui-g-12" >
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel value="Activa : "  class="plabel" />
+                                            <br/>
+                                            <p:selectOneButton value="#{estabilidadMB.estabilidadSelect.idEstatus}">
+                                                <f:selectItem itemLabel="Si" itemValue="1" />
+                                                <f:selectItem itemLabel="No" itemValue="0" />
+                                            </p:selectOneButton>
+                                        </div>
+                                    </div>
+                                </ui:remove>
+                            </div>
+                            <br />
+                            <div class="ui-g-12" style=" width: 100% !important; /*position: absolute; bottom: 0px;*/ background-color: #f8f8f8; border-top: solid 2px #C8C8C8;  " >
+                                <div class="ui-g-12 ui-md-6 ui-lg-12" style="display: flex; align-content: center; justify-content: space-between; float: right;" >
+                                    <div >
+                                        <p:commandButton id="btnRegCancel1" class="btnItem" value="Cancelar" style="width: 100px" tabindex="12"
+                                                         ajax="true" onclick="PF('mdlNuevaEstabilidad').hide();" 
+                                                         validateClient="false" />&nbsp;&nbsp;
+                                    </div>
+                                    <div >
+                                        <p:commandButton id="btnRegNew1"   styleClass="btnMusAzul"  tabindex="13"
+                                                         value="Guardar" style="margin:0; width: 100px;"  
+                                                         update=":frmConfirmaEstabilidad" 
+                                                         onclick="PF('statusProcess').show();" 
+                                                         actionListener="#{estabilidadMB.validaEstabilidad}"
+                                                         oncomplete="PF('statusProcess').hide();if(args.estatus){ PF('mdlConfirmaEstabilidad').show(); }" />
+                                    </div>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog> 
+
+                    <p:dialog header="Confirmación guardar datos de estabilidad"
+                              widgetVar="mdlConfirmaEstabilidad" 
+                              closeOnEscape="true" modal="true" resizable="false" 
+                              closable="true"
+                              style="font-size:xx-small !important;" width="30%"> 
+                        <h:form id="frmConfirmaEstabilidad">
+                            <p:messages globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <div class="ui-g">
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-12">
+                                        <p:outputLabel value="¿Desea guardar datos de estabilidad ? "  class="plabel" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ui-g-12" style=" width: 100% !important; /*position: absolute; bottom: 0px;*/ background-color: #f8f8f8; border-top: solid 2px #C8C8C8;  " >
+                                <div class="ui-g-12 ui-md-6 ui-lg-6" style="display: flex; align-content: center; justify-content: space-between; float: right;" >
+                                    <div >
+                                        <p:commandButton id="btnCierraConfirm" class="btnItem" value="No" style="width: 100px" tabindex="12"
+                                                         ajax="true" onclick="PF('mdlConfirmaEstabilidad').hide();" 
+                                                         validateClient="false" />&nbsp;&nbsp;
+                                    </div>
+                                    <div >
+                                        <p:commandButton id="btnConfirmGuardar"   styleClass="btnMusAzul"  tabindex="13"
+                                                         value="Si" style="margin:0; width: 100px;"  
+                                                         update=":mainForm:tblEstabilidades , :frmConfirmaEstabilidad " 
+                                                         onclick="PF('statusProcess').show();" 
+                                                         actionListener="#{estabilidadMB.guardaEstabilidad()}"
+                                                         oncomplete="PF('statusProcess').hide();if(args.estatus) { PF('mdlConfirmaEstabilidad').hide(); PF('mdlNuevaEstabilidad').hide();  }" />
+                                    </div>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>
+
+                    <p:dialog header="Datos de Fabricante"
+                              widgetVar="mdlNuevoFabricante" 
+                              closeOnEscape="true" modal="true" resizable="false" 
+                              closable="true"
+                              style="font-size:xx-small !important;" 
+                              width="30%" height="180px" > 
+                        <h:form id="frmNuevoFabricante">
+                            <p:messages globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+
+                            <div class="ui-g">
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Nombre Fabricante * : "  class="plabel" />
+                                        <p:inputText id="txtNombreFabricante"
+                                                     placeholder="Nombre de Fabricante" 
+                                                     value="#{estabilidadMB.fabricante.nombreFabricante}"
+                                                     maxlength="90" size="60" />
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Domicilio  : "  class="plabel" />
+                                        <p:inputText id="txtDomicilio"
+                                                     placeholder="Domicilio Fabricante" 
+                                                     value="#{estabilidadMB.fabricante.domicilio}"
+                                                     maxlength="90" size="60" />
+                                    </div>
+                                </div>    
+                            </div>
+                            <div class="ui-g-12" style=" width: 100% !important; /*position: absolute; bottom: 0px;*/ background-color: #f8f8f8; border-top: solid 2px #C8C8C8;  " >
+                                <div class="ui-g-12 ui-md-6 ui-lg-12" style="display: flex; align-content: center; justify-content: space-between; float: right;" >                                    
+                                    <div >
+                                        <p:commandButton id="btnRegNew1"   styleClass="btnMusAzul"  tabindex="13"
+                                                         value="Guardar" style="margin:0; width: 100px;"  
+                                                         onclick="PF('statusProcess').show();" 
+                                                         actionListener="#{estabilidadMB.guardarFabricante}"
+                                                         oncomplete="PF('statusProcess').hide();if(args.estatus){ PF('mdlNuevoFabricante').hide(); }" />
+                                    </div>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>
+                    <ui:remove>
+                        <p:dialog header="Carga de datos de forma masiva"
+                                  widgetVar="modalLayout"
+                                  closeOnEscape="true" modal="true"
+                                  style="font-size:xx-small !important; ">
+                            <h:form id="frmLayout" style="padding: 0px;">                         
+                                <p:messages id="msjLayout" showDetail="false" globalOnly="false" closable="true" >
+                                    <p:autoUpdate />
+                                </p:messages>
+                                <p:fileUpload  dragDropSupport="false" uploadLabel="Subir Archivo" cancelLabel="Cancelar" label="Seleccione Archivo" 
+                                               allowTypes="/(\.|\/)(xlsx|xls)$/" invalidFileMessage="Tipo de archivo invalido"
+                                               fileUploadListener="# {protocoloOncologicoMB.layoutFileUpload}"  mode="advanced" update="frmLayout"  />
+                                <p:outputPanel rendered="# {protocoloOncologicoMB.continuar}" >
+                                    <p:dataTable  id="tblNoProcessEstructura"
+                                                  var="item" editable="true"  
+                                                  value="# {protocoloOncologicoMB.indicacionLayout}"
+                                                  styleClass="styleEventosPlanPrestacion" reflow="true"
+                                                  style="margin-bottom:5px;" 
+                                                  scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" > 
+
+                                        <f:facet name="header" ><h:outputText style="color: #000;" value="Datos No procesados" /></f:facet>
+
+                                        <p:column style="text-align: left;width: 100px;" sortBy="# {item.idDiagnostico}" headerText="Diagnostico" >
+                                            <h:outputText value="# {item.idDiagnostico}" title="# {item.idDiagnostico}" class="altoColumn" />
+                                        </p:column>
+
+                                        <p:column style="text-align: left;width: 100px;" sortBy="# {item.updateIdUsuario}" headerText="Motivo" >
+                                            <h:outputText value="# {item.updateIdUsuario}" title="# {item.updateIdUsuario}" class="altoColumn" />
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </p:outputPanel>
+                                <p:panel class="pnlActions">
+                                    <p:commandButton class="btnNew" value="Aceptar" style=" margin: 5px 0; " 
+                                                     actionListener="# {protocoloOncologicoMB.actualizarTablaProtocolo}" 
+                                                     onclick="PF('statusProcess').show();"
+                                                     oncomplete="PF('statusProcess').hide(); PF('modalLayout').hide();"
+                                                     ajax="true" update=":mainForm:tblIndicacionTerap" />
+                                </p:panel>
+                            </h:form>
+                        </p:dialog>
+                    </ui:remove>
+                </div>
+            </ui:define>
+            
+            <ui:define name="footer">
+            </ui:define>
+            
+        </ui:composition>        
+    </h:body>
+</html>

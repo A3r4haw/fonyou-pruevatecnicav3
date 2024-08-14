@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.EnvioNeumaticoMapper" >
+ 
+   
+    <insert id="insertNeumaticTable" parameterType="mx.mc.model.EnvioNeumatico" >
+        INSERT INTO envioNeumatico (
+        <if test=" idenvioNeumatico  != null "> idenvioNeumatico, </if>
+        <if test=" idCapsula != null "> idCapsula, </if>
+        <if test=" nombreCap != null "> nombreCap, </if>
+        <if test=" folioSurtimiento != null "> folioSurtimiento, </if>
+        <if test=" folioPrescripcion != null "> folioPrescripcion, </if>
+        <if test=" usuario != null "> usuario, </if>
+        <if test=" fechaHoraSalida != null ">   fechaHoraSalida,  </if>
+        <if test=" estacionSalida != null ">   estacionSalida , </if>
+        <if test=" fechaHoraLlegada != null ">   fechaHoraLlegada , </if>
+        <if test=" estacionLlegada != null ">   estacionLlegada  </if>
+               
+        ) VALUES (
+        
+        <if test=" idenvioNeumatico != null ">#{ idenvioNeumatico , jdbcType = INTEGER }, </if>
+        <if test=" idCapsula != null ">#{ idCapsula , jdbcType = VARCHAR }, </if>
+        <if test=" nombreCap != null ">#{ nombreCap , jdbcType = VARCHAR }, </if>
+        <if test=" folioSurtimiento != null ">#{ folioSurtimiento , jdbcType = VARCHAR }, </if>
+        <if test=" folioPrescripcion != null ">#{ folioPrescripcion , jdbcType = VARCHAR }, </if>
+        <if test=" usuario != null ">#{ usuario , jdbcType = VARCHAR }, </if>
+        <if test=" fechaHoraSalida != null ">#{ fechaHoraSalida , jdbcType = TIMESTAMP },  </if>
+        <if test=" estacionSalida != null ">#{ estacionSalida , jdbcType = VARCHAR },</if>
+        <if test=" fechaHoraLlegada != null ">#{ fechaHoraLlegada , jdbcType = TIMESTAMP },</if>
+        <if test=" estacionLlegada != null ">#{ estacionLlegada , jdbcType = VARCHAR }</if>
+        )
+    </insert>
+   
+   <select id="obtenerCapsulas" resultType="mx.mc.model.EnvioNeumatico" parameterType="Map">
+        SELECT 
+        idenvioNeumatico,
+        idCapsula,
+        folioSurtimiento,
+        usuario,
+        fechaHoraSalida,
+        estacionSalida,
+        fechaHoraLlegada,
+        estacionLlegada 
+        FROM envioNeumatico
+        where 
+        1 = 1
+        <if test="cadenaBusqueda != null">
+            AND (
+            idCapsula LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+    </select>
+    
+    <select id="consultaRepNeumatico" resultType="mx.mc.model.EnvioNeumatico" parameterType="Map">
+        SELECT 
+        idenvioNeumatico,
+        idCapsula,
+        folioSurtimiento,
+        folioPrescripcion,
+        nombreCap,
+        usuario,
+        fechaHoraSalida,
+        estacionSalida,
+        fechaHoraLlegada,
+        estacionLlegada 
+        FROM envioNeumatico 
+        where 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            and fechaHoraSalida between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.listaCapsulas != null ">
+            AND idCapsula IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaCapsulas" open="(" separator="," close=")">
+                #{item.idCapsula}
+            </foreach>
+            
+        </if>
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    <select id="obtenerRepNeumatico" resultType="Long" parameterType="Map">
+        SELECT COUNT(*) AS total FROM envioNeumatico
+        WHERE 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            and fechaHoraSalida between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.listaCapsulas != null ">
+            AND idCapsula IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaCapsulas" open="(" separator="," close=")">
+                #{item.idCapsula}
+            </foreach>
+        </if>
+    </select>
+    
+</mapper>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DevolucionDetalleMapper" >
+	<select id="obtener" resultType="mx.mc.model.DevolucionDetalle" parameterType="mx.mc.model.DevolucionDetalle" >
+        SELECT idDevolucionDetalle, idDevolucion, idInsumo, idInventario, idMotivoDevolucion, cantidad, comentario
+        FROM devolucionDetalle
+        <if test=" idDevolucionDetalle != null "> AND idDevolucionDetalle = #{ idDevolucionDetalle , jdbcType = VARCHAR }</if>
+        <if test=" idDevolucion != null "> AND idDevolucion = #{ idDevolucion , jdbcType = VARCHAR }</if>
+        <if test=" idInsumo != null "> AND idInsumo = #{ idInsumo , jdbcType = VARCHAR }</if>
+        <if test=" idInventario != null "> AND idInventario = #{ idInventario , jdbcType = VARCHAR }</if>
+        <if test=" idMotivoDevolucion != null "> AND idMotivoDevolucion = #{ idMotivoDevolucion , jdbcType = INTEGER }</if>
+        <if test=" cantidad != null "> AND cantidad = #{ cantidad , jdbcType = INTEGER }</if>
+        <if test=" cantidadIngresar != null "> AND cantidadIngresar = #{ cantidadIngresar , jdbcType = INTEGER }</if>
+        <if test=" comentario != null "> AND comentario = #{ comentario, jdbcType = VARCHAR }</if>         
+    </select>
+    
+    <select id="obtenerListDetalleExtended" resultType="mx.mc.model.DevolucionDetalleExtended" parameterType="String" >
+        SELECT 	
+    dd.idDevolucionDetalle,
+    dd.idDevolucion,
+    dd.idInsumo,
+    dd.idInventario,
+    dd.idMotivoDevolucion,
+    dd.cantidad,
+    dd.cantidadIngresar,
+    dd.comentario,
+    me.claveInstitucional,
+    me.nombreCorto,
+    me.factorTransformacion,
+    pm.nombrePresentacion,
+    tm.descripcion AS nombreMotivo,
+    i.lote,
+    i.fechaCaducidad
+FROM
+    devolucionDetalle dd
+		INNER JOIN 
+	inventario i on i.idInventario = dd.idInventario
+        INNER JOIN
+    medicamento me ON dd.idInsumo = me.idMedicamento
+        INNER JOIN
+    presentacionMedicamento pm ON me.idPresentacionEntrada = pm.idPresentacion
+        INNER JOIN
+    tipoMotivo tm ON dd.idMotivoDevolucion = tm.idTipoMotivo
+        WHERE 1 = 1
+        <if test=" idDevolucion != null "> AND idDevolucion = #{ idDevolucion , jdbcType = VARCHAR }</if>         
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.DevolucionDetalle">
+    	INSERT INTO devolucionDetalle (
+    	<if test=" idDevolucionDetalle != null ">idDevolucionDetalle</if>
+    	<if test=" idDevolucion != null "> ,idDevolucion</if>
+    	<if test=" idInsumo != null "> ,idInsumo</if>
+    	<if test=" idInventario != null "> ,idInventario</if>
+    	<if test=" idMotivoDevolucion != null">	,idMotivoDevolucion	</if>
+    	<if test=" cantidad != null "> ,cantidad</if>
+    	<if test=" cantidadIngresar != null "> ,cantidadIngresar</if>
+    	<if test=" comentario != null "> ,comentario</if>
+    	) VALUES (
+    	<if test=" idDevolucionDetalle != null "> #{ idDevolucionDetalle , jdbcType = VARCHAR }</if>
+    	<if test=" idDevolucion != null "> ,#{ idDevolucion , jdbcType = VARCHAR }</if>
+    	<if test=" idInsumo != null ">  ,#{ idInsumo , jdbcType = VARCHAR }</if>
+    	<if test=" idInventario != null "> ,#{ idInventario , jdbcType = VARCHAR }</if>
+    	<if test=" idMotivoDevolucion != null">	,#{ idMotivoDevolucion , jdbcType = INTEGER }	</if>
+    	<if test=" cantidad != null "> ,#{ cantidad , jdbcType = INTEGER }</if>
+    	<if test=" cantidadIngresar != null "> ,#{ cantidadIngresar , jdbcType = INTEGER}</if>
+    	<if test=" comentario != null "> ,#{ comentario , jdbcType = VARCHAR }</if>
+    	)
+    </insert>
+    
+    <delete id="eliminar" parameterType="mx.mc.model.DevolucionDetalle"  >
+        DELETE FROM devolucionDetalle 
+        WHERE idDevolucionDetalle = #{ idDevolucionDetalle , jdbcType = VARCHAR }
+    </delete>
+    
+    <insert id="insertListDevolucionDetalle" parameterType="java.util.List" useGeneratedKeys="false" >
+    	<foreach collection="list" item="item" index="index" separator=";">
+    		INSERT INTO devolucionDetalle(
+    		<if test=" item.idDevolucionDetalle != null "> idDevolucionDetalle</if>
+    		<if test=" item.idDevolucion != null "> ,idDevolucion</if>
+    		<if test=" item.idInsumo != null "> ,idInsumo</if>
+    		<if test=" item.idInventario != null "> ,idInventario</if>
+    		<if test=" item.idMotivoDevolucion != null "> ,idMotivoDevolucion</if>
+    		<if test=" item.cantidad != null "> ,cantidad</if>
+    		<if test=" item.cantidadIngresar != null "> ,cantidadIngresar</if>
+    		<if test=" item.comentario != null "> ,comentario</if>
+    		) VALUES (
+    		<if test=" item.idDevolucionDetalle != null "> #{ item.idDevolucionDetalle, jdbcType = VARCHAR}</if>
+    		<if test=" item.idDevolucion != null "> ,#{ item.idDevolucion, jdbcType = VARCHAR}</if>
+    		<if test=" item.idInsumo != null "> ,#{ item.idInsumo, jdbcType = VARCHAR}</if>
+    		<if test=" item.idInventario != null "> ,#{ item.idInventario, jdbcType = VARCHAR}</if>
+    		<if test=" item.idMotivoDevolucion != null "> ,#{ item.idMotivoDevolucion, jdbcType = INTEGER}</if>
+    		<if test=" item.cantidad != null "> ,#{ item.cantidad, jdbcType = INTEGER}</if>
+    		<if test=" item.cantidadIngresar != null "> ,#{ item.cantidadIngresar, jdbcType = INTEGER}</if>
+    		<if test=" item.comentario != null "> ,#{ item.comentario, jdbcType = VARCHAR}</if>
+    		) 
+    	</foreach>
+    </insert>
+    
+    <update id="actualizarListDetalleDevolucion" parameterType="java.util.List" useGeneratedKeys="false" >
+    	<foreach collection="list" item="item" index="index" separator=";">
+    		UPDATE devolucionDetalle SET 
+    		idMotivoDevolucion = #{ item.idMotivoDevolucion, jdbcType = INTEGER}
+    		<if test=" item.comentario != null ">,comentario = #{ item.comentario, jdbcType = VARCHAR }</if>
+    		<if test=" item.cantidadIngresar != null "> ,cantidadIngresar = #{ item.cantidadIngresar, jdbcType = INTEGER}</if>
+    		WHERE idDevolucionDetalle = #{ item.idDevolucionDetalle, jdbcType = VARCHAR}
+    	</foreach>
+    </update>	
+</mapper>        

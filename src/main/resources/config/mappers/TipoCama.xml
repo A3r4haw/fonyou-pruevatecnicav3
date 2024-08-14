@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TipoCamaMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.TipoCama" parameterType="mx.mc.model.TipoCama" >
+        SELECT idTipoCama , nombreTipoCama , estatus , insertIdUsuario , insertFecha , updateIdUsuario , updateFecha
+        FROM tipoCama
+        WHERE 1=1
+        <if test=" idTipoCama != null ">
+            AND idTipoCama = #{ idTipoCama , jdbcType = INTEGER }
+        </if>
+        <if test=" nombreTipoCama != null ">
+            AND nombreTipoCama = #{ nombreTipoCama , jdbcType = VARCHAR }
+        </if>
+        <if test=" estatus != null ">
+            AND estatus = #{ estatus , jdbcType = INTEGER }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            AND insertIdUsuario = #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertFecha != null ">
+            AND insertFecha = #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            AND updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test="updateFecha != null ">
+        	AND updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.TipoCama" >
+        INSERT INTO tipoCama (
+        <if test=" idTipoCama != null ">
+            idTipoCama
+        </if>
+        <if test=" nombreTipoCama != null ">
+            , nombreTipoCama
+        </if>
+        <if test=" estatus != null ">
+            , estatus
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>        
+        ) VALUES (
+        <if test=" idTipoCama != null ">
+            #{ idTipoCama , jdbcType = INTEGER }
+        </if>
+        <if test=" nombreTipoCama != null ">
+            , #{ nombreTipoCama , jdbcType = VARCHAR }
+        </if>
+        <if test=" estatus != null ">
+            , #{ estatus , jdbcType = INTEGER }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>        
+         <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>       
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.TipoCama" >
+        UPDATE tipoCama SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" nombreTipoCama != null ">
+            , nombreTipoCama = #{ nombreTipoCama , jdbcType = VARCHAR }
+        </if>
+        <if test=" estatus != null ">
+            , estatus = #{ estatus , jdbcType = INTEGER }
+        </if>
+        WHERE idTipoCama = #{ idTipoCama , jdbcType = INTEGER }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.TipoCama"  >
+        DELETE FROM tipoCama 
+        WHERE idTipoCama = #{ idTipoCama , jdbcType = INTEGER }
+    </delete>
+    
+    <select id="obtenerTodo" resultType="mx.mc.model.TipoCama" parameterType="mx.mc.model.TipoCama">
+        SELECT idTipoCama, nombreTipoCama, estatus, insertIdUsuario, insertFecha, updateIdUsuario, updateFecha 
+        FROM tipoCama
+        WHERE 1=1
+    </select>
+    <select id="obtenerPorNombre" resultType="mx.mc.model.TipoCama" parameterType="Map">
+        SELECT idTipoCama, nombreTipoCama, estatus, insertIdUsuario, insertFecha, updateIdUsuario, updateFecha 
+        FROM tipoCama
+        WHERE nombreTipoCama=#{nombre}
+    </select>
+</mapper>

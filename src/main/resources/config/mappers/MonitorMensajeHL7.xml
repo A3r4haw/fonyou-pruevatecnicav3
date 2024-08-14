@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http, jdbcType = VARCHAR//mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.MonitorMensajeHL7Mapper">
+
+	<select id="consultarMensajesHL7" resultType="mx.mc.model.DataResultMensajeHL7" parameterType="Map">
+		SELECT pacienteNumero AS idPaciente, servicio, cama, tipoMensaje, idMensaje, origen, destino, 
+		estatus, fechaRegistro, ingresoMensaje, visita, tipoMedicacion, idMedicacion, claveInstitucional, nombreCorto, 
+                frecuencia, duracion, concentracion, multidosis, aditivo, nombrePaciente FROM cabeceraMensajeHl7
+		WHERE 1 = 1
+		<if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null ">
+			AND fechaRegistro between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+		</if>
+		<if test=" paramBusquedaReporte.numeroPaciente != null and paramBusquedaReporte.numeroPaciente != ''">
+			AND pacienteNumero = #{paramBusquedaReporte.numeroPaciente, jdbcType = VARCHAR}
+		</if>
+		<if test=" paramBusquedaReporte.servicio != null and paramBusquedaReporte.servicio != ''">
+			AND servicio = #{paramBusquedaReporte.servicio, jdbcType = VARCHAR}
+		</if>
+		<if test=" paramBusquedaReporte.cama != null and paramBusquedaReporte.cama != ''">
+			AND cama = #{paramBusquedaReporte.cama, jdbcType = VARCHAR}
+		</if>
+		<if test=" paramBusquedaReporte.listTipoMensaje.size() > 0 "> 
+			AND tipoMensaje IN 
+			<foreach item="item" index="index" collection="paramBusquedaReporte.listTipoMensaje" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "paramBusquedaReporte.ingresoMensaje != null">
+			AND ingresoMensaje = #{paramBusquedaReporte.ingresoMensaje, jdbcType = VARCHAR}
+		</if>
+                ORDER BY fechaRegistro desc
+		LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+	</select>
+	
+	<select id="obtenerTotalRegistros" resultType="Long" parameterType="Map">
+		SELECT COUNT(*) FROM cabeceraMensajeHl7
+		WHERE 1 = 1
+		<if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null ">
+			AND fechaRegistro between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+		</if>
+		<if test=" paramBusquedaReporte.numeroPaciente != null and paramBusquedaReporte.numeroPaciente != ''">
+			AND pacienteNumero = #{paramBusquedaReporte.numeroPaciente, jdbcType = VARCHAR}
+		</if>
+		<if test=" paramBusquedaReporte.servicio != null and paramBusquedaReporte.servicio != ''">
+			AND servicio = #{paramBusquedaReporte.servicio, jdbcType = VARCHAR}
+		</if>
+		<if test=" paramBusquedaReporte.cama != null and paramBusquedaReporte.cama != ''">
+			AND cama = #{paramBusquedaReporte.cama, jdbcType = VARCHAR}
+		</if>
+		<if test=" paramBusquedaReporte.listTipoMensaje.size() > 0 "> 
+			AND tipoMensaje IN 
+			<foreach item="item" index="index" collection="paramBusquedaReporte.listTipoMensaje" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test = "paramBusquedaReporte.ingresoMensaje != null">
+			AND ingresoMensaje = #{paramBusquedaReporte.ingresoMensaje, jdbcType = VARCHAR}
+		</if>
+	</select>
+	
+	<select id="obtenerTiposMensajeHL7" resultType="mx.mc.model.DataResultMensajeHL7" >
+		SELECT DISTINCT tipoMensaje FROM  cabeceraMensajeHl7
+	</select>
+	
+	<select id="obtenerDetalleMensajeHL7" resultType="mx.mc.model.MensajeHL7" parameterType="String">
+		SELECT * FROM mensajesHL7 
+		where 1 = 1
+		<if test= " idMensaje != null ">
+			AND idMensaje = #{idMensaje, jdbcType = VARCHAR}
+		</if>
+	</select>
+	
+	<select id="obtenerIngresosMensaje" resultType="String" >
+		SELECT DISTINCT ingresoMensaje FROM  cabeceraMensajeHl7
+	</select>
+
+</mapper>

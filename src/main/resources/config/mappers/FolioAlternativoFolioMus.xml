@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.FolioAlternativoFolioMusMapper" >
+
+    <select id="obtener" resultType="mx.mc.model.FolioAlternativoFolioMus" parameterType="mx.mc.model.FolioAlternativoFolioMus" >
+        SELECT idFolioAlternativo, folioAlternativo, folioMUS, estatus, insertIdUsuario, updateFecha, updateIdUsuario 
+        FROM folioAlternativoFolioMus
+        WHERE 1 = 1
+        <if test=" idFolioAlternativo != null ">
+            AND idFolioAlternativo = #{ idFolioAlternativo , jdbcType = VARCHAR }
+        </if>
+        <if test=" folioAlternativo != null ">
+            AND folioAlternativo = #{ folioAlternativo , jdbcType = VARCHAR }
+        </if>
+        <if test=" folioMUS != null ">
+            AND folioMUS = #{ folioMUS , jdbcType = VARCHAR }
+        </if>
+        <if test=" estatus != null ">
+            AND estatus = #{ estatus , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertFecha != null ">
+            AND insertFecha = #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            AND insertIdUsuario = #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+        	AND updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+        	AND updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.FolioAlternativoFolioMus" >
+        INSERT INTO folioAlternativoFolioMus (
+        <if test=" idFolioAlternativo != null ">
+            idFolioAlternativo
+        </if>
+        <if test=" folioAlternativo != null ">
+            , folioAlternativo
+        </if>
+        <if test=" folioMUS != null ">
+            , folioMUS
+        </if>
+        <if test=" estatus != null ">
+            , estatus
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , updateIdUsuario
+        </if>
+         ) VALUES (
+        <if test=" idFolioAlternativo != null ">
+            #{ idFolioAlternativo , jdbcType = VARCHAR }
+        </if>
+        <if test=" folioAlternativo != null ">
+            , #{ folioAlternativo , jdbcType = VARCHAR }
+        </if>
+        <if test=" folioMUS != null ">
+            , #{ folioMUS , jdbcType = VARCHAR }
+        </if>
+        <if test=" estatus != null ">
+            , #{ estatus , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if> 
+        )
+    </insert>    
+    
+    <select id="obtenerDetalleReabasto" parameterType="Map" resultType="mx.mc.model.ReabastoInsumoExtended">
+        SELECT ri.idReabastoInsumo, ri.idReabasto, ri.idInsumo, ri.cantidadSolicitada, ri.cantidadSurtida, m.claveInstitucional AS clave, m.nombreCorto AS nombreComercial,
+            m.factorTransformacion, re.cantidadEnviado, ri.idEstatusReabasto, er.nombre, re.loteEnv AS lote, ri.insertFecha, ri.insertIdUsuario, m.tipo AS tipoInsumo,
+            pm.nombrePresentacion
+         FROM reabastoInsumo ri
+                LEFT JOIN reabastoEnviado re ON re.idReabastoInsumo = ri.idReabastoInsumo
+                INNER JOIN medicamento m ON m.idMedicamento = ri.idInsumo
+                INNER JOIN presentacionMedicamento pm ON m.idPresentacionEntrada = pm.idPresentacion
+                INNER JOIN estatusReabasto er ON er.idEstatusReabasto = ri.idEstatusReabasto
+                INNER JOIN folioAlternativoFolioMus fa on ri.idFolioAlternativo = fa.idFolioAlternativo
+         WHERE
+            fa.folioAlternativo = #{ folioAlternativo, jdbcType = VARCHAR};           
+    </select>
+    
+    <update id="actualizar" parameterType="mx.mc.model.FolioAlternativoFolioMus">
+        UPDATE folioAlternativoFolioMus
+        <set>
+            updateFecha = #{updateFecha,jdbcType=TIMESTAMP}
+            ,updateIdUsuario = #{updateIdUsuario,jdbcType=VARCHAR}
+            ,estatus = #{estatus, jdbcType=VARCHAR}
+        </set>        
+        WHERE idFolioAlternativo = #{idFolioAlternativo,jdbcType=VARCHAR}
+    </update>    
+    
+    <select id="obtenerFoliosAlternativos" parameterType="Map" resultType="mx.mc.model.FolioAlternativoFolioMus">
+        SELECT idFolioAlternativo, folioAlternativo, folioMUS, estatus, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM folioAlternativoFolioMus
+        WHERE folioMUS = #{ folioMUS, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtenerFoliosAlternativosExtended" parameterType="Map" resultType="mx.mc.model.FolioAlternativoFolioMusExtended">
+        SELECT 
+            e.nombre as servicio
+            ,fa.idFolioAlternativo
+            ,fa.folioAlternativo
+            ,fa.folioMUS
+            ,fa.estatus
+            ,di.idEstructura
+        FROM    folioAlternativoFolioMus fa
+            INNER JOIN  detalleInsumoSiam di ON di.idFolioAlternativo = fa.idFolioAlternativo
+            INNER JOIN estructura e on e.idEstructura = di.idEstructura
+        WHERE fa.folioMUS = #{ folioMus, jdbcType = VARCHAR} 
+        group by fa.idFolioAlternativo asc;
+    </select>
+    
+    <delete  id="eliminarPorFolio" parameterType="Map">
+        DELETE FROM folioAlternativoFolioMus WHERE  folioMUS = #{ folioMUS, jdbcType = VARCHAR}
+    </delete>
+    
+    <select id="obtenerFolioAlt" parameterType="Map" resultType="mx.mc.model.FolioAlternativoFolioMus">
+        SELECT 
+            f.idFolioAlternativo,
+            f.folioAlternativo,
+            f.folioMUS,
+            f.estatus,
+            f.insertFecha,
+            f.insertIdUsuario
+        FROM    folioAlternativoFolioMus f
+            INNER JOIN    detalleInsumoSiam d ON d.idFolioAlternativo = f.idFolioAlternativo
+        WHERE f.folioMUS = #{ folioMus, jdbcType = VARCHAR}
+            AND d.idEstructura = #{idService, jdbcType = VARCHAR}
+        LIMIT 1; 
+    </select>
+    
+    <update id="actualizarFolioAlt" parameterType="Map">
+        UPDATE folioAlternativoFolioMus f
+            INNER JOIN  detalleInsumoSiam d ON d.idFolioAlternativo = f.idFolioAlternativo
+        <set>
+            <if test="folioAlternativo != null">f.folioAlternativo = #{folioAlternativo, jdbcType = VARCHAR},</if>
+            <if test="estatus != null">f.estatus = #{estatus, jdbcType = VARCHAR},</if>
+            f.updateFecha = now(),
+            f.updateIdUsuario = #{updateIdUsuario, jdbcType = VARCHAR}
+        </set>
+        WHERE f.folioMUS = #{folioMus, jdbcType = VARCHAR} 
+            AND d.idEstructura = #{idService, jdbcType = VARCHAR};
+    </update>
+    
+    <select id="obtenerFolioAlternativoByFolio" parameterType="Map" resultType="mx.mc.model.FolioAlternativoFolioMus">
+        SELECT *
+        FROM  folioAlternativoFolioMus 
+        WHERE folioAlternativo = #{ folioAlternativo, jdbcType = VARCHAR}
+          AND folioMUS != #{ folioMus, jdbcType = VARCHAR}
+        LIMIT 1; 
+    </select>
+    <delete id="eliminarIdFolio" parameterType="Map">
+        DELETE FROM folioAlternativoFolioMus WHERE idFolioAlternativo = #{idFolioAlternativo};
+    </delete>
+    <select id="obtenerTamañoFolioAlternativo" parameterType="Map"  resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM folioAlternativoFolioMus WHERE folioMUS = #{folioMUS};
+    </select>
+</mapper>

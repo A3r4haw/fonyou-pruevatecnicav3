@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Días Festivos</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Días Festivos" style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+                        </div>
+                        <p:panelGrid>
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>                        
+                            <div class="ui-g panelGris" >
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px; font-weight: bolder;" value="Fecha Festiva"
+                                                           rendered="#{diaFestivoMB.permiso.puedeCrear}" />
+                                            <p:calendar id="txtFechaInicio" value="#{diaFestivoMB.fechaFestiva}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                                        mindate="#{diaFestivoMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"
+                                                        rendered="#{diaFestivoMB.permiso.puedeCrear}" />
+
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px; font-weight: bolder;" value="Laborable" 
+                                                           rendered="#{diaFestivoMB.permiso.puedeCrear}" />
+                                            <p:selectOneButton id="esLaboral" value="#{diaFestivoMB.laborable}" rendered="#{diaFestivoMB.permiso.puedeCrear}">
+                                                <f:selectItem itemLabel="SI" itemValue="#{diaFestivoMB.diaActivo}" />
+                                                <f:selectItem itemLabel="NO" itemValue="${diaFestivoMB.diaInactivo}" />                                                
+                                            </p:selectOneButton>
+
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px; font-weight: bolder;" value="Evento" rendered="#{diaFestivoMB.permiso.puedeCrear}" />
+                                            <p:inputTextarea id="evento" value="#{diaFestivoMB.evento}" rows="2" cols="30" rendered="#{diaFestivoMB.permiso.puedeCrear}" />
+                                        </div>
+
+                                         <div class="ui-g-12 ui-md-6 ui-lg-3" style="margin-top: 15px;">
+                                            <p:commandButton value="Agregar"
+                                                             actionListener="#{diaFestivoMB.agregarFestividad()}"
+                                                             update="mainForm,esLaboral,evento,msg" title="Agregar"                                                       
+                                                             icon="fa fa-check-circle"                                                               
+                                                             style="margin-left: 50px; margin-bottom: 5px"
+                                                             styleClass="btnMusAzul"
+                                                             rendered="#{diaFestivoMB.permiso.puedeCrear}"
+                                                             /> 
+                                            <p:commandButton id="btnCancelar" update="mainForm,esLaboral" value="Limpiar" type="reset"
+                                                              process="@this"
+                                                             style="margin-left: 50px"
+                                                             title="Cancelar" icon="ui-icon-trash" 
+                                                             rendered="#{diaFestivoMB.permiso.puedeCrear}" />
+                                        </div>
+                                    </div>                                    
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form>
+                    
+                    <h:form id="formMeses" >
+                        <p:outputLabel value="No tiene permiso de visualización de esta transacción." 
+                               style="font-size: 18px !important; font-weight: bold; color: red;"
+                               rendered="#{!diaFestivoMB.permiso.puedeVer}" /> 
+                        
+                        <p:dataGrid var="festivo" value="#{diaFestivoMB.mesesAnio}" columns="3" layout="grid"
+                                    rows="6" paginator="true" id="cars"                                    
+                                    rowsPerPageTemplate="6,12" 
+                                    rendered="#{diaFestivoMB.permiso.puedeVer}" >
+                            <f:facet name="header">
+                                Meses del Año
+                            </f:facet>
+
+                            <p:panel header="#{festivo.mes}" style="text-align:center;background-color: #f8f9fa" >
+                                <h:panelGrid columns="1" style="width:100%;">
+                                    <p:graphicImage name="#{festivo.urlMes}" library="img" style="width: 200px; height: 100px;" /> 
+                                    
+                                    <p:commandLink update="formMeses:carDetail,formMeses:carDialog" 
+                                                   oncomplete="PF('carDialog').show();PF('statusProcess').hide();" 
+                                                   onclick="PF('statusProcess').show();"
+                                                   title="Ver Días Festivos">
+                                        <h:outputText  class="fa fa-fw fa-leanpub"  style="margin:0 auto;"/>
+                                        <f:setPropertyActionListener value="#{festivo}" target="#{diaFestivoMB.diaFestivoExtendedSelected}" />
+                                    </p:commandLink>
+                                    
+                                </h:panelGrid>
+                            </p:panel>
+
+                        </p:dataGrid>
+                        
+                        <p:dialog header="#{diaFestivoMB.nombreMes}" id="carDialog"
+                                  minWidth="50" showHeader="true" width="70%"
+                                  style="width:50% !important; height:40% !important; top:25% !important; left: 30% !important;"
+                                  widgetVar="carDialog" modal="true" responsive="true" 
+                                  showEffect="fade" hideEffect="fade" resizable="false">
+                            
+                            <p:outputPanel id="carDetail" style="text-align:center;">
+                                <p:dataTable var="dia" id="tableDias" emptyMessage="No se encontraron registros" widgetVar="tableDias" value="#{diaFestivoMB.diasFestivosList}">
+                                    
+                                    <p:column headerText="Fecha" style="text-align: center;width: 15%;">
+                                        <h:outputText value="#{dia.fecha}" style="text-align: center">
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                        </h:outputText>                                        
+                                    </p:column>
+
+                                    <p:column headerText="Laborable" style="width: 15%; text-align: center">
+                                        <h:outputText value="#{dia.laborable eq 1 ? 'SI' : 'NO'}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Evento" style="width: 55%">
+                                        <h:outputText value="#{dia.evento}" style="float: left" />
+                                    </p:column>
+                                    
+                                    <p:column headerText="Acciones" style="width: 15%" >
+                                        <p:commandLink title="Editar"  
+                                                       disabled="#{diaFestivoMB.numeroDia gt dia.numeroDia}"
+                                                       actionListener="#{diaFestivoMB.showDiasFestivo(dia)}" 
+                                                       rendered="#{diaFestivoMB.permiso.puedeVer}"                                                                                                              
+                                                       oncomplete="PF('statusProcess').hide(); PF('carEdtitDay').show();" 
+                                                       onclick="PF('statusProcess').show();"
+                                                       update="formMeses:carDialogDia" >                                            
+                                            
+                                            <i class="fa fa-pencil iconMusAzul"/>
+                                        </p:commandLink> &nbsp;
+                                        
+                                        <p:commandLink title="Eliminar"
+                                                       disabled="#{diaFestivoMB.numeroDia gt dia.numeroDia}"
+                                                       actionListener="#{diaFestivoMB.eliminarDiaFestivo(dia.idDia)}" 
+                                                       rendered="#{diaFestivoMB.permiso.puedeProcesar}" 
+                                                       update="tableDias,mainForm:msg" >                                           
+                                                       <i class="fa fa-trash iconMusRojo"/>                                            
+                                                       
+                                        </p:commandLink>
+                                       
+                                    </p:column>                            
+                                    
+                                </p:dataTable>
+                            </p:outputPanel>
+                        </p:dialog>
+   
+                        <p:dialog header="Editar Día Festivo" id="carDialogDia"                                  
+                                  widgetVar="carEdtitDay" modal="true" responsive="true" height="250" width="300px"
+                                  showEffect="fade" hideEffect="fade" resizable="false">
+                            
+                            <p:messages id="editMsg" globalOnly="false" closable="true" showDetail="false"/>                        
+
+                            
+                                <p:outputLabel style="margin-right: 10px; font-weight: bolder;" value="Fecha" />
+                                
+
+                                <p:calendar id="txtFecha" style="width: 40px" value="#{diaFestivoMB.diaFestivoExtended.fecha}" 
+                                            showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                            mindate="#{diaFestivoMB.fechaActual}" 
+                                            pages="1" mask="true" showButtonPanel="true" effect="fade"/>                                                                                                                                 
+
+                            <br/><br/>
+                            <p:outputLabel  value="Laborable  " style="font-weight: bolder;" />                                
+                                <p:selectOneButton id="esLaboralEdit" value="#{diaFestivoMB.diaFestivoExtended.laborable}">
+                                    <f:selectItem itemLabel="SI" itemValue="1" />
+                                    <f:selectItem itemLabel="NO" itemValue="0" />                                                
+                                </p:selectOneButton>
+                                <br/><br/>
+                                <p:outputLabel style="margin-right: 10px; font-weight: bolder;" value="Evento" />
+                                <br/>
+                                <p:inputTextarea id="eventoEdit" value="#{diaFestivoMB.diaFestivoExtended.evento}" rows="2" cols="30" />
+                                <br/><br/>
+                                <p:commandButton id="cancelar" value="Cancelar" type="cancel"
+                                                 style="margin-left: 50px" styleClass="btnMusRojo"
+                                                 onclick="PF('carEdtitDay').hide();"
+                                                 title="Cancelar" icon="ui-icon-trash"                                                  
+                                                 />
+                                
+                                
+                                <p:commandButton value="Guardar"
+                                                 actionListener="#{diaFestivoMB.editarDiaFestivo()}"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('carEdtitDay').hide();}"
+                                                 update="tableDias,mainForm:msg,editMsg"                                                 
+                                                 icon="fa fa-check-circle"  
+                                                 style="float: right; margin-bottom: 5px"
+                                                 styleClass="btnMusAzul"
+                                                 /> 
+                        </p:dialog>
+                        
+                    </h:form>		
+
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ReenvioMedicamentosMapper" >
+ 
+    <select id="obtenerDatosReenvioMedicamentos" resultType="mx.mc.model.ReenvioMedicamento" parameterType="Map">
+        select distinct 
+        s.idSurtimiento,
+        si.idSurtimientoInsumo,        
+        s.idPrescripcion,
+        s.idEstatusSurtimiento,
+        s.idEstructuraAlmacen, 
+        c.nombreCama as cama,        
+        p.pacienteNumero as numeroPaciente,
+        p.nombreCompleto as paciente,
+        p.apellidoPaterno,
+        p.apellidoMaterno,        
+        pr.folio as prescripcion,        
+        pr.tipoPrescripcion as tipo, 
+        pri.idPrescripcionInsumo,
+        m.claveInstitucional as clave,
+        m.nombreCorto as medicamento,        
+        if(ceil(( (24 / pri.frecuencia ) * (pri.dosis / m.concentracion ))) = 0,1,ceil(( (24 / pri.frecuencia ) * (pri.dosis / m.concentracion )))) as cantidad,
+        pr.fechaFirma,
+        s.fechaProgramada,
+        si.idEstatusSurtimiento
+
+        from surtimiento s
+        INNER JOIN surtimientoInsumo si on si.idSurtimiento = s.idSurtimiento
+        LEFT JOIN surtimientoEnviado se on se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        INNER JOIN prescripcion pr on pr.idPrescripcion = s.idPrescripcion
+        INNER JOIN prescripcionInsumo pri on (pri.idPrescripcion = pr.idPrescripcion and 		si.idPrescripcionInsumo = pri.idPrescripcionInsumo)
+        INNER JOIN medicamento m on m.idMedicamento = pri.idInsumo
+        LEFT JOIN pacienteServicio ps on ps.idPacienteServicio = pr.idPacienteServicio
+        LEFT JOIN visita v on v.idVisita  = ps.idVisita
+
+        LEFT join pacienteUbicacion pu on ps.idPacienteServicio = pu.idPacienteServicio
+        LEFT join cama c on pu.idCama = c.idCama
+        LEFT join paciente p on p.idPaciente = v.idPaciente
+        where
+        1=1
+        and pr.idEstatusPrescripcion in(2,3,5)
+        and si.idEstatusSurtimiento not in(5)
+
+                
+        <if test=" cama != null and cama != '' ">
+            AND c.nombreCama = #{ cama , jdbcType = VARCHAR}
+        </if>
+        
+        <if test=" prescripcion != null and prescripcion != ''">
+            AND  pr.folio = #{ prescripcion , jdbcType = VARCHAR}
+        </if>
+        
+        <if test=" numPaciente != null and numPaciente != ''">
+            AND p.pacienteNumero = #{ numPaciente , jdbcType = VARCHAR}
+        </if>
+        
+        <if test="fechaPrescripcion != null">
+            AND date_format(pr.fechaPrescripcion,"%Y-%m-%d")  = date_format(#{fechaPrescripcion, jdbcType = TIMESTAMP} , "%Y-%m-%d");            
+        </if>
+        
+    </select>
+    
+    <select id="obtenerMotivosReenvio" resultType="mx.mc.model.ReenvioMedicamento" parameterType="Map">
+        select idTipoMotivoReenvio,motivo, estatus from tipoMotivoReenvio
+    </select>
+  
+</mapper>

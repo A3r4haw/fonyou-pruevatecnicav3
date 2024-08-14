@@ -1,0 +1,3459 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http, jdbcType = VARCHAR//mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ReporteMovimientosMapper"> 
+
+    <select id="consultarMovimiento" resultType="mx.mc.model.DataResultReport" parameterType="Map">
+        SELECT distinct 
+        mi.idMovimientoInventario,
+        IF(tmo.tipoMovimiento = 'S',
+        mi.idEstrutcuraOrigen,
+        mi.idEstrutcuraDestino) AS idAlmacen,
+        IF(tmo.tipoMovimiento = 'S',
+        es.nombre,
+        e.nombre) AS nombreAlmacen,
+        tmo.descripcion AS tipoMovimiento,
+        me.claveInstitucional AS claveMedicamento,
+        me.nombreCorto AS nombreMedicamento,            
+        i.lote AS lote,
+        mi.cantidad AS cantidad,
+        mi.folioDocumento AS folio,
+        mi.idUsuarioMovimiento AS idUsuario,
+        u.nombreUsuario AS nombreUsuario,
+        mi.fecha AS fechaMovimiento,
+        i.cantidadXCaja AS cantidadXCaja,
+        IF(mi.fechaCaducidad is null,i.fechaCaducidad,mi.fechaCaducidad) AS fechaCaducidad,
+        i.idTipoOrigen
+            
+        <if test=" paramBusquedaReporte.activaCamposReporteMovimientosGenerales == true "> 
+            ,p.idPrescripcion    
+            ,concat(uu.nombre , " " , uu.apellidoPaterno, " ", uu.apellidoMaterno)  AS medico
+            ,concat(pp.nombreCompleto, " " , pp.apellidoPaterno, " " , pp.apellidoMaterno ) AS paciente            
+            ,p.folio as folioReceta
+            ,tm.descripcion as justificacion
+        </if>
+        FROM
+        movimientoInventario mi
+        INNER JOIN
+        tipoMotivo tm ON mi.idTipoMotivo = tm.idTipoMotivo
+        INNER JOIN
+        tipoMovimiento tmo ON tm.idTipoMovimiento = tmo.idTipoMovimiento
+        INNER JOIN
+        inventario i ON mi.idInventario = i.idInventario
+        INNER JOIN
+        medicamento me ON i.idInsumo = me.idMedicamento
+        LEFT JOIN
+        estructura e ON mi.idEstrutcuraDestino = e.idEstructura
+        LEFT JOIN
+        estructura es ON mi.idEstrutcuraOrigen = es.idEstructura
+        INNER JOIN
+        usuarios u ON mi.idUsuarioMovimiento = u.idUsuario     
+        
+        <if test=" paramBusquedaReporte.activaCamposReporteMovimientosGenerales == true "> 
+
+            LEFT JOIN surtimiento s on mi.folioDocumento = s.folio 
+            LEFT JOIN prescripcion p ON p.idPrescripcion  = s.idPrescripcion                
+          
+            LEFT JOIN
+            usuarios uu ON uu.idUsuario = p.idMedico
+            LEFT JOIN
+            pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+            LEFT JOIN
+            visita v ON v.idVisita = ps.idVisita
+            LEFT JOIN
+            paciente pp ON pp.idPaciente = v.idPaciente
+        </if>    
+        
+        where 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND mi.fecha between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.idTipoMovimientos.size() > 0 "> 
+            AND tmo.idTipoMovimiento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.idTipoMovimientos" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND me.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND mi.idUsuarioMovimiento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>		
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND IF(tmo.tipoMovimiento = 'S' , mi.idEstrutcuraOrigen, mi.idEstrutcuraDestino) = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+        ORDER BY mi.fecha ASC       
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+	
+    </select>
+	
+    <select id="obtenerTotalRegistros" resultType="Long" parameterType="Map">
+        SELECT COUNT(*) AS total FROM 
+        (SELECT DISTINCT mi.idMovimientoInventario, tmo.tipoMovimiento, tmo.descripcion,
+            me.claveInstitucional, me.nombreCorto, i.lote, mi.cantidad, 
+            mi.folioDocumento, mi.idUsuarioMovimiento, u.nombreUsuario, mi.fecha,
+            i.cantidadXCaja, i.fechaCaducidad, i.idTipoOrigen
+        <if test=" paramBusquedaReporte.activaCamposReporteMovimientosGenerales == true "> 
+            , p.folio 
+        </if>    
+        FROM movimientoInventario mi 
+        
+        INNER JOIN         tipoMotivo tm ON mi.idTipoMotivo = tm.idTipoMotivo     
+        INNER JOIN         tipoMovimiento tmo ON tm.idTipoMovimiento = tmo.idTipoMovimiento         
+        INNER JOIN         inventario i ON mi.idInventario = i.idInventario         
+        INNER JOIN         medicamento me ON i.idInsumo = me.idMedicamento         
+        LEFT JOIN         estructura e ON mi.idEstrutcuraDestino = e.idEstructura    
+        LEFT JOIN         estructura es ON mi.idEstrutcuraOrigen = es.idEstructura    
+        INNER JOIN         usuarios u ON mi.idUsuarioMovimiento = u.idUsuario         
+ 
+        <if test=" paramBusquedaReporte.activaCamposReporteMovimientosGenerales == true "> 
+            LEFT JOIN       surtimiento s on mi.folioDocumento = s.folio 
+            LEFT JOIN       prescripcion p ON p.idPrescripcion  = s.idPrescripcion      
+             
+            LEFT JOIN             usuarios uu ON uu.idUsuario = p.idMedico         
+            LEFT JOIN             pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio 
+            LEFT JOIN             visita v ON v.idVisita = ps.idVisita             
+            LEFT JOIN             paciente pp ON pp.idPaciente = v.idPaciente   
+        </if>
+        
+        
+        WHERE 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND mi.fecha between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.idTipoMovimientos.size() > 0 "> 
+            AND tmo.idTipoMovimiento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.idTipoMovimientos" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND me.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND mi.idUsuarioMovimiento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND IF(tmo.tipoMovimiento = 'S' , mi.idEstrutcuraOrigen, mi.idEstrutcuraDestino) = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+        ) as result
+    </select>
+	
+    <select id="consultarInventarioExistencias" resultType="mx.mc.model.ReportInventarioExistencias" parameterType="Map" >
+        SELECT pm.nombrePresentacion, i.cantidadActual,i.idTipoOrigen,tor.nombre as nombreOrigen,i.presentacionComercial, me.claveInstitucional AS claveMedicamento, me.nombreCorto AS nombreMedicamento,i.idInsumo, 
+        i.lote, i.fechaCaducidad
+        , (SELECT DATEDIFF(i.fechaCaducidad,now())) as estatusCaducidad
+        , i.costoUnidosis
+        , i.cantidadActual AS existencias, 
+        comi.cantidadComprometida AS comprometidas
+        , es.nombre AS nombreAlmacen
+        , es.idEstructura  AS idAlmacen,
+        (i.cantidadActual * i.costoUnidosis) AS costeXLote 
+        , i.cantidadXCaja as cantidadXCaja
+        , i.claveProveedor as claveSap,
+        case when i.presentacioncomercial = 0 then i.cantidadActual else 'N/A' end as calculoCajaUnidosis,
+        i.idInventario 
+        FROM inventario i
+        INNER JOIN medicamento me ON i.idInsumo = me.idMedicamento
+        INNER JOIN presentacionMedicamento pm on pm.idPresentacion = i.idPresentacion
+        INNER JOIN estructura es ON i.idEstructura = es.idEstructura
+        LEFT JOIN vwAlmacenInsumoComprometido comi ON i.idInsumo = comi.idInsumo AND i.idEstructura = comi.idEstructuraAlmacen 
+        LEFT JOIN tipoOrigen tor on tor.idTipoOrigen = i.idTipoOrigen
+        WHERE 1= 1
+        AND i.activo = 1
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND me.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND i.idEstructura = #{paramBusquedaReporte.idEstructura, jdbcType = VARCHAR}
+        </if>
+        <if test="paramBusquedaReporte.cantidadCero == null">
+            AND i.cantidadActual  &gt;  0
+        </if>
+        <if test="paramBusquedaReporte.cantidadCero != null">
+            <if test="paramBusquedaReporte.cantidadCero == 0">
+                AND i.cantidadActual  &gt;  0
+            </if>
+            <if test="paramBusquedaReporte.cantidadCero == 1">
+                AND i.cantidadActual  &gt;  -1
+            </if>
+        </if>
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'claveMedicamento'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY claveMedicamento asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY claveMedicamento desc
+                </if>            
+            </if>
+            <if test="sortField == 'nombreMedicamento'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreMedicamento asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreMedicamento desc
+                </if>
+            </if>
+            <if test="sortField == 'nombreAlmacen'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreAlmacen asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreAlmacen desc
+                </if>            
+            </if>
+            <if test="sortField == 'estatusCaducidad'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY estatusCaducidad asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY estatusCaducidad desc
+                </if>            
+            </if>
+        </if>               
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    <select id="consultarInventarioExistenciasGlobal" resultType="mx.mc.model.ReportInventarioExistencias" parameterType="Map" >
+        SELECT pm.nombrePresentacion,me.factorTransformacion, i.cantidadActual,i.idTipoOrigen,tor.nombre as nombreOrigen,i.presentacionComercial, me.claveInstitucional AS claveMedicamento, me.nombreCorto AS nombreMedicamento,i.idInsumo, 
+        i.lote, i.fechaCaducidad,(SELECT DATEDIFF(i.fechaCaducidad,now())) as estatusCaducidad, i.costoUnidosis, i.cantidadActual AS existencias, 
+        comi.cantidadComprometida AS comprometidas,es.nombre AS nombreAlmacen, es.idEstructura  AS idAlmacen,
+        (i.cantidadActual * i.costoUnidosis) AS costeXLote , i.cantidadXCaja as cantidadXCaja, i.claveProveedor as claveSap,
+        i.idInventario , cb.codigoBarras , concentracion
+        FROM inventario i
+        INNER JOIN medicamento me ON i.idInsumo = me.idMedicamento
+        INNER JOIN presentacionMedicamento pm on pm.idPresentacion = i.idPresentacion
+        INNER JOIN estructura es ON i.idEstructura = es.idEstructura
+        LEFT JOIN vwAlmacenInsumoComprometido comi ON (i.idInsumo = comi.idInsumo AND i.idEstructura = comi.idEstructuraAlmacen )
+        LEFT JOIN tipoOrigen tor on tor.idTipoOrigen = i.idTipoOrigen        
+        LEFT JOIN claveProveedorBarras cb ON ( me.claveInstitucional = cb.claveInstitucional AND i.claveProveedor = cb.claveProveedor )
+        WHERE 1= 1 
+        AND i.activo = 1
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND me.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND i.idEstructura = #{paramBusquedaReporte.idEstructura, jdbcType = VARCHAR}
+        </if>
+        
+        <if test="paramBusquedaReporte.cantidadCero == null">
+            AND i.cantidadActual  &gt;  0
+        </if>
+        <if test="paramBusquedaReporte.cantidadCero != null">
+            <if test="paramBusquedaReporte.cantidadCero == 0">
+                AND i.cantidadActual  &gt;  0
+            </if>
+            <if test="paramBusquedaReporte.cantidadCero == 1">
+                AND i.cantidadActual  &gt;  -1
+            </if>
+        </if>
+        
+    </select>
+	
+    <select  id="getTotalRegistrosInventarioExistencias" resultType="Long" parameterType="Map">
+        SELECT count(*)
+        FROM inventario i
+        INNER JOIN medicamento me ON i.idInsumo = me.idMedicamento
+        INNER JOIN presentacionMedicamento pm on pm.idPresentacion = i.idPresentacion
+        INNER JOIN estructura es ON i.idEstructura = es.idEstructura
+        LEFT JOIN vwAlmacenInsumoComprometido comi ON i.idInsumo = comi.idInsumo        
+        LEFT JOIN tipoOrigen tor on tor.idTipoOrigen = i.idTipoOrigen        
+        <!-- Se comenta linea por duplicidad de registros al momento de efectuar la consulta -->
+        <!-- LEFT JOIN vwAlmacenInsumoComprometido come ON es.idEstructura = come.idEstructuraAlmacen -->
+        WHERE i.activo = 1
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND me.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND i.idEstructura = #{paramBusquedaReporte.idEstructura, jdbcType = VARCHAR}
+        </if>
+        <if test="paramBusquedaReporte.cantidadCero == null">
+            AND i.cantidadActual  &gt;  0
+        </if>
+        <if test="paramBusquedaReporte.cantidadCero != null">
+            <if test="paramBusquedaReporte.cantidadCero == 0">
+                AND i.cantidadActual  &gt;  0
+            </if>
+            <if test="paramBusquedaReporte.cantidadCero == 1">
+                AND i.cantidadActual  &gt;  -1
+            </if>
+        </if>
+    </select>
+	
+    <select id="consultarEmisionVales" resultType="mx.mc.model.DataResultVales" parameterType="Map">	
+        select
+        p.folio , p.fechaFirma , 
+        s.folio as folioSurtimiento , s.fechaProgramada ,
+        m.claveInstitucional as claveMedicamento, m.nombreCorto as nombreMedicamento ,
+        s.procesado , se.cantidadEnviado as insumoEnviado , 
+        si.cantidadSolicitada as insumoSolictado , si.cantidadEnviada as insumoCantEnviada, ifnull(si.cantidadVale,0) as cantidadVale, folioVale 
+        from prescripcion p
+        inner join prescripcionInsumo pi on p.idPrescripcion = pi.idPrescripcion
+        inner join surtimiento s on p.idPrescripcion = s.idPrescripcion
+        inner join surtimientoInsumo si on s.idSurtimiento = si.idSurtimiento and pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+        inner join surtimientoEnviado se on si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        inner join medicamento m on pi.idInsumo = m.idMedicamento
+        inner join inventario i on se.idInventarioSurtido = i.idInventario where si.cantidadVale  > 0 and folioVale is not null
+        
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND s.fechaProgramada between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND se.insertIdUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND s.idEstructuraAlmacen = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+                  
+        order by s.fechaProgramada
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+               
+    </select>
+        
+    <select id="obtenerTotalRegistrosVales" resultType="Long" parameterType="Map">
+        SELECT COUNT(*) AS total FROM prescripcion p
+        inner join prescripcionInsumo pi on p.idPrescripcion = pi.idPrescripcion
+        inner join surtimiento s on p.idPrescripcion = s.idPrescripcion
+        inner join surtimientoInsumo si on s.idSurtimiento = si.idSurtimiento and pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+        inner join surtimientoEnviado se on si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        inner join medicamento m on pi.idInsumo = m.idMedicamento
+        inner join inventario i on se.idInventarioSurtido = i.idInventario where si.cantidadVale > 0  and folioVale is not null
+         
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND s.fechaProgramada between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND se.insertIdUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>		
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND s.idEstructuraAlmacen = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <select id="consultarEmisionRecetas" resultType="mx.mc.model.DataResultVales" parameterType="Map">
+        SELECT 
+        p.folio,
+        p.fechaFirma,
+        concat(u.nombre, ' ', u.apellidoPaterno) as medico,
+        CONCAT(pac.nombreCompleto,
+        ' ',
+        pac.apellidoPaterno,
+        ' ',
+        pac.apellidoMaterno) AS paciente,
+        s.folio AS folioSurtimiento,
+        s.fechaProgramada,
+        m.claveInstitucional AS claveMedicamento,
+        m.nombreCorto AS nombreMedicamento,
+        i.lote,
+        i.fechaCaducidad,
+        s.procesado,
+        se.cantidadEnviado AS insumoEnviado,
+        si.cantidadSolicitada AS insumoSolictado,
+        si.cantidadEnviada AS insumoCantEnviada,
+        IFNULL(si.cantidadVale, 0) AS cantidadVale,
+        IFNULL(si.folioVale, '') AS folioVale,
+        i.cantidadXCaja,
+        cg.nombreCatalogo AS cobertura,
+        ep.estatus,
+        tor.nombre AS origen,
+        p.fechaPrescripcion,
+        IF(si.idEstatusSurtimiento = 5,
+        si.fechaCancela,
+        si.fechaEnviada) AS fechaSurtCanc
+        FROM
+        prescripcion p
+        INNER JOIN
+        prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN
+        surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN
+        surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento
+        AND pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+        INNER JOIN
+        surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        INNER JOIN
+        medicamento m ON pi.idInsumo = m.idMedicamento
+        INNER JOIN
+        inventario i ON se.idInventarioSurtido = i.idInventario
+        LEFT JOIN
+        usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN
+        pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+        INNER JOIN
+        visita v ON v.idVisita = ps.idVisita
+        LEFT JOIN
+        paciente pac ON pac.idPaciente = v.idPaciente
+        LEFT JOIN
+        estatusPrescripcion ep ON ep.idEstatusPrescripcion = p.idEstatusPrescripcion
+        LEFT JOIN
+        tipoOrigen tor ON tor.idTipoOrigen = i.idTipoOrigen
+        LEFT JOIN
+        catalogoGeneral cg ON cg.idCatalogoGeneral = pac.idTipoPaciente
+        INNER JOIN 
+        estructura e on e.idEstructura = p.idEstructura
+        WHERE 1=1
+        <!--AND pi.idEstatusPrescripcion = 3
+        AND p.idEstatusPrescripcion = 3-->
+        AND s.idEstatusSurtimiento >= 2
+        AND si.idEstatusSurtimiento >= 2
+        AND se.idEstatusSurtimiento >= 2
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == false "> 
+            AND pi.idEstatusPrescripcion = 3
+        </if>
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == false "> 
+            AND p.idEstatusPrescripcion = 3
+        </if>
+        
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.tipoPrescripcion != null  and paramBusquedaReporte.tipoPrescripcion != ''"> 
+                AND p.tipoPrescripcion = #{paramBusquedaReporte.tipoPrescripcion, jdbcType = VARCHAR}
+            </if>
+        </if>
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.idTipoOrigen != null  and paramBusquedaReporte.idTipoOrigen != ''"> 
+                AND tor.idTipoOrigen = #{paramBusquedaReporte.idTipoOrigen, jdbcType = INTEGER}
+            </if>
+        </if>
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.idEstatusPrescripcion != null  and paramBusquedaReporte.idEstatusPrescripcion != ''"> 
+                AND ep.idEstatusPrescripcion = #{paramBusquedaReporte.idEstatusPrescripcion, jdbcType = INTEGER}
+            </if>
+        </if>
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.idEstatusPrescripcion != null  and paramBusquedaReporte.idEstatusPrescripcion != ''"> 
+                AND p.idEstatusPrescripcion = #{paramBusquedaReporte.idEstatusPrescripcion, jdbcType = INTEGER}
+            </if>
+        </if>
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.pacienteList != null"> 
+                AND pac.idPaciente IN
+                <foreach item="item" index="index" collection="paramBusquedaReporte.pacienteList" open="(" separator="," close=")">
+                    #{item.idPaciente}
+                </foreach>
+            </if>
+        </if>
+                        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == false ">
+            <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+                AND s.fechaProgramada between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+            </if>
+        </if>
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+                AND p.fechaPrescripcion BETWEEN #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+            </if>
+        </if>                
+        
+        <if test=" paramBusquedaReporte.folio != null and paramBusquedaReporte.folio != ''">
+            AND p.folio = #{paramBusquedaReporte.folio, jdbcType = VARCHAR}
+        </if> 
+       
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+       
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND se.insertIdUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+       
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND p.idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+        
+        order by s.fechaProgramada
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        
+        
+    </select>
+    
+    <select id="obtenerTotalRegistrosRecetas" resultType ="Long" parameterType="Map">
+        select count(*) as TOTAL
+        FROM
+        prescripcion p
+        INNER JOIN
+        prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN
+        surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN
+        surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento
+        AND pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+        INNER JOIN
+        surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        INNER JOIN
+        medicamento m ON pi.idInsumo = m.idMedicamento
+        INNER JOIN
+        inventario i ON se.idInventarioSurtido = i.idInventario
+        LEFT JOIN
+        usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN
+        pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+        INNER JOIN
+        visita v ON v.idVisita = ps.idVisita
+        LEFT JOIN
+        paciente pac ON pac.idPaciente = v.idPaciente
+        LEFT JOIN
+        estatusPrescripcion ep ON ep.idEstatusPrescripcion = p.idEstatusPrescripcion
+        LEFT JOIN
+        tipoOrigen tor ON tor.idTipoOrigen = i.idTipoOrigen
+        LEFT JOIN
+        catalogoGeneral cg ON cg.idCatalogoGeneral = pac.idTipoPaciente
+        INNER JOIN 
+        estructura e on e.idEstructura = p.idEstructura
+        WHERE 1=1
+        <!--AND pi.idEstatusPrescripcion = 3
+        AND p.idEstatusPrescripcion = 3-->
+        AND s.idEstatusSurtimiento >= 2
+        AND si.idEstatusSurtimiento >= 2
+        AND se.idEstatusSurtimiento >= 2
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == false "> 
+            AND pi.idEstatusPrescripcion = 3
+        </if>
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == false "> 
+            AND p.idEstatusPrescripcion = 3
+        </if>
+        
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.tipoPrescripcion != null  and paramBusquedaReporte.tipoPrescripcion != ''"> 
+                AND p.tipoPrescripcion = #{paramBusquedaReporte.tipoPrescripcion, jdbcType = VARCHAR}
+            </if>
+        </if>
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.idTipoOrigen != null  and paramBusquedaReporte.idTipoOrigen != ''"> 
+                AND tor.idTipoOrigen = #{paramBusquedaReporte.idTipoOrigen, jdbcType = INTEGER}
+            </if>
+        </if>
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.idEstatusPrescripcion != null  and paramBusquedaReporte.idEstatusPrescripcion != ''"> 
+                AND ep.idEstatusPrescripcion = #{paramBusquedaReporte.idEstatusPrescripcion, jdbcType = INTEGER}
+            </if>
+        </if>
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.idEstatusPrescripcion != null  and paramBusquedaReporte.idEstatusPrescripcion != ''"> 
+                AND p.idEstatusPrescripcion = #{paramBusquedaReporte.idEstatusPrescripcion, jdbcType = INTEGER}
+            </if>
+        </if>
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.pacienteList != null"> 
+                AND pac.idPaciente IN
+                <foreach item="item" index="index" collection="paramBusquedaReporte.pacienteList" open="(" separator="," close=")">
+                    #{item.idPaciente}
+                </foreach>
+            </if>
+        </if>
+                         
+        
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == false ">
+            <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+                AND s.fechaProgramada between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+            </if>
+        </if>
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+                AND p.fechaPrescripcion BETWEEN #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+            </if>
+        </if>
+               
+        <if test=" paramBusquedaReporte.folio != null and paramBusquedaReporte.folio != ''">
+            AND p.folio = #{paramBusquedaReporte.folio, jdbcType = VARCHAR}
+        </if>        
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND se.insertIdUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>	
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND p.idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>       
+    </select>
+    
+    <select id="consultarRecetasColectivas" resultType="mx.mc.model.DataResultVales" parameterType="Map">
+        SELECT DISTINCT
+        r.folio,
+        r.fechaSolicitud AS fechaFirma,
+        mi.folioDocumento AS folioSurtimiento,
+        e.nombre AS paciente,
+        i.lote,
+        i.fechaCaducidad,
+        m.claveInstitucional AS claveMedicamento,
+        m.nombreCorto AS nombreMedicamento,
+        u.nombreUsuario,
+        ri.cantidadSurtida,
+        re.cantidadEnviado AS insumoCantEnviada,
+        ri.cantidadSolicitada AS insumoSolictado,
+        re.cantidadEnviado AS insumoEnviado,
+        i.cantidadXCaja,
+        tor.nombre AS origen,
+        mi.fecha AS fechaSurtCanc
+        FROM
+        reabasto r
+        INNER JOIN
+        reabastoInsumo ri ON r.idReabasto = ri.idReabasto
+        INNER JOIN
+        reabastoEnviado re ON ri.idReabastoInsumo = re.idReabastoInsumo
+        INNER JOIN
+        medicamento m ON ri.idInsumo = m.idMedicamento
+        LEFT JOIN
+        inventario i ON re.idInventarioSurtido = i.idInventario
+        INNER JOIN
+        movimientoInventario mi ON r.folio = mi.folioDocumento
+        INNER JOIN
+        estructura e ON r.idEstructura = e.idEstructura
+        LEFT JOIN
+        tipoOrigen tor ON i.idTipoOrigen = tor.idTipoOrigen
+        INNER JOIN
+        usuarios u ON r.idUsuarioSolicitud = u.idUsuario       
+        WHERE
+        1 = 1
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND r.idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>  
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.idTipoOrigen != null  and paramBusquedaReporte.idTipoOrigen != ''"> 
+                AND tor.idTipoOrigen = #{paramBusquedaReporte.idTipoOrigen, jdbcType = INTEGER}
+            </if>
+        </if>    
+                                            
+
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND r.fechaSolicitud between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>                               
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND re.insertIdUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>	
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        
+    </select>
+    
+    
+    
+    <select id="obtenerTotalReceColectivas" resultType ="Long" parameterType="Map">
+        SELECT 
+        COUNT(*) AS total
+        FROM
+        (SELECT DISTINCT
+        r.folio,
+        r.fechaSolicitud AS fechaFirma,
+        mi.folioDocumento AS folioSurtimiento,
+        e.nombre AS paciente,
+        i.lote,
+        i.fechaCaducidad,
+        m.claveInstitucional AS claveMedicamento,
+        m.nombreCorto AS nombreMedicamento,
+        u.nombreUsuario,
+        ri.cantidadSurtida,
+        re.cantidadEnviado AS insumoCantEnviada,
+        ri.cantidadSolicitada AS insumoSolictado,
+        re.cantidadEnviado AS insumoEnviado,
+        i.cantidadXCaja,
+        tor.nombre AS origen,
+        mi.fecha AS fechaSurtCanc
+        FROM
+        reabasto r
+        INNER JOIN reabastoInsumo ri ON r.idReabasto = ri.idReabasto
+        INNER JOIN reabastoEnviado re ON ri.idReabastoInsumo = re.idReabastoInsumo
+        INNER JOIN medicamento m ON ri.idInsumo = m.idMedicamento
+        LEFT JOIN inventario i ON re.idInventarioSurtido = i.idInventario
+        INNER JOIN movimientoInventario mi ON r.folio = mi.folioDocumento
+        INNER JOIN estructura e ON r.idEstructura = e.idEstructura
+        LEFT JOIN tipoOrigen tor ON i.idTipoOrigen = tor.idTipoOrigen
+        INNER JOIN usuarios u ON r.idUsuarioSolicitud = u.idUsuario
+        
+        
+        
+        WHERE
+        1 = 1 
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND r.idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>  
+        
+        
+        <if test=" paramBusquedaReporte.activaCamposRepEmisionRecetas == true ">
+            <if test=" paramBusquedaReporte.idTipoOrigen != null  and paramBusquedaReporte.idTipoOrigen != ''"> 
+                AND tor.idTipoOrigen = #{paramBusquedaReporte.idTipoOrigen, jdbcType = INTEGER}
+            </if>
+        </if>        
+        
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND r.fechaSolicitud between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>    
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND re.insertIdUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>	
+        
+        
+        ) AS t
+        
+        
+    </select>
+    
+    <select id="consultarCancelaciones" resultType="mx.mc.model.DataResultVales" parameterType="Map">
+        SELECT 
+        p.folio,    
+        p.fechaFirma,   
+        r.fechaEnvio,
+        IFNULL(r.mensaje, '') AS mensaje,
+        IFNULL(r.codigo, '') AS codigo    
+        FROM
+        prescripcion p
+        INNER JOIN
+        surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        LEFT JOIN
+        respuestaConsumo r ON p.folio = r.idrespuestaConsumo
+        WHERE
+        p.idEstatusPrescripcion = 4
+        AND s.idEstatusSurtimiento = 5
+
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND s.fechaProgramada between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.folio != null and paramBusquedaReporte.folio != ''">
+            AND p.folio = #{paramBusquedaReporte.folio, jdbcType = VARCHAR}
+        </if>                
+       
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND s.idEstructuraAlmacen = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>        
+        order by s.fechaProgramada
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}        
+    </select>
+    
+    <select id="obtenerTotalCancelaciones" resultType ="Long" parameterType="Map">
+        SELECT COUNT(*) AS TOTAL
+        FROM
+        prescripcion p
+        INNER JOIN
+        surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        LEFT JOIN
+        respuestaConsumo r ON p.folio = r.idrespuestaConsumo
+        WHERE
+        p.idEstatusPrescripcion = 4
+        AND s.idEstatusSurtimiento = 5
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND s.fechaProgramada between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+               
+        <if test=" paramBusquedaReporte.folio != null and paramBusquedaReporte.folio != ''">
+            AND p.folio = #{paramBusquedaReporte.folio, jdbcType = VARCHAR}
+        </if>        
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND se.insertIdUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>	
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND s.idEstructuraAlmacen = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>       
+    </select>    
+    <select id="rptConsultarAlmacenes" resultType="mx.mc.model.DataResultAlmacenes" parameterType="Map">
+        SELECT     
+        <!--mi.fecha  as fechaSolicitada,-->
+        ed.nombre AS estructuraOrigen ,
+        eo.nombre AS estructuraDestino ,
+        ei.nombre AS estructuraInventario,
+        mi.folioDocumento as folio,
+        tmv.descripcion AS descripcionMovimiento,
+        tm.descripcion AS descripcionMotivo,
+        m.nombreCorto  as nombreMedicamento,
+        m.claveInstitucional  as claveMedicamento,
+        i.fechaCaducidad,
+        i.lote,
+        mi.fecha as fechaSurtida,
+        mi.idUsuarioMovimiento as idUsuarioSolicita,
+        u.nombre,
+        mi.cantidad as cantidad
+        
+        FROM movimientoInventario mi
+        INNER JOIN	estructura eo ON eo.idEstructura = mi.idEstrutcuraOrigen
+        INNER JOIN	estructura ed ON ed.idEstructura = mi.idEstrutcuraDestino
+        INNER JOIN	inventario i ON i.idInventario = mi.idInventario
+        INNER JOIN	estructura ei ON ei.idEstructura = i.idEstructura
+        INNER JOIN	medicamento m ON m.idMedicamento = i.idInsumo
+        INNER JOIN	usuarios u ON u.idUsuario = mi.idUsuarioMovimiento
+        INNER JOIN	tipoMotivo tm ON tm.idTipoMotivo = mi.idTipoMotivo
+        INNER JOIN  tipoMovimiento tmv ON tmv.idTipoMovimiento = tm.idTipoMovimiento
+        WHERE 1=1
+ 
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND mi.fecha between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND u.idUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND (ed.idEstructura = #{paramBusquedaReporte.idEstructura, jdbcType = VARCHAR} 
+            OR
+            eo.idEstructura = #{paramBusquedaReporte.idEstructura, jdbcType = VARCHAR})
+        </if>               
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        
+    </select>
+    <select id="consultarAlmacenes" resultType="mx.mc.model.DataResultAlmacenes" parameterType="Map">
+        select distinct  		
+        tmv.descripcion as descripcionMovimiento,
+        tm.descripcion as descripcionMotivo,
+        p.folio ,
+        me.claveInstitucional as claveMedicamento,
+        me.nombreCorto as nombreMedicamento,
+        i.lote,
+        i.fechaCaducidad,       
+        si.cantidadSolicitada as insumoSolictado,
+        si.insertFecha as fechaSolicitada ,
+        si.insertIdUsuario as idUsuarioSolicita,
+        se.cantidadEnviado ,
+        e.nombre as estructura,
+        se.insertFecha as fechaSurtida,
+        se.insertIdUsuario as idUsuarioSurte,
+        se.cantidadRecibido as cantidadRecibida,
+        se.updateFecha as fechaRecibida,
+        se.insertIdUsuario as idUsuarioRecibe,
+        '' as cantidadIngresada ,
+        null as fechaIngresada ,
+        '' AS idUsuarioIngresa 
+        from surtimiento s
+        inner join prescripcion p on s.idPrescripcion = p.idPrescripcion
+        inner join prescripcionInsumo pi on p.idPrescripcion = pi.idPrescripcion
+        inner join surtimientoInsumo si on (s.idSurtimiento = si.idSurtimiento and pi.idPrescripcionInsumo = si.idPrescripcionInsumo)
+        inner join medicamento me on pi.idInsumo = me.idMedicamento
+        inner join surtimientoEnviado se on si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        inner join inventario i on se.idInventarioSurtido = i.idInventario
+        
+        inner join movimientoInventario mi on i.idInventario = mi.idInventario
+        and mi.folioDocumento = s.folio
+        inner join tipoMotivo tm on tm.idTipoMotivo = mi.idTipoMotivo
+        inner join tipoMovimiento tmv on tmv.idTipoMovimiento = tm.idTipoMovimiento
+        inner join estructura e on mi.idEstrutcuraOrigen = e.idEstructura
+        
+        
+
+        where 1=1
+ 
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND se.insertFecha between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND se.insertIdUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND me.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND i.idEstructura = #{paramBusquedaReporte.idEstructura, jdbcType = VARCHAR}
+        </if>               
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        
+        union
+
+        select distinct 
+        tmv.descripcion as descripcionMovimiento,        
+        tm.descripcion as descripcionMotivo,
+        r.folio ,
+        me.claveInstitucional as claveMedicamento,
+        me.nombreCorto as nombreMedicamento,
+        re.loteEnv as lote,
+        re.fechaCad as fechaCaducidad,        
+        ri.cantidadSolicitada as insumoSolictado,
+        ri.insertFecha as fechaSolicitada ,
+        ri.insertIdUsuario as idUsuarioSolicita ,
+        re.cantidadEnviado ,
+        e.nombre as estructura,
+        re.insertFecha as fechaSurtida ,
+        re.insertIdUsuario as idUsuarioSurte ,
+        re.cantidadRecibida ,
+        re.updateFecha as fechaRecibida ,
+        re.insertIdUsuario as idUsuarioRecibe  ,
+        re.cantidadIngresada  ,
+        re.updateFecha as fechaIngresada ,
+        re.insertIdUsuario as idUsuarioIngresa 
+        from reabasto r
+        inner join reabastoInsumo ri on r.idReabasto = ri.idReabasto
+        inner join medicamento me on ri.idInsumo = me.idMedicamento
+        inner join reabastoEnviado re on ri.idReabastoInsumo = re.idReabastoInsumo
+		
+        inner join movimientoInventario mi on re.idInventarioSurtido = mi.idInventario
+        and mi.folioDocumento = r.folio
+        inner join tipoMotivo tm on tm.idTipoMotivo = mi.idTipoMotivo
+        inner join tipoMovimiento tmv on tmv.idTipoMovimiento = tm.idTipoMovimiento
+        inner join estructura e on mi.idEstrutcuraOrigen = e.idEstructura
+
+        where 1=1
+
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND re.insertFecha between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND re.insertIdUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND me.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND re.idEstructura = #{paramBusquedaReporte.idEstructura, jdbcType = VARCHAR}
+        </if>                         
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+
+    </select>
+    
+    <select id="obtenerTotalAlmacenes" resultType ="Long" parameterType="Map">
+        select  count(*) as total from (
+        select distinct  		
+        tmv.descripcion as descripcionMovimiento,
+        tm.descripcion as descripcionMotivo,
+        p.folio ,
+        me.claveInstitucional as claveMedicamento,
+        me.nombreCorto as nombreMedicamento,
+        i.lote,
+        i.fechaCaducidad,                
+        si.cantidadSolicitada as insumoSolictado,
+        si.insertFecha as fechaSolicitada ,
+        si.insertIdUsuario as idUsuarioSolicita,
+        se.cantidadEnviado ,
+        e.nombre as estructura,
+        se.insertFecha as fechaSurtida,
+        se.insertIdUsuario as idUsuarioSurte,
+        se.cantidadRecibido as cantidadRecibida,
+        se.updateFecha as fechaRecibida,
+        se.insertIdUsuario as idUsuarioRecibe,
+        '' as cantidadIngresada ,
+        null as fechaIngresada ,
+        '' AS idUsuarioIngresa 
+        from surtimiento s
+        inner join prescripcion p on s.idPrescripcion = p.idPrescripcion
+        inner join prescripcionInsumo pi on p.idPrescripcion = pi.idPrescripcion
+        inner join surtimientoInsumo si on (s.idSurtimiento = si.idSurtimiento and pi.idPrescripcionInsumo = si.idPrescripcionInsumo)
+        inner join medicamento me on pi.idInsumo = me.idMedicamento
+        inner join surtimientoEnviado se on si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        inner join inventario i on se.idInventarioSurtido = i.idInventario
+        
+        inner join movimientoInventario mi on i.idInventario = mi.idInventario
+        and mi.folioDocumento = s.folio
+        inner join tipoMotivo tm on tm.idTipoMotivo = mi.idTipoMotivo
+        inner join tipoMovimiento tmv on tmv.idTipoMovimiento = tm.idTipoMovimiento
+        inner join estructura e on mi.idEstrutcuraOrigen = e.idEstructura
+        
+        
+
+        where 1=1
+
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND se.insertFecha between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND se.insertIdUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND me.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND i.idEstructura = #{paramBusquedaReporte.idEstructura, jdbcType = VARCHAR}
+        </if>               
+        
+ 
+
+        union
+        select distinct  		
+        tmv.descripcion as descripcionMovimiento,        
+        tm.descripcion as descripcionMotivo,
+        r.folio ,
+        me.claveInstitucional as claveMedicamento,
+        me.nombreCorto as nombreMedicamento,
+        re.loteEnv as lote,
+        re.fechaCad as fechaCaducidad,        
+        ri.cantidadSolicitada as insumoSolictado,
+        ri.insertFecha as fechaSolicitada ,
+        ri.insertIdUsuario as idUsuarioSolicita ,
+        re.cantidadEnviado ,
+        e.nombre as estructura,
+        re.insertFecha as fechaSurtida ,
+        re.insertIdUsuario as idUsuarioSurte ,
+        re.cantidadRecibida ,
+        re.updateFecha as fechaRecibida ,
+        re.insertIdUsuario as idUsuarioRecibe  ,
+        re.cantidadIngresada  ,
+        re.updateFecha as fechaIngresada ,
+        re.insertIdUsuario as idUsuarioIngresa 
+        from reabasto r
+        inner join reabastoInsumo ri on r.idReabasto = ri.idReabasto
+        inner join medicamento me on ri.idInsumo = me.idMedicamento
+        inner join reabastoEnviado re on ri.idReabastoInsumo = re.idReabastoInsumo
+		
+        inner join movimientoInventario mi on re.idInventarioSurtido = mi.idInventario
+        and mi.folioDocumento = r.folio
+        inner join tipoMotivo tm on tm.idTipoMotivo = mi.idTipoMotivo
+        inner join tipoMovimiento tmv on tmv.idTipoMovimiento = tm.idTipoMovimiento
+        inner join estructura e on mi.idEstrutcuraOrigen = e.idEstructura
+
+        where 1=1
+
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND re.insertFecha between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND re.insertIdUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND me.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND re.idEstructura = #{paramBusquedaReporte.idEstructura, jdbcType = VARCHAR}
+        </if>               
+        
+
+        ) s1
+    </select>
+    
+    <select id="rptObtenerTotalAlmacenes" resultType ="Long" parameterType="Map">
+        SELECT     
+        count(*) as total
+        FROM movimientoInventario mi
+        INNER JOIN	estructura eo ON eo.idEstructura = mi.idEstrutcuraOrigen
+        INNER JOIN	estructura ed ON ed.idEstructura = mi.idEstrutcuraDestino
+        INNER JOIN	inventario i ON i.idInventario = mi.idInventario
+        INNER JOIN	estructura ei ON ei.idEstructura = i.idEstructura
+        INNER JOIN	medicamento m ON m.idMedicamento = i.idInsumo
+        INNER JOIN	usuarios u ON u.idUsuario = mi.idUsuarioMovimiento
+        INNER JOIN	tipoMotivo tm ON tm.idTipoMotivo = mi.idTipoMotivo
+        INNER JOIN  tipoMovimiento tmv ON tmv.idTipoMovimiento = tm.idTipoMovimiento
+        WHERE 1=1
+ 
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND mi.fecha between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND u.idUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND (ed.idEstructura = #{paramBusquedaReporte.idEstructura, jdbcType = VARCHAR}
+            OR
+            eo.idEstructura = #{paramBusquedaReporte.idEstructura, jdbcType = VARCHAR})
+        </if>               
+        
+    </select>
+    <select id="listInsumosInventarioAlmacen" resultType="mx.mc.model.ReportInventarioExistencias" parameterType="Map" >
+        SELECT 
+        i.idInventario,
+        m.claveInstitucional as claveMedicamento,
+        m.nombreCorto as nombreMedicamento,
+        m.idPresentacionSalida,
+        i.lote,
+        i.fechaCaducidad,
+        i.cantidadActual
+        FROM
+        inventario i
+        INNER JOIN
+        medicamento m ON m.idMedicamento = i.idInsumo
+        where i.idEstructura=#{idEstructura, jdbcType = VARCHAR }
+        and (CASE 
+        WHEN UPPER (#{ cadena , jdbcType = VARCHAR }) REGEXP '^[A-Z]'> 0 THEN ( m.nombreCorto like '%${ cadena }%' )
+        ELSE   m.claveInstitucional = #{ cadena , jdbcType = VARCHAR } 
+        END)
+    </select>
+    
+    <select id="consultarAcumulados" resultType="mx.mc.model.DataResultReport" parameterType="Map">
+        SELECT DISTINCT claveInstitucional AS claveMedicamento,
+        nombreCorto as nombreMedicamento,
+        SUM(cantidadEnviada) AS cantidadEnviada,
+        tipo,lote,cantidadActual,
+        fechaCaducidad,
+        idTipoOrigen  
+        from (
+        SELECT DISTINCT
+        'individual' AS receta,
+        1 AS tipoReceta,
+        m.claveInstitucional,
+        m.nombreCorto,
+        SUM(si.cantidadEnviada) AS cantidadEnviada,
+        m.tipo,
+        i.lote,
+        i.cantidadActual,
+        i.fechaCaducidad,
+        i.idTipoOrigen
+        from  prescripcion p
+        inner join prescripcionInsumo pi on p.idPrescripcion = pi.idPrescripcion
+        inner join medicamento m on pi.idInsumo = m.idMedicamento
+        inner join surtimiento s on p.idPrescripcion = s.idPrescripcion
+        inner join surtimientoInsumo si on (s.idSurtimiento = si.idSurtimiento and pi.idPrescripcionInsumo = si.idPrescripcionInsumo)
+        inner join surtimientoEnviado se on si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        inner join inventario i on se.idInventarioSurtido = i.idInventario
+        where 
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            si.fechaEnviada between  #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND p.idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+        
+        <if test=" paramBusquedaReporte.tipoReceta != null ">
+            and p.folio like '${paramBusquedaReporte.tipoReceta}%'
+        </if>    
+    
+        group by m.claveInstitucional , m.nombreCorto , i.lote
+         
+        UNION ALL
+          
+        SELECT distinct
+        'colectiva' AS receta,
+        0 AS tipoReceta,
+        m.claveInstitucional,
+        m.nombreCorto,
+        SUM(ri.cantidadSurtida) AS cantidadEnviada,
+        m.tipo,
+        i.lote,
+        i.cantidadActual,
+        i.fechaCaducidad,
+        i.idTipoOrigen
+        from reabasto r 
+        inner join reabastoInsumo ri on r.idReabasto = ri.IdReabasto
+        inner join reabastoEnviado re on ri.idReabastoInsumo = re.IdReabastoInsumo
+        inner join inventario i on re.idInventarioSurtido = i.idInventario
+        inner join medicamento m on ri.idInsumo = m.idMedicamento
+        where 
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            r.fechaSurtida between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            and r.idEstructuraPadre = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+        and r.idMedico is not null
+        
+        group by m.claveInstitucional , m.nombreCorto 
+        ) AS s1
+        where 1 = 1
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            s1.claveInstitucional IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.claveInstitucional}
+            </foreach>
+        </if>        
+        
+        <if test=" paramBusquedaReporte.idTipoOrigen != null ">
+            and s1.idTipoOrigen = #{ paramBusquedaReporte.idTipoOrigen , jdbcType = INTEGER }
+        </if>
+        
+        <if test=" paramBusquedaReporte.tipoInsumo != 0 ">
+            and s1.tipo= #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER }
+        </if>                
+        
+        <if test=" paramBusquedaReporte.valTipoReceta != null ">
+            and s1.tipoReceta = #{ paramBusquedaReporte.valTipoReceta , jdbcType = INTEGER }
+        </if>
+        
+        group by claveInstitucional , nombreCorto, lote 
+        order by s1.claveInstitucional ASC
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    <select id="obtenerTotalAcumulados" resultType="Long" parameterType="Map">
+        select  count(*) as total from (
+        SELECT DISTINCT
+        claveInstitucional,
+        nombreCorto,
+        SUM(cantidadEnviada) AS cantidadEnviada,
+        tipo,lote,cantidadActual,
+        fechaCaducidad,         
+        idTipoOrigen
+        FROM
+        (
+        SELECT DISTINCT
+        'individual' AS receta,
+        1 AS tipoReceta,
+        m.claveInstitucional,
+        m.nombreCorto,
+        SUM(si.cantidadEnviada) AS cantidadEnviada,
+        m.tipo,
+        i.lote,
+        i.cantidadActual,
+        i.fechaCaducidad,
+        i.idTipoOrigen
+        FROM
+        prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN medicamento m ON pi.idInsumo = m.idMedicamento
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON (s.idSurtimiento = si.idSurtimiento
+        AND pi.idPrescripcionInsumo = si.idPrescripcionInsumo)
+        INNER JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        INNER JOIN inventario i ON se.idInventarioSurtido = i.idInventario
+        WHERE 1 = 1
+        
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND si.fechaEnviada between  #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND p.idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+        
+        <if test=" paramBusquedaReporte.tipoReceta != null ">
+            and p.folio like '${paramBusquedaReporte.tipoReceta}%'
+        </if>               
+        
+        GROUP BY m.claveInstitucional , m.nombreCorto,i.lote 
+    
+        UNION ALL
+    
+        SELECT distinct
+        'colectiva' AS receta,
+        0 AS tipoReceta,
+        m.claveInstitucional,
+        m.nombreCorto,
+        SUM(ri.cantidadSurtida) AS cantidadEnviada,
+        m.tipo,
+        i.lote,
+        i.cantidadActual,
+        i.fechaCaducidad,
+        i.idTipoOrigen
+        FROM
+        reabasto r
+        INNER JOIN reabastoInsumo ri ON r.idReabasto = ri.IdReabasto
+        INNER JOIN reabastoEnviado re ON ri.idReabastoInsumo = re.IdReabastoInsumo
+        INNER JOIN inventario i ON re.idInventarioSurtido = i.idInventario
+        INNER JOIN medicamento m ON ri.idInsumo = m.idMedicamento
+        WHERE 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND r.fechaSurtida between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            and r.idEstructuraPadre = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+        and r.idMedico is not null
+        
+        GROUP BY m.claveInstitucional , m.nombreCorto, i.lote) AS s1
+        WHERE 1 = 1
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            and s1.claveInstitucional IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.claveInstitucional}
+            </foreach>
+        </if>   
+        
+        <if test=" paramBusquedaReporte.idTipoOrigen != null ">
+            and s1.idTipoOrigen = #{ paramBusquedaReporte.idTipoOrigen , jdbcType = INTEGER }
+        </if>
+        
+        <if test=" paramBusquedaReporte.tipoInsumo != 0 ">
+            and s1.tipo= #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER }
+        </if>   
+        
+        <if test=" paramBusquedaReporte.valTipoReceta != null ">
+            and s1.tipoReceta = #{ paramBusquedaReporte.valTipoReceta , jdbcType = INTEGER }
+        </if>   
+        
+        GROUP BY claveInstitucional , nombreCorto,lote
+        ORDER BY s1.claveInstitucional ASC) as total
+
+    </select>
+    
+    
+    <select id="consultarAcumuladosMedico" resultType="mx.mc.model.DataResultReport" parameterType="Map">
+        SELECT 
+        claveInstitucional AS claveMedicamento,
+        nombreCorto AS nombreMedicamento,
+        SUM(cantidadEnviada) AS cantidadSurtida,
+        nombreUsuario AS medico,
+        idMedico,
+        tipo,
+        lote,
+        idTipoOrigen,
+        fechaCaducidad
+        FROM
+        (
+        SELECT DISTINCT
+        'individual' AS receta,
+        1 AS tipoReceta,
+        m.claveInstitucional,
+        m.nombreCorto,
+        SUM(si.cantidadEnviada) AS cantidadEnviada,
+        CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS nombreUsuario,
+        p.idMedico,
+        m.tipo,
+        i.lote,
+        i.idTipoOrigen,
+        i.fechaCaducidad
+        FROM
+        prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN medicamento m ON pi.idInsumo = m.idMedicamento
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON (s.idSurtimiento = si.idSurtimiento
+        AND pi.idPrescripcionInsumo = si.idPrescripcionInsumo)
+        INNER JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        INNER JOIN inventario i ON se.idInventarioSurtido = i.idInventario
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        WHERE
+        
+        
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            si.fechaEnviada between  #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if> 
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND p.idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+        
+        <if test=" paramBusquedaReporte.tipoReceta != null ">
+            and p.folio like '${paramBusquedaReporte.tipoReceta}%'
+        </if>   
+        
+        <if test=" paramBusquedaReporte.idMedico != null ">
+            and p.idMedico = #{ paramBusquedaReporte.idMedico , jdbcType = VARCHAR }
+        </if>
+    
+        GROUP BY m.claveInstitucional , m.nombreCorto , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) 
+    
+        UNION ALL 
+    
+        SELECT DISTINCT
+        'colectiva' AS receta,
+        0 AS tipoReceta,
+        m.claveInstitucional,
+        m.nombreCorto,
+        SUM(ri.cantidadSurtida) AS cantidadSurtida,
+        CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS nombreUsuario,
+        r.idMedico,
+        m.tipo,
+        i.lote,
+        i.idTipoOrigen,
+        i.fechaCaducidad
+        FROM
+        reabasto r
+        INNER JOIN reabastoInsumo ri ON r.idReabasto = ri.IdReabasto
+        INNER JOIN reabastoEnviado re ON ri.idReabastoInsumo = re.IdReabastoInsumo
+        INNER JOIN inventario i ON re.idInventarioSurtido = i.idInventario
+        INNER JOIN medicamento m ON ri.idInsumo = m.idMedicamento
+        LEFT JOIN usuarios u ON r.idMedico = u.idUsuario
+        WHERE
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            r.fechaSurtida between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+    
+ 
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            and r.idEstructuraPadre = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+      
+        <if test=" paramBusquedaReporte.idMedico != null ">
+            and r.idMedico = #{ paramBusquedaReporte.idMedico , jdbcType = VARCHAR }
+        </if>
+        
+        and r.idMedico is not null
+        GROUP BY m.claveInstitucional , m.nombreCorto , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno)) AS s1
+        WHERE  1 = 1
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND s1.claveInstitucional IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.claveInstitucional}
+            </foreach>
+        </if>  
+        
+        <if test=" paramBusquedaReporte.idTipoOrigen != null ">
+            and s1.idTipoOrigen = #{ paramBusquedaReporte.idTipoOrigen , jdbcType = INTEGER }
+        </if>
+        
+        <if test=" paramBusquedaReporte.tipoInsumo != 0 ">
+            and s1.tipo= #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER }
+        </if>   
+        
+        <if test=" paramBusquedaReporte.valTipoReceta != null ">
+            and s1.tipoReceta = #{ paramBusquedaReporte.valTipoReceta , jdbcType = INTEGER }
+        </if>    
+        
+        GROUP BY claveInstitucional , nombreCorto,nombreUsuario
+        order by s1.claveInstitucional ASC
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        
+    </select>
+    
+    
+    <select id="obtenerTotalAcumuladosMedico" resultType="Long" parameterType="Map">
+        select count(*) from (
+        SELECT 
+        claveInstitucional AS claveMedicamento,
+        nombreCorto AS nombreMedicamento,
+        SUM(cantidadEnviada) AS cantidadSurtida,
+        nombreUsuario AS medico,
+        idMedico,
+        tipo,
+        lote,
+        idTipoOrigen,
+        fechaCaducidad
+        FROM
+        (  SELECT DISTINCT
+        'individual' AS receta,
+        1 AS tipoReceta,
+        m.claveInstitucional,
+        m.nombreCorto,
+        SUM(si.cantidadEnviada) AS cantidadEnviada,
+        CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS nombreUsuario,
+        p.idMedico,
+        m.tipo,
+        i.lote,
+        i.idTipoOrigen,
+        i.fechaCaducidad
+        FROM
+        prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN medicamento m ON pi.idInsumo = m.idMedicamento
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON (s.idSurtimiento = si.idSurtimiento
+        AND pi.idPrescripcionInsumo = si.idPrescripcionInsumo)
+        INNER JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        INNER JOIN inventario i ON se.idInventarioSurtido = i.idInventario
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        WHERE
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            si.fechaEnviada between  #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if> 
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND p.idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+        
+        <if test=" paramBusquedaReporte.tipoReceta != null ">
+            and p.folio like '${paramBusquedaReporte.tipoReceta}%'
+        </if>   
+        
+        <if test=" paramBusquedaReporte.idMedico != null ">
+            and p.idMedico = #{ paramBusquedaReporte.idMedico , jdbcType = VARCHAR }
+        </if>
+       
+    
+        GROUP BY m.claveInstitucional , m.nombreCorto , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) 
+    
+        UNION ALL 
+        SELECT DISTINCT
+        'colectiva' AS receta,
+        0 AS tipoReceta,
+        m.claveInstitucional,
+        m.nombreCorto,
+        SUM(ri.cantidadSurtida) AS cantidadSurtida,
+        CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS nombreUsuario,
+        r.idMedico,
+        m.tipo,
+        i.lote,
+        i.idTipoOrigen,
+        i.fechaCaducidad
+        FROM
+        reabasto r
+        INNER JOIN reabastoInsumo ri ON r.idReabasto = ri.IdReabasto
+        INNER JOIN reabastoEnviado re ON ri.idReabastoInsumo = re.IdReabastoInsumo
+        INNER JOIN inventario i ON re.idInventarioSurtido = i.idInventario
+        INNER JOIN medicamento m ON ri.idInsumo = m.idMedicamento
+        LEFT JOIN usuarios u ON r.idMedico = u.idUsuario
+        WHERE
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            r.fechaSurtida between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+    
+ 
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            and r.idEstructuraPadre = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+      
+        <if test=" paramBusquedaReporte.idMedico != null ">
+            and r.idMedico = #{ paramBusquedaReporte.idMedico , jdbcType = VARCHAR }
+        </if>
+        
+        
+        and r.idMedico is not null
+        GROUP BY m.claveInstitucional , m.nombreCorto , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno)) AS s1
+        WHERE 1 = 1
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND s1.claveInstitucional IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.claveInstitucional}
+            </foreach>
+        </if>  
+        
+        <if test=" paramBusquedaReporte.idTipoOrigen != null ">
+            and s1.idTipoOrigen = #{ paramBusquedaReporte.idTipoOrigen , jdbcType = INTEGER }
+        </if>
+        
+        <if test=" paramBusquedaReporte.tipoInsumo != 0 ">
+            and s1.tipo= #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER }
+        </if>   
+        
+        <if test=" paramBusquedaReporte.valTipoReceta != null ">
+            and s1.tipoReceta = #{ paramBusquedaReporte.valTipoReceta , jdbcType = INTEGER }
+        </if>    
+        
+        GROUP BY claveInstitucional , nombreCorto,nombreUsuario
+        order by s1.claveInstitucional ASC)
+        as total
+    </select>
+    
+    <select id="consultarAcumuladosPaciente" resultType="mx.mc.model.DataResultReport" parameterType="Map">
+        SELECT 
+        claveInstitucional AS claveMedicamento,
+        nombreCorto AS nombreMedicamento,
+        SUM(si.cantidadEnviada) AS cantidadEnviada,
+        CONCAT(pac.nombreCompleto,
+        ' ',
+        pac.apellidoPaterno,
+        ' ',
+        pac.apellidoMaterno) AS paciente,
+        i.lote,
+        i.cantidadActual,
+        p.folio,
+        IF(tipo = 38, 'Medicamento', 'Material') AS tipo,
+        i.idTipoOrigen,
+        i.fechaCaducidad    
+        FROM
+        prescripcion p
+        INNER JOIN
+        prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN
+        medicamento m ON pi.idInsumo = m.idMedicamento
+        INNER JOIN
+        surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN
+        surtimientoInsumo si ON (s.idSurtimiento = si.idSurtimiento
+        AND pi.idPrescripcionInsumo = si.idPrescripcionInsumo)
+        INNER JOIN
+        surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        INNER JOIN
+        inventario i ON se.idInventarioSurtido = i.idInventario
+        INNER JOIN
+        pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN
+        visita v ON ps.idVisita = v.idVisita
+        INNER JOIN
+        paciente pac ON pac.idPaciente = v.idPaciente
+        WHERE
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            si.fechaEnviada between  #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>         
+        
+        <if test=" paramBusquedaReporte.idTipoOrigen != null ">
+            and i.idTipoOrigen  = #{ paramBusquedaReporte.idTipoOrigen , jdbcType = INTEGER} 
+        </if>        
+        
+        <if test=" paramBusquedaReporte.tipoInsumo > 0 ">
+            and m.tipo  = #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER} 
+        </if>
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            and    m.claveInstitucional IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.claveInstitucional}
+            </foreach>
+        </if>                          
+        
+        <if test=" paramBusquedaReporte.pacienteList != null ">
+            and    pac.idPaciente IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.pacienteList" open="(" separator="," close=")">
+                #{item.idPaciente}
+            </foreach>
+        </if>   
+                               
+        <if test=" paramBusquedaReporte.tipoReceta != null ">
+            and p.folio like '${paramBusquedaReporte.tipoReceta}%'
+        </if>          
+
+        GROUP BY m.claveInstitucional , m.nombreCorto , i.lote
+    </select>   
+    
+    <select id="obtenerTotalAcumuladosPaciente" resultType="Long" parameterType="Map">
+        select count(*) as total from  
+        (SELECT 
+        claveInstitucional AS claveMedicamento,
+        nombreCorto AS nombreMedicamento,
+        SUM(si.cantidadEnviada) AS cantidadEnviada,
+        CONCAT(pac.nombreCompleto,
+        ' ',
+        pac.apellidoPaterno,
+        ' ',
+        pac.apellidoMaterno) AS paciente,
+        i.lote,
+        i.cantidadActual,
+        p.folio,
+        i.idTipoOrigen,
+        i.fechaCaducidad,
+        IF(tipo = 38, 'Medicamento', 'Material') AS tipo    
+        FROM
+        prescripcion p
+        INNER JOIN
+        prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN
+        medicamento m ON pi.idInsumo = m.idMedicamento
+        INNER JOIN
+        surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN
+        surtimientoInsumo si ON (s.idSurtimiento = si.idSurtimiento
+        AND pi.idPrescripcionInsumo = si.idPrescripcionInsumo)
+        INNER JOIN
+        surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        INNER JOIN
+        inventario i ON se.idInventarioSurtido = i.idInventario
+        INNER JOIN
+        pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN
+        visita v ON ps.idVisita = v.idVisita
+        INNER JOIN
+        paciente pac ON pac.idPaciente = v.idPaciente
+        WHERE
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            si.fechaEnviada between  #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>            
+         
+        <if test=" paramBusquedaReporte.idTipoOrigen != null ">
+            and i.idTipoOrigen  = #{ paramBusquedaReporte.idTipoOrigen , jdbcType = INTEGER} 
+        </if>
+        <if test=" paramBusquedaReporte.tipoInsumo > 0 ">
+            and m.tipo  = #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER} 
+        </if>
+            
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            and   m.claveInstitucional IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.claveInstitucional}
+            </foreach>
+        </if>         
+        
+        <if test=" paramBusquedaReporte.pacienteList != null ">
+            and    pac.idPaciente IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.pacienteList" open="(" separator="," close=")">
+                #{item.idPaciente}
+            </foreach>
+        </if>                          
+        
+        <if test=" paramBusquedaReporte.tipoReceta != null ">
+            and p.folio like '${paramBusquedaReporte.tipoReceta}%'
+        </if>    
+              
+        GROUP BY m.claveInstitucional , m.nombreCorto , i.lote)as total
+        
+    </select>
+    
+    
+    <select id="consultarAcumuladosColectivo" resultType="mx.mc.model.DataResultReport" parameterType="Map">
+        SELECT
+        claveInstitucional AS claveMedicamento,
+        nombreCorto AS nombreMedicamento,
+        SUM(ri.cantidadSurtida) AS cantidadSurtida,                
+        e.nombre as servicio,
+        date_format(i.fechaCaducidad, "%Y-%m-%d") as fechaCaducidad,
+        i.idTipoOrigen ,
+        i.lote,
+        r.folio,
+        i.cantidadActual,
+        if(tipo = 38, "Medicamento","Material")as tipo
+        FROM
+        reabasto r
+        INNER JOIN reabastoInsumo ri ON r.idReabasto = ri.IdReabasto
+        INNER JOIN reabastoEnviado re ON ri.idReabastoInsumo = re.IdReabastoInsumo
+        INNER JOIN inventario i ON re.idInventarioSurtido = i.idInventario
+        INNER JOIN medicamento m ON ri.idInsumo = m.idMedicamento
+    
+        inner join estructura e on e.idEstructura = r.idEstructura
+        WHERE
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            r.fechaSurtida between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            and r.idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+        
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            and    m.claveInstitucional IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.claveInstitucional}
+            </foreach>
+        </if>          
+        
+        <if test=" paramBusquedaReporte.idTipoOrigen != null ">
+            and i.idTipoOrigen  = #{ paramBusquedaReporte.idTipoOrigen , jdbcType = INTEGER} 
+        </if>
+        
+        <if test=" paramBusquedaReporte.tipoInsumo > 0 ">
+            and m.tipo  = #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER} 
+        </if>
+
+        GROUP BY m.claveInstitucional , m.nombreCorto,i.lote 
+    </select>
+    
+    <select id="obtenerTotalAcumuladosColectivo" resultType="Long" parameterType="Map">
+        select
+        count(*) as total from (
+        SELECT
+        claveInstitucional AS claveMedicamento,
+        nombreCorto AS nombreMedicamento,
+        SUM(ri.cantidadSurtida) AS cantidadSurtida,
+        e.nombre AS servicio,
+        date_format(i.fechaCaducidad, "%Y-%m-%d") as fechaCaducidad,
+        i.idTipoOrigen ,
+        r.folio,
+        i.lote,
+        i.cantidadActual,
+        IF(tipo = 38, 'Medicamento', 'Material') AS tipo
+        FROM
+        reabasto r
+        INNER JOIN reabastoInsumo ri ON r.idReabasto = ri.IdReabasto
+        INNER JOIN reabastoEnviado re ON ri.idReabastoInsumo = re.IdReabastoInsumo
+        INNER JOIN inventario i ON re.idInventarioSurtido = i.idInventario
+        INNER JOIN medicamento m ON ri.idInsumo = m.idMedicamento
+    
+        inner join estructura e on e.idEstructura = r.idEstructura
+        WHERE
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            r.fechaSurtida between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            and r.idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR }
+        </if>
+        
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            and   m.claveInstitucional IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.claveInstitucional}
+            </foreach>
+        </if>          
+        
+        <if test=" paramBusquedaReporte.idTipoOrigen != null ">
+            and i.idTipoOrigen  = #{ paramBusquedaReporte.idTipoOrigen , jdbcType = INTEGER} 
+        </if>
+        
+        <if test=" paramBusquedaReporte.tipoInsumo > 0  ">
+            and m.tipo  = #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER} 
+        </if>
+
+        GROUP BY m.claveInstitucional , m.nombreCorto,i.lote 
+        ) AS total
+    </select>
+    
+    <select id="consultarMinistraciones" resultType="mx.mc.model.SurtimientoMinistrado_Extend" parameterType="Map">
+        select p.folio, p.fechaPrescripcion , pa.pacienteNumero , concat(pa.nombreCompleto,' ', pa.apellidoPaterno, ' ', pa.apellidoMaterno) as nombrePaciente
+        , u.cedProfesional , ifnull(u.cedEspecialidad, '') as cedEspecialidad , concat(u.nombre ,' ', u.apellidoPaterno, ' ', u.apellidoMaterno) as nombreMedico
+        , m.claveInstitucional , m.nombreCorto , pi.fechaInicio as fechaInicioTratamiento , pi.dosis / m.concentracion as dosis, 
+        pm.nombrePresentacion , pi.dosis as concentracion, uc.nombreUnidadConcentracion ,  pi.frecuencia, pi.duracion
+        , sm.fechaProgramado , sm.fechaMinistrado, sm.cantidad, i.lote , i.fechaCaducidad ,  ifnull(sm.comentarios,'') as comentarios , em.estatus
+        , ifnull(concat(us.nombre ,' ', us.apellidoPaterno, ' ', us.apellidoMaterno), '') as nombreUsuarioMinistro
+        , e.nombre,cantidadMinistrada
+        from prescripcion p 
+        inner join pacienteServicio ps on p.idPacienteServicio = ps.idPacienteServicio
+        left join pacienteUbicacion pu on ps.idPacienteServicio = pu.idPacienteServicio
+        inner join visita v on ps.idVisita = v.idVisita
+        inner join paciente pa on v.idPaciente = pa.idPaciente
+        inner join prescripcionInsumo pi on p.idPrescripcion = pi.idPrescripcion
+        inner join surtimiento s on p.idPrescripcion = s.idPrescripcion
+        inner join surtimientoInsumo si on (pi.idPrescripcionInsumo = si.idPrescripcionInsumo and s.idSurtimiento = si.idSurtimiento)
+        inner join surtimientoEnviado se on si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        inner join surtimientoMinistrado sm on se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+        inner join usuarios u on p.idMedico = u.idUsuario
+        inner join medicamento m on pi.idInsumo = m.idMedicamento
+        inner join inventario i on se.idInventarioSurtido = i.idInventario
+        left join usuarios us on sm.idUsuario = us.idUsuario
+        inner join estatusMinistracion em on sm.idEstatusMinistracion = em.idEstatusMinistracion
+        left join unidadConcentracion uc on m.idUnidadConcentracion = uc.idUnidadConcentracion
+        left join presentacionMedicamento pm on m.idPresentacionSalida = pm.idPresentacion
+        inner join estructura e on p.idEstructura = e.idEstructura
+        where 1 = 1        
+
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            and sm.fechaMinistrado between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.folio != null and paramBusquedaReporte.folio != '' ">
+            and p.folio = #{ paramBusquedaReporte.folio , jdbcType = VARCHAR} 
+        </if>
+        
+        <if test=" paramBusquedaReporte.tipoMinistrado > 0 ">
+            and sm.idEstatusMinistracion = #{ paramBusquedaReporte.tipoMinistrado , jdbcType = INTEGER}             
+        </if>
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND sm.idUsuario IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.pacienteList != null ">
+            AND pa.idPaciente IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.pacienteList" open="(" separator="," close=")">
+                #{item.idPaciente}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.listMedicos != null ">
+            AND u.idUsuario IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listMedicos" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>        
+                
+        <if test=" estructuraList != null ">
+                    AND p.idEstructura IN 
+                    <foreach item="item" index="index" collection="estructuraList" open="(" separator="," close=")">
+                        #{ item }
+                    </foreach>
+        </if>
+       
+        Order by p.fechaPrescripcion ASC , sm.fechaProgramado ASC
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>    
+    
+    <select id="obtenerTotalRegistrosMinistraciones" resultType="Long" parameterType="Map">
+        select count(*)  as total from(
+        select p.folio, p.fechaPrescripcion , pa.pacienteNumero , concat(pa.nombreCompleto,' ', pa.apellidoPaterno, ' ', pa.apellidoMaterno) as nombrePaciente
+        , u.cedProfesional , ifnull(u.cedEspecialidad, '') as cedEspecialidad , concat(u.nombre ,' ', u.apellidoPaterno, ' ', u.apellidoMaterno) as nombreMedico
+        , m.claveInstitucional , m.nombreCorto , pi.fechaInicio as fechaInicioTratamiento , pi.dosis / m.concentracion as dosis, 
+        pm.nombrePresentacion , pi.dosis as concentracion, uc.nombreUnidadConcentracion ,  pi.frecuencia, pi.duracion
+        , sm.fechaProgramado , sm.fechaMinistrado, sm.cantidad, i.lote , i.fechaCaducidad ,  ifnull(sm.comentarios,'') as comentarios , em.estatus
+        , ifnull(concat(us.nombre ,' ', us.apellidoPaterno, ' ', us.apellidoMaterno), '') as nombreUsuarioMinistro
+        , e.nombre
+        from prescripcion p 
+        inner join pacienteServicio ps on p.idPacienteServicio = ps.idPacienteServicio
+        left join pacienteUbicacion pu on ps.idPacienteServicio = pu.idPacienteServicio
+        inner join visita v on ps.idVisita = v.idVisita
+        inner join paciente pa on v.idPaciente = pa.idPaciente
+        inner join prescripcionInsumo pi on p.idPrescripcion = pi.idPrescripcion
+        inner join surtimiento s on p.idPrescripcion = s.idPrescripcion
+        inner join surtimientoInsumo si on (pi.idPrescripcionInsumo = si.idPrescripcionInsumo and s.idSurtimiento = si.idSurtimiento)
+        inner join surtimientoEnviado se on si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        inner join surtimientoMinistrado sm on se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+        inner join usuarios u on p.idMedico = u.idUsuario
+        inner join medicamento m on pi.idInsumo = m.idMedicamento
+        inner join inventario i on se.idInventarioSurtido = i.idInventario
+        left join usuarios us on sm.idUsuario = us.idUsuario
+        inner join estatusMinistracion em on sm.idEstatusMinistracion = em.idEstatusMinistracion
+        left join unidadConcentracion uc on m.idUnidadConcentracion = uc.idUnidadConcentracion
+        left join presentacionMedicamento pm on m.idPresentacionSalida = pm.idPresentacion
+        inner join estructura e on p.idEstructura = e.idEstructura
+        where 1 = 1
+        
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            and sm.fechaMinistrado between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.folio != null and paramBusquedaReporte.folio != '' ">
+            and p.folio = #{ paramBusquedaReporte.folio , jdbcType = VARCHAR} 
+        </if>
+        
+        <if test=" paramBusquedaReporte.tipoMinistrado > 0 ">
+            and sm.idEstatusMinistracion = #{ paramBusquedaReporte.tipoMinistrado , jdbcType = INTEGER}            
+        </if> 
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND sm.idUsuario IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.pacienteList != null ">
+            AND pa.idPaciente IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.pacienteList" open="(" separator="," close=")">
+                #{item.idPaciente}
+            </foreach>
+        </if>
+
+        <if test=" paramBusquedaReporte.listMedicos != null ">
+            AND u.idUsuario IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listMedicos" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>        
+        
+          <if test=" estructuraList != null ">
+                    AND p.idEstructura IN 
+                    <foreach item="item" index="index" collection="estructuraList" open="(" separator="," close=")">
+                        #{ item }
+                    </foreach>
+        </if>
+        
+        ) as total;
+
+    </select>
+    
+    <select id="consultarEstatusInsumos" resultType="mx.mc.model.ReporteEstatusInsumo" parameterType="Map">
+        select claveInstitucional,nombreCorto,maximo,minimo,disponible,estatus,consumoPromedio,pendientePorRecibir,idEstructura,insertFecha,
+        consumoEsperado,idTipoAlmacen,idMedicamento from (
+        SELECT 
+        replace(m.claveInstitucional,'.','  ')as claveInstitucional,
+        m.nombreCorto,
+        ap.maximo,
+        ap.minimo,
+        e.idTipoAlmacen,
+        i.cantidadActual AS disponible,e.idEstructura,i.insertFecha,m.idMedicamento,
+        CASE 
+        WHEN i.cantidadActual &lt;= 0 THEN "N"
+        WHEN i.cantidadActual &gt; 1 AND i.cantidadActual &lt;= ap.reorden THEN "D"
+        WHEN i.cantidadActual &gt; ap.maximo THEN "O"
+        END AS estatus,
+        0 AS consumoPromedio,
+        0 AS pendientePorRecibir,
+        0 AS consumoEsperado
+        FROM
+        medicamento m
+        INNER JOIN
+        presentacionMedicamento p ON m.idPresentacionEntrada = p.idPresentacion
+        INNER JOIN
+        inventario i ON m.idMedicamento = i.idInsumo
+        INNER JOIN
+        estructura e ON i.idEstructura = e.idEstructura
+        INNER JOIN
+        almacenPuntosControl ap ON (i.idInsumo = ap.idMedicamento
+        AND i.idEstructura = ap.idAlmacen)
+        LEFT JOIN
+        proveedor pr ON i.idProveedor = pr.idProveedor
+        LEFT JOIN
+        tipoOrigen tor ON i.idTipoOrigen = tor.idTipoOrigen
+        LEFT JOIN
+        reabastoEnviado re ON i.idInventario = re.idInventarioSurtido
+        ) as tabl
+        WHERE
+        1 = 1
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo != null ">
+            and estatus = #{ paramBusquedaReporte.estatusCantidadInsumo , jdbcType = VARCHAR}             
+        </if>        
+        
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            and insertFecha between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }        
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            and idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR}             
+        </if>        
+        
+        and idTipoAlmacen in ( 3, 4)
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    <select id="consultarEstatusInsumosConce" resultType="mx.mc.model.ReporteConcentracionArticulos" parameterType="Map">
+        SELECT m.claveInstitucional, m.nombreCorto, i.cantidadActual as cantidad, i.costoUnidosis as precioUnitario , (i.cantidadActual * i.costoUnidosis) as importe
+        ,e.nombre as nombreEstructura, e.clavePresupuestal, en.nombre as nombreHosp, en.domicilio
+        FROM medicamento m 
+        INNER JOIN inventario i on m.idMedicamento = i.idInsumo 
+        INNER JOIN estructura e on i.idEstructura = e.idEstructura 
+        INNER JOIN entidadHospitalaria en on en.idEntidadHospitalaria = e.idEntidadHospitalaria
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo == 'DETERIORADOS'">
+            INNER JOIN inventarioSalida isa on ( i.idInventario = isa.idInventario and isa.idTipoMotivo = 19 )
+            WHERE
+            1 = 1
+            AND i.activo = 0 
+        </if>
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo != 'DETERIORADOS'">
+            WHERE
+            1 = 1
+        </if>
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+             AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo == 'DISPONIBLES'">
+            AND <![CDATA[NOW() < DATE_ADD(i.fechaCaducidad, INTERVAL (SELECT c.nombre FROM config as c WHERE c.nombre = 'fun_no_dias_resurtimiento' ) DAY)]]>
+        </if>
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo == 'CADUCOS'">
+            AND NOW() >= DATE_ADD(i.fechaCaducidad, INTERVAL (SELECT c.nombre FROM config as c WHERE c.nombre = 'fun_no_dias_resurtimiento' ) DAY)
+        </if>
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo == 'SUSPENDIDOS'">
+            AND m.activo = 0 
+        </if>
+        
+        AND e.idTipoAlmacen in ( 3, 4)  
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    <select id="consultarSurtidoServicio" resultType="mx.mc.model.ReporteSurtidoServicio" parameterType="Map">
+        SELECT r.fechaSolicitud , r.folio , m.claveInstitucional , m.nombreCorto , ri.cantidadSolicitada , ri.cantidadSurtida , inv.costoUnidosis
+        , (ri.cantidadSolicitada * inv.costoUnidosis) as importe
+        FROM reabasto r
+        INNER JOIN reabastoInsumo ri on r.idReabasto = ri.idReabasto
+        INNER JOIN medicamento m on ri.idInsumo = m.idMedicamento
+        INNER JOIN reabastoEnviado re on ri.idReabastoInsumo = re.idReabastoInsumo
+        INNER JOIN inventario inv on (re.idInsumo = inv.idInsumo and re.loteEnv = inv.lote and date_format(re.fechaCad, '%d%m%Y') = date_format(inv.fechaCaducidad, '%d%m%Y'))
+        INNER JOIN estructura e on inv.idEstructura = e.idEstructura      
+        INNER JOIN entidadHospitalaria en on en.idEntidadHospitalaria = e.idEntidadHospitalaria
+        WHERE 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND r.fechaSolicitud between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }        
+        </if>
+        AND m.tipo = #{paramBusquedaReporte.tipoInsumo, jdbcType = INTEGER } 
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    <select id="obtenerTotalSurtidoServicio" resultType="Long" parameterType="Map">
+        SELECT COUNT(*) FROM reabasto r
+        INNER JOIN reabastoInsumo ri on r.idReabasto = ri.idReabasto
+        INNER JOIN medicamento m on ri.idInsumo = m.idMedicamento
+        INNER JOIN reabastoEnviado re on ri.idReabastoInsumo = re.idReabastoInsumo
+        INNER JOIN inventario inv on (re.idInsumo = inv.idInsumo and re.loteEnv = inv.lote and date_format(re.fechaCad, '%d%m%Y') = date_format(inv.fechaCaducidad, '%d%m%Y'))
+        INNER JOIN estructura e on inv.idEstructura = e.idEstructura      
+        INNER JOIN entidadHospitalaria en on en.idEntidadHospitalaria = e.idEntidadHospitalaria
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND r.fechaSolicitud between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }        
+        </if>        
+        AND m.tipo = #{paramBusquedaReporte.tipoInsumo, jdbcType = INTEGER } 
+        
+    </select>
+    
+    <select id="obtenerTotalEstatusInsumos" resultType="Long" parameterType="Map">
+        select count(*) from (
+        SELECT 
+        replace(m.claveInstitucional,'.','  ')as claveInstitucional,
+        m.nombreCorto,
+        ap.maximo,
+        ap.minimo,
+        e.idTipoAlmacen,
+        i.cantidadActual AS disponible,e.idEstructura,i.insertFecha,m.idMedicamento,
+        CASE 
+        WHEN i.cantidadActual &lt;= 0 THEN "N"
+        WHEN i.cantidadActual &gt; 1 AND i.cantidadActual &lt;= ap.reorden THEN "D"
+        WHEN i.cantidadActual &gt; ap.maximo THEN "O"
+        END AS estatus,
+        0 AS consumoPromedio,
+        0 AS pendientePorRecibir,
+        0 AS consumoEsperado
+        FROM
+        medicamento m
+        INNER JOIN
+        presentacionMedicamento p ON m.idPresentacionEntrada = p.idPresentacion
+        INNER JOIN
+        inventario i ON m.idMedicamento = i.idInsumo
+        INNER JOIN
+        estructura e ON i.idEstructura = e.idEstructura
+        INNER JOIN
+        almacenPuntosControl ap ON (i.idInsumo = ap.idMedicamento
+        AND i.idEstructura = ap.idAlmacen)
+        LEFT JOIN
+        proveedor pr ON i.idProveedor = pr.idProveedor
+        LEFT JOIN
+        tipoOrigen tor ON i.idTipoOrigen = tor.idTipoOrigen
+        LEFT JOIN
+        reabastoEnviado re ON i.idInventario = re.idInventarioSurtido
+        ) as tabl
+        WHERE
+        1 = 1
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo != null ">
+            and estatus = #{ paramBusquedaReporte.estatusCantidadInsumo , jdbcType = VARCHAR}             
+        </if>        
+        
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            and insertFecha between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }        
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            and idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR}             
+        </if>        
+        
+        and idTipoAlmacen in ( 3, 4)
+    </select>
+    
+    <select id="obtenerTotalEstatusInsumosConce" resultType="Long" parameterType="Map">
+        SELECT COUNT(*)
+        FROM medicamento m 
+        INNER JOIN inventario i on m.idMedicamento = i.idInsumo 
+        INNER JOIN estructura e on i.idEstructura = e.idEstructura 
+        INNER JOIN entidadHospitalaria en on en.idEntidadHospitalaria = e.idEntidadHospitalaria
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo == 'DETERIORADOS'">
+            INNER JOIN inventarioSalida isa on ( i.idInventario = isa.idInventario and isa.idTipoMotivo = 19 )
+            WHERE i.activo = 0 
+        </if>
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo != 'DETERIORADOS'">
+            WHERE 1 = 1
+        </if>
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo == 'DISPONIBLES'">
+            AND <![CDATA[NOW() < DATE_ADD(i.fechaCaducidad,INTERVAL (SELECT c.nombre FROM config as c WHERE c.nombre = 'fun_no_dias_resurtimiento' ) DAY)]]>
+        </if>
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo == 'CADUCOS'">
+            AND NOW() >= DATE_ADD(i.fechaCaducidad,INTERVAL (SELECT c.nombre FROM config as c WHERE c.nombre = 'fun_no_dias_resurtimiento' ) DAY)
+        </if>
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo == 'SUSPENDIDOS'">
+            AND m.activo = 0 
+        </if>
+        AND e.idTipoAlmacen in ( 3, 4)
+    </select>
+    
+    <select id="obtenerReporteMedicamentosRefri5000" resultType="mx.mc.model.ReporteLibroControlados" parameterType="Map">
+        SELECT 
+        tipoReceta,         
+        nombreCorto,
+        cantidadActual,
+        claveInstitucional,
+        nombreAlmacen,
+        claves,
+        refrigeracion,
+        cantidadVendida,
+        cantidadAdquirida
+        FROM
+        viewLibretaControlados 
+        WHERE
+        1 = 1
+        
+        <if test=" paramLibMedControlados.listInsumos != null ">
+            AND idMedicamento IN 
+            <foreach item="item" index="index" collection="paramLibMedControlados.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramLibMedControlados.fechaInicio != null and paramLibMedControlados.fechaFin != null "> 
+            and insertFecha between #{paramLibMedControlados.fechaInicio, jdbcType = TIMESTAMP } AND #{paramLibMedControlados.fechaFin, jdbcType = TIMESTAMP }        
+        </if>
+        
+        <if test=" paramLibMedControlados.idEstructura != null ">
+            AND idEstructura = #{ paramLibMedControlados.idEstructura , jdbcType = VARCHAR}                 
+        </if>        
+        
+        <if test=" paramLibMedControlados.valorRefri5000 != null ">
+            AND claves = #{ paramLibMedControlados.valorRefri5000 , jdbcType = VARCHAR}  
+        </if>       
+
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+
+    </select>
+    
+    <select id="obtenerTotalReporteMedicamentosRefri5000" resultType="Long" parameterType="Map">        
+        SELECT COUNT(*) as total FROM               
+        viewLibretaControlados         
+        WHERE
+        1 = 1 
+        
+        <if test=" paramLibMedControlados.fechaInicio != null and paramLibMedControlados.fechaFin != null "> 
+            and insertFecha between #{paramLibMedControlados.fechaInicio, jdbcType = TIMESTAMP } AND #{paramLibMedControlados.fechaFin, jdbcType = TIMESTAMP }        
+        </if>
+        
+        <if test=" paramLibMedControlados.listInsumos != null ">
+            AND idMedicamento IN 
+            <foreach item="item" index="index" collection="paramLibMedControlados.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramLibMedControlados.idEstructura != null ">
+            AND idEstructura = #{ paramLibMedControlados.idEstructura , jdbcType = VARCHAR}                 
+        </if>                        
+        
+        <if test=" paramLibMedControlados.valorRefri5000 != null ">
+            AND claves = #{ paramLibMedControlados.valorRefri5000 , jdbcType = VARCHAR}  
+        </if>       
+          
+    </select>
+    
+    <select id="obtenerReporteMedicamentosControlDiario" resultType="mx.mc.model.ReporteLibroControlados" parameterType="Map">              
+        SELECT    s1.idMovimientoInventario , s1.estructura AS nombreAlmacen, s1.claveInstitucional, s1.nombreCorto, s1.fecha, s1.nombreUsuario
+        , s1.existenciaAnterior , s1.entradaPorSurtimiento, s1.salidaPorReceta
+        , CASE WHEN (s1.existenciaAnterior + s1.entradaPorSurtimiento - s1.salidaPorReceta) >= 0
+          THEN s1.existenciaAnterior + s1.entradaPorSurtimiento - s1.salidaPorReceta
+          ELSE 0 END AS existenciaActual  , s1.descripcion AS motivo
+      FROM (
+      SELECT mi.idMovimientoInventario
+        , CASE WHEN tmo.tipoMovimiento = 'E' THEN ed.nombre  ELSE eo.nombre END AS estructura
+        , m.claveInstitucional , m.nombreCorto, mi.fecha, concat(u.nombre,' ', u.apellidoPaterno,' ',u.apellidoMaterno) as nombreUsuario
+        , CASE WHEN e.idTipoAreaEstructura = 2 THEN mi.saldoAlmacen WHEN e.idTipoAreaEstructura = 3 THEN mi.saldoServicio END as existenciaAnterior
+        , CASE WHEN tmo.tipoMovimiento = 'E' THEN mi.cantidad ELSE 0 END AS entradaPorSurtimiento
+        , CASE WHEN (tmo.tipoMovimiento = 'S' OR tmo.tipoMovimiento = 'T') THEN mi.cantidad ELSE 0 END AS salidaPorReceta
+        , tm.descripcion
+        FROM movimientoInventario mi
+        JOIN inventario i ON mi.idInventario = i.idInventario
+        JOIN medicamento m on i.idInsumo = m.idMedicamento
+        JOIN estructura e on i.idEstructura = e.idEstructura
+        JOIN estructura eo on mi.idEstrutcuraOrigen = eo.idEstructura
+        JOIN estructura ed on mi.idEstrutcuraDestino = ed.idEstructura
+        JOIN usuarios u on mi.idUsuarioMovimiento = u.idUsuario
+        JOIN tipoMotivo tm on mi.idTipoMotivo = tm.idTipoMotivo
+        JOIN tipoMovimiento tmo on tm.idTipoMovimiento = tmo.idTipoMovimiento
+        WHERE 1=1
+        AND mi.fecha BETWEEN #{paramLibMedControlados.fechaInicio, jdbcType = TIMESTAMP } AND #{paramLibMedControlados.fechaFin, jdbcType = TIMESTAMP }
+        <if test=" paramLibMedControlados.idEstructura != null">
+            AND CASE WHEN tmo.tipoMovimiento = 'E' THEN mi.idEstrutcuraDestino = #{ paramLibMedControlados.idEstructura , jdbcType = VARCHAR}
+                              ELSE mi.idEstrutCuraOrigen = #{ paramLibMedControlados.idEstructura , jdbcType = VARCHAR} END
+        </if>        
+        <if test=" paramLibMedControlados.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramLibMedControlados.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>                      
+        <if test=" paramLibMedControlados.valueControlDiario == 1 ">
+            AND  m.refrigeracion = 1                 
+        </if>
+        <if test=" paramLibMedControlados.valueControlDiario == 2 ">
+            AND  SUBSTRING( REPLACE(m.claveInstitucional, '.' , '') , 7) like '5%'
+        </if>
+        <if test=" paramLibMedControlados.valueControlDiario == 3 ">
+            AND SUBSTRING( REPLACE(m.claveInstitucional, '.' , '') , 7) like '4%'                
+        </if>
+        <if test=" paramLibMedControlados.valueControlDiario == 4 ">
+            AND  m.medicamentoControlado = 1 
+        </if>
+        ) as s1             
+                                               
+    </select>
+    
+    <select id="obtenerTotalReporteMedicamentosControlDiario" resultType="Long" parameterType="Map">        
+         SELECT   count(*)
+      FROM (
+      SELECT mi.idMovimientoInventario
+        , CASE WHEN tmo.tipoMovimiento = 'E' THEN ed.nombre  ELSE eo.nombre END AS estructura
+        , m.claveInstitucional , m.nombreCorto, mi.fecha, concat(u.nombre,' ', u.apellidoPaterno,' ',u.apellidoMaterno) as nombreUsuario
+        , CASE WHEN e.idTipoAreaEstructura = 2 THEN mi.saldoAlmacen WHEN e.idTipoAreaEstructura = 3 THEN mi.saldoServicio END as existenciaAnterior
+        , CASE WHEN tmo.tipoMovimiento = 'E' THEN mi.cantidad ELSE 0 END AS entradaPorSurtimiento
+        , CASE WHEN (tmo.tipoMovimiento = 'S' OR tmo.tipoMovimiento = 'T') THEN mi.cantidad ELSE 0 END AS salidaPorReceta
+        , tm.descripcion
+        FROM movimientoInventario mi
+        JOIN inventario i ON mi.idInventario = i.idInventario
+        JOIN medicamento m on i.idInsumo = m.idMedicamento
+        JOIN estructura e on i.idEstructura = e.idEstructura
+        JOIN estructura eo on mi.idEstrutcuraOrigen = eo.idEstructura
+        JOIN estructura ed on mi.idEstrutcuraDestino = ed.idEstructura
+        JOIN usuarios u on mi.idUsuarioMovimiento = u.idUsuario
+        JOIN tipoMotivo tm on mi.idTipoMotivo = tm.idTipoMotivo
+        JOIN tipoMovimiento tmo on tm.idTipoMovimiento = tmo.idTipoMovimiento
+        WHERE 1=1
+        AND mi.fecha BETWEEN #{paramLibMedControlados.fechaInicio, jdbcType = TIMESTAMP } AND #{paramLibMedControlados.fechaFin, jdbcType = TIMESTAMP }
+        <if test=" paramLibMedControlados.idEstructura != null">
+            AND CASE WHEN tmo.tipoMovimiento = 'E' THEN mi.idEstrutcuraDestino = #{ paramLibMedControlados.idEstructura , jdbcType = VARCHAR}
+                              ELSE mi.idEstrutCuraOrigen = #{ paramLibMedControlados.idEstructura , jdbcType = VARCHAR} END
+        </if>        
+        <if test=" paramLibMedControlados.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramLibMedControlados.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>                      
+        <if test=" paramLibMedControlados.valueControlDiario == 1 ">
+            AND  m.refrigeracion = 1                 
+        </if>
+        <if test=" paramLibMedControlados.valueControlDiario == 2 ">
+            AND  SUBSTRING( REPLACE(m.claveInstitucional, '.' , '') , 7) like '5%'
+        </if>
+        <if test=" paramLibMedControlados.valueControlDiario == 3 ">
+            AND SUBSTRING( REPLACE(m.claveInstitucional, '.' , '') , 7) like '4%'                
+        </if>
+        <if test=" paramLibMedControlados.valueControlDiario == 4 ">
+            AND  m.medicamentoControlado = 1 
+        </if>
+        ) as s1
+     
+               
+    </select>
+    
+    <select id="obtenerSurtPrescripcionConsolidado" resultType="mx.mc.model.DataResultConsolidado" parameterType="Map">              
+SELECT
+    nombreAlmacen,
+    DATE_FORMAT(fechaEnviada, '%Y-%m-%d') AS fechaEnviada,
+    total,idEstructura,
+    completa,
+    (truncate((completa * 100) / total,2)) AS completaPor,
+    parcial,
+    (truncate((parcial * 100) / total,2)) AS parcialPor,
+    enCeros,
+    (truncate((enCeros * 100) / total,2))  AS enCerosPor,
+    enNulo,
+    (truncate((enNulo * 100) / total,2)) AS enNuloPor
+FROM
+    (SELECT 
+        nombreAlmacen,
+            fechaEnviada,
+            (completa + parcial + enCeros + enNulo) AS total,
+            completa,
+            parcial,
+            enCeros,
+            enNulo,
+            idEstructura
+    FROM
+        (SELECT 
+        nombreAlmacen,
+            fechaEnviada,
+            SUM(completa) AS completa,
+            SUM(parcial) AS parcial,
+            SUM(enCeros) AS enCeros,
+            SUM(enNulo) AS enNulo,
+            idEstructura
+    FROM
+        viewSurtimientoPrescripcionConsolidado
+        group by nombreAlmacen, fechaEnviada
+        ) AS s1) AS s2
+        where 1 = 1
+       <if test=" paramBusquedaReporte.idEstructura != null ">
+            and s2.idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR}             
+        </if>       
+         <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND s2.fechaEnviada between DATE_FORMAT(#{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP },'%Y-%m-%d') 
+            AND DATE_FORMAT(#{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP },'%Y-%m-%d')        
+        </if>           
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    <select id="obtenerTotalSurtPrescripcionConsolidado" resultType="Long" parameterType="Map">        
+      select count(*) as total from
+        (
+    SELECT
+    nombreAlmacen,
+    DATE_FORMAT(fechaEnviada, '%Y-%m-%d') AS fechaEnviada,
+    total,idEstructura,
+    completa,
+    (truncate((completa * 100) / total,2)) AS completaPor,
+    parcial,
+    (truncate((parcial * 100) / total,2)) AS parcialPor,
+    enCeros,
+    (truncate((enCeros * 100) / total,2))  AS enCerosPor,
+    enNulo,
+    (truncate((enNulo * 100) / total,2)) AS enNuloPor
+FROM
+    (SELECT 
+        nombreAlmacen,
+            fechaEnviada,
+            (completa + parcial + enCeros + enNulo) AS total,
+            completa,
+            parcial,
+            enCeros,
+            enNulo,
+            idEstructura
+    FROM
+        (SELECT 
+        nombreAlmacen,
+            fechaEnviada,
+            SUM(completa) AS completa,
+            SUM(parcial) AS parcial,
+            SUM(enCeros) AS enCeros,
+            SUM(enNulo) AS enNulo,
+            idEstructura
+    FROM
+        viewSurtimientoPrescripcionConsolidado
+        group by nombreAlmacen, fechaEnviada
+        ) AS s1) AS s2
+         where 1 = 1
+       <if test=" paramBusquedaReporte.idEstructura != null ">
+            and s2.idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR}             
+        </if>       
+         <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND s2.fechaEnviada between DATE_FORMAT(#{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP },'%Y-%m-%d') 
+            AND DATE_FORMAT(#{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP },'%Y-%m-%d')        
+        </if>    
+        ) as val
+    </select>
+    
+    <select id="obtenerTotalConsumos" resultType="Long" parameterType="Map"> 
+        SELECT COUNT(*) AS total 
+        FROM prescripcion p 
+        JOIN estructura e ON p.idEstructura = e.idEstructura 
+        JOIN usuarios u ON p.idMedico = u.idUsuario 
+        JOIN estatusPrescripcion ep ON p.idEstatusPrescripcion = ep.idEstatusPrescripcion  
+        LEFT JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio 
+        LEFT JOIN visita v ON ps.idVisita = v.idVisita 
+        LEFT JOIN paciente pa ON v.idPaciente = pa.idPaciente 
+        JOIN prescripcionInsumo pin ON p.idPrescripcion = pin.idPrescripcion
+        JOIN medicamento m ON pin.idInsumo = m.idMedicamento 
+        JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion 
+        JOIN estructura e2 ON s.idEstructuraAlmacen = e2.idEstructura 
+        JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento 
+        JOIN surtimientoInsumo si ON ( s.idSurtimiento = si.idSurtimiento AND pin.idPrescripcionInsumo = si.idPrescripcionInsumo  )
+        LEFT JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        LEFT JOIN inventario i ON se.idInventarioSurtido = i.idInventario 
+        LEFT JOIN fabricante f ON i.idFabricante = f.idFabricante 
+        LEFT JOIN usuarios u2 ON si.idUsuarioEnviada = u2.idUsuario 
+        LEFT JOIN solucion s2 ON s.idSurtimiento = s2.idSurtimiento 
+        LEFT JOIN usuarios u3 ON s2.idUsuarioValPrescr = u3.idUsuario
+        LEFT JOIN usuarios u4 ON s2.idUsuarioValida = u4.idUsuario 
+        LEFT JOIN usuarios u5 ON s2.idUsuarioPrepara = u5.idUsuario 
+        LEFT JOIN usuarios u6 ON s2.idUsuarioInspeccion = u6.idUsuario 
+        LEFT JOIN usuarios u7 ON s2.idUsuarioAcondiciona = u7.idUsuario 
+        LEFT JOIN usuarios u8 ON s2.idUsuarioEntrega = u8.idUsuario 
+        LEFT JOIN usuarios u9 ON s2.idUsuarioRecibe = u9.idUsuario 
+        WHERE 1=1
+        <if test=" paramBusquedaReporte.fechaInicio != null">
+            AND s.fechaProgramada 
+                BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test="paramBusquedaReporte.tipoInsumo > 0 ">
+            AND m.tipo = #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER }
+        </if>
+        
+        <if test="paramBusquedaReporte.listaInsumos != null">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaInsumos" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>                   
+        </if>
+        
+        <if test="paramBusquedaReporte.listaMedicos != null">
+            AND p.idMedico IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaMedicos" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        
+        <if test="paramBusquedaReporte.listaPaciente != null">
+            AND pa.idPaciente IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaPaciente" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaUsuarios != null">
+            AND si.idUsuarioEnviada IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaUsuarios" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaEstructuras != null">
+            AND p.idEstructura IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaEstructuras" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaAlmacenes != null">
+            AND s.idEstructuraAlmacen IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaAlmacenes" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        ;
+    </select>
+
+    <select id="obtenerConsumos" resultType="mx.mc.model.Consumo" parameterType="Map">
+        SELECT
+        se.idSurtimientoEnviado 
+        , i.idInventario 
+        , p.idPrescripcion 
+        , s.idSurtimiento 
+        , si.idSurtimientoInsumo 
+        , s2.idSolucion 
+        , p.fechaPrescripcion 
+        , p.folio AS folioPrescripcion 
+        , ep.estatus AS estatusPrescripcion 
+        , e.nombre AS nombreServicio
+        , CONCAT(u.nombre,' ',u.apellidoPaterno,' ',u.apellidoMaterno) nombreMedico 
+        , IFNULL(CONCAT(pa.nombreCompleto,' ',pa.apellidoPaterno,' ',pa.apellidoMaterno),'') AS nombrePaciente
+        , m.claveInstitucional 
+        , m.nombreCorto 
+        , m.concentracion 
+<!--         , IF(IFNULL(m.cantPorEnvase,''),0,'') AS cantPorEnvase , IF(IFNULL(m.noHorasestabilidad,''),0,'') AS noHorasestabilidad
+         , IF(IFNULL(m.osmolaridad,''),0,'') AS osmolaridad , IF(IFNULL(m.densidad,''),0,'') AS densidad -->
+        , pin.dosis 
+        , pin.frecuencia 
+        , pin.duracion 
+        , uc.nombreUnidadConcentracion 
+        , s.folio AS folioSurtimiento
+        , s.fechaProgramada 
+        , e2.nombre AS nombreAlmacen
+        , es.estatus AS estatusSurtimiento
+        , IFNULL(se.cantidadEnviado,0) AS cantidadEnviado 
+        , IFNULL(se.cantidadRecibido,0) AS cantidadRecibido
+        , IFNULL(i.lote,'') AS lote 
+        , i.fechaCaducidad
+        , IFNULL(f.nombreFabricante,'') AS nombreFabricante
+        , s2.fechaValPrescr 
+        , IFNULL(s2.comentValPrescr,'') AS comentValPrescr 
+        , IFNULL(CONCAT(u3.nombreUsuario,' ',u3.apellidoPaterno,' ',u3.apellidoMaterno),'') AS usuarioValidaPresc
+        , s2.fechaValida 
+        , IFNULL(s2.comentValOrdenPrep,'') AS comentValOrdenPrep
+        , IFNULL(CONCAT(u4.nombreUsuario,' ',u4.apellidoPaterno,' ',u4.apellidoMaterno),'') AS usuarioValidaOP
+        , si.fechaEnviada 
+        , IFNULL(CONCAT(u2.nombreUsuario,' ',u2.apellidoPaterno,' ',u2.apellidoMaterno),'') AS usuarioDispensa
+        , s2.fechaPrepara
+        , IFNULL(s2.comentariosPreparacion ,'') AS comentariosPreparacion
+        , IFNULL(CONCAT(u5.nombreUsuario,' ',u5.apellidoPaterno,' ',u5.apellidoMaterno),'') AS usuarioPrepara
+        , s2.fechaInspeccion 
+        , IFNULL(s2.comentarioInspeccion ,'') AS comentarioInspeccion
+        , IFNULL(CONCAT(u6.nombreUsuario,' ',u6.apellidoPaterno,' ',u6.apellidoMaterno),'') AS usuarioInspecciona
+        , s2.fechaAcondicionamiento 
+        , IFNULL(s2.comentarioAcondicionada ,'') AS comentarioAcondicionada
+        , IFNULL(CONCAT(u7.nombreUsuario,' ',u7.apellidoPaterno,' ',u7.apellidoMaterno),'') AS usuarioAcondiciona
+        , s2.fechaEntrega
+        , IFNULL(s2.comentariosEntrega,'') AS comentariosEntrega
+        , IFNULL(CONCAT(u8.nombreUsuario,' ',u8.apellidoPaterno,' ',u8.apellidoMaterno),'') AS usuarioEntrega
+        , IFNULL(CONCAT(u9.nombreUsuario,' ',u9.apellidoPaterno,' ',u9.apellidoMaterno),'') AS usuarioRecibe
+        FROM prescripcion p 
+        JOIN estructura e ON p.idEstructura = e.idEstructura 
+        JOIN usuarios u ON p.idMedico = u.idUsuario 
+        JOIN estatusPrescripcion ep ON p.idEstatusPrescripcion = ep.idEstatusPrescripcion  
+        LEFT JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio 
+        LEFT JOIN visita v ON ps.idVisita = v.idVisita 
+        LEFT JOIN paciente pa ON v.idPaciente = pa.idPaciente 
+        JOIN prescripcionInsumo pin ON p.idPrescripcion = pin.idPrescripcion
+        JOIN medicamento m ON pin.idInsumo = m.idMedicamento 
+        JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion 
+        JOIN estructura e2 ON s.idEstructuraAlmacen = e2.idEstructura 
+        JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento 
+        JOIN surtimientoInsumo si ON ( s.idSurtimiento = si.idSurtimiento AND pin.idPrescripcionInsumo = si.idPrescripcionInsumo  )
+        LEFT JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        LEFT JOIN inventario i ON se.idInventarioSurtido = i.idInventario 
+        LEFT JOIN fabricante f ON i.idFabricante = f.idFabricante 
+        LEFT JOIN usuarios u2 ON si.idUsuarioEnviada = u2.idUsuario 
+        LEFT JOIN solucion s2 ON s.idSurtimiento = s2.idSurtimiento 
+        LEFT JOIN usuarios u3 ON s2.idUsuarioValPrescr = u3.idUsuario
+        LEFT JOIN usuarios u4 ON s2.idUsuarioValida = u4.idUsuario 
+        LEFT JOIN usuarios u5 ON s2.idUsuarioPrepara = u5.idUsuario 
+        LEFT JOIN usuarios u6 ON s2.idUsuarioInspeccion = u6.idUsuario 
+        LEFT JOIN usuarios u7 ON s2.idUsuarioAcondiciona = u7.idUsuario 
+        LEFT JOIN usuarios u8 ON s2.idUsuarioEntrega = u8.idUsuario 
+        LEFT JOIN usuarios u9 ON s2.idUsuarioRecibe = u9.idUsuario 
+        WHERE 1=1
+        <if test=" paramBusquedaReporte.fechaInicio != null">
+            AND s.fechaProgramada 
+                BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test="paramBusquedaReporte.tipoInsumo > 0 ">
+            AND m.tipo = #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER }
+        </if>
+        
+        <if test="paramBusquedaReporte.listaInsumos != null">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaInsumos" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>                   
+        </if>
+        
+        <if test="paramBusquedaReporte.listaMedicos != null">
+            AND p.idMedico IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaMedicos" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        
+        <if test="paramBusquedaReporte.listaPaciente != null">
+            AND pa.idPaciente IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaPaciente" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaUsuarios != null">
+            AND si.idUsuarioEnviada IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaUsuarios" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaEstructuras != null">
+            AND p.idEstructura IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaEstructuras" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaAlmacenes != null">
+            AND s.idEstructuraAlmacen IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaAlmacenes" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+<!--        <if test="paramBusquedaReporte.listDiagosticos != null">
+            AND s.idEstructuraAlmacen IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listDiagosticos" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>-->
+        ORDER BY p.fechaPrescripcion ASC, s.fechaProgramada ASC
+        LIMIT #{ paramBusquedaReporte.startingAt , jdbcType = INTEGER } , #{ paramBusquedaReporte.maxPerPage , jdbcType = INTEGER }
+    </select>
+
+    
+    <select id="obtenerTotalMezclas" resultType="Long" parameterType="Map"> 
+        SELECT COUNT(*) AS total FROM (
+            SELECT DISTINCT 
+            p.idPrescripcion , s.idSurtimiento , s2.idSolucion
+            , p.fechaFirma 
+            , p.folio AS folioPrescripcion 
+            , ep.estatus AS estatusPrescripcion  
+            , e.nombre AS nombreServicio
+            , IFNULL(CONCAT(pa.nombreCompleto,' ',pa.apellidoPaterno,' ',pa.apellidoMaterno),'') AS nombrePaciente
+            , s.fechaProgramada 
+            , s.folio AS folioSurtimiento
+            , s2.descripcion AS descripcionMezcla
+            , e2.nombre AS nombreAlmacen
+            , es.estatus AS estatusSurtimiento
+            , IFNULL(s2.loteMezcla, '') AS loteMezcla
+            , IFNULL(s2.caducidadMezcla, '') AS caducidadMezcla
+            , p.fechaPrescripcion 
+            , CONCAT(u.nombre,' ',u.apellidoPaterno,' ',u.apellidoMaterno) nombreMedico
+            , IFNULL(s2.fechaValPrescr,'') AS fechaValPrescr
+            , IFNULL(s2.comentValPrescr,'') AS comentValPrescr
+            , IFNULL(CONCAT(u3.nombreUsuario,' ',u3.apellidoPaterno,' ',u3.apellidoMaterno),'') AS usuarioValidaPresc
+            , IFNULL(s2.fechaValida,'') AS fechaValida 
+            , IFNULL(s2.comentValOrdenPrep,'') AS comentValOrdenPrep
+            , IFNULL(CONCAT(u4.nombreUsuario,' ',u4.apellidoPaterno,' ',u4.apellidoMaterno),'') AS usuarioValidaOP
+            , IFNULL( (SELECT sins.fechaEnviada FROM surtimientoInsumo sins WHERE sins.idSurtimiento = s.idSurtimiento LIMIT 1 ), '' ) AS fechaDispensacion
+            , IFNULL(CONCAT(u2.nombreUsuario,' ',u2.apellidoPaterno,' ',u2.apellidoMaterno),'') AS usuarioDispensa
+            , IFNULL(s2.fechaPrepara,'') AS fechaPrepara
+            , IFNULL(s2.comentariosPreparacion ,'') AS comentariosPreparacion
+            , IFNULL(CONCAT(u5.nombreUsuario,' ',u5.apellidoPaterno,' ',u5.apellidoMaterno),'') AS usuarioPrepara
+            , IFNULL(s2.fechaInspeccion,'') AS fechaInspeccion 
+            , IFNULL(s2.comentarioInspeccion ,'') AS comentarioInspeccion
+            , IFNULL(CONCAT(u6.nombreUsuario,' ',u6.apellidoPaterno,' ',u6.apellidoMaterno),'') AS usuarioInspecciona 
+            , IFNULL(s2.fechaAcondicionamiento,'') AS fechaAcondicionamiento 
+            , IFNULL(s2.comentarioAcondicionada ,'') AS comentarioAcondicionada
+            , IFNULL(CONCAT(u7.nombreUsuario,' ',u7.apellidoPaterno,' ',u7.apellidoMaterno),'') AS usuarioAcondiciona
+            , IFNULL(s2.fechaEntrega,'') AS fechaEntrega 
+            , IFNULL(s2.comentariosEntrega,'') AS comentariosEntrega
+            , IFNULL(CONCAT(u8.nombreUsuario,' ',u8.apellidoPaterno,' ',u8.apellidoMaterno),'') AS usuarioEntrega 
+            , IFNULL(ndc.fechaRecibe, '') AS fechaRecibe
+            , IFNULL(ndc.userRecibe, '') AS usuarioRecibe
+            , IFNULL(es2.descripcion, '') AS estatusSolucion
+            FROM prescripcion p 
+            JOIN estructura e ON p.idEstructura = e.idEstructura 
+            JOIN usuarios u ON p.idMedico = u.idUsuario 
+            JOIN estatusPrescripcion ep ON p.idEstatusPrescripcion = ep.idEstatusPrescripcion  
+            LEFT JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio 
+            LEFT JOIN visita v ON ps.idVisita = v.idVisita 
+            LEFT JOIN paciente pa ON v.idPaciente = pa.idPaciente 
+            JOIN prescripcionInsumo pin ON p.idPrescripcion = pin.idPrescripcion
+            JOIN medicamento m ON pin.idInsumo = m.idMedicamento 
+            JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+            JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion 
+            JOIN estructura e2 ON s.idEstructuraAlmacen = e2.idEstructura 
+            JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento 
+            JOIN surtimientoInsumo si ON ( s.idSurtimiento = si.idSurtimiento AND pin.idPrescripcionInsumo = si.idPrescripcionInsumo  )
+            LEFT JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+            LEFT JOIN inventario i ON se.idInventarioSurtido = i.idInventario 
+            LEFT JOIN fabricante f ON i.idFabricante = f.idFabricante 
+            LEFT JOIN usuarios u2 ON si.idUsuarioEnviada = u2.idUsuario 
+            LEFT JOIN solucion s2 ON s.idSurtimiento = s2.idSurtimiento 
+            LEFT JOIN estatusSolucion es2 ON s2.idEstatusSolucion = es2.idEstatusSolucion
+            LEFT JOIN usuarios u3 ON s2.idUsuarioValPrescr = u3.idUsuario
+            LEFT JOIN usuarios u4 ON s2.idUsuarioValida = u4.idUsuario 
+            LEFT JOIN usuarios u5 ON s2.idUsuarioPrepara = u5.idUsuario 
+            LEFT JOIN usuarios u6 ON s2.idUsuarioInspeccion = u6.idUsuario 
+            LEFT JOIN usuarios u7 ON s2.idUsuarioAcondiciona = u7.idUsuario 
+            LEFT JOIN usuarios u8 ON s2.idUsuarioEntrega = u8.idUsuario 
+            LEFT JOIN usuarios u9 ON s2.idUsuarioRecibe = u9.idUsuario 
+            LEFT JOIN notaDispenColectDetalle ndcd ON s.idSurtimiento = ndcd.idSurtimiento
+            LEFT JOIN notaDispenColect ndc ON ndcd.idNotaDispenColect = ndc.idNotaDispenColect AND ndc.idEstatusDispenColect != 2
+            WHERE 1=1
+            <if test=" paramBusquedaReporte.fechaInicio != null">
+                AND s.fechaProgramada 
+                    BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                    AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+            </if>        
+            <if test="paramBusquedaReporte.tipoInsumo > 0 ">
+                AND m.tipo = #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER }
+            </if>        
+            <if test="paramBusquedaReporte.listaInsumos != null">
+                AND m.idMedicamento IN 
+                <foreach item="item" index="index" collection="paramBusquedaReporte.listaInsumos" open="(" separator="," close=")">
+                    #{ item , jdbcType = VARCHAR }
+                </foreach>                   
+            </if>        
+            <if test="paramBusquedaReporte.listaMedicos != null">
+                AND p.idMedico IN
+                <foreach item="item" index="index" collection="paramBusquedaReporte.listaMedicos" open="(" separator="," close=")">
+                    #{ item , jdbcType = VARCHAR }
+                </foreach>
+            </if>
+            <if test="paramBusquedaReporte.listaPaciente != null">
+                AND pa.idPaciente IN
+                <foreach item="item" index="index" collection="paramBusquedaReporte.listaPaciente" open="(" separator="," close=")">
+                    #{ item , jdbcType = VARCHAR }
+                </foreach>
+            </if>
+            <if test="paramBusquedaReporte.listaUsuarios != null">
+                AND si.idUsuarioEnviada IN 
+                <foreach item="item" index="index" collection="paramBusquedaReporte.listaUsuarios" open="(" separator="," close=")">
+                    #{ item , jdbcType = VARCHAR }
+                </foreach>
+            </if>
+            <if test="paramBusquedaReporte.listaEstructuras != null">
+                AND p.idEstructura IN 
+                <foreach item="item" index="index" collection="paramBusquedaReporte.listaEstructuras" open="(" separator="," close=")">
+                    #{ item , jdbcType = VARCHAR }
+                </foreach>
+            </if>
+            <if test="paramBusquedaReporte.listaAlmacenes != null">
+                AND s.idEstructuraAlmacen IN 
+                <foreach item="item" index="index" collection="paramBusquedaReporte.listaAlmacenes" open="(" separator="," close=")">
+                    #{ item , jdbcType = VARCHAR }
+                </foreach>
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion != null">
+                AND s2.idEstatusSolucion = #{ paramBusquedaReporte.idEstatusSolucion } 
+            </if>
+        ) as s1;
+    </select>
+        
+    <select id="obtenerMezclas" resultType="mx.mc.model.Mezcla" parameterType="Map">
+        SELECT DISTINCT 
+	p.idPrescripcion , s.idSurtimiento , s2.idSolucion
+	, p.fechaFirma 
+	, p.folio AS folioPrescripcion 
+	, ep.estatus AS estatusPrescripcion  
+	, e.nombre AS nombreServicio
+        , IFNULL(CONCAT(pa.nombreCompleto,' ',pa.apellidoPaterno,' ',pa.apellidoMaterno),'') AS nombrePaciente
+        , s.fechaProgramada 
+	, s.folio AS folioSurtimiento
+        , s2.descripcion AS descripcionMezcla
+        , e2.nombre AS nombreAlmacen
+        , es.estatus AS estatusSurtimiento
+        , IFNULL(s2.loteMezcla, '') AS loteMezcla
+        , s2.caducidadMezcla
+        , p.fechaPrescripcion 
+   	, CONCAT(u.nombre,' ',u.apellidoPaterno,' ',u.apellidoMaterno) nombreMedico
+        , s2.fechaValPrescr
+        , IFNULL(s2.comentValPrescr,'') AS comentValPrescr
+        , IFNULL(CONCAT(u3.nombreUsuario,' ',u3.apellidoPaterno,' ',u3.apellidoMaterno),'') AS usuarioValidaPresc
+        , fechaValida
+        , IFNULL(s2.comentValOrdenPrep,'') AS comentValOrdenPrep
+        , IFNULL(CONCAT(u4.nombreUsuario,' ',u4.apellidoPaterno,' ',u4.apellidoMaterno),'') AS usuarioValidaOP
+        , (SELECT sins.fechaEnviada FROM surtimientoInsumo sins WHERE sins.idSurtimiento = s.idSurtimiento LIMIT 1 ) AS fechaDispensacion
+        , IFNULL(CONCAT(u2.nombreUsuario,' ',u2.apellidoPaterno,' ',u2.apellidoMaterno),'') AS usuarioDispensa
+        , s2.fechaPrepara
+        , IFNULL(s2.comentariosPreparacion ,'') AS comentariosPreparacion
+        , IFNULL(CONCAT(u5.nombreUsuario,' ',u5.apellidoPaterno,' ',u5.apellidoMaterno),'') AS usuarioPrepara
+        , s2.fechaInspeccion 
+        , IFNULL(s2.comentarioInspeccion ,'') AS comentarioInspeccion
+        , IFNULL(CONCAT(u6.nombreUsuario,' ',u6.apellidoPaterno,' ',u6.apellidoMaterno),'') AS usuarioInspecciona 
+        , s2.fechaAcondicionamiento 
+        , IFNULL(s2.comentarioAcondicionada ,'') AS comentarioAcondicionada
+        , IFNULL(CONCAT(u7.nombreUsuario,' ',u7.apellidoPaterno,' ',u7.apellidoMaterno),'') AS usuarioAcondiciona
+	, s2.fechaEntrega 
+        , IFNULL(s2.comentariosEntrega,'') AS comentariosEntrega
+        , IFNULL(CONCAT(u8.nombreUsuario,' ',u8.apellidoPaterno,' ',u8.apellidoMaterno),'') AS usuarioEntrega 
+        , ndc.fechaRecibe
+        , IFNULL(ndc.userRecibe, '') AS usuarioRecibe
+        , IFNULL(es2.descripcion, '') AS estatusSolucion
+        , IFNULL(ndc.fechaRecibe, IFNULL(s2.fechaEntrega, IFNULL(s2.fechaAcondicionamiento, IFNULL(s2.fechaInspeccion, IFNULL(s2.fechaPrepara, s2.fechaValida))))) AS ultimoMovimiento
+        , s2.idEstatusSolucion
+        FROM prescripcion p 
+        JOIN estructura e ON p.idEstructura = e.idEstructura 
+        JOIN usuarios u ON p.idMedico = u.idUsuario 
+        JOIN estatusPrescripcion ep ON p.idEstatusPrescripcion = ep.idEstatusPrescripcion  
+        LEFT JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio 
+        LEFT JOIN visita v ON ps.idVisita = v.idVisita 
+        LEFT JOIN paciente pa ON v.idPaciente = pa.idPaciente 
+        JOIN prescripcionInsumo pin ON p.idPrescripcion = pin.idPrescripcion
+        JOIN medicamento m ON pin.idInsumo = m.idMedicamento 
+        JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion 
+        JOIN estructura e2 ON s.idEstructuraAlmacen = e2.idEstructura 
+        JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento 
+        JOIN surtimientoInsumo si ON ( s.idSurtimiento = si.idSurtimiento AND pin.idPrescripcionInsumo = si.idPrescripcionInsumo  )
+        LEFT JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        LEFT JOIN inventario i ON se.idInventarioSurtido = i.idInventario 
+        LEFT JOIN fabricante f ON i.idFabricante = f.idFabricante 
+        LEFT JOIN usuarios u2 ON si.idUsuarioEnviada = u2.idUsuario 
+        LEFT JOIN solucion s2 ON s.idSurtimiento = s2.idSurtimiento 
+        LEFT JOIN estatusSolucion es2 ON s2.idEstatusSolucion = es2.idEstatusSolucion
+        LEFT JOIN usuarios u3 ON s2.idUsuarioValPrescr = u3.idUsuario
+        LEFT JOIN usuarios u4 ON s2.idUsuarioValida = u4.idUsuario 
+        LEFT JOIN usuarios u5 ON s2.idUsuarioPrepara = u5.idUsuario 
+        LEFT JOIN usuarios u6 ON s2.idUsuarioInspeccion = u6.idUsuario 
+        LEFT JOIN usuarios u7 ON s2.idUsuarioAcondiciona = u7.idUsuario 
+        LEFT JOIN usuarios u8 ON s2.idUsuarioEntrega = u8.idUsuario 
+        LEFT JOIN usuarios u9 ON s2.idUsuarioRecibe = u9.idUsuario 
+        LEFT JOIN notaDispenColectDetalle ndcd ON s.idSurtimiento = ndcd.idSurtimiento
+        LEFT JOIN notaDispenColect ndc ON ndcd.idNotaDispenColect = ndc.idNotaDispenColect AND ndc.idEstatusDispenColect != 2
+        WHERE 1=1
+        <if test=" paramBusquedaReporte.fechaInicio != null">
+            AND s.fechaProgramada 
+                BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <if test="paramBusquedaReporte.tipoInsumo > 0 ">
+            AND m.tipo = #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER }
+        </if>        
+        <if test="paramBusquedaReporte.listaInsumos != null">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaInsumos" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>                   
+        </if>        
+        <if test="paramBusquedaReporte.listaMedicos != null">
+            AND p.idMedico IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaMedicos" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaPaciente != null">
+            AND pa.idPaciente IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaPaciente" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaUsuarios != null">
+            AND si.idUsuarioEnviada IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaUsuarios" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaEstructuras != null">
+            AND p.idEstructura IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaEstructuras" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaAlmacenes != null">
+            AND s.idEstructuraAlmacen IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaAlmacenes" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.idEstatusSolucion != null">
+            AND s2.idEstatusSolucion = #{ paramBusquedaReporte.idEstatusSolucion } 
+        </if>
+        ORDER BY p.fechaPrescripcion ASC, s.fechaProgramada ASC
+        LIMIT #{ paramBusquedaReporte.startingAt , jdbcType = INTEGER } , #{ paramBusquedaReporte.maxPerPage , jdbcType = INTEGER }
+    </select>
+    
+    <select id="obtenerTotalMezclasEstatusSol" resultType="Long" parameterType="Map"> 
+        SELECT COUNT(*) AS total FROM (
+        SELECT DISTINCT p.idPrescripcion , s.idSurtimiento , s2.idSolucion , p.fechaFirma , p.folio AS folioPrescripcion 
+            , ep.estatus AS estatusPrescripcion  , e.nombre AS nombreServicio  
+            , IFNULL(CONCAT(pa.nombreCompleto, ' ', pa.apellidoPaterno, ' ', pa.apellidoMaterno), '') AS nombrePaciente  
+            , s.fechaProgramada , s.folio AS folioSurtimiento , s2.descripcion  AS descripcionMezcla  
+            , e2.nombre AS nombreAlmacen , es.estatus AS estatusSurtimiento , '' AS loteMezcla, s2.caducidadMezcla, p.fechaPrescripcion  
+            , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) nombreMedico
+            <if test="paramBusquedaReporte.idEstatusSolucion == 5">
+                , s2.fechaValPrescr, s2.comentValPrescr
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 5 or paramBusquedaReporte.idEstatusSolucion == 6">
+               , CONCAT(uv.nombre, ' ', uv.apellidoPaterno, ' ', uv.apellidoMaterno) AS usuarioValidaPresc
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 7" >
+                , s2.fechaValida, s2.comentValOrdenPrep, CONCAT(uva.nombre, ' ', uva.apellidoPaterno, ' ', uva.apellidoMaterno)  AS usuarioValidaOP
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 10" >
+                , s2.fechaPrepara, s2.comentariosPreparacion, CONCAT(up.nombre, ' ', up.apellidoPaterno, ' ', up.apellidoMaterno) AS usuarioPrepara
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 11 or paramBusquedaReporte.idEstatusSolucion == 12" >
+                , s2.fechaInspeccion, '' AS comentarioInspeccion, CONCAT(ui.nombre, ' ', ui.apellidoPaterno, ' ', ui.apellidoMaterno) AS usuarioInspecciona
+            </if> 
+            <if test="paramBusquedaReporte.idEstatusSolucion == 13 or paramBusquedaReporte.idEstatusSolucion == 14" >
+                , s2.fechaAcondicionamiento, '' AS comentarioAcondicionada, CONCAT(ua.nombre, ' ', ua.apellidoPaterno, ' ', ua.apellidoMaterno) AS usuarioAcondiciona
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 15" >
+                , ndc.fechaDispensa AS fechaDispensacion, CONCAT(ud.nombre, ' ', ud.apellidoPaterno, ' ', ud.apellidoMaterno) AS usuarioDispensa
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 16" >
+                 , ndc.fechaDistribuye AS fechaEntrega, '' AS comentariosEntrega, CONCAT(ue.nombre, ' ', ue.apellidoPaterno, ' ', ue.apellidoMaterno) AS usuarioEntrega, ndc.fechaRecibe, ndc.userRecibe AS usuarioRecibe
+            </if>
+            <!-- if test="paramBusquedaReporte.idEstatusSolucion == 26" >
+                , s2.fechaAutoriza, s2.comentarioAutoriza, CONCAT(ua.nombre, ' ', ua.apellidoPaterno, ' ', ua.apellidoMaterno) AS usuarioAutoriza
+            </if -->
+            , IFNULL(es2.descripcion, '') AS estatusSolucion, 
+            IFNULL(s2.fechaEntrega, IFNULL(s2.fechaAcondicionamiento, IFNULL(s2.fechaInspeccion, IFNULL(s2.fechaPrepara, s2.fechaValida)))) AS ultimoMovimiento  
+            <if test="paramBusquedaReporte.idEstatusSolucion == 4 or paramBusquedaReporte.idEstatusSolucion == 6 or paramBusquedaReporte.idEstatusSolucion == 9 or paramBusquedaReporte.idEstatusSolucion == 20">
+                ,s2.comentariosRechazo, s2.updateFecha
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 4  or paramBusquedaReporte.idEstatusSolucion == 9 or paramBusquedaReporte.idEstatusSolucion == 20">
+                , CONCAT(ur.nombre, ' ', ur.apellidoPaterno, ' ', ur.apellidoMaterno) AS usuarioRechaza
+            </if>      
+            , s2.idEstatusSolucion      
+            FROM prescripcion p 
+            JOIN estructura e ON p.idEstructura = e.idEstructura 
+            JOIN usuarios u ON p.idMedico = u.idUsuario 
+            JOIN estatusPrescripcion ep ON p.idEstatusPrescripcion = ep.idEstatusPrescripcion 
+            LEFT JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio 
+            LEFT JOIN visita v ON ps.idVisita = v.idVisita 
+            LEFT JOIN paciente pa ON v.idPaciente = pa.idPaciente 
+            JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion 
+            JOIN estructura e2 ON s.idEstructuraAlmacen = e2.idEstructura 
+            JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento 
+            LEFT JOIN solucion s2 ON s.idSurtimiento = s2.idSurtimiento 
+            LEFT JOIN estatusSolucion es2 ON s2.idEstatusSolucion = es2.idEstatusSolucion 
+            <if test="paramBusquedaReporte.idEstatusSolucion == 4 or paramBusquedaReporte.idEstatusSolucion == 9">
+                JOIN usuarios ur ON s2.idUsuarioRechaza = ur.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 5 or paramBusquedaReporte.idEstatusSolucion == 6">
+                JOIN usuarios uv ON s2.idUsuarioValPrescr = uv.idUsuario
+            </if> 
+            <if test="paramBusquedaReporte.idEstatusSolucion == 7" >
+                JOIN usuarios uva ON s2.idUsuarioValida = uva.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 10" >
+                JOIN usuarios up ON s2.idUsuarioPrepara = up.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 11 or paramBusquedaReporte.idEstatusSolucion == 12" >
+                JOIN usuarios ui ON s2.idUsuarioInspeccion = ui.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 13 or paramBusquedaReporte.idEstatusSolucion == 14" >
+                JOIN usuarios ua ON s2.idUsuarioAcondiciona = ua.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 15 or paramBusquedaReporte.idEstatusSolucion == 16" >
+                LEFT JOIN notaDispenColectDetalle ndcd ON s.idSurtimiento = ndcd.idSurtimiento
+                LEFT JOIN notaDispenColect ndc ON ndcd.idNotaDispenColect = ndc.idNotaDispenColect                  
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 15">
+                JOIN usuarios ud ON ndc.idUsuarioDispensa = ud.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 16">
+                JOIN usuarios ue ON ndc.idUsuarioDispensa = ue.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 20">
+                JOIN usuarios ur ON s2.idUsuarioCancela = ur.idUsuario
+            </if>
+            <!-- if test="paramBusquedaReporte.idEstatusSolucion == 26">
+                JOIN usuarios ua ON s2.idUsuarioAutoriza = ua.idUsuario
+            </if -->
+        WHERE 1 = 1 
+            <if test="paramBusquedaReporte.idEstatusSolucion == 15" >
+                AND ndc.idEstatusDispenColect = 3
+            </if> 
+            <if test="paramBusquedaReporte.idEstatusSolucion == 16" >
+                AND ndc.idEstatusDispenColect = 7
+            </if> 
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == null">
+            AND s.fechaProgramada 
+                BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>     
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 2">
+            AND p.fechaPrescripcion 
+                BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <if test="paramBusquedaReporte.idEstatusSolucion != null and (paramBusquedaReporte.idEstatusSolucion == 4 or paramBusquedaReporte.idEstatusSolucion == 6 or paramBusquedaReporte.idEstatusSolucion == 9 or paramBusquedaReporte.idEstatusSolucion == 20)">
+            AND s2.updateFecha 
+                BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>        
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 5">
+            AND s2.fechaValPrescr
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <!-- if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 6">
+            AND s2.updateFecha
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if -->
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 7">
+            AND s2.fechaValida
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <!-- if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 9">
+            AND a
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if -->
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 10">
+            AND s2.fechaPrepara
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.fechaInicio != null and (paramBusquedaReporte.idEstatusSolucion == 11 or paramBusquedaReporte.idEstatusSolucion == 12)">
+            AND s2.fechaInspeccion
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.fechaInicio != null and (paramBusquedaReporte.idEstatusSolucion == 13 or paramBusquedaReporte.idEstatusSolucion == 14)">
+            AND s2.fechaAcondicionamiento
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 15">
+            AND ndc.fechaDispensa
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 16">
+            AND ndc.fechaDistribuye
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>   
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 26">
+            AND s.fechaProgramada 
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <!-- if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 26">
+            AND s2.fechaAutoriza
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if -->  
+        <!-- if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 20">
+            AND s2.updateFecha
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if --> 
+        <if test="paramBusquedaReporte.tipoInsumo > 0 ">
+            AND m.tipo = #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER }
+        </if>        
+        <if test="paramBusquedaReporte.listaInsumos != null">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaInsumos" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>                   
+        </if>        
+        <if test="paramBusquedaReporte.listaMedicos != null">
+            AND p.idMedico IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaMedicos" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaPaciente != null">
+            AND pa.idPaciente IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaPaciente" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaUsuarios != null">
+            AND si.idUsuarioEnviada IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaUsuarios" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaEstructuras != null">
+            AND p.idEstructura IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaEstructuras" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaAlmacenes != null">
+            AND s.idEstructuraAlmacen IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaAlmacenes" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <!-- Se deja validación por que aun no se persiste este estatus -->
+        <if test="paramBusquedaReporte.idEstatusSolucion != null and paramBusquedaReporte.idEstatusSolucion == 16">
+            AND s2.idEstatusSolucion = 15 
+        </if>
+        <if test="paramBusquedaReporte.idEstatusSolucion != null and (paramBusquedaReporte.idEstatusSolucion == 4 or paramBusquedaReporte.idEstatusSolucion == 6 or paramBusquedaReporte.idEstatusSolucion == 9 or paramBusquedaReporte.idEstatusSolucion == 11 or paramBusquedaReporte.idEstatusSolucion == 13 or paramBusquedaReporte.idEstatusSolucion == 20 or paramBusquedaReporte.idEstatusSolucion == 26)">
+            AND s2.idEstatusSolucion = #{ paramBusquedaReporte.idEstatusSolucion } 
+        </if>
+        ) as s1;
+    </select>  
+    
+    <select id="obtenerMezclasByEstatusSol" resultType="mx.mc.model.Mezcla" parameterType="Map">
+        SELECT DISTINCT p.idPrescripcion , s.idSurtimiento , s2.idSolucion , p.fechaFirma , p.folio AS folioPrescripcion 
+            , ep.estatus AS estatusPrescripcion  , e.nombre AS nombreServicio  
+            , IFNULL(CONCAT(pa.nombreCompleto, ' ', pa.apellidoPaterno, ' ', pa.apellidoMaterno), '') AS nombrePaciente  
+            , s.fechaProgramada , s.folio AS folioSurtimiento , s2.descripcion  AS descripcionMezcla  
+            , e2.nombre AS nombreAlmacen , es.estatus AS estatusSurtimiento , '' AS loteMezcla, s2.caducidadMezcla, p.fechaPrescripcion  
+            , CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) nombreMedico
+            <if test="paramBusquedaReporte.idEstatusSolucion == 5">
+                , s2.fechaValPrescr, s2.comentValPrescr
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 5 or paramBusquedaReporte.idEstatusSolucion == 6">
+               , CONCAT(uv.nombre, ' ', uv.apellidoPaterno, ' ', uv.apellidoMaterno) AS usuarioValidaPresc
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 7" >
+                , s2.fechaValida, s2.comentValOrdenPrep, CONCAT(uva.nombre, ' ', uva.apellidoPaterno, ' ', uva.apellidoMaterno)  AS usuarioValidaOP
+            </if> 
+            <if test="paramBusquedaReporte.idEstatusSolucion == 10" >
+                , s2.fechaPrepara, s2.comentariosPreparacion, CONCAT(up.nombre, ' ', up.apellidoPaterno, ' ', up.apellidoMaterno) AS usuarioPrepara
+            </if>  
+            <if test="paramBusquedaReporte.idEstatusSolucion == 11 or paramBusquedaReporte.idEstatusSolucion == 12" >
+                , s2.fechaInspeccion, '' AS comentarioInspeccion, CONCAT(ui.nombre, ' ', ui.apellidoPaterno, ' ', ui.apellidoMaterno) AS usuarioInspecciona
+            </if>            
+            <if test="paramBusquedaReporte.idEstatusSolucion == 13 or paramBusquedaReporte.idEstatusSolucion == 14" >
+                , s2.fechaAcondicionamiento, '' AS comentarioAcondicionada, CONCAT(ua.nombre, ' ', ua.apellidoPaterno, ' ', ua.apellidoMaterno) AS usuarioAcondiciona
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 15" >
+                , ndc.fechaDispensa AS fechaDispensacion, CONCAT(ud.nombre, ' ', ud.apellidoPaterno, ' ', ud.apellidoMaterno) AS usuarioDispensa
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 16" >
+                 , ndc.fechaDistribuye AS fechaEntrega, '' AS comentariosEntrega, CONCAT(ue.nombre, ' ', ue.apellidoPaterno, ' ', ue.apellidoMaterno) AS usuarioEntrega, ndc.fechaRecibe, ndc.userRecibe AS usuarioRecibe
+            </if>
+            <!-- if test="paramBusquedaReporte.idEstatusSolucion == 26" >
+                , s2.fechaAutoriza, s2.comentarioAutoriza, CONCAT(ua.nombre, ' ', ua.apellidoPaterno, ' ', ua.apellidoMaterno) AS usuarioAutoriza
+            </if -->
+           , IFNULL(es2.descripcion, '') AS estatusSolucion, 
+            IFNULL(s2.fechaEntrega, IFNULL(s2.fechaAcondicionamiento, IFNULL(s2.fechaInspeccion, IFNULL(s2.fechaPrepara, s2.fechaValida)))) AS ultimoMovimiento  
+            <if test="paramBusquedaReporte.idEstatusSolucion == 4 or paramBusquedaReporte.idEstatusSolucion == 9 or paramBusquedaReporte.idEstatusSolucion == 6 or paramBusquedaReporte.idEstatusSolucion == 20">
+                ,s2.comentariosRechazo, s2.updateFecha
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 4 or paramBusquedaReporte.idEstatusSolucion == 9 or paramBusquedaReporte.idEstatusSolucion == 20">
+                , CONCAT(ur.nombre, ' ', ur.apellidoPaterno, ' ', ur.apellidoMaterno) AS usuarioRechaza
+            </if>
+            , s2.idEstatusSolucion
+            FROM prescripcion p 
+            JOIN estructura e ON p.idEstructura = e.idEstructura 
+            JOIN usuarios u ON p.idMedico = u.idUsuario 
+            JOIN estatusPrescripcion ep ON p.idEstatusPrescripcion = ep.idEstatusPrescripcion 
+            LEFT JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio 
+            LEFT JOIN visita v ON ps.idVisita = v.idVisita 
+            LEFT JOIN paciente pa ON v.idPaciente = pa.idPaciente 
+            JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion 
+            JOIN estructura e2 ON s.idEstructuraAlmacen = e2.idEstructura 
+            JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento 
+            LEFT JOIN solucion s2 ON s.idSurtimiento = s2.idSurtimiento 
+            LEFT JOIN estatusSolucion es2 ON s2.idEstatusSolucion = es2.idEstatusSolucion 
+            <if test="paramBusquedaReporte.idEstatusSolucion == 4 or paramBusquedaReporte.idEstatusSolucion == 9">
+                JOIN usuarios ur ON s2.idUsuarioRechaza = ur.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 5 or paramBusquedaReporte.idEstatusSolucion == 6">
+                JOIN usuarios uv ON s2.idUsuarioValPrescr = uv.idUsuario
+            </if>   
+            <if test="paramBusquedaReporte.idEstatusSolucion == 7" >
+                JOIN usuarios uva ON s2.idUsuarioValida = uva.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 10" >
+                JOIN usuarios up ON s2.idUsuarioPrepara = up.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 11 or paramBusquedaReporte.idEstatusSolucion == 12" >
+                JOIN usuarios ui ON s2.idUsuarioInspeccion = ui.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 13 or paramBusquedaReporte.idEstatusSolucion == 14" >
+                JOIN usuarios ua ON s2.idUsuarioAcondiciona = ua.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 15 or paramBusquedaReporte.idEstatusSolucion == 16" >
+                LEFT JOIN notaDispenColectDetalle ndcd ON s.idSurtimiento = ndcd.idSurtimiento
+                LEFT JOIN notaDispenColect ndc ON ndcd.idNotaDispenColect = ndc.idNotaDispenColect                  
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 15">
+                JOIN usuarios ud ON ndc.idUsuarioDispensa = ud.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 16">
+                JOIN usuarios ue ON ndc.idUsuarioDispensa = ue.idUsuario
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 20">
+                JOIN usuarios ur ON s2.idUsuarioCancela = ur.idUsuario
+            </if>
+            <!-- if test="paramBusquedaReporte.idEstatusSolucion == 26">
+                JOIN usuarios ua ON s2.idUsuarioAutoriza = ua.idUsuario
+            </if -->
+            WHERE 1 = 1 
+            <if test="paramBusquedaReporte.idEstatusSolucion == 15" >
+                AND ndc.idEstatusDispenColect = 3
+            </if>
+            <if test="paramBusquedaReporte.idEstatusSolucion == 16" >
+                AND ndc.idEstatusDispenColect = 7
+            </if> 
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == null">
+            AND s.fechaProgramada 
+                BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if> 
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 2">
+            AND p.fechaPrescripcion 
+                BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <if test="paramBusquedaReporte.idEstatusSolucion != null and (paramBusquedaReporte.idEstatusSolucion == 4 or paramBusquedaReporte.idEstatusSolucion == 6 or paramBusquedaReporte.idEstatusSolucion == 9 or paramBusquedaReporte.idEstatusSolucion == 20)">
+            AND s2.updateFecha 
+                BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>        
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 5">
+            AND s2.fechaValPrescr
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <!-- if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 6">
+            AND s2.updateFecha
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if -->
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 7">
+            AND s2.fechaValida
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <!-- if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 9">
+            AND s2.updateFecha
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if -->
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 10">
+            AND s2.fechaPrepara
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.fechaInicio != null and (paramBusquedaReporte.idEstatusSolucion == 11 or paramBusquedaReporte.idEstatusSolucion == 12)">
+            AND s2.fechaInspeccion
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.fechaInicio != null and (paramBusquedaReporte.idEstatusSolucion == 13 or paramBusquedaReporte.idEstatusSolucion == 14)">
+            AND s2.fechaAcondicionamiento
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 15">
+            AND ndc.fechaDispensa
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 16">
+            AND ndc.fechaDistribuye
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>  
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 26">
+            AND s.fechaProgramada 
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if>  
+        <!-- if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 26">
+            AND s2.fechaAutoriza
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if -->   
+        <!-- if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.idEstatusSolucion == 20">
+            AND s2.updateFecha
+            BETWEEN #{ paramBusquedaReporte.fechaInicio , jdbcType = TIMESTAMP }
+                AND #{ paramBusquedaReporte.fechaFin , jdbcType = TIMESTAMP }
+        </if -->     
+        <if test="paramBusquedaReporte.tipoInsumo > 0 ">
+            AND m.tipo = #{ paramBusquedaReporte.tipoInsumo , jdbcType = INTEGER }
+        </if>        
+        <if test="paramBusquedaReporte.listaInsumos != null">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaInsumos" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>                   
+        </if>        
+        <if test="paramBusquedaReporte.listaMedicos != null">
+            AND p.idMedico IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaMedicos" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaPaciente != null">
+            AND pa.idPaciente IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaPaciente" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaUsuarios != null">
+            AND si.idUsuarioEnviada IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaUsuarios" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaEstructuras != null">
+            AND p.idEstructura IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaEstructuras" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <if test="paramBusquedaReporte.listaAlmacenes != null">
+            AND s.idEstructuraAlmacen IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaAlmacenes" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR }
+            </foreach>
+        </if>
+        <!-- Se deja validación por que aun no se persiste este estatus -->
+        <if test="paramBusquedaReporte.idEstatusSolucion != null and paramBusquedaReporte.idEstatusSolucion == 16">
+            AND s2.idEstatusSolucion = 15 
+        </if>
+        <if test="paramBusquedaReporte.idEstatusSolucion != null and (paramBusquedaReporte.idEstatusSolucion == 4 or paramBusquedaReporte.idEstatusSolucion == 6 or paramBusquedaReporte.idEstatusSolucion == 9 or paramBusquedaReporte.idEstatusSolucion == 11 or paramBusquedaReporte.idEstatusSolucion == 13 or paramBusquedaReporte.idEstatusSolucion == 20 or paramBusquedaReporte.idEstatusSolucion == 26)">
+            AND s2.idEstatusSolucion = #{ paramBusquedaReporte.idEstatusSolucion } 
+        </if>
+        ORDER BY p.fechaPrescripcion ASC, s.fechaProgramada ASC
+        LIMIT #{ paramBusquedaReporte.startingAt , jdbcType = INTEGER } , #{ paramBusquedaReporte.maxPerPage , jdbcType = INTEGER }
+    </select>  
+</mapper>

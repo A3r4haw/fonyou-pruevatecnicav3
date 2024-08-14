@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Cuenta</title>
+    </h:head>
+
+    <h:body>
+
+        <ui:composition template="template/mainLayout.xhtml">
+
+            <ui:define name="content">
+
+                <div class="mainPanel">
+
+                    <div class="ui-g panel" >
+                        <div class="ui-g-12" style="text-align: center">
+
+                            <h3 style="background-color: #DDDDDD;text-align: center; padding-top: 5px; margin-top: 0px; padding-bottom: 0px">DATOS DEL USUARIO LOGUEADO</h3>
+
+                            <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+
+                            <h:form id="mainForm" role="medi"  >
+
+                                <div align="center">
+                                    <p:panelGrid columns="2">
+
+                                        <p:outputLabel style="font-weight: bolder; text-align: left" value="Nombre :" />
+
+                                        <p:inputText value="#{cuentaMB.usuarioExtendedSelect.nombre}" placeholder="nombre"
+                                                     style="width: 300px !important;" id="txtPaterno" disabled="#{cuentaMB.habilitaCampos}"/> 
+
+                                        <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Apellido Paterno :"  />
+                                        <p:inputText value="#{cuentaMB.usuarioExtendedSelect.apellidoPaterno}" placeholder="nombre" id="txtNombre" style="width: 300px !important;" 
+                                                     disabled="#{cuentaMB.habilitaCampos}"
+                                                     /> 
+
+                                        <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Apellido Materno :" />
+                                        <p:inputText value="#{cuentaMB.usuarioExtendedSelect.apellidoMaterno}" placeholder="apellido materno" 
+                                                     id="txMaterno" disabled="#{cuentaMB.habilitaCampos}"  style="width: 300px !important;"/> 
+
+                                        <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Usuario :" />
+                                        <p:inputText value="#{cuentaMB.usuarioExtendedSelect.nombreUsuario}" placeholder="nombre usuario" 
+                                                     id="txtUsuario" disabled="true" style="width: 300px !important;"/>                                                                               
+
+                                        <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Vigencia :" />
+                                        <p:inputText value="#{cuentaMB.usuarioExtendedSelect.fechaVigencia}"  placeholder="vigencia" id="txtVigencia" disabled="true" style="width: 300px !important;">
+                                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                                        </p:inputText> 
+
+                                        <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Área / Servicio :" />
+                                        <p:inputText value="#{cuentaMB.usuarioExtendedSelect.nombreServicio}" placeholder="servicio" id="txtServicio" disabled="true"
+                                                     style="width: 300px !important;"/> 
+
+                                        <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Cédula Profesional :" />
+                                        <p:inputText value="#{cuentaMB.usuarioExtendedSelect.cedProfesional}" placeholder="cédula prof." id="txtCedProfesional" disabled="true"
+                                                     style="width: 300px !important;"/> 
+
+                                        <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Perfil :" />
+                                        <p:inputText value="#{cuentaMB.usuarioExtendedSelect.perfil}" placeholder="Perfil usuario" 
+                                                     id="txtPerfil" disabled="true" style="width: 300px !important;"/> 
+
+                                        <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Cédula Especial :" />
+                                        <p:inputText value="#{cuentaMB.usuarioExtendedSelect.cedEspecialidad}" placeholder="cédula  esp." id="txtCedEspecial" disabled="true"
+                                                     style="width: 300px !important;"/> 
+
+                                        <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Correo Electrónico :" />
+                                        <p:inputText value="#{cuentaMB.usuarioExtendedSelect.correoElectronico}" placeholder="correo electrónico" id="txCorreo" disabled="#{cuentaMB.habilitaCampos}"
+                                                     style="width: 300px !important;"/> 
+
+                                        <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Contraseña :" />
+
+
+                                        <p:password id="txtPassword1" value="#{cuentaMB.contrasena}" match="txtPassword1" label="Clave" 
+                                                    requiredMessage="La clave es requerida"
+                                                    style="width: 300px !important;"
+                                                    feedback="true" 
+                                                    promptLabel="Ingrese Clave" weakLabel="Débil"
+                                                    goodLabel="Clave Segura" strongLabel="Muy Segura"
+                                                    disabled="#{cuentaMB.habilitaCampos}"/>
+
+                                        <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Confirmación Contraseña :" />
+                                        <p:password id="pwd2" value="#{cuentaMB.confirmContrasena}" match="pwd2" label="Password 2"
+                                                    disabled="#{cuentaMB.habilitaCampos}" style="width: 300px !important;"/>
+
+
+                                    </p:panelGrid>
+                                </div>
+
+
+                                <div class="ui-g-12" style="margin-top: 0px; text-align: center">    
+
+                                    <p:commandButton value="Editar"
+                                                     actionListener="#{cuentaMB.habilitarCampos()}"                                                     
+                                                     icon="fa fa-edit"  
+                                                     style="margin-top: 15px; margin-left: 55px"
+                                                     styleClass="btnMusAzul"                              
+                                                     update=":mainForm"
+                                                     />                    
+                                    <p:commandButton value="Guardar"
+                                                     disabled="#{cuentaMB.habilitaCampos}"                                                                                                         
+                                                     actionListener="#{cuentaMB.validaDatosCuentaUser()}"                                                                                                                                                          
+                                                     icon="fa fa-check-circle"  
+                                                     style="margin-top: 15px; margin-left: 55px"
+                                                     styleClass="btnMusAzul"
+                                                     update=":mainForm"
+                                                     />                                     
+
+                                   
+
+                                </div>       
+                            </h:form> 
+                        </div>
+                    </div>                                                                                                                                              
+                </div>
+            </ui:define>
+
+            <ui:define name="footer">
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+
+</html>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.EstructuraTipoSurtimientoMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.EstructuraTipoSurtimiento" parameterType="mx.mc.model.EstructuraTipoSurtimiento" >
+        select * from estructuraTipoSurtimiento
+    </select>
+    
+    <select id="obtenerIdAlmacen" resultType="java.lang.String" parameterType="Map" >
+        SELECT idTipoSurtimiento 
+        FROM estructuraTipoSurtimiento
+        WHERE idEstructuraAlmacen = #{idEstructuraAlmacen}
+    </select>
+    
+    <insert id="insertarList" parameterType="java.util.List"  >
+        INSERT INTO estructuraTipoSurtimiento(
+            idEstructuraTipoSurtimiento,
+            idEstructuraAlmacen,
+            idTipoSurtimiento
+        ) VALUES
+        <foreach collection="estructuraTipoSurtimientoList" item="item" separator="," index="index">  
+            (
+                #{item.idEstructuraTipoSurtimiento}
+                ,#{item.idEstructuraAlmacen}
+                ,#{item.idTipoSurtimiento}
+            )
+        </foreach>
+    </insert>
+    
+    <delete id="eliminarIdAlmacen"  parameterType="Map" >
+        DELETE FROM estructuraTipoSurtimiento
+        WHERE  
+        idEstructuraAlmacen = #{idEstructuraAlmacen}
+    </delete>
+    
+</mapper>

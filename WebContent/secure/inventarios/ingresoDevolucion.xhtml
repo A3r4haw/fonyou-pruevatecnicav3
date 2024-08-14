@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" > 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+	 <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="padding: 10px;">
+                    <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+                    <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                        <p:graphicImage name="/img/cargando.gif" />
+                    </p:dialog>
+                    <h:form id="formDevolucionReabasto">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                            <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+
+                        <div style="background: #808080;padding: 10px;">
+                            <p:outputLabel value="Ingreso Devolución" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;" />
+                            <p:outputLabel value="Almacén" 
+                                           style="margin-right: 10px;margin-left: 10px;color: #FFF;font-size: 14px;font-weight: bold;"/>
+                            <p:selectOneMenu id="comboAlmacen" 
+                                             value="#{ingresoDevolucionMB.idEstructura}"
+                                             disabled="#{!ingresoDevolucionMB.permiso.puedeVer}"
+                                             style="vertical-align: middle;"
+                                             filter="true"
+                                             filterMatchMode="contains">
+                                <p:ajax listener="#{ingresoDevolucionMB.obtenerOrdenesDevolucion}" 
+                                         update="tablaDevolucionReabasto" />              
+                                <f:selectItems value="#{ingresoDevolucionMB.listaEstructuras}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+                            <p:inputText id="busqueda" 
+                                         value="#{ingresoDevolucionMB.textoBusqueda}" 
+                                         style="width: 35%!important;border-radius:10px!important;margin-left: 30px;" 
+                                         placeholder="Buscar por folio, Nombre del solicitante..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15" style=""/>
+                            </i>
+                            <p:commandButton value="Buscar" 
+                                             actionListener="#{ingresoDevolucionMB.buscarDevolucion}"
+                                             update="tablaDevolucionReabasto, formDetalleDevolucion"
+                                             icon="fa fa-search" 
+                                             style="margin-left: 20px;"
+                                             oncomplete="if(args.estatusModal){ PF('modalDevolucion').show(); }">
+                            </p:commandButton>
+                        	</div>
+                        	
+                        	<p:dataTable id="tablaDevolucionReabasto"
+                                     var="devolucionReabasto"
+                                     value="#{ingresoDevolucionMB.listDevolucion}"
+                                     style="text-align: center;"
+                                     emptyMessage="No existen registros para mostrar."
+                                     selectionMode="single"
+                                     scrollable="true" 
+                                     scrollHeight="350"
+                                     selection="#{ingresoDevolucionMB.devolucionSelect}"
+                                     rowKey="#{devolucionReabasto.idDevolucion}">
+
+                            <p:ajax event="rowDblselect" oncomplete="PF('modalDevolucion').show();" 
+                                    update="formDetalleDevolucion" 
+                                    listener="#{ingresoDevolucionMB.mostrarModalDevolucion}"/>
+
+                            <p:column headerText="Folio">
+                                <h:outputText value="#{devolucionReabasto.folio}" />
+                            </p:column>
+                            <p:column headerText="Fecha">
+                                <h:outputLabel value="#{devolucionReabasto.fechaDevolucion}">
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy hh:mm" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Almacén Origen">
+                                <h:outputText value="#{devolucionReabasto.nombreOrigen}" />
+                            </p:column>
+                            <p:column headerText="Almacén Destino">
+                                <p:outputLabel value="#{devolucionReabasto.nombreDestino}" />
+                            </p:column>
+                            <p:column headerText="Estatus">
+                                <p:outputLabel value="#{devolucionReabasto.nombreEstatus}" />
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:outputLabel> </p:outputLabel>
+                            </f:facet>
+                        </p:dataTable>
+                    	</h:form>
+                    	
+                    	 <p:dialog header="Ingreso de Insumos Devueltos" 
+                              widgetVar="modalDevolucion"
+                              modal="true"
+                              closeOnEscape="true"
+                              resizable="false"
+                              width="80%">
+                        	<h:form id="formDetalleDevolucion">
+                            	<p:messages id="msgModal" closable="true" showDetail="false"/>
+                            	<div class="ui-g panelGris" >
+                            		<div class="ui-g-12" >
+                                		<div class="ui-g-12 ui-md-6 ui-lg-2">
+                                			<p:outputLabel style="margin-right: 10px;" value="Almacén Origen:" />
+                                			<br/>
+                                			<h:outputText style="margin-right: 10px;" class="textoNegrita" value="#{ingresoDevolucionMB.almacenOrigen}" />
+                                		</div>
+                                		<div class="ui-g-12 ui-md-6 ui-lg-2">
+                                			<p:outputLabel style="margin-right: 10px;" value="Almacén Destino:" />
+                                			<br/>
+                                			<h:outputText style="margin-right: 10px;" class="textoNegrita" value="#{ingresoDevolucionMB.almacenDestino}" />
+                                		</div>
+                                	<div class="ui-g-12 ui-md-6 ui-lg-1">
+                                		<p:outputLabel style="margin-right: 10px;" value="Cantidad: " />
+                                		<br/>
+                                		<p:inputText id="xCantidad" 
+                                     			value="#{ingresoDevolucionMB.xCantidad}"
+                                     			onkeypress="if (event.keyCode === 13) { return false; }"                               	    			 
+                                    			maxlength="5"
+                                                        size="4" 
+                                                        >
+                                   			<p:keyFilter regEx="/[0-9]/i"/>
+                        				</p:inputText>
+                                	</div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                		<p:outputLabel style="margin-right: 10px;" value="Motivo" />
+                                		<br/>
+                                		<p:selectOneMenu id="comboTipoMotivo" 
+                                             value="#{ingresoDevolucionMB.idTipoMotivo}"
+                                             disabled="#{!ingresoDevolucionMB.permiso.puedeVer}"
+                                             style="vertical-align: middle; margin-right: 10px;">
+			                                <f:selectItems value="#{ingresoDevolucionMB.listTipoMotivos}"
+			                                               var="tipoMotivo"
+			                                               itemValue="#{tipoMotivo.idTipoMotivo}"
+			                                               itemLabel="#{tipoMotivo.descripcion}"/>
+			                            </p:selectOneMenu>
+                                	</div>    
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                		<p:outputLabel style="margin-right: 10px;" value="Insummo: " />
+                                		<br/>
+                                		<p:inputText id="codMed" value="#{ingresoDevolucionMB.codigoBarras}" 
+                                     			onkeypress="if (event.keyCode === 13) { ingresarCodigo(); return false; }" 
+                                     			style="margin-right: 10px;"
+                                                        size="40" 
+                                                         >
+                            					<p:remoteCommand name="ingresarCodigo"
+                                                	actionListener="#{ingresoDevolucionMB.ingresarDevolucionPorCodigo}"
+                                                	update="codMed,tablaDetalleDev,msgModal,xCantidad"
+                                                 	process="@form"
+                                                 	global="false"
+                                                />
+                        				</p:inputText>
+                                	</div>                                	
+                                	<div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:commandButton value="Agregar Motivo" rendered="false"
+                                			 actionListener="#{ingresoDevolucionMB.asignarMotivoDevolucion}"
+                                			 onclick="PF('statusProcess').show();"
+                                			 update="tablaDetalleDev, msgModal"
+                                			 oncomplete="PF('statusProcess').hide();"                                                            
+                                             icon="fa fa-check-circle"  
+                                             style="margin-right: 10px;float: right;"
+                                             />                                		
+                                	</div>
+                                	</div>
+                            	</div>   
+                            	<br/> <br/>
+                            	<p:dataTable id="tablaDetalleDev"
+                                         var="insumo"
+                                         value="#{ingresoDevolucionMB.listDevolucionDetalle}"
+                                         style=""
+                                         scrollable="true" 
+                                         scrollHeight="350"
+                                         emptyMessage="No se encontraron Registros">
+                                    <p:column headerText="Clave" style="width: 10% !important;">
+                                    	<h:outputText value="#{insumo.claveInstitucional}" />
+                                	</p:column>
+                                    
+                                	<p:column headerText="Insumo" style="width: 30% !important;" >
+                                    	<h:outputLabel value="#{insumo.nombreCorto}" />
+                                	</p:column>
+                                    <p:column headerText="Presentación" style="width: 10% !important;" rendered="false">
+                                    	<h:outputText value="#{insumo.nombrePresentacion}" />
+                                	</p:column>
+                                    <p:column headerText="Pieza x caja" style="width: 10% !important;" rendered="false">
+	                                    <p:outputLabel value="#{insumo.factorTransformacion}" />
+	                                </p:column>
+	                                <p:column headerText="Lote" style="width: 10% !important;">
+                                            <p:outputLabel value="#{insumo.lote}" />
+	                                </p:column>
+	                                <p:column headerText="Caducidad" style="width: 10% !important;">
+                                            <p:outputLabel value="#{insumo.fechaCaducidad}" >
+                                                <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                            </p:outputLabel>
+	                                </p:column>
+	                                <p:column headerText="Cant. Devuelta" style="width: 10% !important;">
+	                                    <p:outputLabel value="#{insumo.cantidad}" />
+	                                </p:column>
+	                                <p:column headerText="Cant. Ingresar" style="width: 10% !important;">
+	                                	<p:outputLabel value="#{insumo.cantidadIngresar}" />
+	                                </p:column>
+	                                <p:column headerText="Motivo" style="width: 15% !important;">
+	                                	<p:outputLabel value="#{insumo.nombreMotivo}" />
+	                                </p:column>
+	                                <p:column headerText="Comentarios" style="width: 15% !important;">
+	                                    <p:inputText    value="#{insumo.comentario}" 
+	                                                    style="width: 100%" />
+	                                </p:column>
+	                                <f:facet name="footer">
+	                                    <p:outputLabel> </p:outputLabel>
+	                                </f:facet>
+                            </p:dataTable>
+                            <br/>
+                            <p:commandButton value="Cacelar" 
+                                             icon="fa fa-times-circle" 
+                                             style="margin-right: 10px;float: right;"
+                                             oncomplete="PF('modalDevolucion').hide();"
+                                             />
+                            <p:commandButton value="Ingresar" 
+                                             actionListener="#{ingresoDevolucionMB.registrarIngresoDevolucion}"
+                                             onclick="PF('statusProcess').show();"
+                                             update="formDevolucionReabasto,formDetalleDevolucion"
+                                             oncomplete="if (args.status) { PF('modalDevolucion').hide(); } PF('statusProcess').hide(); "
+                                             icon="fa fa-check-circle" 
+                                             style="margin-right: 10px;float: right;"
+                                             disabled="#{!ingresoDevolucionMB.permiso.puedeProcesar}"
+                                             > 
+                                <p:confirm header="Confirmación" message="Está seguro que desea ingresar los medicamentos al inventario ?" icon="ui-icon-alert" />
+                            </p:commandButton>                            
+                         </h:form>
+                      </p:dialog>
+                	</div>
+            	</ui:define>
+        	</ui:composition>
+        </h:body>                
+</html>

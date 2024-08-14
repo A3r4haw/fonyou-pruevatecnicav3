@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" > 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:head>
+        <title>Pacientes</title>
+        <h:outputScript library="primefaces" name="jquery/jquery.js" target="body" />
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="padding: 10px;">
+                    <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+                    <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                        <p:graphicImage name="/img/cargando.gif" />
+                    </p:dialog>
+
+                    <h:form id="formPrincipal">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <div style="background: #808080;padding: 10px;">
+                            <p:outputLabel value="Asignación de Cama a Paciente" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+                            <p:outputLabel value="Servicio:" 
+                                           style="margin-right: 10px;color: #FFF;font-size: 16px  !important;font-weight: bold;"/>
+                            <p:outputLabel value="#{asignacionCamaMB.estructuraUsuario.nombre}"
+                                           style="margin-right: 10px;color: #FFF;font-size: 16px  !important;font-weight: bold;"
+                                           rendered="#{!asignacionCamaMB.administrador}"/>
+                            <p:selectOneMenu id="comboAlmacen" 
+                                             value="#{asignacionCamaMB.idEstructura}"
+                                             disabled="#{!asignacionCamaMB.permiso.puedeVer}"
+                                             style="vertical-align: middle;margin-right: 10px;"
+                                             rendered="#{asignacionCamaMB.administrador}"
+                                             filter="true"
+                                             filterMatchMode="contains" >
+                                <p:ajax listener="#{asignacionCamaMB.obtenerPacientesPorComboServicio}" 
+                                        update="tablaPacientes" />
+                                <f:selectItems value="#{asignacionCamaMB.listaEstructuras}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+                            <p:inputText id="busqueda" 
+                                         value="#{asignacionCamaMB.textoBusqueda}" 
+                                         style="width: 40%!important;border-radius:10px!important;" 
+                                         placeholder="Buscar por nombre, clave de derechohabiencia..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15" style=""/>
+                            </i>
+
+                            <p:commandButton value="Buscar" 
+                                             actionListener="#{asignacionCamaMB.buscarRegistros}"
+                                             icon="fa fa-search" 
+                                             style="margin-left: 20px;"
+                                             global="false"
+                                             update="tablaPacientes"
+                                             disabled="#{!asignacionCamaMB.permiso.puedeVer}">
+                            </p:commandButton>
+                        </div>
+
+                        <p:dataTable id="tablaPacientes"
+                                     var="paciente" 
+                                     value="#{asignacionCamaMB.listaPacientes}" 
+                                     selectionMode="single"
+                                     selection="#{asignacionCamaMB.pacienteSelect}"
+                                     rowKey="#{paciente.idPaciente}"
+                                     style="text-align: center;"
+                                     emptyMessage="No existen registros para mostrar."
+                                     scrollHeight="300"
+                                     scrollable="true">
+
+                            <p:ajax event="rowDblselect" oncomplete="PF('modalPaciente').show();" 
+                                    update="formPrincipal" 
+                                    listener="#{asignacionCamaMB.mostrarDetallePacienteSelect}"/>
+                            <p:column headerText="Nombre" style="text-align: left;width: 18%"
+                                      sortBy="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno} " >
+
+                                <h:outputText value="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" />
+                            </p:column>
+                            <p:column headerText="Clave de paciente" style="text-align: left; width: 10%"
+                                      sortBy="#{paciente.pacienteNumero}">
+                                <h:outputText value="#{paciente.pacienteNumero}" />
+                            </p:column>
+                            <p:column headerText="Ubicación" style="text-align: left;width: 20%">
+                                <h:outputText value="#{paciente.claveEstructura} - #{paciente.nombreEstructura}" />
+                            </p:column>
+                            <p:column headerText="Cama" style="text-align: left;width: 7%"
+                                      sortBy="#{paciente.nombreCama}">
+                                <h:outputText value="#{paciente.nombreCama}" />
+                            </p:column>
+                            <p:column headerText="Periférico" style="text-align: left;width: 20%">
+                                <h:outputText value="#{paciente.nombreEstructuraPeriferico}" />
+                            </p:column>                            
+                            <p:column headerText="Estatus" style="text-align: left;width: 10%">
+                                <h:outputText value="#{paciente.estatusPaciente}" />
+                            </p:column>
+                            <p:column headerText="Acciones" exportable="false" style="width: 7%">
+                                <p:tooltip for="linkDetalle" value="Detalle" position="top"/>
+                                <p:commandLink id="linkDetalle"
+                                               actionListener="#{asignacionCamaMB.mostrarDetallePacienteBotonRegistro(paciente.idPaciente)}" 
+                                               style="margin: 5px;text-decoration: none;"
+                                               oncomplete="PF('modalPaciente').show();"
+                                               update=":formPrincipal">
+                                    <i class="fa fa-list" />
+                                </p:commandLink>
+                                <p:tooltip for="linkEgresoCama" value="Liberar Cama" position="top"/>
+                                <p:commandLink id="linkEgresoCama"
+                                               style="margin: 5px;text-decoration: none;color: #EC1527;"
+                                               actionListener="#{asignacionCamaMB.liberarCama(paciente)}"
+                                               rendered="#{paciente.idEstatusPaciente eq 4}"
+                                               update="formPrincipal">
+                                    <i class="fa fa-bed" />
+                                    <p:confirm header="Liberar Cama" message="Seguro que desea liberar la cama ?" icon="ui-icon-alert" />
+                                </p:commandLink>
+                                <p:tooltip for="linkIngresoCama" value="Asignar Cama" position="top"/>
+                                <p:commandLink id="linkIngresoCama"
+                                               style="margin: 5px;text-decoration: none;color: #4FB954;"
+                                               actionListener="#{asignacionCamaMB.cargarModalAsignacionCama(paciente)}"
+                                               oncomplete="PF('modalAsignCama').show();"
+                                               rendered="#{paciente.idEstatusPaciente ne 4}"
+                                               update="formAsignarCama">
+                                    <i class="fa fa-bed" />
+                                </p:commandLink>
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:dialog header="Datos de Paciente" 
+                                  widgetVar="modalPaciente"
+                                  modal="true"
+                                  resizable="false"
+                                  closeOnEscape="true"
+                                  closable="true"
+                                  >
+
+                            <p:tabView id="tabContainer">
+                                <p:tab>
+                                    <f:facet name="title">
+                                        <h:outputText value="Datos Personales" style="margin-right: 5px;"/>
+                                        <p:graphicImage name="/img/green_check.jpg" />
+                                    </f:facet>
+                                    <p:panelGrid columns="3" styleClass="ui-noborder">
+                                        <p:outputLabel>
+                                            Clave de Paciente *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Poliza de seguro *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Tipo de Paciente *
+                                        </p:outputLabel>
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.pacienteNumero}"
+                                                     disabled="true">
+                                        </p:inputText>
+                                        <p:inputText id="polizaSeguro"
+                                                     style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.claveDerechohabiencia}"
+                                                     disabled="true"/>
+                                        <p:inputText id="tipoPaciente" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.tipoPaciente}"
+                                                     style="width: 350px;"
+                                                     disabled="true" />
+                                        <p:outputLabel>
+                                            Unidad Médica de Referencia *
+                                        </p:outputLabel >
+                                        <p:outputLabel>
+                                            Nombre(s) *
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            Apellido Paterno *
+                                        </p:outputLabel>    
+
+                                        <p:inputText id="unidadMedica" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.unidadMedica}"
+                                                     style="width: 332px;"
+                                                     disabled="true" />
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.nombreCompleto}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.apellidoPaterno}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel>
+                                            Apellido Materno 
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            Sexo *
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            Fecha de nacimiento *
+                                        </p:outputLabel>    
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.apellidoMaterno}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.sexo}"
+                                                     disabled="true" />
+                                        <p:calendar id="fechaNac" 
+                                                    value="#{asignacionCamaMB.pacienteDetalle.fechaNacimiento}"
+                                                    size="56"
+                                                    disabled="true"
+                                                    navigator="true"
+                                                    yearRange="c-100:c"
+                                                    readonly="true"
+                                                    pattern="dd/MM/yyyy"
+                                                    locale="es"/>
+
+                                        <p:outputLabel>
+                                            rfc 
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            curp
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            Ocupación *
+                                        </p:outputLabel >
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.rfc}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.curp}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.ocupacion}"
+                                                     disabled="true"/>
+                                        <p:outputLabel>
+                                            Grupo Étnico *
+                                        </p:outputLabel >
+                                        <p:outputLabel>
+                                            Estado Civil *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Escolaridad *
+                                        </p:outputLabel >
+
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.grupoEtnico}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.estadoCivil}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.escolaridad}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel>
+                                            Religión *
+                                        </p:outputLabel >
+                                        <p:outputLabel>
+                                            Grupo Sanguíneo *
+                                        </p:outputLabel >
+                                        <p:outputLabel>
+                                            Nivel Socioeconómico *
+                                        </p:outputLabel >
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.religion}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.grupoSanguineo}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.nivelSocioeconomico}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel>
+                                            Tipo de vivienda *
+                                        </p:outputLabel>
+                                        <p:outputLabel />      
+                                        <p:outputLabel />      
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.tipoVivienda}"
+                                                     disabled="true"/>
+
+                                    </p:panelGrid>
+                                </p:tab>
+
+                                <p:tab id="tabDireccion">
+                                    <f:facet name="title">
+                                        <h:outputText value="Dirección" style="margin-right: 5px;"/>
+                                        <p:graphicImage name="/img/green_check.jpg" rendered="true"/>
+                                    </f:facet>
+                                    <p:panelGrid styleClass="ui-noborder" id="panelDireccion">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Calle *
+                                                </p:outputLabel >
+                                            </p:column>
+                                            <p:column> 
+                                                <p:outputLabel>
+                                                    No. Ext. *
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    No. Int. 
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{asignacionCamaMB.pacienteDetalle.calle}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{asignacionCamaMB.pacienteDetalle.numeroExterior}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{asignacionCamaMB.pacienteDetalle.numeroInterior}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Teléfono Principal (10 Dígitos) *
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Teléfono Secundario (10 Dígitos) 
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Extensión 
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:inputText id="telPrincipal"
+                                                             style="width: 350px;" 
+                                                             value="#{asignacionCamaMB.pacienteDetalle.telefonoCasa}"
+                                                             disabled="true" 
+                                                             validatorMessage="Solo se permiten numeros !!!" 
+                                                             maxlength="10">
+                                                    <p:keyFilter regEx="/[0-9]/i"/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{asignacionCamaMB.pacienteDetalle.telefonoOficina}"
+                                                             disabled="true"
+                                                             maxlength="10">
+                                                    <p:keyFilter regEx="/[0-9]/i"/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{asignacionCamaMB.pacienteDetalle.extension}"
+                                                             disabled="true"
+                                                             maxlength="10"/>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Teléfono Celular (10 Dígitos) 
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Correo Electronico 
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Cuenta de Facebook  
+                                                </p:outputLabel>   
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{asignacionCamaMB.pacienteDetalle.telefonoCelular}"
+                                                             disabled="true"
+                                                             maxlength="10">
+                                                    <p:keyFilter regEx="/[0-9]/i"/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{asignacionCamaMB.pacienteDetalle.correoElectronico}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value=""
+                                                             disabled="true"/>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Pais  *
+                                                </p:outputLabel>   
+                                            </p:column>
+
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Estado *
+                                                </p:outputLabel>   
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Municipio *
+                                                </p:outputLabel>    
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{asignacionCamaMB.pacienteDetalle.pais}"
+                                                             disabled="true"/>
+                                            </p:column>
+
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{asignacionCamaMB.pacienteDetalle.estado}"
+                                                             disabled="true"/>
+                                            </p:column>
+
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{asignacionCamaMB.pacienteDetalle.municipio}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Colonia *
+                                                </p:outputLabel>  
+                                            </p:column>                                            
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Código Postal 
+                                                </p:outputLabel>     
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{asignacionCamaMB.pacienteDetalle.colonia}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText id="codPostal"
+                                                             style="width: 350px;" 
+                                                             value="#{asignacionCamaMB.pacienteDetalle.codigoPostal}"
+                                                             disabled="true"/>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                </p:tab>   
+
+                                <p:tab>
+                                    <f:facet name="title">
+                                        <h:outputText value="Datos de Responsable Familiar" style="margin-right: 5px;"/>
+                                        <p:graphicImage name="/img/green_check.jpg" rendered="true"/>
+                                    </f:facet>
+                                    <p:panelGrid columns="3" styleClass="ui-noborder">
+                                        <p:outputLabel>
+                                            Nombre(s) *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Apellido Paterno *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Apellido Materno 
+                                        </p:outputLabel>
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.nombreResponsable}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.apellidoPaternoResponsable}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.apellidoMaternoResponsable}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel>
+                                            Parentesco *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            rfc 
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            curp
+                                        </p:outputLabel>
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.parentesco}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.rfcResponsable}"
+                                                     disabled="true"/>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.curpResponsable}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel>
+                                            Teléfono Principal (10 Dígitos) *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Teléfono Secundario (10 Dígitos) 
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Correo electrónico 
+                                        </p:outputLabel>
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.telefonoPrincipalResponsable}"
+                                                     disabled="true"
+                                                     maxlength="10">
+                                            <p:keyFilter regEx="/[0-9]/i"/>
+                                        </p:inputText>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.telefonoSecundarioResponsable}"
+                                                     disabled="true"
+                                                     maxlength="10">
+                                            <p:keyFilter regEx="/[0-9]/i"/>
+                                        </p:inputText>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.correoElectronicoResponsable}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel>
+                                            Responsable Legal *
+                                        </p:outputLabel>
+                                        <p:outputLabel />
+                                        <p:outputLabel />
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{asignacionCamaMB.pacienteDetalle.responsableLegal}"
+                                                     disabled="true"/>
+
+                                        <p:outputLabel />
+                                        <p:outputLabel />
+                                    </p:panelGrid>
+                                </p:tab>
+
+                            </p:tabView>
+                        </p:dialog>
+
+                    </h:form>
+
+                    <p:dialog header="ASIGNACIÓN DE CAMA" 
+                              widgetVar="modalAsignCama"
+                              modal="true"
+                              resizable="false"
+                              closeOnEscape="true"
+                              styleClass="no-scroll-dialog"
+                              width="60%" >
+                        <h:form id="formAsignarCama">
+                            <p:messages id="msgModalAsignCama" closable="true" showDetail="false" />
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                                <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                            </p:confirmDialog>
+                            <p:panelGrid columns="4">
+                                <p:outputLabel value="Clave Paciente" style="margin-right: 10px;margin-left: 10px;"/>
+                                <p:inputText disabled="true" value="#{asignacionCamaMB.pacienteSelect.claveDerechohabiencia}"/>
+                                <p:outputLabel value="Nombre" style="margin-right: 10px;"/>
+                                <p:inputText disabled="true" size="50" value="#{asignacionCamaMB.pacienteSelect.nombreCompleto} #{asignacionCamaMB.pacienteSelect.apellidoPaterno} #{asignacionCamaMB.pacienteSelect.apellidoMaterno}"/>
+                                <p:outputLabel value="Estatus" style="margin-right: 10px;margin-left: 10px;"/>
+                                <p:inputText disabled="true" value="#{asignacionCamaMB.pacienteSelect.estatusPaciente}"/>
+                                <p:outputLabel value="Cama" style="margin-right: 10px;margin-left: 10px;"/>
+                                <p:inputText disabled="true" value="#{asignacionCamaMB.numeroCama}"/>
+                            </p:panelGrid>
+                            <br/>
+                            <br/>
+                            <p:dataTable id="tablaCamas"
+                                         var="cama" 
+                                         value="#{asignacionCamaMB.listaCamas}" 
+                                         selection="#{asignacionCamaMB.camaSelect}"
+                                         rowKey="#{cama.idCama}"
+                                         style="text-align: center;"
+                                         emptyMessage="No existen registros para mostrar."
+                                         scrollHeight="300"
+                                         scrollable="true" >
+
+                                <p:column selectionMode="single" style="width:10%;text-align:center"/>
+                                <p:ajax  event="rowSelectRadio" 
+                                         listener="#{asignacionCamaMB.seleccionarCama}"
+                                         update="formAsignarCama" global="false"/>
+                                <p:column headerText="Número" style="text-align: left;width: 20%">
+                                    
+                                    <p:outputLabel value="#{cama.nombreCama}" />
+                                </p:column>
+                                <p:column headerText="Ubicación" style="text-align: left;width: 20%">
+                                    <p:outputLabel value="#{cama.ubicacion}" />
+                                </p:column>
+                                <p:column headerText="Tipo" style="text-align: left;width: 20%">
+                                    <p:outputLabel value="#{cama.nombreTipoCama}" />
+                                </p:column>
+                                <ui:remove>
+                                    <p:column headerText="Ubicación" style="text-align: left;width: 20%">
+                                        <p:outputLabel value="#{cama.ubicacion}" />
+                                    </p:column>
+                                </ui:remove>
+                                <p:column headerText="Estatus" style="text-align: left;width: 20%">
+                                    <p:outputLabel value="#{cama.nombreEstatusCama}" style="margin-right: 10px;"/> 
+                                    <p:outputLabel style="color: #4FB954;" rendered="#{cama.idEstatusCama eq 1}"><i class="fa fa-bed" /></p:outputLabel>
+                                    <p:outputLabel style="color: #EC1527;" rendered="#{cama.idEstatusCama ne 1}"><i class="fa fa-bed" /></p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                            <p:commandButton value="Asignar Cama" 
+                                             actionListener="#{asignacionCamaMB.asignarCama}"
+                                             icon="fa fa-bed" 
+                                             style="margin-left: 20px;float: right;"
+                                             styleClass="btnMusAzul"
+                                             global="false"
+                                             disabled="#{!asignacionCamaMB.permiso.puedeProcesar}" 
+                                             oncomplete="PF('modalAsignCama').hide()"
+                                             update="formPrincipal:tablaPacientes,formPrincipal:msg">
+                                <p:confirm header="Asignación de Cama" message="Confirma la asignación de Cama ?" icon="ui-icon-alert" />
+                            </p:commandButton>
+                            <p:commandButton value="Cancelar" 
+                                             icon="fa fa-ban" 
+                                             style="margin-left: 20px;float: right;"
+                                             oncomplete="PF('modalAsignCama').hide()"
+                                             global="false"
+                                             disabled="#{!asignacionCamaMB.permiso.puedeProcesar}" />
+                        </h:form>
+                    </p:dialog>
+
+                </div>
+            </ui:define>
+
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

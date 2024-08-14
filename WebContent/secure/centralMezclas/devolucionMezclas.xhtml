@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">                    
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" closeOnEscape="true" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Devolución de Mezclas"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;" />
+                            <p:outputLabel value="Almacén:"  style="color: #FFFFFF;font-size: medium !important;font-weight: bold;margin-right: 10px;" />
+                            <p:outputLabel value="#{devolucionMezclasMB.estructuraSelect.nombre}"  style="color: #FFFFFF;font-size: medium !important;font-weight: bold;margin-right: 50px;" rendered="#{!devolucionMezclasMB.isAdmin and !devolucionMezclasMB.isJefeArea}" />
+                            <p:selectOneMenu style="width: 150px;vertical-align: middle;margin-right: 10px;" value="#{devolucionMezclasMB.tipoAlmacen}" 
+                                             rendered="#{devolucionMezclasMB.isAdmin or devolucionMezclasMB.isJefeArea}" filter="true" filterPlaceholder="Nombre Almacén" >
+                                <p:ajax listener="#{devolucionMezclasMB.buscarMezclas}" 
+                                        update=":mainForm:tblDevoluciones" />
+                                <f:selectItem itemValue="#{null}" itemLabel="Seleccione una opción" noSelectionOption="true"/>
+                                <f:selectItems value="#{devolucionMezclasMB.estructuraList}" var="tipo" itemLabel="#{tipo.nombre}" itemValue="#{tipo.idEstructura}" />                                
+
+                            </p:selectOneMenu>
+                            <p:inputText id="textSearch" style="margin-top:20px;width: 40%!important;" 
+                                         value="#{devolucionMezclasMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar por: Folio, Fecha, Estatus, Solicitante" />
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>                                
+                            </i>                            
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{devolucionMezclasMB.buscarMezclas()}"
+                                             update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();" style=" margin-left: 20px; margin-bottom: 8px;" />
+                        </div>
+                        <p:commandButton class="btnNew" value="Crear Devolución" icon="fa fa-file-o" rendered="#{devolucionMezclasMB.permiso.puedeCrear}"
+                                         onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('mdlDetalle').show();" update=":frmDetalle"
+                                         actionListener="#{devolucionMezclasMB.nuevoRetiro()}" ajax="true"  style=" margin: 5px 0; " styleClass="btnMusAzul" />                                                            
+                        <br/>
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true"  closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <p:dataTable emptyMessage="No se encontraron registros" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"  reflow="true"                                       
+                                     paginatorPosition="bottom" widgetVar="tblDevoluciones" 
+                                     value="#{devolucionMezclasMB.devolucionMezclaLazy}"
+                                     var="item" 
+                                     lazy="true" id="tblDevoluciones" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" selectionMode="single" 
+                                     selection="#{devolucionMezclasMB.devolucionMezclaSelect}"
+                                     rowKey="#{item.idDevolucionMezcla}" rowIndexVar="row">
+
+                            <p:ajax event="rowDblselect" oncomplete="PF('mdlDetalle').show();" 
+                                    update=":frmDetalle" listener="#{devolucionMezclasMB.obtenerDetalleRetiro}"/>
+
+                            <p:column style="text-align: left;"  headerText="Fecha"  width="15%" sortBy="#{item.creacion}">
+                                <h:outputText value="#{item.creacion}" class="" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align: left;"   headerText="Folio" width="15%" sortBy="#{item.folio}">
+                                <h:outputText value="#{item.folio}" class="" />
+                            </p:column>                        
+
+                            <p:column style="text-align: left;"  headerText="Area"  width="20%" sortBy="#{item.area}">
+                                <h:outputText value="#{item.area}" class="" />
+                            </p:column>
+
+                            <p:column style="text-align: left;"   headerText="Cama" width="15%" sortBy="#{item.cama}">
+                                <h:outputText value="#{item.cama}" class="" />
+                            </p:column> 
+
+                            <p:column style="text-align: left;"   headerText="Paciente" width="15%" sortBy="#{item.paciente}">
+                                <h:outputText value="#{item.paciente}" class="" />
+                            </p:column> 
+
+                            <p:column style="text-align: left;"   headerText="Registro" width="15%" sortBy="#{item.registro}">
+                                <h:outputText value="#{item.registro}" class="" />
+                            </p:column>  
+
+                            <p:column style="text-align: left;"  headerText="Motivo"  width="20%" sortBy="#{item.motivoRetiro}">
+                                <h:outputText value="#{item.motivoRetiro}"  class="" />
+                            </p:column>
+                            <ui:remove>
+                                <p:column style="text-align: left !important; "  headerText="Estatus"  width="20%" sortBy="#{item.estatus}">
+                                    <h:outputText value="#{item.estatus}"   class="" />
+                                </p:column> </ui:remove>
+
+                            <p:column style="text-align: left;" headerText="Acciones"  width="10%">
+                                <p:commandLink title="Eliminar"  actionListener="# {devolucionMezclasMB.deleteReabasto(item.idReabasto)}"  rendered="#{(item.idEstatusSolucion == 1 ) ? 'true' : 'false'}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":mainForm:tblDevoluciones" >
+                                    <i class="fa fa-trash-o iconMusAzul" />
+                                    <p:confirm header="Eliminación del Reabasto" message="Realmente desea Eliminar la solicitud" icon="ui-icon-alert"  />
+                                </p:commandLink>&nbsp;
+                                <p:commandLink title="Cancelar"  actionListener="# {devolucionMezclasMB.cancelReabastoOfList(item.idReabasto)}"  rendered="#{(item.idEstatusSolucion == 2) ? 'true' : 'false'}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":mainForm:tblDevoluciones" >
+                                    <i class="fa fa-ban iconMusAzul" />
+                                    <p:confirm header="Cancelación del Reabasto" message="Realmente desea cancelar la solicitud" icon="ui-icon-alert"  />
+                                </p:commandLink>&nbsp;
+                                <p:commandLink title="Imprimir"  actionListener="#{devolucionMezclasMB.printOrdenReabasto(item.idDevolucionMezcla)}" update=":formPDF"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();PF('mdlReport').show();" >
+                                    <i class="fa fa-print iconMusAzul" />                                    
+                                </p:commandLink>
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:form>
+
+                    <p:dialog header="Devolución de Mezclas" widgetVar="mdlDetalle" 
+                                width="95%" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true" 
+                              style="font-size: xx-small !important;" >
+                        <h:form id="frmDetalle" style="margin: 0px;padding: 0px !important">
+                            <p:messages globalOnly="false" closable="true" showDetail="false"  >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:panelGrid styleClass="panelGrid">
+                                <p:row styleClass="rows">
+                                    <p:column styleClass="colum" >
+                                        <p:outputLabel value="Folio:" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="#{devolucionMezclasMB.devolucionMezclaSelect.folio}" tabindex="1" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Creación:" />
+                                    </p:column>
+                                    <p:column  styleClass="colum" >
+                                        <p:outputLabel  value="#{devolucionMezclasMB.devolucionMezclaSelect.creacion}" tabindex="2"  >
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Registro:" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel  value="#{devolucionMezclasMB.devolucionMezclaSelect.registro}" tabindex="3" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Estatus:" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel  value="#{devolucionMezclasMB.devolucionMezclaSelect.estatus}" tabindex="4" />
+                                    </p:column>
+                                </p:row>
+                                <p:row  styleClass="rows">
+                                    <p:column  styleClass="colum" >
+                                        <p:outputLabel value="Orden Preparación:"/>
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:autoComplete  size="25" id="insumo" tabindex="5"
+                                                         value="#{devolucionMezclasMB.solucionExtended}"  autocomplete="on" 
+                                                         completeMethod="#{devolucionMezclasMB.autoComplete}"  
+                                                         minQueryLength="2"  forceSelection="true" placeholder="Buscar por: Folio, Paciente" 
+                                                         var="solu"  required="true" requiredMessage="La orden es requerido"
+                                                         itemValue="#{solu.idSolucion}" 
+                                                         itemLabel="#{solu.folio}"
+                                                         converter="solucionExtendedConverter"  >
+                                            <p:ajax event="itemSelect" listener="#{devolucionMezclasMB.handleSelect}" update="frmDetalle" ></p:ajax>
+                                            <p:ajax event="itemUnselect" listener="#{devolucionMezclasMB.handleUnSelect}" update="frmDetalle" ></p:ajax>
+                                            <p:column style="width: 50px; font-size: small;" width="50px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Orden Preparación" />
+                                                </f:facet>
+                                                <h:outputText value="#{solu.folio}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="width: 100px;" width="100px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Fecha Programada" />
+                                                </f:facet>
+                                                <h:outputText value="#{solu.fechaProgramada}" style=" font-size: small;" >
+                                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                                </h:outputText>
+                                            </p:column> 
+                                            <p:column style="width: 100px;" width="100px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Tipo Solución" />
+                                                </f:facet>
+                                                <h:outputText value="#{solu.tipoSolucion}" style=" font-size: small;" />
+                                            </p:column>      
+                                            <p:column style="width: 150px;" width="200px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Paciente" />
+                                                </f:facet>
+                                                <h:outputText value="#{solu.nombrePaciente}" style=" font-size: small;" />
+                                            </p:column>     
+                                            <p:column style="width: 150px;" width="150px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Área" />
+                                                </f:facet>
+                                                <h:outputText value="#{solu.nombreEstructura}" style=" font-size: small;" />
+                                            </p:column>                         
+                                            <p:column style="width: 150px;" width="150px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Estatus" />
+                                                </f:facet>
+                                                <h:outputText value="#{solu.estatusSolucion}" style=" font-size: small;" />
+                                            </p:column>                         
+                                        </p:autoComplete>
+                                    </p:column>
+                                    <p:column styleClass="colum">
+                                        <p:outputLabel value="Folio Prescripción:"/>
+                                    </p:column>
+                                    <p:column  styleClass="colum" >
+                                        <p:outputLabel value="#{devolucionMezclasMB.devolucionMezclaSelect.folioPrescripcion}" tabindex="6" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Área:"/>
+                                    </p:column>
+                                    <p:column  styleClass="colum" >
+                                        <p:outputLabel  value="#{devolucionMezclasMB.devolucionMezclaSelect.area}" tabindex="7" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Cama:"/>
+                                    </p:column>
+                                    <p:column  styleClass="colum" >
+                                        <p:outputLabel  value="#{devolucionMezclasMB.devolucionMezclaSelect.cama}" tabindex="8" />
+                                    </p:column>
+                                </p:row>
+                                <p:row  styleClass="rows">
+                                    <p:column styleClass="colum"  >
+                                        <p:outputLabel value="Paciente:"/>
+                                    </p:column>
+                                    <p:column colspan="3" styleClass="colum" >
+                                        <p:outputLabel value="#{devolucionMezclasMB.devolucionMezclaSelect.paciente}" tabindex="9" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Médico:"/>
+                                    </p:column>
+                                    <p:column colspan="3" styleClass="colum" >
+                                        <p:outputLabel value="#{devolucionMezclasMB.devolucionMezclaSelect.medico}"  tabindex="10" />
+                                    </p:column>
+                                </p:row>
+                                <p:row  styleClass="rows">
+                                    <p:column  styleClass="colum" >
+                                        <p:outputLabel value="Fecha Surtimiento:"/>
+                                    </p:column>
+                                    <p:column  styleClass="colum" >
+                                        <p:outputLabel  value="#{devolucionMezclasMB.devolucionMezclaSelect.surtimiento}" tabindex="11" >
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        
+                                    </p:column>
+                                    <p:column  styleClass="colum" >
+                                        
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Origen:"/>
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="#{devolucionMezclasMB.devolucionMezclaSelect.origen}" tabindex="12" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Destino:"/>
+                                    </p:column>
+                                    <p:column styleClass="colum" >
+                                        <p:outputLabel value="#{devolucionMezclasMB.devolucionMezclaSelect.destino}"  tabindex="13" />
+                                    </p:column>
+                                </p:row>
+                                <p:row  styleClass="rows">
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Tipo de Mezcla:"/>
+                                    </p:column>
+                                    <p:column  styleClass="colum" >
+                                        <p:outputLabel value="#{devolucionMezclasMB.solucionExtended.tipoSolucion}"  tabindex="14" />
+<!--                                        <p:selectOneMenu  value="# {devolucionMezclasMB.devolucionMezclaSelect.idTipoSolucion}"
+                                                          tabindex="12" disabled="true"  >
+                                            <f:selectItem itemLabel="" itemValue="" noSelectionOption="true" />
+                                            <f:selectItems class="sOneMenu" value="# {devolucionMezclasMB.tipoMezclaList}" var="tipo" itemLabel="# {tipo.clave}"
+                                                            itemValue="# {tipo.idTipoSolucion}" />
+                                        </p:selectOneMenu>-->
+                                    </p:column>
+                                    <ui:remove>
+                                        <p:column  styleClass="colum" >
+                                            <p:outputLabel  value="Descripción Mezcla:"/>
+                                        </p:column>
+                                        <p:column colspan="2"  styleClass="colum">
+                                            <p:inputText  value="#{devolucionMezclasMB.devolucionMezclaSelect.nombre}"  tabindex="15"  size="20" ></p:inputText>
+                                        </p:column>
+                                        <p:column  styleClass="colum">
+                                            <p:outputLabel value="Presentación:"/>
+                                        </p:column>
+                                        <p:column colspan="2"  styleClass="colum" >
+                                            <p:selectOneMenu  value="#{devolucionMezclasMB.devolucionMezclaSelect.presentacion}" 
+                                                              tabindex="16"  filter="true"  filterMatchMode="contains" >
+                                                <f:selectItem itemLabel="" itemValue="" noSelectionOption="true" />
+                                                <f:selectItems value="#{devolucionMezclasMB.presentacionList}" var="presentacion" itemLabel="#{presentacion.nombrePresentacion}"
+                                                               itemValue="#{presentacion.idPresentacion}" />
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                    </ui:remove>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel  value="Vía Administración:"/>
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="#{devolucionMezclasMB.solucionExtended.nombreViaAdministracion}"  tabindex="16" />
+<!--                                        <p:selectOneMenu  value="# {devolucionMezclasMB.solucionExtended.idViaAdministracion}"
+                                                          tabindex="17" disabled="true" >
+                                                <f:selectItem itemLabel="" itemValue="" noSelectionOption="true" />
+                                                <f:selectItems class="sOneMenu" value="# {devolucionMezclasMB.viaAdministracionList}" var="via" itemLabel="#{via.nombreViaAdministracion}"
+                                                               itemValue="# {via.idViaAdministracion}" />
+                                            </p:selectOneMenu>-->
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel  value="Contenedor:"/>
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="#{devolucionMezclasMB.solucionExtended.tipoEnvase}"  tabindex="17" />
+<!--                                        <p:selectOneMenu  value="# {devolucionMezclasMB.solucionExtended.idViaAdministracion}"
+                                                          tabindex="17" disabled="true" >
+                                                <f:selectItem itemLabel="" itemValue="" noSelectionOption="true" />
+                                                <f:selectItems class="sOneMenu" value="# {devolucionMezclasMB.viaAdministracionList}" var="via" itemLabel="#{via.nombreViaAdministracion}"
+                                                               itemValue="# {via.idViaAdministracion}" />
+                                            </p:selectOneMenu>-->
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Cantidad Total:"/>
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="#{devolucionMezclasMB.solucionExtended.volumen}" tabindex="18" />
+                                        <p:outputLabel value=" ml"/>
+                                    </p:column>
+                                </p:row>
+                                
+                                <p:row  styleClass="rows">
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Clave mezcla:"/>
+                                    </p:column>
+                                    <p:column styleClass="colum">
+                                        <p:outputLabel value="#{devolucionMezclasMB.solucionExtended.claveMezcla}" tabindex="19" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Lote mezcla:"/>
+                                    </p:column>
+                                    <p:column styleClass="colum">
+                                        <p:outputLabel value="#{devolucionMezclasMB.solucionExtended.loteMezcla}" tabindex="19" />
+                                    </p:column>
+                                    <p:column styleClass="colum">
+                                        <p:outputLabel value="Fecha máxima de uso: "/>
+                                    </p:column>
+                                    <p:column styleClass="colum">
+                                        <p:outputLabel value="#{devolucionMezclasMB.solucionExtended.caducidadMezcla}" tabindex="20" >
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <ui:remove>
+                                    <p:column styleClass="colum">
+                                        <p:outputLabel value="Estabilidad:"/>
+                                    </p:column>
+                                    <p:column styleClass="colum">                                        
+                                        <p:outputLabel id="minMax" value="#{devolucionMezclasMB.solucionExtended.estabilidad}" tabindex="21"/>
+                                        <p:outputLabel value="hrs"/>
+                                    </p:column>
+                                    </ui:remove>
+                                </p:row>
+                            </p:panelGrid>
+                            <p:dataTable emptyMessage="No se encontraron registros" rows="10"                                     
+                                         reflow="true" widgetVar="tblContentMezcla" value="#{devolucionMezclasMB.detalleMezclaList}"
+                                         var="item"  id="tblContentMezcla" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                         style="margin-bottom:5px; text-align: center;" editable="true" editMode="cell"  >                            
+
+                                <p:ajax event="cellEdit" listener="#{devolucionMezclasMB.onCellEdit}" update="tblContentMezcla"  />                                
+		
+                                <p:column style="text-align: left;"  headerText="Clave"  width="10%" >
+                                    <h:outputText value="#{item.claveInstitucional} "  class="altoColumn" />
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="Descripción"  width="50%" >
+                                    <h:outputText value="#{item.nombreCorto} " class="altoColumn"  />
+                                </p:column>
+                                
+                                <p:column style="text-align: left;"  headerText="Dosis"  width="8%" >
+                                    <h:outputText value="#{item.envase} "  class="altoColumn" />
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="Lote"  width="8%" >
+                                    <h:outputText value="#{item.lote} "  class="altoColumn" />
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="Caducidad"  width="8%" >
+                                    <h:outputText value="#{item.caducidad}" style=" font-size: small;" >
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </p:column> 
+
+                                <p:column style="text-align: left;"  headerText="Estabilidad"  width="8%" >
+                                    <h:outputText value="#{item.noHorasestabilidad}"  class="altoColumn" />
+                                </p:column>
+
+                                <p:column style="text-align: left;"  headerText="Piezas Usadas"  width="8%" >
+                                    <h:outputText value="#{item.cantidadEnviada}" class="altoColumn" style="font-weight: bolder;" />                                     
+                                </p:column>
+
+                            </p:dataTable>
+                            <p:panelGrid styleClass="panelGrid">
+                                <p:row styleClass="rows">
+                                    <p:column styleClass="colum" >
+                                        <p:outputLabel value="Usuario que devuelve:" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:autoComplete  size="25" id="campUsuario" tabindex="22"
+                                                         value="#{devolucionMezclasMB.usuarioSelect}"  autocomplete="on" 
+                                                         completeMethod="#{devolucionMezclasMB.autoCompleteUser}"  
+                                                         minQueryLength="2"  forceSelection="true" 
+                                                         var="user"  required="true" requiredMessage="El usuario que devuelve es requerido"
+                                                         itemValue="#{user.idUsuario}" 
+                                                         itemLabel="#{user.nombre} #{user.apellidoPaterno} #{user.apellidoMaterno}"
+                                                         converter="usuarioConverter" scrollHeight="250" >
+                                            <p:ajax event="itemSelect" listener="#{devolucionMezclasMB.handleUserSelect}" update="frmDetalle:campUsuario" ></p:ajax>
+                                            <p:ajax event="itemUnselect" listener="#{devolucionMezclasMB.handleUnUserSelect}" update="frmDetalle:campUsuario" ></p:ajax>
+                                            <p:column style="width: 50px; font-size: small;" width="50px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Usuario" />
+                                                </f:facet>
+                                                <h:outputText value="#{user.nombreUsuario}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="width: 100px;" width="100px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Nombre Completo" />
+                                                </f:facet>
+                                                <h:outputText value="#{user.nombre}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="width: 100px;" width="100px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Correo" />
+                                                </f:facet>
+                                                <h:outputText value="#{user.correoElectronico}" style=" font-size: small;" />
+                                            </p:column>            
+                                        </p:autoComplete>
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Motivo de Devolución:" />
+                                    </p:column>
+                                    <p:column  styleClass="colum" >
+                                        <p:selectOneMenu value="#{devolucionMezclasMB.devolucionMezclaSelect.idMotivo}"  tabindex="23"
+                                                         filter="true" filterMatchMode='contains' filterPlaceholder="Motivo Retiro" > 
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true" />
+                                            <f:selectItems value="#{devolucionMezclasMB.motivoRetiroList}" var="tipo" itemLabel="#{tipo.nombreCatalogo}" itemValue="#{tipo.idCatalogoGeneral}" />
+                                            <p:ajax event="change" listener="#{devolucionMezclasMB.changeMotivoDevolucion}" update="frmDetalle:reutilizar,frmDetalle:merma,frmDetalle:destruir" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Retención:" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:selectOneButton value="#{devolucionMezclasMB.devolucionMezclaSelect.retencion}" tabindex="24" >
+                                            <f:selectItem itemLabel="Temporal" itemValue="1"/>
+                                            <f:selectItem itemLabel="Cuarentena" itemValue="0"/>
+                                        </p:selectOneButton >
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Fecha Retiro:" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:calendar id="txtFechaRealiza" mask="true" pattern="dd/MM/yyyy HH:mm" tabindex="25" 
+                                                    value="#{devolucionMezclasMB.devolucionMezclaSelect.fechaRetiro}" 
+                                                    maxdate="#{devolucionMezclasMB.today}"
+                                                    locale="es_MX" navigator="true" pages="1" showButtonPanel="true" effect="fade" defaultSecond="59" />
+                                    </p:column>
+                                </p:row>
+                                <p:row styleClass="rows">                                    
+                                    <p:column styleClass="colum" >
+                                        <p:outputLabel value="Reutilizar" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:selectOneButton id="reutilizar" value="#{devolucionMezclasMB.devolucionMezclaSelect.reutilizar}" tabindex="26" >
+                                            <f:selectItem itemLabel="Si" itemValue="1"/>
+                                            <f:selectItem itemLabel="No" itemValue="0"/>
+                                            <p:ajax event="change" listener="#{devolucionMezclasMB.changeReutilizar}"  update="frmDetalle:reutilizar,frmDetalle:merma,frmDetalle:fechaLimit"  />
+                                        </p:selectOneButton >
+                                    </p:column>
+                                    <p:column styleClass="colum" >
+                                        <p:outputLabel value="Fecha Límite uso:" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:calendar id="fechaLimit"  mask="true" pattern="dd/MM/yyyy HH:mm" tabindex="27" 
+                                                    value="#{devolucionMezclasMB.devolucionMezclaSelect.fechaLimite}" 
+                                                    maxdate="#{devolucionMezclasMB.solucionExtended.caducidadMezcla}"
+                                                    locale="es_MX" navigator="true" pages="1" showButtonPanel="true" effect="fade" defaultSecond="59" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Comentarios:" />
+                                    </p:column>
+                                    <p:column colspan="3"  styleClass="colum">
+                                        <p:inputTextarea  value="#{devolucionMezclasMB.devolucionMezclaSelect.comentarios}" cols="50" rows="1"  tabindex="28"  />
+                                    </p:column>
+                                </p:row>
+                                <p:row styleClass="rows">                                  
+                                    <p:column styleClass="colum" >
+                                        <p:outputLabel value="Merma:" />
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:selectOneButton id="merma" value="#{devolucionMezclasMB.devolucionMezclaSelect.merma}"  tabindex="29">
+                                            <f:selectItem itemLabel="Si" itemValue="1"/>
+                                            <f:selectItem itemLabel="No" itemValue="0"/>
+                                            <p:ajax event="change" listener="#{devolucionMezclasMB.changeMerma}"  update="frmDetalle:merma,frmDetalle:reutilizar"  />
+                                        </p:selectOneButton >
+                                    </p:column>
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Destruir" />
+                                    </p:column>
+                                    <p:column  styleClass="colum" >
+                                        <p:selectOneButton id="destruir" value="#{devolucionMezclasMB.devolucionMezclaSelect.destruir}" tabindex="30">
+                                            <f:selectItem itemLabel="Si" itemValue="1"/>
+                                            <f:selectItem itemLabel="No" itemValue="0"/>
+                                            <p:ajax event="change" listener="#{devolucionMezclasMB.changeDestruir}"  update="frmDetalle:destruir"  />
+                                        </p:selectOneButton >
+                                    </p:column>                                    
+                                    <p:column  styleClass="colum">
+                                        <p:outputLabel value="Sugerencias de Mejora:" />
+                                    </p:column>
+                                    <p:column colspan="3"  styleClass="colum">
+                                        <p:inputTextarea  value="#{devolucionMezclasMB.devolucionMezclaSelect.sugerencia}" tabindex="31" cols="50" rows="1"   />
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            <p:panel class="pnlActions">                                
+                                <p:commandButton id="btnRegCancel" class="btnItem" value="Cancelar" style="width: 100px;"   tabindex="32"
+                                                 ajax="true" onclick="PF('mdlDetalle').hide();"  validateClient="false" />&nbsp;&nbsp;
+                                <p:commandButton id="btnRegNew" styleClass="btnMusAzul"  tabindex="33" rendered="#{devolucionMezclasMB.newRetiro}"
+                                                 value="Guardar" style="margin:0; width: 100px;" actionListener="#{devolucionMezclasMB.validaDatos()}"  
+                                                 onclick="PF('statusProcess').show();" 
+                                                 oncomplete="if(args.estatus){PF('mdlConfDevo').show();} PF('statusProcess').hide();" >
+
+                                </p:commandButton>
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+
+                    
+                    <p:dialog  header="Confirmación de la Devolución"
+                               widgetVar="mdlConfDevo"
+                               closeOnEscape="true" modal="true"                          
+                               style="font-size:xx-small !important;" >
+                        <h:form id="frmConfDevo">
+                            <p:panelGrid columns="2" >
+                                <p:outputLabel value="Imprimir Devolución" />
+                                <p:selectOneButton value="#{devolucionMezclasMB.print}">
+                                    <f:selectItem itemLabel="Si" itemValue="true" />
+                                    <f:selectItem itemLabel="No" itemValue="false" />
+                                </p:selectOneButton>
+                            </p:panelGrid><br />
+                            <div class="pnlActions">
+                                <p:commandButton id="btnConfCancel" class="btnItem" value="Cancelar" style="width: 100px;"  tabindex="1"
+                                                 ajax="true" onclick="PF('mdlConfDevo').hide();"  validateClient="false" />&nbsp;&nbsp;
+
+                                <p:commandButton id="btnConfSend" value="Enviar" style="margin:0; width: 100px;" tabindex="2"
+                                                 actionListener="#{devolucionMezclasMB.sendRetiroMezcla()}"
+                                                 onclick="PF('statusProcess').show();" update=":mainForm:tblDevoluciones,:formPDF"
+                                                 oncomplete="PF('mdlConfDevo').hide(); PF('mdlDetalle').hide();  PF('statusProcess').hide();if(args.estatus){ PF('mdlReport').show();} " />
+                            </div>
+                        </h:form>
+                    </p:dialog>
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" width="100%" height="550" value="/Reportes" player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.HipersensibilidadMapper" >
+    
+    <select id="obtenerReaccionesHipersensibilidad" resultType="mx.mc.model.HipersensibilidadExtended" parameterType="Map">
+        SELECT idHipersensibilidad, h.fecha, concat(pa.nombreCompleto, " ", pa.apellidoPaterno, " ", pa.apellidoMaterno) as nombrePaciente, ta.nombreTipoAlergeno as tipoAlergia,
+        a.nombreAlteracion, concat(u.nombre, " ", u.apellidoPaterno, " ", u.apellidoMaterno) as nombreRegistro, h.riesgo FROM hipersensibilidad h
+        INNER JOIN tipoHipersensibilidad th ON h.idTipoHipersensibilidad = th.idTipoHipersensibilidad
+        INNER JOIN alteracion a ON h.idAlteracion = a.idAlteracion
+        INNER JOIN tipoAlergeno ta ON h.idTipoAlergeno = ta.idTipoAlergeno
+        INNER JOIN alergeno al ON h.idAlergeno = al.idAlergeno
+        INNER JOIN usuarios u ON h.insertIdUsuario = u.idUsuario
+        LEFT JOIN paciente pa ON h.idPaciente = pa.idPaciente
+        WHERE 1 = 1
+        AND h.activo = 1 
+        <if test="cadena != null ">
+            AND
+            pa.nombreCompleto LIKE '%${cadena}%'
+            OR pa.apellidoPaterno LIKE '%${cadena}%'
+            OR pa.apellidoMaterno LIKE '%${cadena}%'
+        </if>
+        <if test="sortField == null" > ORDER BY h.fecha desc </if>
+        <if test="sortOrder != null" >
+            <if test="sortField == 'fecha'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY h.fecha asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY h.fecha desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'nombrePaciente'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombrePaciente asc
+                </if>     
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombrePaciente desc
+                </if>
+            </if>       
+            <if test="sortField == 'tipoAlergia'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY tipoAlergia asc
+                </if>     
+                <if test="sortOrder == 'desc'">
+                    ORDER BY tipoAlergia desc
+                </if>
+            </if>
+            <if test="sortField == 'nombreAlteracion'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreAlteracion asc
+                </if>     
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreAlteracion desc
+                </if>
+            </if>       
+            <if test="sortField == 'nombreRegistro'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreRegistro asc
+                </if>     
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreRegistro desc
+                </if>
+            </if>    
+        </if>
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}                ;
+    </select>
+    
+    <select id="obtenerTotalReacionesHipersensibilidad" resultType="Long" parameterType="Map">
+        SELECT COUNT(*) FROM hipersensibilidad h
+        INNER JOIN tipoHipersensibilidad th ON h.idTipoHipersensibilidad = th.idTipoHipersensibilidad
+        INNER JOIN alteracion a ON h.idAlteracion = a.idAlteracion
+        INNER JOIN tipoAlergeno ta ON h.idTipoAlergeno = ta.idTipoAlergeno
+        INNER JOIN alergeno al ON h.idAlergeno = al.idAlergeno
+        INNER JOIN usuarios u ON h.insertIdUsuario = u.idUsuario
+        LEFT JOIN paciente pa ON h.idPaciente = pa.idPaciente
+        WHERE 1 = 1
+        AND h.activo = 1 
+        <if test="cadena != null ">
+            AND
+            pa.nombreCompleto LIKE '%${cadena}%'
+            OR pa.apellidoPaterno LIKE '%${cadena}%'
+            OR pa.apellidoMaterno LIKE '%${cadena}%'
+        </if>
+    </select>
+    
+    <insert id="insertarReaccionHipersensibilidad" parameterType="mx.mc.model.HipersensibilidadExtended">
+        INSERT INTO hipersensibilidad(
+        <if test="idHipersensibilidad != null"> idHipersensibilidad </if>
+        <if test="fecha != null"> ,fecha </if>
+        <if test="folio != null"> ,folio </if>
+        <if test="idTipoHipersensibilidad != null"> ,idTipoHipersensibilidad </if>
+        <if test="idAlteracion != null"> ,idAlteracion </if>
+        <if test="idTipoAlergeno != null"> ,idTipoAlergeno </if>
+        <if test="idAlergeno != null"> ,idAlergeno </if>
+        <if test="nombreConvencional != null"> ,nombreConvencional </if>
+        <if test="idPaciente != null"> ,idPaciente </if>
+        <if test="idSustanciaActiva != null"> ,idSustanciaActiva </if>
+        <if test="nombreComercial != null"> ,nombreComercial </if>
+        <if test="efectos != null"> ,efectos </if>
+        <if test="manifestaciones != null"> ,manifestaciones </if>
+        <if test="fechaPrimerEvento != null"> ,fechaPrimerEvento </if>
+        <if test="fechaUltimoEvento != null"> ,fechaUltimoEvento </if>
+        <if test="confirmada != null"> ,confirmada </if>
+        <if test="sintomas != null"> ,sintomas </if>
+        <if test="evaluacionMedica != null"> ,evaluacionMedica </if>
+        <if test="analisisSangre != null"> ,analisisSangre </if>
+        <if test="pruebasCutaneas != null"> ,pruebasCutaneas </if>
+        <if test="pruebaLGE != null"> ,pruebaLGE </if>            
+        <if test="noTomarFarmaco != null"> ,noTomarFarmaco </if>
+        <if test="filtrosParticula != null"> ,filtrosParticula </if>
+        <if test="noComeralimento != null"> ,noComeralimento </if>
+        <if test="mudarseUnaZona != null"> ,mudarseUnaZona </if>
+        <if test="eliminarElementos != null"> ,eliminarElementos</if>
+        <if test="cubrirColchonesAlmohadas != null"> ,cubrirColchonesAlmohadas</if>
+        <if test="utilizarAlmohadas != null"> ,utilizarAlmohadas</if>
+        <if test="lavarFrecuentementeRopa != null"> ,lavarFrecuentementeRopa </if>
+        <if test="limpiarCasaAMenudo != null"> ,limpiarCasaAMenudo </if>
+        <if test="aparatosAireAcondisionado != null"> ,aparatosAireAcondisionado </if>
+        <if test="aplicarVaporCaliente != null"> ,aplicarVaporCaliente </if>
+        <if test="exterminarCucarachas != null"> ,exterminarCucarachas </if>
+        <if test="riesgo != null"> ,riesgo</if>
+        <if test="insertFecha != null"> ,insertFecha </if>
+        <if test="insertIdUsuario != null"> ,insertIdUsuario </if>
+        <if test="updateFecha != null"> ,updateFecha </if>
+        <if test="updateIdUsuario != null"> ,updateIdUsuario</if>
+        ) VALUES (
+        <if test="idHipersensibilidad != null">#{idHipersensibilidad, jdbcType = VARCHAR} </if>
+        <if test="fecha != null"> ,#{fecha, jdbcType = TIMESTAMP} </if>
+        <if test="folio != null"> ,#{folio, jdbcType = VARCHAR} </if>
+        <if test="idTipoHipersensibilidad != null"> ,#{idTipoHipersensibilidad, jdbcType = INTEGER} </if>
+        <if test="idAlteracion != null"> ,#{idAlteracion, jdbcType = INTEGER} </if>
+        <if test="idTipoAlergeno != null"> ,#{idTipoAlergeno, jdbcType = INTEGER} </if>
+        <if test="idAlergeno != null"> ,#{idAlergeno, jdbcType = INTEGER} </if>
+        <if test="nombreConvencional != null"> ,#{nombreConvencional, jdbcType = VARCHAR} </if>
+        <if test="idPaciente != null"> ,#{idPaciente, jdbcType = VARCHAR} </if>
+        <if test="idSustanciaActiva != null"> ,#{idSustanciaActiva, jdbcType = INTEGER} </if>
+        <if test="nombreComercial != null"> ,#{nombreComercial, jdbcType = VARCHAR} </if>
+        <if test="efectos != null"> ,#{efectos, jdbcType = VARCHAR} </if>
+        <if test="manifestaciones != null"> ,#{manifestaciones, jdbcType = VARCHAR} </if>
+        <if test="fechaPrimerEvento != null"> ,#{fechaPrimerEvento, jdbcType = TIMESTAMP} </if>
+        <if test="fechaUltimoEvento != null"> ,#{fechaUltimoEvento, jdbcType = TIMESTAMP} </if>
+        <if test="confirmada != null"> ,#{confirmada, jdbcType = INTEGER} </if>
+        <if test="sintomas != null"> ,#{sintomas, jdbcType = VARCHAR}</if>
+        <if test="evaluacionMedica != null"> ,#{evaluacionMedica, jdbcType = INTEGER} </if>
+        <if test="analisisSangre != null"> ,#{analisisSangre, jdbcType = INTEGER} </if>
+        <if test="pruebasCutaneas != null"> ,#{pruebasCutaneas, jdbcType = INTEGER} </if>
+        <if test="pruebaLGE != null"> ,#{pruebaLGE, jdbcType = INTEGER} </if>
+        <if test="noTomarFarmaco != null"> ,#{noTomarFarmaco, jdbcType = INTEGER} </if>
+        <if test="filtrosParticula != null"> ,#{filtrosParticula, jdbcType = INTEGER} </if>
+        <if test="noComeralimento != null"> ,#{noComeralimento, jdbcType = INTEGER} </if>
+        <if test="mudarseUnaZona != null"> ,#{mudarseUnaZona, jdbcType = INTEGER} </if>
+        <if test="eliminarElementos != null"> ,#{eliminarElementos, jdbcType = INTEGER} </if>
+        <if test="cubrirColchonesAlmohadas != null"> ,#{cubrirColchonesAlmohadas, jdbcType = INTEGER} </if>
+        <if test="utilizarAlmohadas != null"> ,#{utilizarAlmohadas, jdbcType = INTEGER} </if>
+        <if test="lavarFrecuentementeRopa != null"> ,#{lavarFrecuentementeRopa, jdbcType = INTEGER} </if>
+        <if test="limpiarCasaAMenudo != null"> ,#{limpiarCasaAMenudo, jdbcType = INTEGER} </if>
+        <if test="aparatosAireAcondisionado != null"> ,#{aparatosAireAcondisionado, jdbcType = INTEGER} </if>
+        <if test="aplicarVaporCaliente != null"> ,#{aplicarVaporCaliente, jdbcType = INTEGER} </if>
+        <if test="exterminarCucarachas != null"> ,#{exterminarCucarachas, jdbcType = INTEGER} </if>
+        <if test="riesgo != null"> ,#{riesgo, jdbcType = VARCHAR}</if>
+        <if test="insertFecha != null"> ,#{insertFecha, jdbcType = TIMESTAMP} </if>
+        <if test="insertIdUsuario != null"> ,#{insertIdUsuario, jdbcType = VARCHAR} </if>
+        <if test="updateFecha != null"> ,#{updateFecha, jdbcType = TIMESTAMP} </if>
+        <if test="updateIdUsuario != null"> ,#{updateIdUsuario, jdbcType = VARCHAR}</if>
+        );
+    </insert>
+    
+    <select id="obtenerHipersensibilidadPorIdHiper" parameterType="Map" resultType="mx.mc.model.HipersensibilidadExtended">
+        SELECT idHipersensibilidad, fecha, folio, h.idTipoHipersensibilidad, h.idAlteracion, h.idTipoAlergeno, h.idAlergeno, 
+		nombreConvencional, h.idPaciente, h.idSustanciaActiva, nombreComercial, efectos, manifestaciones, fechaPrimerEvento, fechaUltimoEvento,
+                confirmada, sintomas, evaluacionMedica, analisisSangre, pruebasCutaneas, pruebaLGE, m.idMedicamento, h.idPaciente,
+                noTomarFarmaco, filtrosParticula, noComeralimento, mudarseUnaZona, eliminarElementos, cubrirColchonesAlmohadas, utilizarAlmohadas, 
+                lavarFrecuentementeRopa, limpiarCasaAMenudo, aparatosAireAcondisionado, aplicarVaporCaliente, exterminarCucarachas, h.riesgo
+        FROM hipersensibilidad h INNER JOIN tipoHipersensibilidad th ON h.idTipoHipersensibilidad = th.idTipoHipersensibilidad
+        INNER JOIN alteracion a on h.idAlteracion = a.idAlteracion
+        INNER JOIN tipoAlergeno ta ON h.idTipoAlergeno = ta.idTipoAlergeno
+        INNER JOIN alergeno al ON h.idAlergeno = al.idAlergeno
+        LEFT JOIN paciente p ON h.idPaciente = p.idPaciente
+        LEFT JOIN medicamento m ON h.nombreComercial = m.nombreCorto
+        WHERE idHipersensibilidad =#{ idHipersensibilidad, jdbcType = VARCHAR}
+    </select>
+    
+    <update id="actualizarReaccionHipersensibilidad" parameterType="mx.mc.model.HipersensibilidadExtended">
+        UPDATE hipersensibilidad
+        <set>
+             updateFecha = #{updateFecha,jdbcType=DATE}
+            ,updateIdUsuario = #{updateIdUsuario,jdbcType=VARCHAR}
+            <if test="idTipoHipersensibilidad != null"> ,idTipoHipersensibilidad = #{idTipoHipersensibilidad, jdbcType = INTEGER} </if>
+            <if test="idAlteracion != null"> ,idAlteracion = #{idAlteracion, jdbcType = INTEGER} </if>
+            <if test="idTipoAlergeno != null"> ,idTipoAlergeno = #{idTipoAlergeno, jdbcType = INTEGER} </if>
+            <if test="idAlergeno != null"> ,idAlergeno = #{idAlergeno, jdbcType = INTEGER} </if>
+            <if test="nombreConvencional != null"> ,nombreConvencional = #{nombreConvencional, jdbcType = VARCHAR} </if>
+            <if test="idPaciente != null"> ,idPaciente = #{idPaciente, jdbcType = VARCHAR} </if>
+            <if test="idSustanciaActiva != null"> ,idSustanciaActiva = #{idSustanciaActiva, jdbcType = INTEGER} </if>
+            <if test="nombreComercial != null"> ,nombreComercial = #{nombreComercial, jdbcType = VARCHAR} </if>
+            <if test="efectos != null"> ,efectos = #{efectos, jdbcType = VARCHAR} </if>
+            <if test="manifestaciones != null"> ,manifestaciones = #{manifestaciones, jdbcType = VARCHAR} </if>
+            <if test="fechaPrimerEvento != null"> ,fechaPrimerEvento = #{fechaPrimerEvento, jdbcType = TIMESTAMP} </if>
+            <if test="fechaUltimoEvento != null"> ,fechaUltimoEvento = #{fechaUltimoEvento, jdbcType = TIMESTAMP} </if>
+            <if test="confirmada != null"> ,confirmada = #{confirmada, jdbcType = INTEGER} </if>
+            <if test="sintomas != null"> ,sintomas = #{sintomas, jdbcType = VARCHAR}</if>
+            <if test="evaluacionMedica != null"> ,evaluacionMedica = #{evaluacionMedica, jdbcType = INTEGER} </if>
+            <if test="analisisSangre != null"> ,analisisSangre = #{analisisSangre, jdbcType = INTEGER} </if>
+            <if test="pruebasCutaneas != null"> ,pruebasCutaneas = #{pruebasCutaneas, jdbcType = INTEGER} </if>
+            <if test="pruebaLGE != null"> ,pruebaLGE = #{pruebaLGE, jdbcType = INTEGER} </if>            
+            <if test="noTomarFarmaco != null"> ,noTomarFarmaco = #{noTomarFarmaco, jdbcType = INTEGER} </if>
+            <if test="filtrosParticula != null"> ,filtrosParticula = #{filtrosParticula, jdbcType = INTEGER} </if>
+            <if test="noComeralimento != null"> ,noComeralimento = #{noComeralimento, jdbcType = INTEGER} </if>
+            <if test="mudarseUnaZona != null"> ,mudarseUnaZona = #{mudarseUnaZona, jdbcType = INTEGER} </if>
+            <if test="eliminarElementos != null"> ,eliminarElementos = #{eliminarElementos, jdbcType = INTEGER} </if>
+            <if test="cubrirColchonesAlmohadas != null"> ,cubrirColchonesAlmohadas = #{cubrirColchonesAlmohadas, jdbcType = INTEGER} </if>
+            <if test="utilizarAlmohadas != null"> ,utilizarAlmohadas = #{utilizarAlmohadas, jdbcType = INTEGER} </if>
+            <if test="lavarFrecuentementeRopa != null"> ,lavarFrecuentementeRopa = #{lavarFrecuentementeRopa, jdbcType = INTEGER} </if>
+            <if test="limpiarCasaAMenudo != null"> ,limpiarCasaAMenudo = #{limpiarCasaAMenudo, jdbcType = INTEGER} </if>
+            <if test="aparatosAireAcondisionado != null"> ,aparatosAireAcondisionado = #{aparatosAireAcondisionado, jdbcType = INTEGER} </if>
+            <if test="aplicarVaporCaliente != null"> ,aplicarVaporCaliente = #{aplicarVaporCaliente, jdbcType = INTEGER} </if>
+            <if test="exterminarCucarachas != null"> ,exterminarCucarachas = #{exterminarCucarachas, jdbcType = INTEGER} </if>
+            <if test="riesgo != null"> ,riesgo = #{riesgo, jdbcType = VARCHAR}</if>
+        </set>
+        WHERE idHipersensibilidad = #{idHipersensibilidad, jdbcType = VARCHAR}
+    </update>    
+    
+    <select id="obtenerListaReacHiperPorIdPaciente" parameterType="Map" resultType="mx.mc.model.HipersensibilidadExtended">
+        SELECT concat(p.nombreCompleto, " ", p.apellidoPaterno, " ", p.apellidoMaterno) as nombrePaciente, m.nombreCorto as nombreComercial,
+        th.nombreTipoHiper as tipoAlergia, h.riesgo
+        FROM
+        hipersensibilidad h INNER JOIN tipoHipersensibilidad th ON h.idTipoHipersensibilidad = th.idTipoHipersensibilidad
+        INNER JOIN alteracion a on h.idAlteracion = a.idAlteracion
+        INNER JOIN tipoAlergeno ta ON h.idTipoAlergeno = ta.idTipoAlergeno
+        INNER JOIN alergeno al ON h.idAlergeno = al.idAlergeno
+        INNER JOIN paciente p ON h.idPaciente = p.idPaciente
+        LEFT JOIN medicamento m ON h.nombreComercial = m.nombreCorto
+        WHERE p.idPaciente = #{idPaciente, jdbcType = VARCHAR}
+        <if test=" listaMedicamentos != null " >
+            AND m.claveInstitucional IN
+            <foreach item="item" index="index" collection="listaMedicamentos" open="(" separator="," close=")">
+                #{item.claveMedicamento}
+            </foreach>
+        </if>
+    </select>
+    
+    <update id="eliminarHipersensibilidad" parameterType="Map">
+        UPDATE hipersensibilidad SET activo = 0
+            WHERE idHipersensibilidad = #{idHipersensibilidad, jdbcType = VARCHAR};
+    </update>
+</mapper>            

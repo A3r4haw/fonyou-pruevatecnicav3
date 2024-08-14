@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanelAmplio" style="border: none;">
+                    <h:form id="mainForm">
+
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value="Expediente de Central de Mezclas" style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;" />
+                            <p:inputText id="busqueda" 
+                                         value="#{expedienteCentralMezclasMB.cadenaBusqueda}" 
+                                         style="width: 50% !important;" 
+                                         class="textSearch"
+                                         placeholder="Buscar..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona enter para buscar" alt="15" style=""/>
+                            </i>
+                            <p:spacer width="10px" />
+
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); "
+                                             actionListener="#{expedienteCentralMezclasMB.obtenerListaDocumentoActivo}"
+                                             update="@form"  />
+                        </div>
+
+                        <p:commandButton id="btnCrear" value="Agregar" title="Agregar Nuevo Registro" icon="fa fa-plus" 
+                                         actionListener="#{expedienteCentralMezclasMB.preparaNuevoRegistro()}"
+                                         onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                                         oncomplete="PF('statusProcess').hide(); PF('dlgDocumento').show();"
+                                         update="frmDocumento"  style=" margin: 5px 0; " resetValues="true" /> 
+                        <br/>
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <p:dataTable  id="tblMainDocumento"  
+                                      var="item" 
+                                      value="#{expedienteCentralMezclasMB.documentoLazy}"
+                                      lazy="true"
+                                      selectionMode="single"
+                                      selection="#{expedienteCentralMezclasMB.documentoSeleccionado}"
+                                      rowKey="#{item.idDocumento}"
+                                      style="text-align: center;"
+                                      scrollHeight="350"
+                                      scrollable="true"                                    
+                                      scrollRows="10"
+                                      emptyMessage="No se encontraron registros"
+                                      reflow="true"  
+                                      paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                      currentPageReportTemplate=" "
+                                      paginator="true"
+                                      rows="10"
+                                      paginatorPosition="bottom" >
+
+                            <p:column headerText="Fecha Registro" style="width: 10%;">
+                                <h:outputText value="#{item.insertFecha}" title="" class="altoColumn" >
+                                    <f:convertDateTime pattern="MM/dd/yyyy" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Tipo Documento" style="width: 10%;" sortBy="#{item.nombreTipoArchivo}">
+                                <h:outputText value="#{item.nombreTipoArchivo}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Nombre" style="width: 20%;" sortBy="#{item.nombre}">
+                                <h:outputText value="#{item.nombre}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Nombre Archivo" style="width: 20%;" sortBy="#{item.nombreArchivo}">
+                                <h:outputText value="#{item.nombreArchivo}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Registró" style="width: 20%;" sortBy="#{item.nombreUsuarioRegistra}">
+                                <h:outputText value="#{item.nombreUsuarioRegistra}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Vigencia" style="width: 10%;" sortBy="#{item.autorizado}">
+                                <h:outputLabel value="#{item.autorizado ? 'Vigente' : 'No autorizado' }" styleClass="#{item.autorizado ? 'stsgreen' : 'stsred' }"  />
+                            </p:column>
+
+                            <p:column id="acciones"   headerText="Acciones" style="width: 10%;" >
+                                <p:commandLink title="Descargar" ajax="false"
+                                               style="margin: 5px;text-decoration: none;"
+                                               actionListener="#{expedienteCentralMezclasMB.descargarArchivoAdjunto(item.idDocumento)}"
+                                               rendered="#{expedienteCentralMezclasMB.permiso.puedeVer}" >
+                                    <p:fileDownload value="#{expedienteCentralMezclasMB.adjuntoDescarga}" />
+                                    <i class="fa fa-download" />
+                                </p:commandLink>
+                                <p:commandLink id="chekstat" 
+                                               title="#{item.autorizado ? 'Desactivar' : 'Activar'}" 
+                                               actionListener="#{expedienteCentralMezclasMB.cambiarAutorización(item.idDocumento,item.autorizado)}" 
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide();" 
+                                               update="tblMainDocumento">
+                                    <i class="#{item.autorizado ? 'fa fa-toggle-on' : 'fa fa-toggle-off'}  iconMusAzul" />
+                                </p:commandLink>
+                                <p:commandLink id="linkEliminar"                                               
+                                               style="margin: 5px;text-decoration: none;"
+                                               actionListener="#{expedienteCentralMezclasMB.inactivarRegistro(item.idDocumento,item.autorizado)}"
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide();" 
+                                               update="tblMainDocumento" 
+                                               rendered="#{expedienteCentralMezclasMB.permiso.puedeEliminar}">
+                                    <i class="fa fa-trash-o"/>
+                                </p:commandLink>
+                                <p:commandLink id="linkEditar"                                               
+                                               style="margin: 5px;text-decoration: none;"
+                                               actionListener="#{expedienteCentralMezclasMB.preparaActualizacion(item.idDocumento)}"
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide(); PF('dlgDocumento').show();" 
+                                               update="frmDocumento" 
+                                               rendered="#{expedienteCentralMezclasMB.permiso.puedeEditar}">
+                                    <i class="fa fa-edit iconMusAzul"/>
+                                </p:commandLink> 
+
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>                                                                        
+
+
+                    <p:dialog header="INFORMACIÓN DE DOCUMENTO"
+                              widgetVar="dlgDocumento"
+                              closeOnEscape="true"
+                              closable="true"  
+                              modal="true" 
+                              resizable="false" 
+                              focus="frmDocumento:txtNombreDoc" style="font-size:xx-small !important;" width="40%"
+                              >               
+                        <p:focus context="frmDocumento"/>
+
+                        <h:form id="frmDocumento" style="padding: 0px;">
+                            <p:messages id="msgValidaRegistro" globalOnly="false" showDetail="false" closable="true" showSummary="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            
+                            <div class="ui-fluid">
+                                <p:panelGrid id="panelEntidad" columns="2" columnClasses="ui-g-12 ui-md-3, ui-g-12 ui-md-8" layout="grid" styleClass="ui-fluid" >  
+
+                                    <p:outputLabel value="Nombre *" class="plabel" />
+                                    <p:inputText id="txtNombreDoc"  class="ptxt1"  tabindex="1"  
+                                                 value="#{expedienteCentralMezclasMB.documentoSeleccionado.nombre}"
+                                                 maxlength="45" >
+                                    </p:inputText>
+
+                                    <p:outputLabel value="Descripción *" class="plabel" />
+                                    <p:column colspan="1">
+                                        <p:inputTextarea rows="5" cols="100" counter="display" maxlength="499" 
+                                                         counterTemplate="{0} Caracteres restantes." autoResize="false"
+                                                         value="#{expedienteCentralMezclasMB.documentoSeleccionado.descripcion}"  />
+                                        <br/>
+                                        <h:outputText id="display" class="block" />
+                                    </p:column>
+
+                                    <p:outputLabel style="margin-right: 10px; font-weight: bold;">Tipo Archivo </p:outputLabel>
+                                        <p:selectOneMenu  class="cmbTipoArchivo" value="#{expedienteCentralMezclasMB.documentoSeleccionado.idTipoArchivo}" 
+                                                          filter="true" filterMatchMode="contains" >
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true" />
+                                            <f:selectItems class="sOneMenu" value="#{expedienteCentralMezclasMB.tipoArchivoLista}"
+                                                           var="tipo" itemLabel="#{tipo.nombre}"
+                                                           itemValue="#{tipo.idTipoArchivo}" />
+                                        </p:selectOneMenu>
+
+                                    <p:outputLabel value="Vigencia *"  class="plabel" />
+                                    <p:selectBooleanButton id="txtActivo" onLabel="Si" offLabel="No"    
+                                                           onIcon="ui-icon-check" offIcon="ui-icon-close" 
+                                                           value="#{expedienteCentralMezclasMB.documentoSeleccionado.autorizado}"  />
+
+                                    <p:column colspan="1">
+                                        <p:fileUpload id="uplArchivo" dragDropSupport="true" auto="true" label="Adjuntar" value="#{expedienteCentralMezclasMB.file}"
+                                                      mode="advanced" multiple="false" fileLimit="1" fileLimitMessage="Sólo se permite adjuntar 1 Archivo" 
+                                                      style="width: 200px !important;" update=":frmDocumento:tablaArchivo"
+                                                      sizeLimit="10000000" invalidSizeMessage="Este archivo supero el tamaño de 10MB"
+                                                      allowTypes="/(\.|\/)(xls|xlsx|xml|txt|pdf|docx|doc|jpeg|png|jpg|tiff|gif)$/"
+                                                      invalidFileMessage="Tipo de archivo inválido"
+                                                      rendered="#{expedienteCentralMezclasMB.permiso.puedeCrear}"
+                                                      fileUploadListener="#{expedienteCentralMezclasMB.subirAdjunto}"
+                                                      onstart="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" />
+                                    </p:column>
+                                    
+                                    <p:column colspan="1">
+                                        <p:dataTable id="tablaArchivo" value="#{expedienteCentralMezclasMB.adjuntoLista}"
+                                                     var="adj" scrollable="true" scrollHeight="150"
+                                                     reflow="true" style="margin-top:5px"
+                                                     selection="#{expedienteCentralMezclasMB.adjuntoSelecionado}"
+                                                     rowKey="#{item.idAdjunto}" rowIndexVar="row"
+                                                     emptyMessage="No se encontraron Registros" >
+
+                                            <p:column style="text-align: left !important; " headerText="Fecha" width="20%">
+                                                <h:outputText value="#{adj.insertFecha}" >
+                                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                                </h:outputText>    
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Archivo" width="60%">
+                                                <h:outputText value="#{adj.nombreAdjunto}" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left;" headerText=""  width="20%">
+                                                <p:commandLink title="Descargar" ajax="false"
+                                                               actionListener="#{expedienteCentralMezclasMB.descargarArchivo(adj.idAdjunto)}"
+                                                               rendered="#{expedienteCentralMezclasMB.permiso.puedeVer}" >
+                                                    <p:fileDownload value="#{expedienteCentralMezclasMB.adjuntoDescarga}" />
+                                                    <i class="fa fa-download" />
+                                                </p:commandLink>&nbsp;&nbsp;
+                                                <p:commandLink title="Eliminar"  actionListener="#{expedienteCentralMezclasMB.eliminarAdjunto(adj.idAdjunto)}"
+                                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":frmDocumento:tablaArchivo, :frmDocumento:uplArchivo" 
+                                                               rendered="#{expedienteCentralMezclasMB.permiso.puedeEliminar}" process="@this" >
+                                                    <i class="fa fa-trash-o iconMusAzul" />
+                                                    <p:confirm header="Eliminación de archivo adjunto" message="Está seguro que desea eliminar el archivo adjunto ?" icon="ui-icon-alert"  />
+                                                </p:commandLink>&nbsp;
+                                            </p:column>    
+                                        </p:dataTable>
+                                    </p:column>
+                                </p:panelGrid>
+                            </div>
+
+                            <br/>
+
+                            <p:commandButton id="btnCancel" class="btnItem" value="Cancelar" 
+                                             onclick="PF('dlgDocumento').hide();"  validateClient="false" tabindex="6" />
+
+                            <p:commandButton value="Guardar" widgetVar="btnSave"
+                                             actionListener="#{expedienteCentralMezclasMB.guardarRegistroDocumento()}"
+                                             style="float:right;" class="btnNew" styleClass="btnMusAzul" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('dlgDocumento').hide(); }" 
+                                             update="mainForm:tblMainDocumento" ajax="true"  >
+                            </p:commandButton>
+
+                        </h:form>                                     
+                    </p:dialog>                                                   
+                </div>
+            </ui:define>
+            
+            <ui:define name="footer" >
+            </ui:define>
+            
+        </ui:composition>
+    </h:body>
+</html>

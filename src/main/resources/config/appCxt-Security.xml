@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security" 
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:context="http://www.springframework.org/schema/context" 
+             xmlns:p="http://www.springframework.org/schema/p"
+             xsi:schemaLocation="
+                http://www.springframework.org/schema/security https://www.springframework.org/schema/security/spring-security.xsd
+                http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    
+    <context:annotation-config />
+    
+    <global-method-security secured-annotations="enabled" />
+    
+    <beans:bean id="customHttpFirewall" class="org.springframework.security.web.firewall.StrictHttpFirewall" p:allowSemicolon="true"/>
+
+    <http-firewall ref="customHttpFirewall"/>
+    
+    <http disable-url-rewriting="true"  >
+        <headers disabled="true"/>
+        <csrf disabled="true"/>
+        
+        <custom-filter after="BASIC_AUTH_FILTER" ref="customFilterAfterAuth" />
+        
+        <!--<access-denied-handler error-page="/error/denied.xhtml"/>-->
+        <access-denied-handler ref="customAccessDeniedHandler" />
+        
+<!--        <filter-security-metadata-source use-expressions="false">
+            <intercept-url pattern="/error/**" access="ROLE_ANONYMOUS" />
+            <intercept-url pattern="/resources/**" access="ROLE_ANONYMOUS" />
+            <intercept-url pattern="/index.xhtml" access="ROLE_ANONYMOUS"/>
+            <intercept-url pattern="/secure/**" access="ROLE_ANONYMOUS"/>
+            </filter-security-metadata-source>-->
+        
+
+<!--        <filter-security-metadata-source>-->
+            <intercept-url pattern="/error/**" access="permitAll" />
+            <intercept-url pattern="/resources/**" access="permitAll" />
+            <intercept-url pattern="/index.xhtml" access="permitAll"/>
+            <!--<intercept-url pattern="/secure/**/*.xhtml" access="hasAnyRole('ADMIN','USER')"/>-->
+            <!--<intercept-url pattern="/secure/**/*.xhtml" access="hasAuthority('ADMIN')"/>-->
+            <intercept-url pattern="/secure/**/*.xhtml" access="hasAnyAuthority('INICIO','ADMIN','USER')"/>
+            <!--<intercept-url pattern="/index.xhtml" access="isAnonymous()"/>-->
+            <!--<intercept-url pattern="/secure/**/*.xhtml" access="isAuthenticated()"/>-->
+<!--        </filter-security-metadata-source>-->
+
+
+        
+<!--        <custom-filter ref="ipFilter" before="FILTER_SECURITY_INTERCEPTOR"/>
+        <remember-me remember-me-parameter="remember-me" token-validity-seconds="604800" data-source-ref="dataSource" user-service-ref="customjdbcUserService"/>-->
+        <!--
+        always-use-default-target="true"
+        default-target-url="/secure/inicio.xhtml"
+        -->
+        <form-login login-page="/index.xhtml" 
+                    login-processing-url="/j_spring_security_check"
+                    authentication-failure-handler-ref="AuthenticationFailureHandler"
+                    authentication-failure-url="/index.xhtml?login_error=1"
+                    authentication-success-handler-ref="AuthenticationSuccessHandler"
+                    username-parameter="j_username"
+                    password-parameter="j_password" />
+               
+        <!--
+        logout-url="/j_spring_security_logout"
+        logout-success-url="/index.xhtml"
+        -->
+        <logout logout-url="/perform_logout"
+                invalidate-session="true" 
+                delete-cookies="JSESSIONID"
+                success-handler-ref="customLogoutSuccessHandler"        />
+        
+        <session-management invalid-session-url="/index.xhtml" 
+                            session-fixation-protection="migrateSession"  >
+            <concurrency-control expired-url="/error/expired.xhtml" 
+                                 session-registry-ref="sessionRegistry"
+                                 max-sessions="1"
+                                 error-if-maximum-exceeded="false"  />
+        </session-management>
+    </http>
+
+    <authentication-manager alias="authenticationManager" > 
+        <authentication-provider user-service-ref="customUserDetailsService" >
+            <password-encoder ref="customPasswordEncoder" />
+        </authentication-provider >
+    </authentication-manager >
+    
+<!--    <bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+        <constructor-arg value="11"/>
+    </bean>-->
+    
+    <!--beans:bean id="passwordEncoder" class="org.springframework.security.authentication.encoding.Md5PasswordEncoder" /-->
+    
+    <beans:bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" />
+
+    <beans:bean id="AuthenticationFailureHandler" class="mx.mc.init.CustomAuthenticationFailureHandler" />
+    
+    <beans:bean id="AuthenticationSuccessHandler" class="mx.mc.init.CustomAuthenticationSuccessHandler" />
+    
+    <beans:bean id="customUserDetailsService" class="mx.mc.init.CustomUserDetailsService" />
+    
+    <beans:bean name="customAccessDeniedHandler" class="mx.mc.init.CustomAccessDeniedHandler" />
+    
+    <beans:bean name="customLogoutSuccessHandler" class="mx.mc.init.CustomLogoutSuccessHandler" />
+    
+    <beans:bean id="customFilterAfterAuth" class="mx.mc.init.CustomFilter"/>
+    
+</beans:beans>
+

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    
+<!--    <bean name="jobColectivoDimesa" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="mx.mc.quartz.JobColectivoDimesa" />
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="surtimientoService" value-ref="surtimientoService" />
+                <entry key="surtimientoInsumoService" value-ref="surtimientoInsumoService" />
+            </map>
+        </property>
+        <property name="durability" value="true" />
+    </bean>-->
+    
+<!--
+    <bean name="surtimientoService" class="mx.mc.service.SurtimientoServiceImpl" />
+    <bean name="surtimientoInsumoService" class="mx.mc.service.SurtimientoInsumoServiceImpl" />
+-->    
+<!--    <bean name="jobRecetaConsumoDimesa" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="mx.mc.quartz.JobRecetaConsumoDimesa" />
+        <property name="durability" value="true" />
+    </bean>-->
+<!--    
+    <bean name="jobRecetaValeDimesa" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="mx.mc.quartz.JobRecetaValeDimesa" />
+        <property name="durability" value="true" />
+    </bean>-->
+    
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="configLocation" value="classpath:/quartz.properties"/>
+        <property name="triggers">
+            <list>
+                <!--ref bean="cronTriggerJobColectivoDimesa" />
+                <ref bean="cronTriggerJobRecetaConsumoDimesa" />
+                <ref bean="cronTriggerJobRecetaValeDimesa" /-->
+                <ref bean="cronTriggerJobConfirmaIngresosReabastosUlises" />
+                <ref bean="cronTriggerJobConsultaPrescripcionesUlises" />
+                <ref bean="cronTriggerJobConfirmaPrescripcionesUlises" />
+                <ref bean="cronTriggerJobConsultaStockUlises" />
+            </list>
+        </property>
+    </bean>
+    
+<!--    <bean id="cronTriggerJobColectivoDimesa" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="jobColectivoDimesa" />
+        <property name="cronExpression" value="0 0/30 * * * ?" />
+    </bean>-->
+    
+<!--    <bean id="cronTriggerJobRecetaConsumoDimesa" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="jobRecetaConsumoDimesa" />
+        <property name="cronExpression" value="0 0/1 * * * ?" />
+    </bean>-->
+    
+<!--    <bean id="cronTriggerJobRecetaValeDimesa" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="jobRecetaValeDimesa" />
+        <property name="cronExpression" value="0 0/10 * * * ?" />
+    </bean>-->
+    
+    <bean name="jobConfirmaIngresosReabastosUlises" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="com.seidor.ulises.quartz.JobConfirmaIngresosReabastosUlises" />
+        <property name="durability" value="true" />
+    </bean>
+    
+    <bean id="cronTriggerJobConfirmaIngresosReabastosUlises" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="jobConfirmaIngresosReabastosUlises" />
+        <property name="cronExpression" value="0 0/2 * * * ?" />
+    </bean>
+    
+    <bean name="jobConsultaPrescripcionesUlises" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="com.seidor.ulises.quartz.JobConsultaPrescripcionesUlises" />
+        <property name="durability" value="true" />
+    </bean>
+    
+    <bean id="cronTriggerJobConsultaPrescripcionesUlises" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="jobConsultaPrescripcionesUlises" />
+        <property name="cronExpression" value="0 0/2 * * * ?" />
+    </bean>
+    
+    <bean name="jobConfirmaPrescripcionesUlises" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="com.seidor.ulises.quartz.JobConfirmaPrescripcionesUlises" />
+        <property name="durability" value="true" />
+    </bean>
+    
+    <bean id="cronTriggerJobConfirmaPrescripcionesUlises" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="jobConfirmaPrescripcionesUlises" />
+        <property name="cronExpression" value="0 0/2 * * * ?" />
+    </bean>
+        
+    <bean name="jobConsultaStockUlises" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="com.seidor.ulises.quartz.JobConsultaStockUlises" />
+        <property name="durability" value="true" />
+    </bean>
+    
+    <bean id="cronTriggerJobConsultaStockUlises" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="jobConsultaStockUlises" />
+        <property name="cronExpression" value="0 0/5 * * * ?" />
+    </bean>
+</beans>

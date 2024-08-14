@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" > 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+  
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="padding: 10px;">
+                    <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+                    <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                        <p:graphicImage name="/img/cargando.gif" />
+                    </p:dialog>
+                    <h:form id="formOrdenesReabasto">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="true"/>
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                            <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+
+                        <div style="background: #808080;padding: 10px;">
+                            <p:outputLabel value="Surtimiento de Orden Reabasto" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+                            <p:outputLabel value="Almacén:" 
+                                           style="margin-right: 10px;color: #FFF;font-size: 16px  !important;font-weight: bold;"/>
+                            <p:outputLabel value="#{reabastoSurtiminetoMB.listaEstructuras.get(0).nombre}"
+                                           style="margin-right: 10px;color: #FFF;font-size: 16px  !important;font-weight: bold;"
+                                           rendered="#{!reabastoSurtiminetoMB.administrador}"/>
+                            <p:selectOneMenu id="comboAlmacen" 
+                                             value="#{reabastoSurtiminetoMB.idEstructura}"
+                                             disabled="#{!reabastoSurtiminetoMB.permiso.puedeVer}"
+                                             style="vertical-align: middle;"
+                                             rendered="#{reabastoSurtiminetoMB.administrador}"
+                                             filter="true"
+                                             filterMatchMode="contains" 
+                                             >
+                                <p:ajax listener="#{reabastoSurtiminetoMB.buscarRegistros}" 
+                                         update="tablaOrdenReabasto" />
+                                <f:selectItems value="#{reabastoSurtiminetoMB.listaEstructuras}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+                            <p:inputText id="busqueda" 
+                                         value="#{reabastoSurtiminetoMB.textoBusqueda}" 
+                                         style="width: 40%!important;border-radius:10px!important;margin-left: 30px;" 
+                                         placeholder="Buscar por folio, Nombre del solicitante..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15" style=""/>
+                            </i>
+                            <p:commandButton value="Buscar" 
+                                             actionListener="#{reabastoSurtiminetoMB.buscarRegistros}"
+                                             update="tablaOrdenReabasto formDetalleSurtimiento"
+                                             icon="fa fa-search" 
+                                             style="margin-left: 20px;"
+                                             oncomplete="if(args.estatusModal){ PF('modalSurtimineto').show(); }">
+                            </p:commandButton>
+                        </div>
+                        <p:dataTable id="tablaOrdenReabasto"
+                                     emptyMessage="No se encontraron registros" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"  reflow="true"                                       
+                                     paginatorPosition="bottom" widgetVar="tablaOrdenReabasto"
+                                     value="#{reabastoSurtiminetoMB.surtimientoReabastoLazy}" var="ordenReabasto" 
+                                     lazy="true" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" selectionMode="single" 
+                                     selection="#{reabastoSurtiminetoMB.reabastoSelect}"
+                                     rowKey="#{ordenReabasto.idReabasto}" rowIndexVar="row">
+                             <p:ajax event="rowDblselect" oncomplete="PF('modalSurtimineto').show();" 
+                                    update=":formDetalleSurtimiento" 
+                                    listener="#{reabastoSurtiminetoMB.obtenerDetalleInsumos}"/>
+
+                            <p:column style="text-align: left;" headerText="Folio" sortBy="#{ordenReabasto.folio}">
+                                <h:outputText value="#{ordenReabasto.folio}" />
+                            </p:column>
+                            <p:column style="text-align: left;" headerText="Fecha" sortBy="#{ordenReabasto.fechaSolicitud}">
+                                <h:outputLabel value="#{ordenReabasto.fechaSolicitud}">
+                                    <f:convertDateTime type="date" pattern="yyyy-MM-dd HH:mm:ss" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: left;" headerText="Estatus" sortBy="#{ordenReabasto.nombreEstatus}">
+                                <p:outputLabel value="#{ordenReabasto.nombreEstatus}" />
+                            </p:column>
+                            <p:column style="text-align: left;" headerText="Tipo Reabasto" sortBy="#{ordenReabasto.nombreTipoOrden}">
+                                <p:outputLabel value="#{ordenReabasto.nombreTipoOrden}" />
+                            </p:column>
+                            <p:column style="text-align: left;" headerText="Area Solicitante" sortBy="#{ordenReabasto.nombreEstructura}">
+                                <h:outputText value="#{ordenReabasto.nombreEstructura}" />
+                            </p:column>                                                        
+                            <p:column style="text-align: left;" headerText="Usuario Solicitante" sortBy="#{ordenReabasto.nombreUsrSolicitane}">
+                                <p:outputLabel value="#{ordenReabasto.nombreUsrSolicitane}" />
+                            </p:column>
+                            <p:column style="width: 5%" headerText="Acciones">
+                                <ui:remove><p:commandLink title="Detalle"  actionListener="#{reabastoSurtiminetoMB.mostrarModalSurtimiento(ordenReabasto.idReabasto)}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();PF('modalSurtimineto').show();" 
+                                               update=":formDetalleSurtimiento" >
+                                    <i class="fa fa-edit iconMusAzul" />
+                                    </p:commandLink>&nbsp;</ui:remove>
+                                <p:tooltip for="linkCancelar" value="Cancelar" position="top"/>
+                                <p:commandLink id="linkCancelar"
+                                               actionListener="#{reabastoSurtiminetoMB.cancelarOrdenReabasto(ordenReabasto.idReabasto)}"
+                                               update="tablaOrdenReabasto"
+                                               style="margin: 5px;text-decoration: none;"
+                                               disabled="#{!reabastoSurtiminetoMB.permiso.puedeEliminar}"
+                                               >
+                                    <p:confirm header="Confirmación" message="Desea cancelar la orden ?" icon="ui-icon-alert" />
+                                    <i class="fa fa-ban" />
+                                </p:commandLink>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:outputLabel> </p:outputLabel>
+                            </f:facet>
+                        </p:dataTable>
+                    </h:form>
+
+                    <p:dialog header="Surtimiento de Ordenes de Reabasto" 
+                              widgetVar="modalSurtimineto"
+                              modal="true"
+                              closeOnEscape="true"
+                              closable="true"
+                              resizable="false"
+                              width="90%" 
+                              focus="formDetalleSurtimiento:codigSurt">
+                        <h:form id="formDetalleSurtimiento">
+                            <p:messages id="msgModal" closable="true" showDetail="false"/>
+                            <p:outputLabel style="margin-right: 10px;">Folio</p:outputLabel>
+                            <p:inputText value="#{reabastoSurtiminetoMB.reabastoSelect.folio}" 
+                                         disabled="true"
+                                         style="margin-right: 10px;"
+                                         size="12">
+                            </p:inputText>
+                            <p:outputLabel style="margin-right: 10px;">Fecha</p:outputLabel>
+                            <p:inputText value="#{reabastoSurtiminetoMB.reabastoSelect.fechaSolicitud}"
+                                         disabled="true"
+                                         style="margin-right: 10px;"
+                                         size="10">
+                                <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                            </p:inputText>
+                            <p:outputLabel style="margin-right: 10px;">Almacen</p:outputLabel>
+                            <p:selectOneMenu id="comboAlmacen" 
+                                             value="#{reabastoSurtiminetoMB.idEstructura}"
+                                             disabled="true"
+                                             style="margin-right: 10px;vertical-align: middle;">
+                                <f:selectItems value="#{reabastoSurtiminetoMB.listaEstructuras}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+                            <br/>
+                            <p:outputLabel style="margin-right: 10px;margin-left: 10px;">Borrar</p:outputLabel>
+                            <p:selectBooleanCheckbox value="#{reabastoSurtiminetoMB.eliminarCodigo}" id="checkEliminar"/>
+                            <p:outputLabel style="margin-right: 10px;">Cantidad</p:outputLabel>
+                            <p:inputText id="xcantidad" 
+                                         value="#{reabastoSurtiminetoMB.xcantidad}" 
+                                         size="4"
+                                         maxlength="5"
+                                         style="margin-right: 10px;">
+                                <p:keyFilter regEx="/[0-9]/i"/>
+                            </p:inputText>
+                            <p:outputLabel style="margin-right: 10px;">Código</p:outputLabel>
+                            <p:inputText id="codigSurt" 
+                                         value="#{reabastoSurtiminetoMB.codigoBarras}" 
+                                         onkeypress="if (event.keyCode === 13) {funcionPrueba();return false;}" 
+                                         size="48"> 
+                                <p:remoteCommand name="funcionPrueba"
+                                                 actionListener="#{reabastoSurtiminetoMB.agregarInsumosPorCodigo()}"
+                                                 update="codigSurt,tablaDetalleSurt,msgModal,xcantidad,checkEliminar"
+                                                 process="@form"
+                                                 global="false"
+                                                 />
+                            </p:inputText>
+                            <br/> <br/>
+                            <p:dataTable id="tablaDetalleSurt"
+                                         var="insumo"
+                                         value="#{reabastoSurtiminetoMB.listaReabastoInsumo}"
+                                         style=""
+                                         scrollable="true" 
+                                         scrollHeight="350"
+                                         emptyMessage="No se encontraron Registros">
+                                
+                                <p:ajax event="rowToggle" global="false"/>
+
+                                <p:column style="width:4%">
+                                    <p:rowToggler />
+                                </p:column>
+                                <p:column headerText="Clave" style="width: 10%;" 
+                                          sortBy="#{insumo.claveInstitucional}" >
+                                    <h:outputText value="#{insumo.claveInstitucional}" />
+                                </p:column>
+                                <p:column headerText="Medicamento" style="width: 30%;"
+                                          sortBy="#{insumo.nombreCorto}" >
+                                    <h:outputLabel value="#{insumo.nombreCorto}" />
+                                </p:column>
+                                <p:column headerText="Presentación" style="width: 8%;">
+                                    <h:outputText value="#{insumo.nombrePresentacion}" />
+                                </p:column>
+                                <p:column headerText="Pieza x Caja" style="width: 6%;">
+                                    <p:outputLabel value="#{insumo.factorTransformacion}" />
+                                </p:column>
+                                <p:column headerText="Cant Solicitada" style="width: 8%;"
+                                          sortBy="#{insumo.cantidadSolicitada}">
+                                    <p:outputLabel value="#{insumo.cantidadSolicitada}" />
+                                </p:column>
+                                <ui:remove >
+                                <p:column headerText="Cant Comprometida"
+                                          sortBy="#{insumo.cantidadComprometida}" >
+                                    <p:outputLabel value="#{insumo.cantidadComprometida}" />
+                                </p:column>
+                                </ui:remove>    
+                                <p:column headerText="Cant Surtida" style="width: 8%;"
+                                          sortBy="#{insumo.cantidadSurtida}" >
+                                    <div class="ui-fluid">
+                                        <p:spinner value="#{insumo.cantidadSurtida}"
+                                                   min="0" 
+                                                   max="#{insumo.cantidadSurtida}" 
+                                                   readonly="true"
+                                                   disabled="true"/>
+                                    </div>
+                                </p:column>
+                                <p:column headerText="Existencias" style="width: 6%;">
+                                    <p:outputLabel value="#{insumo.cantidadActual}" />
+                                </p:column>
+                                <p:column headerText="Notas" style="width: 10%;">
+                                    <p:inputText    value="#{insumo.observaciones}" 
+                                                    style="width: 100%" />
+                                </p:column>
+                                <p:column headerText="Activo" style="width: 4%;">
+                                    <p:outputLabel value="#{insumo.activo eq 0 ? 'No' : 'Si'}" 
+                                                   style="#{insumo.activo eq 0 ? 'font-weight:bold;color:#DB2828;' : 'font-weight:normal;color:#00CB00;'}"/>
+                                </p:column>
+                                <p:rowExpansion>
+                                    <p:dataTable var="insumoDetalle"
+                                                 value="#{insumo.listaDetalleReabIns}"
+                                                 scrollable="true" 
+                                                 scrollHeight="100"
+                                                 emptyMessage="No se encontraron Registros" >
+                                        
+                                        <p:column headerText="Proveedor" style="width: 10%;">
+                                            <h:selectOneMenu value="#{insumoDetalle.idProveedor}" style="width:100%"
+                                                             disabled="true" >
+                                                <f:selectItem itemValue="#{null}" itemLabel="Seleccione una opción" />
+                                                <f:selectItems value="#{reabastoSurtiminetoMB.listaProveedor}" var="provee"
+                                                               itemLabel="#{provee.nombreProveedor}" itemValue="#{provee.idProveedor}"/>
+                                            </h:selectOneMenu>
+                                        </p:column>
+                                        
+                                        <p:column headerText="Fabricante #{index2}" style="width: 10%;">
+                                            <h:selectOneMenu value="#{insumoDetalle.idFabricante}" style="width:100%"
+                                                             disabled="true" >
+                                                <f:selectItem itemValue="#{null}" itemLabel="Seleccione una opción" />
+                                                <f:selectItems value="#{reabastoSurtiminetoMB.listaFabricante}" var="fabric"
+                                                               itemLabel="#{fabric.nombreFabricante}" itemValue="#{fabric.idFabricante}"/>
+                                            </h:selectOneMenu>
+                                        </p:column>
+                                        
+                                        <p:column headerText="Clave Proveedor #{insumoDetalle.idProveedor}" style="width: 10%;">
+                                            <h:outputText value="#{insumoDetalle.claveProveedor}" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Estabilidad (hrs)" style="width: 8%;">
+                                            <h:outputText value="#{insumoDetalle.noHorasEstabilidad}"/>
+                                        </p:column>
+                                        
+                                        <p:column headerText="Osmolaridad (mOsm/L)" style="width: 8%;">
+                                            <h:outputText value="#{insumoDetalle.osmolaridad}" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Densidad" style="width: 8%;">
+                                            <h:outputText value="#{insumoDetalle.densidad}" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Calorias" style="width: 8%;">
+                                            <h:outputText value="#{insumoDetalle.calorias}" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Lote">
+                                            <h:outputText value="#{insumoDetalle.lote}" />
+                                        </p:column>
+                                        <p:column headerText="Fecha de caducidad">
+                                            <h:outputLabel value="#{insumoDetalle.fechaCaducidad}" >
+                                                <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Cantidad">
+                                            <h:outputLabel value="#{insumoDetalle.cantidadEnviado}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:rowExpansion>
+                                <f:facet name="footer">
+                                    <p:outputLabel> </p:outputLabel>
+                                </f:facet>
+                            </p:dataTable>
+                            <br/>
+                            <p:commandButton value="Imprimir" rendered="false"
+                            				 update=":formOrdenesReabasto, :formPDF"
+                            				 onclick="PF('statusProcess').show()"
+                                             oncomplete="PF('statusProcess').hide(); PF('mdlReport').show(); "
+                                			 actionListener="#{reabastoSurtiminetoMB.imprimir}"
+                            				 icon="fa fa-print"
+                            				 style="margin-right: 10px;float: right;"
+                            				 disabled="#{!reabastoSurtiminetoMB.permiso.puedeEditar}"
+                            				 />
+                            <p:commandButton value="Cancelar" 
+                                             icon="fa fa-times-circle" 
+                                             style="margin-right: 10px;float: right;"
+                                             oncomplete="PF('modalSurtimineto').hide();"
+                                             />
+                            <p:commandButton value="Surtir" 
+                                             actionListener="#{reabastoSurtiminetoMB.surtirReabastoInsumo}"
+                                             update="formOrdenesReabasto,msgModal,formImpresion"
+                                             oncomplete="if (args.errorSurtir) {PF('modalSurtimineto').hide();PF('modalImpresion').show();}"
+                                             icon="fa fa-check-circle" 
+                                             style="margin-right: 10px;float: right;"
+                                             styleClass="btnMusAzul"
+                                             disabled="#{!reabastoSurtiminetoMB.permiso.puedeProcesar}"
+                                             > 
+                                <p:confirm header="Confirmación" message="Desea surtir la Orden ?" icon="ui-icon-alert" />
+                            </p:commandButton>
+                             <p:commandButton value="Guardar" 
+                                              accesskey="" icon="fa fa-floppy-o" 
+                                              style="margin-right: 10px;float: right;"
+                                              actionListener="#{reabastoSurtiminetoMB.guardarRegistros}"
+                                              update="msgModal"
+                                             />
+                        </h:form>
+                    </p:dialog>
+                    <p:dialog header="Impresión de Orden"
+                		  widgetVar="modalImpresion"
+                		  closeOnEscape="false" modal="true"
+                		  style="font-size:xx-small !important;" width="40%">
+                	<h:form id="formImpresion">
+                		<p:outputLabel value="¿Desea imprimir la orden de surtimiento?"/>
+                		<p:commandButton value="Si"
+                            				 update=":formOrdenesReabasto, :formPDF"
+                            				 onclick="PF('statusProcess').show()"
+                                             oncomplete="PF('statusProcess').hide(); PF('modalImpresion').hide(); PF('mdlReport').show(); "
+                                			 actionListener="#{reabastoSurtiminetoMB.imprimir}"
+                            				 icon="fa fa-print"
+                            				 style="margin-right: 10px;float: right;"
+                            				 disabled="#{!reabastoSurtiminetoMB.permiso.puedeEditar}"
+                            				 />
+                         <p:commandButton value="No" 
+                                             icon="fa fa-times-circle" 
+                                             style="margin-right: 10px;float: right;"
+                                             oncomplete="PF('modalImpresion').hide();"
+                                             />   				 
+                            				 
+                	</h:form>                
+                </p:dialog>
+                <p:dialog widgetVar="mdlReport" width="820px" height="600px"
+                          closeOnEscape="false" modal="true"                          
+                          style="font-size:xx-small !important;" >
+                    <h:form id="formPDF">
+                        <p:media value="/Reportes" player="pdf" width="800px" height="600px" cache="false" />
+                    </h:form>
+                    <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                </p:dialog>
+                </div>
+            </ui:define>
+
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

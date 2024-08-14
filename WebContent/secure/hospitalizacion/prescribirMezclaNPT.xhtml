@@ -1,0 +1,1340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+<script id="emo1608202301" type="text/javascript">
+$(document).on('keyup keypress', '.noSubm', function(e) {
+  if(e.which === 13) {
+    e.preventDefault();
+    return false;
+  }
+});
+$(document).on('keyup keypress', '.noSubm', function(e) {
+    if (e.which === 9) {
+        e.preventDefault();
+        console.log('tab');
+        return false;
+    }
+});
+$(document).on('blur', '.noSubm', function(e) {
+        e.preventDefault();
+        console.log('blur');
+        return false;
+});
+//$('.siSubm').focus(function(e){
+//   $(this).on("blur", function(e){
+//        e.stopImmediatePropagation();
+//        e.preventDefault();
+//        console.log('blur');
+//    }
+//       );
+//});
+//$('.siSubm').blur(function(e){  
+//  e.preventDefault();
+//  console.log('blur'); 
+//});
+//$('.siSubm').change(function(e){
+//  console.log('change'); 
+//  e.stopImmediatePropagation();
+//  $(this).off("blur"); //$("input[name='test']").off("blur");
+//});
+
+</script>
+                <div class="mainPanel" >
+                    <h:form id="mainForm">
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <p:focus context="mainForm"/>
+                        
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value="Prescripciones de Mezclas NPT" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+                            <p:spacer width="10px;" />
+                            <ui:remove>
+                            <p:outputLabel value="Almacén: " 
+                                           style="color: #FFFFFF;font-size: medium !important;font-weight: bold;margin-right: 1px;" />
+                            <p:selectOneMenu id="comboAlmacen" class="noSubm" 
+                                             value="#{prescribirMezclaNPTMB.idAlmacen}"
+                                             style="vertical-align: middle;"
+                                             filter="true" filterMatchMode="contains"
+                                           autoWidth="false" > 
+                                <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" />
+                                <f:selectItems value="#{prescribirMezclaNPTMB.estructuraList}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+                            <p:spacer width="10px;" />
+                            <p:outputLabel value="Servicio: "  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+                            <p:selectOneMenu id="comboServicio"  class="noSubm" 
+                                             value="#{prescribirMezclaNPTMB.idEstructura}"
+                                             style="vertical-align: middle;margin-right: 1px;"                                             
+                                             filter="true" filterMatchMode="contains"
+                                             autoWidth="false" >
+                                <p:ajax listener="#{prescribirMezclaNPTMB.buscarOrdenesPreparacion}" 
+                                        update="tblOrdenesMezcla" />
+                                <f:selectItem itemValue="#{null}" itemLabel="Seleccione una opción" 
+                                              noSelectionOption="true" />
+                                <f:selectItems value="#{prescribirMezclaNPTMB.listaEstructuras}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+                            <p:spacer width="10px;" />
+                            </ui:remove>
+                            <p:inputText id="busqueda" 
+                                         value="#{prescribirMezclaNPTMB.cadenaBusqueda}" 
+                                         class="textSearch noSubm"
+                                         style="width:25% !important;" 
+                                         placeholder="Buscar..." title="Buscar por Número de Cama, Paciente o Servicio" />
+                            <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />        
+                            <p:spacer width="10px" />
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); if(args.modal){PF(':formSurtimientoDetail').show();}"
+                                             actionListener="#{prescribirMezclaNPTMB.buscarOrdenesPreparacion}"
+                                             update="@form" />
+                        </div>
+                        <p:commandButton value="Prescribir Mezcla NPT" icon="fa fa-file-o" 
+                                         class="btnNew" style="margin: 5px 0;" styleClass="btnMusAzul"
+                                         rendered="#{prescribirMezclaNPTMB.permiso.puedeCrear}"
+                                         actionListener="#{prescribirMezclaNPTMB.nuevaMezcla()}" 
+                                         onclick="PF('statusProcess').show();" 
+                                         oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('mdlNuevaOrden').show(); }" 
+                                         update="frmNewOrden" ajax="true" />
+                        <br/>
+
+                        <p:tabView  rendered="false">>
+                            <p:ajax event="tabChange" process="@this" update="mainForm:tblOrdenesMezcla" listener="#{prescribirMezclaNPTMB.onTabChange}"/>
+                            <p:tab id="#{prescribirMezclaNPTMB.porValidar}" title="SOLICITADAS" class="noSubm" />
+                            <p:tab id="#{prescribirMezclaNPTMB.validada}" title="VALIDADAS" class="noSubm"  />
+                            <p:tab id="#{prescribirMezclaNPTMB.rechazada}" title="CANCELADAS" class="noSubm" />
+                        </p:tabView>
+                        
+                        <p:dataTable id="tblOrdenesMezcla" widgetVar="tblOrdenesMezcla" 
+                                     value="#{prescribirMezclaNPTMB.ordenMezclaLazy}" 
+                                     var="item" lazy="true" 
+                                     selectionMode="single" 
+                                     selection="#{prescribirMezclaNPTMB.nutricionParenteralSelect}"
+                                     rowKey="#{item.idNutricionParenteral}" rowIndexVar="row"
+                                     scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     reflow="true"
+                                     paginator="true" paginatorPosition="bottom" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     emptyMessage="No se encontraron registros"
+                                     style="margin-bottom:5px; text-align: center;" >
+                            
+                            <p:ajax event="rowDblselect"  
+                                    listener="#{prescribirMezclaNPTMB.obtenerDetalleOrdenPreparacion()}"
+                                    update=":frmNewOrden"
+                                    oncomplete="PF('mdlNuevaOrden').show();" />
+                            
+                            <p:column headerText="Solución" style="text-align: left; width: 4% " >
+                                <h:outputText value="NPT" />
+                            </p:column>
+                            
+                            <p:column headerText="Fecha Programada" style="text-align: left; width: 10% "
+                                       sortBy="#{item.fechaProgramada}" filterBy="#{item.fechaProgramada}" filterMatchMode="contains" >
+                                <h:outputText value="#{item.fechaProgramada}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Fecha Entrega" style="text-align: left; width: 10% " rendered="false" >
+                                <h:outputText value="#{item.fechaParaEntregar}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Prescripción" style="text-align: left; width: 8% "
+                                       sortBy="#{item.folio}" filterBy="#{item.folio}" filterMatchMode="contains" >
+                                <h:outputText value="#{item.folio}" />
+                            </p:column>
+
+                            <p:column headerText="Mezcla" style="text-align: left; width: 10% "
+                                      sortBy="#{item.folioPreparacion}" filterBy="#{item.folioPreparacion}" filterMatchMode="contains" >
+                                <h:outputText value="#{item.folioPreparacion}" />
+                            </p:column>
+                            
+                            <p:column headerText="Paciente" style="text-align: left; width: 12% "
+                                      sortBy="#{item.nombrePaciente}" filterBy="#{item.nombrePaciente}" filterMatchMode="contains" >
+                                <h:outputText value="#{item.nombrePaciente}" />
+                            </p:column> >
+                            
+                            <p:column headerText="Servicio" style="text-align: left; width: 16% "
+                                      sortBy="#{item.nombreEstructura}" filterBy="#{item.nombreEstructura}" filterMatchMode="contains" >
+                                <h:outputText value="#{item.nombreEstructura}" />
+                            </p:column>
+
+                            <p:column headerText="Ubicación" style="text-align: left; width: 6% "
+                                      sortBy="#{item.ubicacion}" filterBy="#{item.ubicacion}" filterMatchMode="contains" >
+                                <h:outputText value="#{item.ubicacion}" />
+                            </p:column>
+
+                            <p:column headerText="Médico" style="text-align: left; width: 10% "
+                                      sortBy="#{item.prescribio}" filterBy="#{item.prescribio}" filterMatchMode="contains" >
+                                <h:outputText value="#{item.prescribio}" />
+                            </p:column>
+
+                            <p:column headerText="Estatus" style="text-align: left; width: 10% "
+                                      sortBy="#{item.estatus}" filterBy="#{item.estatus}" filterMatchMode="contains" >
+                                <h:outputText value="#{item.estatus}" />
+                            </p:column>
+
+                            <p:column headerText="Acciones" style="text-align: left; width: 5% " >
+                                <p:commandLink title="Ver"  
+                                               actionListener="#{prescribirMezclaNPTMB.obtenerDetalleOrdenPreparacion(item)}"
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide();PF('mdlNuevaOrden').show();" 
+                                               update=":frmNewOrden" >
+                                    <i class="fa fa-eye iconMusAzul" style="font-size: large"/>
+                                </p:commandLink>&nbsp;
+                                <p:commandLink id="linkImprimir" 
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide();if(args.estatus) {PF('mdlReport').show();}"
+                                               actionListener="#{prescribirMezclaNPTMB.previewPrint(item)}" 
+                                               styleClass="iconMusAzul" >
+                                    <i class="fa fa-print" style="font-size: large" />
+                                </p:commandLink>
+                            </p:column>
+
+                        </p:dataTable>
+                        
+                    </h:form>
+
+                    <p:dialog header="Prescripción de Mezcla NPT"
+                              widgetVar="mdlNuevaOrden" 
+                              width="98%" 
+                              height="80vh"
+                              closeOnEscape="true" 
+                              modal="true" 
+                              resizable="true" >
+                        <h:form id="frmNewOrden">
+                            <p:messages id="validaMsg1" globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+
+                            <div class="ui-g">
+                                <ui:remove>
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Folio Surtimiento: " />
+                                        <p:outputLabel value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.folioPreparacion}" 
+                                                       style="font-weight: bolder;" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Fecha Registro: " />
+                                        <p:outputLabel id="txtFechaRegistro" value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.fechaPrepara}" >
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                        </p:outputLabel>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Estatus: " />
+                                        <p:outputLabel value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.estatusSurtimiento}" 
+                                                       style="font-weight: bolder;" />
+                                    </div>
+                                </div>
+                                </ui:remove>
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Folio Prescripción: * " />
+                                        <p:inputText value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.folio}" 
+                                                     style="font-weight: bolder;" class="noSubm"
+                                                     disabled="#{!prescribirMezclaNPTMB.permiso.puedeAutorizar}" >
+                                            <p:ajax event="change" 
+                                                    listener="#{prescribirMezclaNPTMB.buscarPrescripcion()}" 
+                                                    onstart="PF('statusProcess').show();"
+                                                    oncomplete="PF('statusProcess').hide();" 
+                                                    update="frmNewOrden" />
+                                        </p:inputText>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Fecha Programada: *" />
+                                        <p:calendar id="txtFechaPrescribe" class="noSubm"
+                                                    value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.fechaProgramada}" 
+                                                    title="Fecha Programada" 
+                                                    showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                    size="10" pages="1" mask="true" showButtonPanel="true" effect="fade" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 1px;" for="tipoPrescripcion" value="Tipo Prescripción: *"/>
+                                        <p:selectOneMenu id="tipoPrescripcion" class="noSubm"
+                                                         value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.tipoPrescripcion}" 
+                                                         title="Tipo de Prescripción" autoWidth="true" 
+                                                         style="vertical-align: middle;" effect="fade" >
+                                            <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                            <f:selectItem itemLabel="Normal" itemValue="N" />
+                                            <f:selectItem itemLabel="Urgente" itemValue="U" />
+                                            <f:selectItem itemLabel="Dosis Única" itemValue="D" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 5px;" value="Área/Servicio: * "/>
+                                        <p:selectOneMenu id="comboServicios" title="Área o Servicio" class="noSubm"
+                                                         value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.idEstructura}"
+                                                         autoWidth="true" filter="true" filterMatchMode="contains"
+                                                         style="vertical-align: middle; " effect="fade" >
+                                            <f:selectItem itemLabel="Seleccione Área" itemValue="#{null}"/>
+                                            <f:selectItems value="#{prescribirMezclaNPTMB.listaEstructuras}"
+                                                           var="servicio"
+                                                           itemValue="#{servicio.idEstructura}"
+                                                           itemLabel="#{servicio.nombre}" />
+                                            <p:ajax event="itemSelect" 
+                                                    listener="#{prescribirMezclaNPTMB.obtenerCamas}" 
+                                                    update="comboCamas" />
+                                        </p:selectOneMenu>
+                                        <p:inputText id="servicio" disabled="true" 
+                                                     value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.nombreEstructura}" 
+                                                     style="font-weight: bolder;" size="2" type="hidden" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 5px;" value="Cama: * "/>
+                                        <p:selectOneMenu id="comboCamas" title="Cama del Paciente" class="noSubm"
+                                                         value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.idCama}"
+                                                         autoWidth="true" filter="true" filterMatchMode="contains" 
+                                                         style="vertical-align: middle; " effect="fade" >
+                                            <p:ajax event="itemSelect" listener="#{prescribirMezclaNPTMB.seleccionaCama}" />
+                                            <f:selectItem itemLabel="Seleccione Cama" itemValue="#{null}"/>
+                                            <f:selectItems value="#{prescribirMezclaNPTMB.listaCamas}"
+                                                           var="cama"
+                                                           itemValue="#{cama.idCama}"
+                                                           itemLabel="#{cama.nombreCama} - #{cama.ubicacion} " />
+                                        </p:selectOneMenu>
+                                        <p:inputText id="ubicacion" style="font-weight: bolder;" size="2" type="hidden"
+                                                     value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.ubicacion}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Médico Prescribe: * " />
+                                        <p:autoComplete id="txtMedico" class="noSubm"
+                                                        multiple="false"
+                                                        value="#{prescribirMezclaNPTMB.medicoSelect}"
+                                                        completeMethod="#{prescribirMezclaNPTMB.autoCompleteMedicos}"
+                                                        minQueryLength="3"
+                                                        queryDelay="500" 
+                                                        maxResults="50" 
+                                                        forceSelection="true" 
+                                                        cacheTimeout="0" 
+                                                        var="medico" 
+                                                        placeholder="Buscar Médico..." 
+                                                        cache="false"
+                                                        emptyMessage="No se encontraron registros"
+                                                        itemLabel="#{medico.nombre}  #{medico.apellidoPaterno}  #{medico.apellidoMaterno}" itemValue="#{medico}" 
+                                                        converter="musGenericConverter"                                                            
+                                                        scrollHeight = "200"
+                                                        disabled="#{!prescribirMezclaNPTMB.permiso.puedeAutorizar}" >
+                                            <p:ajax event="itemSelect" 
+                                                    listener="#{prescribirMezclaNPTMB.selectMedico}" />
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Cédula" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.cedProfesional}" 
+                                                              style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Nombre" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.nombre}  #{medico.apellidoPaterno}  #{medico.apellidoMaterno}" 
+                                                              style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>       
+
+                                        </p:autoComplete>
+                                        <p:commandButton title="Agregar" value="+" 
+                                                         actionListener="#{prescribirMezclaNPTMB.mostrarModalAgregarMedico}" 
+                                                         rendered="#{prescribirMezclaNPTMB.permiso.puedeAutorizar}"
+                                                         disabled="#{!prescribirMezclaNPTMB.permiso.puedeAutorizar}"
+                                                         onclick="PF('statusProcess').show();" 
+                                                         oncomplete="PF('statusProcess').hide();PF('modalAgregarMedico').show();" 
+                                                         update=":formAgregarMedico:turnoMedico" />
+                                    </div>
+                                </div>
+                                
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Paciente: * " />
+                                        <p:autoComplete id="autoCompletePaciente" class="noSubm"
+                                                        multiple="false"
+                                                        value="#{prescribirMezclaNPTMB.pacienteSelect}" 
+                                                        completeMethod="#{prescribirMezclaNPTMB.autoCompletePacientes}" 
+                                                        minQueryLength="3"
+                                                        queryDelay="500" 
+                                                        maxResults="50" 
+                                                        forceSelection="true" 
+                                                        cacheTimeout="0" 
+                                                        var="paciente"  
+                                                        placeholder="Buscar paciente..."
+                                                        cache="false"
+                                                        emptyMessage="No se encontraron registros"                                                                
+                                                        itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" itemValue="#{paciente}"
+                                                        converter="pacienteConverter" 
+                                                        scrollHeight = "200" >
+                                            <p:ajax event="itemSelect" 
+                                                    listener="#{prescribirMezclaNPTMB.selectPaciente}" 
+                                                    update="frmNewOrden:numPaciente,frmNewOrden:edad, frmNewOrden:txtEdadPaciente,frmNewOrden:peso,frmNewOrden:servicio,frmNewOrden:ubicacion,frmNewOrden:txtDiagnostico,frmNewOrden:" />
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="No. Expediente" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.pacienteNumero}" 
+                                                              style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Nombre" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.nombreCompleto}" 
+                                                              style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Paterno" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Materno" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:commandButton title="Agregar" value="+" 
+                                                         onclick="PF('statusProcess').show();"
+                                                         actionListener="#{prescribirMezclaNPTMB.mostrarModalAgregarPaciente}"
+                                                         disabled="#{!prescribirMezclaNPTMB.permiso.puedeCrear}"
+                                                         oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('modalAgregarPaciente').show(); }"
+                                                         update="formAgregarPaciente" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="No. Expediente: " />
+                                        <p:outputLabel class="textoNegrita" id="numPaciente" title="Número del Paciente"
+                                                   value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.pacienteNumero}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel for="tipoConsulta" style="margin-right: 5px;" value="Tipo consulta: *"/>
+                                            <p:selectOneMenu id="tipoConsulta" title="Tipo de la Consulta" autoWidth="true" class="noSubm"
+                                                             value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.tipoConsulta}" 
+                                                             style="vertical-align: middle;" 
+                                                             disabled="#{prescribirMezclaNPTMB.existePrescripcion}" effect="fade" >
+                                                <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                                <f:selectItem value="#{I}" itemLabel="Hospitalización" itemValue="I" />
+                                                <f:selectItem value="#{E}" itemLabel="Ambulatoria" itemValue="E" />
+                                            </p:selectOneMenu>
+                                        
+                                    </div>
+                                </div>
+
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" value="Fecha Nacimiento: " />
+                                        <p:outputLabel id="edad" value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.fechaNacimiento}" >
+                                            <f:convertDateTime pattern="yyyy-MM-dd" />
+                                        </p:outputLabel>
+                                    <p:outputLabel value=" ( " />
+                                    <p:outputLabel id="txtEdadPaciente" value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.edad}" />
+                                    <p:outputLabel value=" años )" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel value="Peso: * " />
+                                        <p:inputNumber id="peso" style="font-weight: bolder;" class="noSubm" placeholder="" 
+                                                       value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.peso}" 
+                                                       size="4" minValue="0" maxValue="200" 
+                                                       decimalPlaces="3" decimalSeparator="." thousandSeparator=",">
+                                            <p:ajax event="change" update="txtAreaPaciente" listener="#{prescribirMezclaNPTMB.obtenerSuperficieCorporal()}" />
+                                        </p:inputNumber>
+                                        <p:outputLabel value=" kg" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" value="Estatura: * " />
+                                        <p:inputNumber id="txtTallaPaciente" style="font-weight: bolder;" class="noSubm" placeholder=""
+                                                     value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.tallaPaciente}" 
+                                                     size="4" minValue="0" maxValue="2.3" 
+                                                     decimalPlaces="3" decimalSeparator="." thousandSeparator=",">
+                                            <p:keyFilter mask="num" />
+                                            <p:ajax event="change" update="txtAreaPaciente" listener="#{prescribirMezclaNPTMB.obtenerSuperficieCorporal()}" />
+                                        </p:inputNumber>
+                                        <p:outputLabel value=" mts" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" value="Superficie Corporal: * " />
+                                        <p:inputNumber id="txtAreaPaciente" class="noSubm"
+                                                     value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.areaCorporal}" 
+                                                     size="4" minValue="0" maxValue="5.0" 
+                                                     decimalPlaces="3" decimalSeparator="." thousandSeparator=",">
+                                            <p:keyFilter mask="num" />
+                                        </p:inputNumber>
+                                        <p:outputLabel value=" m²" />
+                                    </div>
+                                </div>
+
+                                <div class="ui-g-12" >
+                                    <div style="width:50%; float:left;">
+                                        <p:outputLabel value="Diagnósticos: * " />
+                                        <p:autoComplete size="30" id="txtDiagnostico" class="noSubm"
+                                                        styleClass="autocomplete-multiple-hiper2" 
+                                                        multiple="true"                                       
+                                                        style="width: 520px !important;" 
+                                                        panelStyle="width: 520px !important;" 
+                                                        inputStyle="width: 520px !important;" 
+                                                        placeholder="Agregar Diagnósticos" 
+                                                        value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.listaDiagnosticos}" 
+                                                        completeMethod="#{prescribirMezclaNPTMB.autocompleteDiagnostico}" 
+                                                        minQueryLength="3" 
+                                                        forceSelection="true" 
+                                                        var="diagnos" 
+                                                        itemLabel="#{diagnos.nombre}" itemValue="#{diagnos}" 
+                                                        onkeydown="if (event.keyCode === 13) {return false;}"
+                                                        onkeypress="if (event.keyCode === 13) {return false;}"
+                                                        onkeyup="if (event.keyCode === 13) {return false;}"
+                                                        converter="musGenericConverter" >
+                                            <p:ajax event="itemSelect" 
+                                                    listener="#{prescribirMezclaNPTMB.agregarDiagostico}" />
+                                            
+                                            <p:column style="width: 30px; font-size: small;" >
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave" />
+                                                </f:facet>
+                                                <h:outputText value="#{diagnos.clave}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="width: 200px; font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{diagnos.nombre}" style=" font-size: x-small;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                    <div style="width:10%; float:left;">
+                                        <p:outputLabel style="margin-right: 1px;" value="Prob Glucosa:" />
+                                        <p:selectBooleanCheckbox value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.diabetes}" 
+                                                                 id="chkDiabetes" class="noSubm" />
+                                    </div>
+
+                                    <div style="width:10%; float:left;">
+                                        <p:outputLabel style="margin-right: 1px;" value="Prob Renales" />
+                                        <p:selectBooleanCheckbox value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.problemasRenales}" 
+                                                                 id="chkProRenales" class="noSubm" />
+                                    </div>
+
+                                    <div style="width:10%; float:left;">
+                                        <p:outputLabel style="margin-right: 1px;" value="Prob Hipertensión:" />
+                                        <p:selectBooleanCheckbox value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.hipertension}" 
+                                                                 id="chkHipertension" class="noSubm" />
+                                    </div>
+
+                                    <ui:remove>
+                                    <div style="width:2%; float:left;">
+                                        <p:outputLabel style="margin-right: 1px;" value="Padec crónico:" />
+                                        <p:selectBooleanCheckbox value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.padecimientoCronico}" 
+                                                                 id="chkPadeCronico" />
+                                        <p:outputLabel value="Hipersensibilidad: " />
+                                        <p:inputTextarea id="hipersensibilidad" disabled="true" rows="4" cols="25" class="noSubm"
+                                                         value="#{prescribirMezclaNPTMB.hipersensibilidades}" />
+                                        <p:outputLabel value="SRAM / RAM: " />
+                                        <p:inputTextarea id="reacciones" disabled="true" rows="4" cols="25" class="noSubm"
+                                                         value="#{prescribirMezclaNPTMB.reacciones}" />
+                                    </div>
+                                    </ui:remove>
+                                </div>
+
+                                <p:outputLabel value="INFORMACIÓN DE LA SOLUCIÓN"  class="plabel ui-g-12" />
+
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 5px;" value="Tipo Solución: *" />
+                                        <p:selectOneMenu id="tipoSolucion" style="vertical-align: middle;" title="Tipo de Solución" 
+                                                         value="#{prescribirMezclaNPTMB.idTipoSolucion}" label="Tipo Solución"
+                                                         required="true" requiredMessage="Seleccione tipo solución"
+                                                         filter="true" filterMatchMode="contains" class="noSubm" >
+                                            <f:selectItems value="#{prescribirMezclaNPTMB.tipoSolucionList}" var="tipoSol"
+                                                           itemLabel="#{tipoSol.clave}" itemValue="#{tipoSol.idTipoSolucion}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 5px;" value="Vía Administración: *"/>
+                                        <p:selectOneMenu id="viaAdministracion" style="vertical-align: middle; " 
+                                                         value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.idViaAdministracion}"
+                                                         label="Vía de Administración" title="Vía de Administración" autoWidth="true" 
+                                                         required="true" requiredMessage="Seleccione vía de administración" 
+                                                         filter="true" filterMatchMode="contains" class="noSubm" >
+                                            <f:selectItems value="#{prescribirMezclaNPTMB.viaAdministracionList}" var="via"
+                                                           itemLabel="#{via.nombreViaAdministracion}" itemValue="#{via.idViaAdministracion}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" value="Volumen total: * " />
+                                        <p:outputLabel id="txtVolTotal" style="margin-right: 1px; font-weight: bold"
+                                                        value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.volumenTotal}" />
+                                        <p:inputText size="4" rendered="false" class="noSubm"
+                                            value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.volumenTotal}"  >
+                                            <p:keyFilter regEx="/[0-9.]/i" mask="num" />
+                                            <p:ajax event="change" 
+                                                    listener="#{prescribirMezclaNPTMB.activaPerfusion}" 
+                                                    process="@this"/>
+                                        </p:inputText>
+                                        <p:outputLabel value=" mL" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" value="Contenedor: " />
+                                        <p:selectOneMenu id="cmbIdContenedor" class="noSubm"
+                                                         value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.idContenedor}" 
+                                                         filter="true" filterMatchMode="contains" placeholder="Seleccione un contenedor" >
+                                            <f:selectItems value="#{prescribirMezclaNPTMB.envaseList}" var="tipo" 
+                                                           itemLabel="#{tipo.descripcion}" itemValue="#{tipo.idEnvaseContenedor}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel for="cmbSobrellenado" value="Sobrellenado: *"/>
+                                        <p:selectOneMenu id="cmbSobrellenado" class="noSubm"
+                                                         value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.sobrellenado}" 
+                                                         filter="true" filterMatchMode="contains" placeholder="" >
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}"/>
+                                            <f:selectItems value="#{prescribirMezclaNPTMB.sobrelleadoList}" var="tipo" 
+                                                           itemLabel="#{tipo.descripcion}" itemValue="#{tipo.idSobrellenado}" />
+                                        </p:selectOneMenu>
+                                        <p:outputLabel value=" mL" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel for="chkPerfucionContinua" style="margin-right: 5px;" value="Perfusión Continua: "/>
+                                        <p:selectBooleanCheckbox id="chkPerfucionContinua" class="noSubm"
+                                                                 value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.perfusionContinua}" >
+                                            <p:ajax event="change"
+                                                    listener="#{prescribirMezclaNPTMB.activaPerfusion}" 
+                                                    update="txtVelocidad" 
+                                                    process="@this"/>
+                                        </p:selectBooleanCheckbox>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 5px;" value="Tiempo Infusión: *"/>
+                                        <p:selectOneMenu id="txtTiempoInfusion" autoWidth="false" class="noSubm"
+                                                         value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.horasInfusion}" 
+                                                         style="vertical-align: middle;"
+                                                         disabled="#{prescribirMezclaNPTMB.existePrescripcion}" >
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true" />
+                                            <f:selectItem itemLabel="24" itemValue="#{24}" />
+                                            <f:selectItem itemLabel="12" itemValue="#{12}" />
+                                            <f:selectItem itemLabel="16" itemValue="#{16}" />
+                                            <f:selectItem itemLabel="36" itemValue="#{36}" />
+                                            <p:keyFilter regEx="/[0-9.]/i" mask="num" />
+                                            <p:ajax event="change" 
+                                                    listener="#{prescribirMezclaNPTMB.activaPerfusion}" 
+                                                    update="txtVelocidad" 
+                                                    process="@this"/>
+                                        </p:selectOneMenu>
+                                        <p:outputLabel value=" hrs" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel for="txtVelocidad" style="margin-right: 5px;" value="Velocidad: " />
+                                        <p:inputNumber id="txtVelocidad" title="Velocidad de Administración" class="noSubm"
+                                                       value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.velocidad}"
+                                                       minValue="0" decimalSeparator="." thousandSeparator=","
+                                                       decimalPlaces="2" size="6" 
+                                                       readonly="true" 
+                                                       disabled="#{!prescribirMezclaNPTMB.nutricionParenteralSelect.perfusionContinua}" >
+                                            <p:keyFilter regEx="/[0-9.]/i" mask="num" />
+                                            <p:ajax event="change" 
+                                                    listener="#{prescribirMezclaNPTMB.activaPerfusion}" 
+                                                    process="@this" />
+                                        </p:inputNumber>
+                                        <p:outputLabel value=" mL/h"  />
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            
+                            <p:remoteCommand name="actualizarTabla"
+                                             update=":frmNewOrden:tblMedicamentos , :frmNewOrden:validaMsg1 , :frmNewOrden:volTotal , :frmNewOrden:pesoTotal , :frmNewOrden:caloriasTotal , :frmNewOrden:equivalencia , :frmNewOrden:valEquivalencia , :frmNewOrden:estabilidad , :frmNewOrden:valEstabilidad , :frmNewOrden:valTotalOsmolaridad , :frmNewOrden:txtViaAdmon , :frmNewOrden:txtVolTotal , :frmNewOrden:txtVelocidad , :frmNewOrden:txtKcalProteicas , :frmNewOrden:txtKcalNoProteicas " 
+                                             />
+                            <p:dataTable id="tblMedicamentos" 
+                                         value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.listaMezclaMedicamentos}" 
+                                         var="item" editable="#{prescribirMezclaNPTMB.contEdit}" 
+                                         editMode="cell" reflow="true"
+                                         style="font-size: x-small !important; width: 100% !important;"
+                                         scrollRows="150" scrollable="false"  scrollHeight="990" >
+                                    
+                                    <p:ajax event="cellEdit" 
+                                            listener="#{prescribirMezclaNPTMB.onCellEdit}"
+                                            oncomplete="actualizarTabla();" /> 
+                                    
+                                    <p:column style="text-align: left;" headerText="Clave" 
+                                              width="10%" >
+                                        <h:outputText value="#{item.claveMedicamento}" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;" headerText="Nombre" 
+                                              width="65%" >
+                                        <h:outputText value="#{item.nombreCorto}" class="altoColumn" id="nombreCorto"/>
+                                        <p:tooltip value="#{item.nombreCorto}"
+                                                   for="nombreCorto"
+                                                   position="top"/>
+                                    </p:column>
+                                    
+                                    <p:column style="text-align: left !important; " headerText="Fabr/Lote" 
+                                              width="25%" rendered="false" >
+                                        <p:selectOneMenu id="comboFabLote" 
+                                                         value="#{item.idInventario}"
+                                                        style="vertical-align: middle;">  
+                                            <p:ajax event="itemSelect" onstart="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" 
+                                                    update=":frmNewOrden:tblMedicamentos,:frmNewOrden:totales" listener="#{prescribirMezclaNPTMB.selectInventario}" />
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                            <f:selectItems value="#{item.listaInventarios}"
+                                                var="inventario"
+                                                itemValue="#{inventario.idInventario}"
+                                                itemLabel="#{inventario.nombreFabricante} #{inventario.lote}" />
+                                        </p:selectOneMenu>           
+                                    </p:column>
+                                    
+                                    <p:column style="text-align: left;"  headerText="Presentación" 
+                                              width="10%" rendered="false" >
+                                        <h:outputText value="#{item.nombrePresentacion}" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;"  headerText="Via Administración" 
+                                              width="15%" rendered="false" >
+                                        <h:outputText value="#{item.viaAdministracion}" />
+                                    </p:column>
+                                    
+                                    <p:column style="text-align: right  ;" headerText="Dosis Prescrita" 
+                                              width="10%" >
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{item.volPrescrito}" id="tblColCantVol" 
+                                                              class="lblTableEdi" /> 
+                                                <p:tooltip value="#{item.nombreCorto}" 
+                                                           for="tblColCantVol" 
+                                                           position="bottom" />
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputNumber value="#{item.volPrescrito}"  class="siSubm"
+                                                               padControl="false" inputStyleClass="txtTableEdi"
+                                                               decimalSeparator="." thousandSeparator=","
+                                                               minValue="0" 
+                                                               onblur="preventDefault();"
+                                                                />
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+
+                                    <p:column style="text-align: center;"  headerText="Unidad" width="5%">
+                                        <h:outputText value="#{item.nombreUnidadConcentracion}" />
+                                    </p:column>
+                                    
+                                    <p:column style="text-align: right;"  headerText="Volumen" width="5%">
+                                        <h:outputText value="#{item.cantCalculada}" id="txtColCantCal" />                                        
+                                    </p:column>
+                                    <p:column style="text-align: center;"  headerText="Unidad" width="5%">
+                                        <h:outputText value="mL" />
+                                    </p:column>
+                                    
+                                </p:dataTable>
+                                <br/>
+                                <br/>
+                                <br/>
+                                
+                                <div class="ui-g" style="margin: auto;  width: 80%;  border: 3px solid gray;  padding: 10px; " >
+                                        <div class="ui-g-12" >
+                                            <div class="ui-g-12 ui-md-6 ui-lg-4" style=" background: #EDEDED !important;">
+                                                <h:outputLabel value="Volumen Total: " class="plabel" /> 
+                                                <h:outputText id="volTotal" 
+                                                                  value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.volumenTotal}" />
+                                                <h:outputLabel value=" mL"/>
+                                            </div>
+                                            <div class="ui-g-12 ui-md-6 ui-lg-4" >
+                                                <h:outputLabel value="Peso Total:  " class="plabel" /> 
+                                                <h:outputText id="pesoTotal" 
+                                                                  value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.pesoTotal}" /> 
+                                                <h:outputLabel value=" mg"/>
+                                            </div>
+                                            <div class="ui-g-12 ui-md-6 ui-lg-4" style=" background: #EDEDED !important;">
+                                                <h:outputLabel value="Calorías Total:  " class="plabel" /> 
+                                                <h:outputText id="caloriasTotal" 
+                                                                  value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.caloriasTotal}" /> 
+                                                <h:outputLabel value=" kcal"/>
+                                            </div>
+                                            <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                                <h:outputLabel value="Valor Compatibilidad :  " class="plabel" /> 
+                                                <h:outputText id="valEquivalencia" 
+                                                              value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.precipitacion}" />
+                                            </div>
+                                            <div class="ui-g-12 ui-md-6 ui-lg-4"  style=" background: #EDEDED !important;" >
+                                                <h:outputLabel value="Valor Estabilidad :  " class="plabel" /> 
+                                                <h:outputText id="valEstabilidad" 
+                                                              value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.estabilidad}" />
+                                            </div>
+                                            <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                                <h:outputLabel value="Total Osmolaridad :  " class="plabel" /> 
+                                                <h:outputText id="valTotalOsmolaridad" 
+                                                                  value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.totalOsmolaridad}" />
+                                                <h:outputLabel value=" mOsm/L"/>
+                                            </div>
+                                            <ui:remove>
+                                            <div class="ui-g-12 ui-md-6 ui-lg-3" style=" background: #EDEDED !important;" >
+                                                <h:outputLabel value="Cálculo Peso Volumen:  " class="plabel" /> 
+                                                <h:outputText id="pesoVolumen" 
+                                                              value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.calcPesoVolumen}" /> 
+                                                <h:outputLabel value=" mg"/>
+                                            </div>
+                                            <div class="ui-g-12 ui-md-6 ui-lg-3"   >
+                                                <h:outputLabel value="% Calorías :  " class="plabel" /> 
+                                                <h:outputText id="porcCalorias" 
+                                                              value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.porcenEnergiaTotal}" /> 
+                                            </div>
+                                            <div class="ui-g-12 ui-md-6 ui-lg-4"  >
+                                                <p:spacer width="10px" />
+                                                <h:outputLabel value="Osmolaridad :  " class="plabel" /> 
+                                                <h:outputText id="totOsmolaridad" 
+                                                              value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.resulOsmolaridad}" />
+                                            </div>
+                                            </ui:remove>
+                                            <div class="ui-g-12 ui-md-6 ui-lg-4" style=" background: #EDEDED !important;" >
+                                                <h:outputLabel value="Compatibilidad :  " class="plabel" /> 
+                                                <h:outputText id="equivalencia" 
+                                                                  value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.resultPrecipitacion}" />
+                                            </div>
+                                            <div class="ui-g-12 ui-md-6 ui-lg-4" >
+                                                <h:outputLabel value="Estabilidad :  " class="plabel" /> 
+                                                <h:outputText id="estabilidad" 
+                                                              value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.resultEstabilidad}" />
+                                            </div>
+                                            <div class="ui-g-12 ui-md-6 ui-lg-4" style=" background: #EDEDED !important;" >
+                                                <h:outputLabel value="Vía de Administración :  " class="plabel" /> 
+                                                <h:outputText id="txtViaAdmon" 
+                                                              value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.viaAdministracion}" />
+                                            </div>
+                                            <div class="ui-g-12 ui-md-6 ui-lg-4" >
+                                                <h:outputLabel value="Calorias Proteícas :  " class="plabel" /> 
+                                                <h:outputText id="txtKcalProteicas" 
+                                                              value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.kcalProteicas}" />
+                                                <h:outputLabel value=" kcal"/>
+                                            </div>
+                                            <div class="ui-g-12 ui-md-6 ui-lg-4" style=" background: #EDEDED !important;" >
+                                                <h:outputLabel value="Calorias No Proteicas :  " class="plabel" /> 
+                                                <h:outputText id="txtKcalNoProteicas" 
+                                                              value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.kcalNoProteicas}" />
+                                                <h:outputLabel value=" kcal"/>
+                                            </div>
+                                        </div>
+                                
+                                </div>
+                                
+                                <p:dataTable id="tblMedicDi" 
+                                             editable="#{prescribirMezclaNPTMB.contEdit}" editMode="cell"
+                                             value="#{prescribirMezclaNPTMB.listaMedicamentos}" 
+                                             var="item2" 
+                                             styleClass="styleEventosPlanPrestacion" reflow="true"
+                                             style="margin-bottom:5px;" 
+                                             scrollRows="100" scrollable="true" liveScroll="true" scrollHeight="300"
+                                             rendered="false"    >
+                                    
+                                    <p:column style="text-align: left;" headerText="Clave" width="20%" >
+                                        <h:outputText value="#{item2.claveInstitucional}" />
+                                    </p:column>
+                                    <p:column style="text-align: left;"  headerText="Clave"  width="35%" >
+                                        <h:outputText value="#{item2.nombreCorto}" />
+                                    </p:column>
+                                    <p:column style="text-align: left;"  headerText="Clave"  width="20%" >
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{item2.concentracion}" id="tblColCantCon" class="altoColumn" title="Cantidad" style="font-weight: bolder;" /> 
+                                                <p:tooltip value="Cantidad " 
+                                                           for="tblColCantCon" 
+                                                           position="bottom" />
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputNumber value="#{item2.concentracion}" 
+                                                               padControl="false" 
+                                                               style="width:90%" label="Cantidad"
+                                                                decimalSeparator="." thousandSeparator="," />
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+                                </p:dataTable>
+                                <br/>
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                        <p:outputLabel style="margin-right: 1px; font-weight: bold;" 
+                                                       value="Instrucciones de Preparación:"
+                                                       rendered="false" />
+                                        <br/>
+                                        <p:inputTextarea id="txtInstruccionesPrep"  
+                                                         value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.instruccionPreparacion}" 
+                                                         rows="4" cols="80"
+                                                         rendered="false" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                        <p:outputLabel style="margin-right: 1px; font-weight: bold;" 
+                                                       value="Observaciones:"
+                                                       rendered="false" />
+                                        <br/>
+                                        <p:inputTextarea id="txtCondicionesConser" 
+                                                         value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.observaciones}" 
+                                                         rows="4" cols="80"
+                                                         rendered="false" />
+                                    </div>
+                                </div>
+                                
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-10">
+                                        <p:selectBooleanCheckbox id="chkTemRefrigeracion" value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.tempRefrigeracion}" 
+                                                                 itemLabel="Temp. Refrigeración"
+                                                                 rendered="false" />
+                                        <p:selectBooleanCheckbox id="chkTemAmbiente" value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.tempAmbiente}" 
+                                                                 itemLabel="Temp. Ambiente"
+                                                                 rendered="false" />
+                                        <p:selectBooleanCheckbox id="chkProteccionLuz" value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.proteccionLuz}" 
+                                                                 itemLabel="Protección de Luz"
+                                                                 rendered="false" />
+                                        <p:selectBooleanCheckbox id="chkNoAgitar" value="#{prescribirMezclaNPTMB.nutricionParenteralSelect.noAgitar}" 
+                                                                 itemLabel="No agitar"
+                                                                 rendered="false" />
+                                    </div>
+                                    <div style="width:10%; float:left;">
+                                        <p:spacer width="10"/>
+                                    </div>
+                                </div>
+                                <br />
+                            <div class="ui-g-12" style=" width: 100% !important; /*position: absolute; bottom: 0px;*/ background-color: #f8f8f8; border-top: solid 2px #C8C8C8;  " >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3" style="display: flex; align-content: center; justify-content: space-between; float: right;" >
+                                    <div >
+                                        <p:commandButton value="Cancelar" styleClass="btnMusRed" icon="fa fa-times-circle" 
+                                                         style="margin-right: 1px; float: right;"
+                                                         onclick="PF('statusProcess').show();"
+                                                         actionListener="#{prescribirMezclaNPTMB.validaCancelacion}"
+                                                         oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('dlgCofirmaCancelacion').show(); } else {PF('mdlNuevaOrden').content.scrollTop('0') }"
+                                                         update=":frmCofirmaCancelacion, :frmNewOrden:validaMsg1"
+                                                         rendered="#{prescribirMezclaNPTMB.cancelable}" />
+                                    </div>
+                                    <div>
+                                        <p:commandButton id="btnGuardar" value="Guardar"  
+                                                         styleClass="btnMusAzul" 
+                                                         onclick="PF('statusProcess').show();"
+                                                         actionListener="#{prescribirMezclaNPTMB.validaOrdenPreparacion}" 
+                                                         oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('dlgCofirmaConfirmRegistro').show(); } else { PF('mdlNuevaOrden').content.scrollTop('0') } "
+                                                         ajax="true"  update="mainForm , :frmNewOrden:validaMsg1 , :frmCofirmaConfirmRegistro" 
+                                                         rendered="#{prescribirMezclaNPTMB.editable}">
+                                        </p:commandButton>
+                                    </div>
+                                    <div>
+                                        <p:commandButton id="btnValidar" value="Validar"  styleClass="btnMusAzul" 
+                                                         actionListener="#{prescribirMezclaNPTMB.validarOrdenPreparacion}" 
+                                                         onclick="PF('statusProcess').show()" 
+                                                         disabled="#{prescribirMezclaNPTMB.deshabilitaValidar}"
+                                                         oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('dlgCofirmaConfirmRegistro').show(); } else { PF('mdlNuevaOrden').content.scrollTop('0') } "
+                                                         update=":formAlerts,:mainForm:validaMsg, :mainForm " 
+                                                         rendered="false" />
+                                    </div>
+                                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                        <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                    </p:confirmDialog>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>
+                 </div>
+                
+                <p:dialog header="CONFIRMACIÓN"
+                          widgetVar="dlgCofirmaCancelacion"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="frmCofirmaCancelacion" >
+                        <p:messages id="msgCofirmaCancelacion" globalOnly="false" showDetail="false" closable="true" />
+                        <div class="ui-g">
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                    <p:outputLabel value="Desea cancelar la mezcla ?" style="font-weight: bold;" />
+                                </div>
+                            </div>
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel value="Motivo: " for="txtMotivo" rendered="false" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-9">
+                                    <p:selectOneMenu id="txtMotivo" class="sOneMenu" value="#{prescribirMezclaNPTMB.solucion.idMotivoCancelacion}"
+                                                  filter="true" filterMatchMode="contains" filterPlaceholder="Seleccione motivo"
+                                                  required="true" requiredMessage="Seleccione motivo" immediate="true"
+                                                  rendered="false" >
+                                        <f:selectItem itemValue="#{0}" itemLabel="Seleccione una opción"  />
+                                        <f:selectItem itemValue="#{1}" itemLabel="Alta de paciente"/>
+                                        <f:selectItem itemValue="#{2}" itemLabel="Cambio de Tratamiento"/>
+                                        <f:selectItem itemValue="#{3}" itemLabel="Diagnóstico de alta"/>
+                                        <f:selectItem itemValue="#{4}" itemLabel="Egreso de paciente"/>
+                                        <f:selectItem itemValue="#{5}" itemLabel="Error en prescripción"/>
+                                        <f:selectItem itemValue="#{6}" itemLabel="Sospecha de evento Adverso"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel value="Comentarios: " for="txtComentariosCancela" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-9">
+                                    <p:inputText id="txtComentariosCancela" maxlength="99" size="40" placeholder="" 
+                                                 required="true" requiredMessage="Registre motivo de cancelación" 
+                                                 value="#{prescribirMezclaNPTMB.solucion.comentariosCancelacion}" />
+                                </div>
+                            </div>
+                        </div>
+                        <br/>
+                        <div class="ui-g-12" style=" width: 100% !important; /*position: absolute; bottom: 0px;*/ background-color: #f8f8f8; border-top: solid 2px #C8C8C8;  " >
+                            <div class="ui-g-12 ui-md-6 ui-lg-4" style="display: flex; align-content: center; justify-content: space-between; float: right;" >
+                                <div>
+                                    <p:commandButton title="No" value="No" 
+                                                     styleClass="btnMusBoolGris" style="margin-right: 1px; float: right;"
+                                                     oncomplete="PF('dlgCofirmaCancelacion').hide();" />
+                                </div>
+                                <div >
+                                    <p:commandButton id="btnConfirmCancela" value="Si" 
+                                                     styleClass="btnMusRed" style="margin-right: 1px; float: right;"
+                                                     onclick="PF('statusProcess').show();"
+                                                     actionListener="#{prescribirMezclaNPTMB.ejecutaCancelacion}" 
+                                                     oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('dlgCofirmaCancelacion').hide(); PF('mdlNuevaOrden').hide(); } "
+                                                     update=":mainForm, :frmNewOrden, :frmCofirmaCancelacion" />
+                                </div>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+                
+                <p:dialog header="CONFIRMACIÓN"
+                          widgetVar="dlgCofirmaConfirmRegistro"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          height="200px"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="frmCofirmaConfirmRegistro" >
+                        <p:messages id="msgCofirmaConfirmRegistro" globalOnly="false" showDetail="false" closable="true" />
+                        <br/>
+                        <p:outputLabel value="Desea guardar la Prescripción y solicitar la mezcla ?"
+                                       style="font-weight: bold;" />
+                        <br/>
+                        <br/>
+                        <p:commandButton id="btnConfirmRegistra" value="Si" styleClass="btnMusAzul" 
+                                         style="margin-right: 1px; float: right;"
+                                         onclick="PF('statusProcess').show();"
+                                         actionListener="#{prescribirMezclaNPTMB.guardarOrdenPreparacion(2)}" 
+                                         oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('dlgCofirmaConfirmRegistro').hide(); PF('mdlNuevaOrden').hide(); } "
+                                         update=":mainForm, :frmNewOrden , :frmCofirmaConfirmRegistro " />
+                        
+                        <p:commandButton title="No" value="No" styleClass="btnMusBoolGris" 
+                                         style="margin-right: 1px; float: right;"
+                                         update=":frmCofirmaConfirmRegistro"
+                                         oncomplete="PF('dlgCofirmaConfirmRegistro').hide();" />
+                    </h:form>
+                </p:dialog>
+                
+                <p:dialog header="Confirmar cambio de servicio"
+                          widgetVar="modalConfirmarCambio"
+                          closeOnEscape="true"
+                          modal="true"
+                          resizable="false"
+                          responsive="true">
+                    <h:form>
+                        <p:outputLabel value="El paciente se encuentra en otro servicio. Desea cambiarlo de servicio?" /> <br />
+                               <p:commandButton value="Si"  styleClass="btnMusAzul" actionListener="#{prescribirMezclaNPTMB.cambiarServicioPaciente}" 
+                                                 oncomplete="if(args.estatus){ PF('modalConfirmarCambio').hide();}"
+                                                 update="frmNewOrden:numPaciente,frmNewOrden:edad,frmNewOrden:peso,
+                                                         frmNewOrden:servicio,frmNewOrden:ubicacion,frmNewOrden:txtDiagnostico,
+                                                         frmNewOrden:autoCompletePaciente" ajax="true" />&nbsp;&nbsp;        
+                               <p:commandButton value="No"   
+                                                oncomplete="PF('modalConfirmarCambio').hide();" ajax="true" actionListener="#{prescribirMezclaNPTMB.limpiarDatosPaciente}"
+                                                update="frmNewOrden:numPaciente,frmNewOrden:edad,frmNewOrden:peso,
+                                                frmNewOrden:servicio,frmNewOrden:ubicacion,frmNewOrden:txtDiagnostico,frmNewOrden:autoCompletePaciente"/>
+                    </h:form>
+                    
+                </p:dialog>
+                
+                <p:dialog header="AGREGAR PACIENTE"
+                          widgetVar="modalAgregarPaciente"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="formAgregarPaciente" >
+                        <p:messages id="msgModalAddUsuario" globalOnly="false" showDetail="false" closable="true" />
+                        <p:panelGrid columns="2" >
+                            
+                            <p:outputLabel value="Tipo de paciente : " rendered="false" />
+                            <p:selectOneMenu id="tipoPaciente" style="width: 152px;" rendered="false" 
+                                             value="#{prescribirMezclaNPTMB.pacienteNuevo.idTipoPaciente}" >
+                                <f:selectItems value="#{prescribirMezclaNPTMB.listaTipoPacientes}"
+                                               var="tipoPaciente" itemValue="#{tipoPaciente.idCatalogoGeneral}"
+                                               itemLabel="#{tipoPaciente.nombreCatalogo}"/>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="#{msg['pac.numPac']} : *" for="txtPacClavePaciente" />
+                            <p:inputText id="txtPacClavePaciente" value="#{prescribirMezclaNPTMB.pacienteNuevo.claveDerechohabiencia}"
+                                         placeholder="Clave o número de paciente" maxlength="45" />
+                           
+                            <p:outputLabel value="Nombre : *" for="txtPacNombrePaciente" />
+                            <p:inputText id="txtPacNombrePaciente" value="#{prescribirMezclaNPTMB.pacienteNuevo.nombreCompleto}"
+                                         placeholder="Nombre(s) de paciente" maxlength="45" />
+                            
+                            <p:outputLabel value="Apellido Paterno : *" for="txtPacApePatPaciente" />
+                            <p:inputText id="txtPacApePatPaciente" value="#{prescribirMezclaNPTMB.pacienteNuevo.apellidoPaterno}" 
+                                         placeholder="Apellido paterno" maxlength="45" />
+                            
+                            <p:outputLabel value="Apellido Materno : " for="txtPacApeMatPaciente" />
+                            <p:inputText id="txtPacApeMatPaciente" value="#{prescribirMezclaNPTMB.pacienteNuevo.apellidoMaterno}" 
+                                         placeholder="Apellido materno" maxlength="45" />
+                            
+                            <p:outputLabel value="Sexo : *" for="txtPacSexoPaciente" />
+                            <p:selectOneButton id="txtPacSexoPaciente" value="#{prescribirMezclaNPTMB.pacienteNuevo.sexo}">
+                                <f:selectItem itemLabel="Masculino" itemValue="M" />
+                                <f:selectItem itemLabel="Femenino" itemValue="F" />
+                            </p:selectOneButton>
+                            
+                            <p:outputLabel value="Fecha Nacimiento : *" for="txtFechaInicio" />
+                            <p:calendar id="txtFechaInicio" showOn="button" navigator="true" yearRange="c-100:c" pages="1" 
+                                        value="#{prescribirMezclaNPTMB.pacienteNuevo.fechaNacimiento}" maxdate="#{prescribirMezclaNPTMB.fechaActual}"
+                                        mask="true" pattern="dd/MM/yyyy" locale="es_MX" placeholder="dd/MM/yyyy"  />
+                            <p:selectCheckboxMenu id="turno" label="Turnos" rendered="false"
+                                                  value="#{prescribirMezclaNPTMB.listaIdTurnos}" >
+                                <f:selectItems value="#{prescribirMezclaNPTMB.listaTurnos}" rendered="false"
+                                               var="turno" itemValue="#{turno.idTurno.toString()}" itemLabel="#{turno.nombre}" />
+                            </p:selectCheckboxMenu>
+                            
+                            <p:outputLabel value="CURP : " for="txtPacCurp" />
+                            <p:inputText id="txtPacCurp" value="#{prescribirMezclaNPTMB.pacienteNuevo.curp}" 
+                                         placeholder="CURP" maxlength="18" />
+                            
+                            <p:outputLabel value="RFC : " for="txtPacRfc" />
+                            <p:inputText id="txtPacRfc" value="#{prescribirMezclaNPTMB.pacienteNuevo.rfc}" 
+                                         placeholder="RFC" maxlength="13" />
+                            
+                            <p:outputLabel value="Lugar Nacimiento : " for="txtPacLugarNac" />
+                            <p:inputText id="txtPacLugarNac" value="#{prescribirMezclaNPTMB.pacienteNuevo.lugarNacimiento}" 
+                                         placeholder="Lugar de Nacimiento" maxlength="45" />
+                            
+                            <p:outputLabel value="País de Residencia : " for="txtPacPaisRes" />
+                            <p:inputText id="txtPacPaisRes" value="#{prescribirMezclaNPTMB.pacienteNuevo.paisResidencia}" 
+                                         placeholder="Pais de Residencia" maxlength="45" />
+                            
+                          <p:outputLabel value="Presenta Discapacidad : " for="txtPacPresDisc" />
+                          <p:inputText id="txtPacPresDisc" value="#{prescribirMezclaNPTMB.pacienteNuevo.descripcionDiscapacidad}" 
+                                       placeholder="Descripción Discapacidad" maxlength="45" />
+                            
+                        </p:panelGrid>
+                        <br/>
+                        <br/>
+                        <p:commandButton value="Agregar" title="Guardar paciente" styleClass="btnMusAzul" style="float: right;"
+                                         onclick="PF('statusProcess').show();"
+                                         actionListener="#{prescribirMezclaNPTMB.agregarPaciente}"
+                                         oncomplete="PF('statusProcess').hide(); if(!args.error) {PF('modalAgregarPaciente').hide()};"
+                                         update=":frmNewOrden:validaMsg1 , :formAgregarPaciente:msgModalAddUsuario" >
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                            </p:confirmDialog>
+                        </p:commandButton>
+                        <p:commandButton title="Cancelar" value="Cancelar" oncomplete="PF('modalAgregarPaciente').hide();"  style="float: right;"/>
+                    </h:form>
+                </p:dialog>
+                
+                <p:dialog header="AGREGAR MEDICO"
+                          widgetVar="modalAgregarMedico"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formAgregarMedico" >
+                        <p:messages id="msgModalAddMedico" globalOnly="false" showDetail="false" closable="true" />
+                        <p:panelGrid columns="2">
+                            <p:outputLabel value="Nombre" />
+                            <p:inputText id="txtNombre" style="width: 300px !important;"  label="Nombre" 
+                                         maxlength="20"
+                                         value="#{prescribirMezclaNPTMB.medicoExtended.nombre}"  >
+
+                            </p:inputText>
+
+                            <p:outputLabel value="Apellido Paterno" />
+                            <p:inputText id="txtNombrePaterno" style="width: 300px !important;"   maxlength="20"
+                                         label="Apellido Paterno"  
+                                         value="#{prescribirMezclaNPTMB.medicoExtended.apellidoPaterno}"  >
+
+                            </p:inputText>
+
+                            <p:outputLabel value="Apellido Materno" />
+                            <p:inputText id="txtApellidoMaterno" style="width: 300px !important;" label="Apellido Materno" maxlength="20"
+                                         value="#{prescribirMezclaNPTMB.medicoExtended.apellidoMaterno}"   >
+
+                            </p:inputText>
+
+                            <p:outputLabel value="Nombre Usuario" />
+                            <p:inputText id="txtNombreUsuario"  style="width: 200px !important;"   label="Nombre Usuario"
+                                         value="#{prescribirMezclaNPTMB.medicoExtended.nombreUsuario}" maxlength="15"   >
+                            </p:inputText>
+
+                            <p:outputLabel value="Correo Electrónico" />
+                            <p:inputText id="txtCorreoElectronico" style="width: 200px !important;"   label="Correo electrónico" 
+                                         value="#{prescribirMezclaNPTMB.medicoExtended.correoElectronico}"  >    
+
+                            </p:inputText>     
+
+                            <p:outputLabel value="Cedula Profesional:" />
+                            <p:inputText id="cedProf" style="width: 200px !important;" value="#{prescribirMezclaNPTMB.medicoExtended.cedProfesional}" />
+
+                            <p:outputLabel value="Cedula Especialidad:" />
+                            <p:inputText id="cedEsp"  style="width: 200px !important;" value="#{prescribirMezclaNPTMB.medicoExtended.cedEspecialidad}"/>
+
+                            <p:outputLabel value="Turnos:" />
+                            <p:selectCheckboxMenu id="turnoMedico"
+                                                  label="Turnos"
+                                                  class="sOneMenu"
+                                                  value="#{prescribirMezclaNPTMB.listaIdTurnos}" 
+                                                  >
+                                <f:selectItems value="#{prescribirMezclaNPTMB.listaTurnos}"
+                                               var="turno"
+                                               itemValue="#{turno.idTurno}"
+                                               itemLabel="#{turno.nombre}"/>
+                            </p:selectCheckboxMenu>
+
+                        </p:panelGrid>
+                        <br/>     
+                        <p:commandButton id="btnSave1"
+                                         actionListener="#{prescribirMezclaNPTMB.agregarMedicos}"
+                                         styleClass="btnMusAzul" 
+                                         value="Guardar" 
+                                         style="float: right;"
+                                         onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide();if(!args.errorModalMedicos){PF('modalAgregarMedico').hide();}"
+                                         update="msgModalAddMedico,:frmNewOrden:validaMsg1"
+                                        />
+                    </h:form>
+                </p:dialog>
+                
+                <p:dialog header="Resultados de la validación"
+                          widgetVar="mdlResValidaciones"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          style="font-size:xx-small !important; " >
+                    <h:form id="formAlerts">
+                        <p:messages id="validaMsgres" class="validaMsg" globalOnly="true" closable="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <h:outputLabel value="#{prescribirMezclaNPTMB.alertasDTO.codigo}" style="font-weight: bold!important; color:black!important;" />
+                        &nbsp;&nbsp;
+                        <h:outputLabel value="#{prescribirMezclaNPTMB.alertasDTO.descripcion}" style="font-weight: bold!important; color:black!important;" />
+                        <br/>
+                        <p:dataTable emptyMessage="No se encontraron registros" rows="10" 
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"  reflow="true"                                       
+                                     paginatorPosition="bottom" widgetVar="tblAlertaFarmaco" 
+                                     value="#{prescribirMezclaNPTMB.alertasDTO.listaAlertaFarmacovigilancia}" var="item" 
+                                     lazy="true" id="tblAlertaFarmaco" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" >
+                            
+                            <f:facet name="header">
+                                <h:outputLabel value="Alertas de Farmacovigilancia" style="font-weight: bold!important; color:black!important;" />
+                            </f:facet>
+                            
+                            <p:column style="text-align: left !important; width: 5%;" headerText="Número">
+                                <h:outputText value="#{item.numero}"/>
+                            </p:column>
+
+                            <p:column style="text-align: left !important; width: 25%;" headerText="Factor Uno">
+                                <h:outputText value="#{item.factor1}" />
+                            </p:column>
+
+                            <p:column style="text-align: left !important; width: 25%;" headerText="Factor Dos">
+                                <h:outputText value="#{item.factor2}" />
+                            </p:column>
+                            <p:column style="text-align: left !important; width: 5%;" headerText="Riesgo">
+                                <h:outputLabel styleClass="#{item.riesgo eq 'Alto' ? 'riesgoAlto' : item.riesgo eq 'Medio' ? 'riesgoMedio' : item.riesgo eq 'Bajo' ? 'riesgoBajo' : null}" value="#{item.riesgo}" />
+                            </p:column>
+                            <p:column style="text-align: left !important; width: 10%;" headerText="Tipo">
+                                <h:outputText value="#{item.tipo}" />
+                            </p:column>
+                            <p:column style="text-align: left !important; width: 10%;" headerText="Origen">
+                                <h:outputText value="#{item.origen}" />
+                            </p:column>
+                            <p:column style="text-align: left !important; width: 10%;" headerText="Clasificación">
+                                <h:outputText value="#{item.clasificacion}" />
+                            </p:column>
+                            <p:column style="text-align: left !important; width: 10%;"  headerText="Motivo">
+                                <h:outputText value="#{item.motivo}" />
+                            </p:column>
+                        </p:dataTable>
+                        <br />
+                        <p:dataTable emptyMessage="No se encontraron registros" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"  reflow="true"                                       
+                                     paginatorPosition="bottom" widgetVar="tblAlertaFarmaco" 
+                                     value="#{prescribirMezclaNPTMB.alertasDTO.validacionNoCumplidas}" var="item" 
+                                     lazy="true" id="tblValidacionNoCumplida" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" > 
+                            
+                            <f:facet name="header" >
+                                <h:outputLabel value="Validaciones no Cumplidas" style="font-weight: bold!important; color:black!important;" />
+                            </f:facet>
+
+                            <p:column style="text-align: left;"  headerText="Codigo"  width="15%">
+                                <h:outputText value="#{item.codigo}" />
+                            </p:column>
+
+                            <p:column style="text-align: left !important; "  headerText="Descripción"  width="40%" >
+                                <h:outputText value="#{item.descripcion}"  />
+                            </p:column>
+                        </p:dataTable>
+                        
+                        
+                        <p:commandButton value="Continuar"  styleClass="btnMusAzul"                                                                                 
+                                         icon="fa fa-check-circle" style="margin-right: 1px;float: right;"
+                                         onclick="PF('statusProcess').show()"
+                                         oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('mdlResValidaciones').hide(); PF('mdlReport').show();}"
+                                         actionListener="#{prescribirMezclaNPTMB.continuarValidacionOrdenPreparada}"                                          
+                                         update=":mainForm:tblOrdenesMezcla , :mainForm:validaMsg " > 
+                            <p:confirm  header="Confirmación" message="Desea continuar con la validación de orden de preparación ?" icon="ui-icon-alert" />
+                        </p:commandButton>           
+                        
+                        <p:commandButton value="Cancelar" style="margin-right: 1px;float: right;"  
+                                         oncomplete="PF('mdlResValidaciones').hide();" />
+                        
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                            <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>        
+                    </h:form>
+                </p:dialog>
+                
+                <p:dialog widgetVar="mdlReport" width="820px" height="600px"
+                    closeOnEscape="false" modal="true"                          
+                    style="font-size:xx-small !important;" >
+                    <h:form id="formPDF">
+                        <p:media value="/Reportes" player="pdf" width="800px" height="600px" cache="false" />
+                    </h:form>
+                    <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                </p:dialog>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>    

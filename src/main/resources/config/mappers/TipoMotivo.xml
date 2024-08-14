@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TipoMotivoMapper">
+    
+    <select id="obtenerLista" parameterType="mx.mc.model.TipoMotivo" resultType="mx.mc.model.TipoMotivo">
+        SELECT idTipoMotivo, idTipoMovimiento, descripcion, activo
+        FROM tipoMotivo
+        WHERE 1=1
+        AND activo=1
+    </select>
+    
+    <select id="listaAjusteInventario"  parameterType="mx.mc.model.TipoMotivo" resultType="mx.mc.model.TipoMotivo" >
+        SELECT t.idTipoMotivo,t.idTipoMovimiento,t.descripcion
+        FROM tipoMotivo t
+        inner join tipoMovimiento m on t.idTipoMovimiento=m.idTipoMovimiento
+        where (m.idTipoMovimiento = 6 or m.idTipoMovimiento = 7) 
+            and m.activo=1
+            and t.activo=1
+        ;    
+    </select>
+    
+    <select id="getListaByIdTipoMovimiento" resultType="mx.mc.model.TipoMotivo" parameterType="Integer">
+    	SELECT idTipoMotivo, idTipoMovimiento, descripcion, activo
+        FROM tipoMotivo
+        WHERE 1=1
+        <if test="idTipoMovimiento">
+        	AND idTipoMovimiento = #{ idTipoMovimiento, jdbcType = INTEGER}
+        </if>
+        AND  activo = 1
+    </select>
+    <select id="listaMotivoDevolucion"  parameterType="mx.mc.model.TipoMotivo" resultType="mx.mc.model.TipoMotivo" >
+        SELECT t.idTipoMotivo,t.idTipoMovimiento,t.descripcion, t.permiteResurtimiento
+	FROM tipoMotivo t
+	inner join tipoMovimiento m on t.idTipoMovimiento=m.idTipoMovimiento
+	where m.idTipoMovimiento = 4
+		and m.activo=1
+		and t.activo=1
+	; 
+    </select>
+    
+    <select id="obtieneListaMotivosActivos" parameterType="mx.mc.model.TipoMotivo" resultType="mx.mc.model.TipoMotivo">
+        SELECT idTipoMotivo, idTipoMovimiento, descripcion, activo
+        FROM tipoMotivo
+        WHERE 1=1
+        AND activo=1
+    </select>
+    
+    <select id="obtieneListaMotivosActivosEntrada" parameterType="mx.mc.model.TipoMotivo" resultType="mx.mc.model.TipoMotivo">
+        select mt.* from tipoMotivo mt
+	join tipoMovimiento tm on mt.idTipoMovimiento = tm.idTipoMovimiento
+	where tm.tipoMovimiento = 'E'
+        and mt.activo = 1
+        and tm.activo = 1;
+    </select>
+    
+</mapper>

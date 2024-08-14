@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ImpresoraMapper" >
+    
+    <insert id="insertar" parameterType="mx.mc.model.Impresora">
+        INSERT INTO impresora (
+        idImpresora,
+        ipImpresora,
+        descripcion,
+        tipo,
+        insertFecha,
+        insertIdUsuario,
+        updateFecha,
+        updateIdUsuario)
+        VALUES 
+        (
+        #{idImpresora, jdbcType=VARCHAR},
+        #{ipImpresora, jdbcType=VARCHAR},
+        #{descripcion, jdbcType=VARCHAR},
+        #{tipo, jdbcType=VARCHAR},
+        #{insertFecha, jdbcType=DATE},
+        #{insertIdUsuario, jdbcType=VARCHAR},
+        #{updateFecha, jdbcType=DATE},
+        #{updateIdUsuario, jdbcType=VARCHAR}
+        )
+    </insert>
+    
+    <update id="actualizar" parameterType="mx.mc.model.Impresora">
+        UPDATE impresora
+        <set>
+            <if test="ipImpresora != null"> ipImpresora = #{ipImpresora, jdbcType=VARCHAR}, </if>
+            <if test="descripcion != null"> descripcion = #{descripcion, jdbcType=VARCHAR}, </if>
+            <if test="tipo != null"> tipo = #{tipo, jdbcType=VARCHAR}, </if>
+            <if test="updateFecha != null"> updateFecha= #{updateFecha, jdbcType=DATE}, </if>   
+            <if test="updateIdUsuario != null"> updateIdUsuario = #{updateIdUsuario, jdbcType=VARCHAR} </if>
+        </set>
+        WHERE  idImpresora = #{ idImpresora, jdbcType = VARCHAR}
+    </update>
+    
+    <select id="obtenerPorIdImpresora" resultType="mx.mc.model.Impresora" parameterType="String">
+        SELECT idImpresora, ipImpresora, descripcion, tipo, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM impresora
+        WHERE idImpresora = #{idImpresora, jdbcType=VARCHAR}
+    </select>
+    
+    <select id="obtenerListaImpresora" resultType="mx.mc.model.Impresora" parameterType="Map" >
+        SELECT idImpresora, ipImpresora, descripcion, tipo, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM impresora
+    </select>
+    
+    <select id="obtenerImpresoraByIpAndDescripcion" resultType="mx.mc.model.Impresora" parameterType="mx.mc.model.Impresora">
+        SELECT idImpresora, ipImpresora, descripcion, tipo, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM impresora
+        WHERE 1 = 1
+        <if test="ipImpresora != null"> AND ipImpresora = #{ipImpresora, jdbcType=VARCHAR} </if>
+        <if test="descripcion != null"> OR descripcion = #{descripcion, jdbcType=VARCHAR} </if>
+    </select>
+    
+    <select id="obtenerListaImpresoraByUsuario" resultType="mx.mc.model.Impresora" parameterType="String">
+        SELECT ui.idImpresora, im.ipImpresora, im.descripcion, im.tipo, ui.insertFecha, ui.insertIdUsuario, ui.updateFecha, ui.updateIdUsuario
+        FROM impresora im 
+        INNER JOIN usuarioImpresora ui ON im.idImpresora = ui.idImpresora
+        WHERE ui.idUsuario = #{idUsuario, jdbcType=VARCHAR}
+    </select>
+    
+    <select id="obtenerListaImpresoras" resultType="mx.mc.model.Impresora" parameterType="Map" >
+        SELECT DISTINCT  im.idImpresora, im.ipImpresora, im.descripcion, im.tipo
+        , im.idTipoSolucion , im.tipoSurtimiento
+        FROM impresora im 
+        LEFT JOIN usuarioImpresora ui ON im.idImpresora = ui.idImpresora
+        WHERE 1=1
+        <if test=" idUsuario != null ">
+            AND ui.idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null">
+            AND im.descripcion = #{ descripcion , jdbcType = VARCHAR } 
+        </if>
+        <if test=" tipo != null ">
+            AND im.tipo = #{ tipo , jdbcType = VARCHAR } 
+        </if>
+    </select>
+    
+</mapper>

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DiaFestivoMapper" >
+    
+    <select  id="obtener" resultType="mx.mc.model.DiaFestivo" parameterType="Map"  >
+        SELECT 
+            <if test=" idDia != null ">
+                idDia,
+            </if>    
+            <if test=" fecha != null ">
+                fecha,
+            </if>
+            <if test=" evento != null ">
+                evento,
+            </if>
+            <if test=" laborable != null ">
+                laborable,
+            </if>
+            <if test=" insertIdUsuario != null ">
+                insertIdUsuario,
+            </if>
+            <if test=" insertFecha != null ">
+                insertFecha,
+            </if> 
+            <if test=" updateIdUsuario != null ">
+                updateIdUsuario,
+            </if>
+            <if test=" updateFecha != null ">
+                updateFecha
+            </if>         
+        FROM diasFestivos
+        WHERE 
+            <if test=" idDia != null ">
+               idDia = #{idDia}
+            </if>    
+            <if test=" fecha != null ">
+                AND fecha = #{fecha}
+            </if>
+            <if test=" evento != null ">
+                AND evento = #{evento}
+            </if>
+            <if test=" laborable != null ">
+                AND laborable = #{laborable}
+            </if>
+            <if test=" insertIdUsuario != null ">
+                AND insertIdUsuario = #{insertIdUsuario}
+            </if>
+            <if test=" insertFecha != null ">
+                AND insertFecha = #{insertFecha}
+            </if> 
+            <if test=" updateIdUsuario != null ">
+                AND updateIdUsuario = #{updateIdUsuario}
+            </if>
+            <if test=" updateFecha != null ">
+                AND updateFecha = #{updateFecha}
+            </if>;    
+    </select>
+    
+    <select  id="feriadosAnoActual" resultType="mx.mc.model.DiaFestivo" parameterType="Map"  >
+        SELECT 
+            idDia,
+            fecha,
+            evento,
+            laborable,
+            insertIdUsuario,
+            insertFecha,
+            updateIdUsuario,
+            updateFecha
+        FROM diasFestivos
+        WHERE 
+            DATE_FORMAT(fecha, '%Y') = #{anoActul}
+            AND laborable = 0
+        ;
+    </select>
+    
+     <select  id="topDiasFeriados" resultType="mx.mc.model.DiaFestivo" parameterType="Map"  >
+        SELECT 
+            idDia,
+            fecha,
+            evento,
+            laborable,
+            insertIdUsuario,
+            insertFecha,
+            updateIdUsuario,
+            updateFecha
+        FROM diasFestivos
+        WHERE          
+           DATE_FORMAT(fecha,'%Y-%m-%d') &gt; DATE_FORMAT(NOW(),'%Y-%m-%d')  
+            AND laborable = 0
+         ORDER BY fecha asc
+         limit 10
+         ;
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.DiaFestivo" >
+        INSERT INTO diasFestivos (
+            <if test=" idDia != null ">
+                idDia,
+            </if>    
+            <if test=" fecha != null ">
+                fecha,
+            </if>
+            <if test=" evento != null ">
+                evento,
+            </if>
+            <if test=" laborable != null ">
+                laborable,
+            </if>
+            <if test=" insertIdUsuario != null ">
+                insertIdUsuario,
+            </if>
+            <if test=" insertFecha != null ">
+                insertFecha
+            </if> 
+        )                            
+        VALUES (
+            <if test=" idDia != null ">
+                #{idDia},
+            </if>    
+            <if test=" fecha != null ">
+                #{fecha},
+            </if>
+            <if test=" evento != null ">
+                #{evento},
+            </if>
+            <if test=" laborable != null ">
+                #{laborable},
+            </if>
+            <if test=" insertIdUsuario != null ">
+                #{insertIdUsuario},
+            </if>
+            <if test=" insertFecha != null ">
+                #{insertFecha}
+            </if> 
+        );
+    </insert>
+    <delete id="deleteDiaFeriadoDate" parameterType="Map">
+        DELETE FROM 
+        diasFestivos
+        WHERE idDia = #{ idDia } 
+    </delete>
+    <select  id="obtenerDiasFeriadosByMes" resultType="mx.mc.model.DiaFestivo_Extended" parameterType="Map"  >
+        select month(fecha) as numMes,fecha,evento,laborable,idDia,dayofyear(fecha) as numeroDia from diasFestivos
+        where year(fecha)  = DATE_FORMAT(now(), "%Y")        
+        and month(fecha) = #{numMes} ;        
+    </select>
+    
+    <update id="actualizar" parameterType="mx.mc.model.DiaFestivo" >
+        UPDATE diasFestivos
+        <set>
+            <if test="fecha != null"> fecha = #{ fecha, jdbcType = TIMESTAMP}, </if>
+            <if test="evento != null"> evento = #{ evento, jdbcType = VARCHAR}, </if>
+            <if test="laborable != null"> laborable = #{ laborable, jdbcType = INTEGER}, </if>
+            <if test="updateIdUsuario != null"> updateIdUsuario = #{ updateIdUsuario, jdbcType = VARCHAR}, </if>
+            <if test="updateFecha != null"> updateFecha = #{ updateFecha, jdbcType = VARCHAR}, </if>
+        </set>
+        WHERE  idDia = #{ idDia, jdbcType = VARCHAR}
+    </update>
+    
+    
+    <select  id="validaExistenciaFestiva" resultType="mx.mc.model.DiaFestivo_Extended" parameterType="Map"  >        
+        select month(fecha) as numMes,fecha,evento,laborable,idDia,dayofyear(fecha) as numeroDia  from diasFestivos
+        where year(fecha) = DATE_FORMAT(#{fechaFestiva}, "%Y") 
+        and dayofyear(fecha) = #{numeroDia} 
+        limit 1;                   
+    </select>
+    
+</mapper>

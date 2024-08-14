@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DevolucionMinistracionMapper">
+    
+    <select id="obtener" resultType="mx.mc.model.DevolucionMinistracion" parameterType="mx.mc.model.DevolucionMinistracion">
+        SELECT idDevolucionMinistracion
+        , folio
+        , idAlmacenOrigen
+        , idAlmacenDestino
+        , fechaDevolucion
+        , idUsuarioDevolucion
+        , idEstatusDevolucion
+        , idMotivoDevolucion
+        , idSurtimiento
+        , comentarios
+        , insertFecha
+        , insertIdUsuario
+        , updateFecha
+        , updateIdUsuario
+        FROM devolucionMinistracion
+        WHERE 1=1
+        <if test="idDevolucionMinistracion != null">AND idDevolucionMinistracion=#{idDevolucionMinistracion} </if>
+        <if test="folio != null">AND folio=#{folio} </if>
+        <if test="idAlmacenOrigen != null">AND idAlmacenOrigen=#{idAlmacenOrigen} </if>
+        <if test="idAlmacenDestino != null">AND idAlmacenDestino=#{idAlmacenDestino} </if>
+        <if test="fechaDevolucion != null">AND fechaDevolucion=#{fechaDevolucion} </if>
+        <if test="idUsuarioDevolucion != null">AND idUsuarioDevolucion=#{idUsuarioDevolucion} </if>
+        <if test="idEstatusDevolucion != null">AND idEstatusDevolucion=#{idEstatusDevolucion} </if>
+        <if test="idMotivoDevolucion != null">AND idMotivoDevolucion=#{idMotivoDevolucion} </if>
+        <if test="idSurtimiento != null">AND idSurtimiento=#{idSurtimiento} </if>
+        <if test="comentarios != null">AND comentarios=#{comentarios} </if>
+        <if test="insertFecha != null">AND insertFecha=#{insertFecha} </if>
+        <if test="insertIdUsuario != null">AND insertIdUsuario=#{insertIdUsuario} </if>
+        <if test="updateFecha != null">AND updateFecha=#{updateFecha} </if>
+        <if test="updateIdUsuario != null">AND updateIdUsuario=#{updateIdUsuario} </if>
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.DevolucionMinistracion" parameterType="mx.mc.model.DevolucionMinistracion">
+        SELECT idDevolucionMinistracion
+        , folio
+        , idAlmacenOrigen
+        , idAlmacenDestino
+        , fechaDevolucion
+        , idUsuarioDevolucion
+        , idEstatusDevolucion
+        , idMotivoDevolucion
+        , idSurtimiento
+        , comentarios
+        , insertFecha
+        , insertIdUsuario
+        , updateFecha
+        , updateIdUsuario
+        FROM devolucionMinistracion
+        WHERE 1=1
+        <if test="idDevolucionMinistracion != null">AND idDevolucionMinistracion=#{idDevolucionMinistracion} </if>
+        <if test="folio != null">AND folio=#{folio} </if>
+        <if test="idAlmacenOrigen != null">AND idAlmacenOrigen=#{idAlmacenOrigen} </if>
+        <if test="idAlmacenDestino != null">AND idAlmacenDestino=#{idAlmacenDestino} </if>
+        <if test="fechaDevolucion != null">AND fechaDevolucion=#{fechaDevolucion} </if>
+        <if test="idUsuarioDevolucion != null">AND idUsuarioDevolucion=#{idUsuarioDevolucion} </if>
+        <if test="idEstatusDevolucion != null">AND idEstatusDevolucion=#{idEstatusDevolucion} </if>
+        <if test="idMotivoDevolucion != null">AND idMotivoDevolucion=#{idMotivoDevolucion} </if>
+        <if test="idSurtimiento != null">AND idSurtimiento=#{idSurtimiento} </if>
+        <if test="comentarios != null">AND comentarios=#{comentarios} </if>
+        <if test="insertFecha != null">AND insertFecha=#{insertFecha} </if>
+        <if test="insertIdUsuario != null">AND insertIdUsuario=#{insertIdUsuario} </if>
+        <if test="updateFecha != null">AND updateFecha=#{updateFecha} </if>
+        <if test="updateIdUsuario != null">AND updateIdUsuario=#{updateIdUsuario} </if>
+    </select>
+    
+    <select id="obtenerListaDevolucion" resultType="mx.mc.model.DevolucionMinistracion" parameterType="mx.mc.model.DevolucionMinistracion">
+        SELECT idDevolucionMinistracion
+        , folio
+        , idAlmacenOrigen
+        , idAlmacenDestino
+        , fechaDevolucion
+        , idUsuarioDevolucion
+        , idEstatusDevolucion
+        , idMotivoDevolucion
+        , idSurtimiento
+        , comentarios
+        , insertFecha
+        , insertIdUsuario
+        , updateFecha
+        , updateIdUsuario
+        FROM devolucionMinistracion
+        WHERE 1=1
+        union all 
+        (SELECT distinct
+        uuid() as idDevolucionMinistracion
+        , v.folioPrescripcion as folio
+        , v.idEstructuraAlmacen as  idAlmacenOrigen
+        , v.idEstructuraAlmacenPadre as idAlmacenDestino
+        , now() as fechaDevolucion
+        , 'pendiente' as idUsuarioDevolucion
+        , '0' as  idEstatusDevolucion
+        , '0' as idMotivoDevolucion
+        , idSurtimiento
+        , 'pendiente' as comentarios
+        , now() as insertFecha
+        , 'pendiente' as insertIdUsuario
+        , null as updateFecha
+        , null as updateIdUsuario
+        FROM viewRecepcionMedicamento v
+        inner join surtimientoMinistrado m on m.idSurtimientoEnviado= v.idSurtimientoEnviado
+        WHERE v.idEstatusPaciente=5 and m.idEstatusSurtimiento=4 )
+    </select>
+    
+    <select id="obtenerListaDevolucionExtended" resultType="mx.mc.model.DevolucionMinistracionExtended" parameterType="mx.mc.model.DevolucionMinistracionExtended">
+        SELECT 
+        dm.idDevolucionMinistracion,
+        dm.folio,
+        pa.nombreCompleto,
+        pa.apellidoPaterno,
+        pa.apellidoMaterno,
+        ca.nombreCama,
+        dm.fechaDevolucion,
+        es.nombre AS servicio,
+        ed.nombreEstatusDev AS estatusDevolicion,
+        dm.idAlmacenOrigen,
+        dm.idAlmacenDestino,
+        pa.claveDerechohabiencia AS numPaciente,
+        dm.idSurtimiento,
+        pr.idPrescripcion
+        FROM    devolucionMinistracion dm
+        INNER JOIN    estatusDevolucion ed ON ed.idEstatusDevolucion = dm.idEstatusDevolucion
+        INNER JOIN    devolucionMinistracionDetalle dmd ON dmd.idDevolucionMinistracion = dm.idDevolucionMinistracion
+        INNER JOIN    surtimiento su ON su.idSurtimiento = dm.idSurtimiento
+        INNER JOIN    surtimientoInsumo si ON si.idSurtimiento = su.idSurtimiento
+        INNER JOIN    surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        INNER JOIN    prescripcion pr ON su.idPrescripcion = pr.idPrescripcion
+        INNER JOIN    prescripcionInsumo pi ON pi.idPrescripcion = pr.idPrescripcion
+        INNER JOIN    pacienteServicio ps ON ps.idPacienteServicio = pr.idPacienteServicio
+        LEFT JOIN     pacienteUbicacion pau ON pau.idPacienteServicio = ps.idPacienteServicio
+        LEFT JOIN     cama ca ON ca.idCama = pau.idCama
+        INNER JOIN    visita vi ON vi.idVisita = ps.idVisita
+        INNER JOIN    paciente pa ON pa.idPaciente = vi.idPaciente
+        INNER JOIN    medicamento me ON me.idMedicamento = pi.idInsumo
+        INNER JOIN    inventario i ON i.idInventario = se.idInventarioSurtido
+        INNER JOIN    estructura es ON ps.idEstructura = es.idEstructura
+        WHERE
+        1 = 1
+        AND ed.idEstatusDevolucion = #{ idEstatusDevolucion }
+        <if test=" cadenaBusqueda != null ">
+            AND (
+                es.nombre LIKE '%${ cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ cadenaBusqueda }%'
+                OR ca.nombreCama LIKE '%${ cadenaBusqueda }%'
+                OR dm.folio LIKE '%${ cadenaBusqueda }%'
+                )
+        </if>
+        group by dm.folio
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.DevolucionMinistracion">
+        INSERT INTO devolucionMinistracion(
+        <if test="idDevolucionMinistracion != null"> idDevolucionMinistracion </if>
+        <if test="folio != null">,folio </if>
+        <if test="idAlmacenOrigen != null">,idAlmacenOrigen </if>
+        <if test="idAlmacenDestino != null">,idAlmacenDestino </if>
+        <if test="fechaDevolucion != null">,fechaDevolucion </if>
+        <if test="idUsuarioDevolucion != null">,idUsuarioDevolucion </if>
+        <if test="idEstatusDevolucion != null">,idEstatusDevolucion </if>
+        <if test="idMotivoDevolucion != null">,idMotivoDevolucion </if>
+        <if test="idSurtimiento != null">,idSurtimiento </if>
+        <if test="comentarios != null">,comentarios </if>
+        <if test="insertFecha != null">,insertFecha </if>
+        <if test="insertIdUsuario != null">,insertIdUsuario </if>
+        ) VALUES (
+        <if test="idDevolucionMinistracion != null"> #{idDevolucionMinistracion} </if>
+        <if test="folio != null">,#{folio} </if>
+        <if test="idAlmacenOrigen != null">,#{idAlmacenOrigen} </if>
+        <if test="idAlmacenDestino != null">,#{idAlmacenDestino} </if>
+        <if test="fechaDevolucion != null">,#{fechaDevolucion} </if>
+        <if test="idUsuarioDevolucion != null">,#{idUsuarioDevolucion} </if>
+        <if test="idEstatusDevolucion != null">,#{idEstatusDevolucion} </if>
+        <if test="idMotivoDevolucion != null">,#{idMotivoDevolucion} </if>
+        <if test="idSurtimiento != null">,#{idSurtimiento} </if>
+        <if test="comentarios != null">,#{comentarios} </if>
+        <if test="insertFecha != null">,#{insertFecha} </if>
+        <if test="insertIdUsuario != null">,#{insertIdUsuario} </if>
+        <if test="updateFecha != null">,#{updateFecha} </if>
+        <if test="updateIdUsuario != null">,#{updateIdUsuario} </if>
+        )
+    </insert>
+    
+    <update id="actualizar"  parameterType="mx.mc.model.DevolucionMinistracion" >
+        UPDATE devolucionMinistracion         
+        <set>        
+            updateFecha=#{updateFecha}
+            , updateIdUsuario=#{updateIdUsuario}
+            <if test="folio != null">, folio=#{folio} </if>
+            <if test="idAlmacenOrigen != null">, idAlmacenOrigen=#{idAlmacenOrigen} </if>
+            <if test="idAlmacenDestino != null">, idAlmacenDestino=#{idAlmacenDestino} </if>
+            <if test="fechaDevolucion != null">, fechaDevolucion=#{fechaDevolucion} </if>
+            <if test="idUsuarioDevolucion != null">, idUsuarioDevolucion=#{idUsuarioDevolucion} </if>
+            <if test="idEstatusDevolucion != null">, idEstatusDevolucion=#{idEstatusDevolucion} </if>
+            <if test="idMotivoDevolucion != null">, idMotivoDevolucion=#{idMotivoDevolucion} </if>
+            <if test="idSurtimiento != null">,idSurtimiento=#{idSurtimiento} </if>
+            <if test="comentarios != null">, comentarios=#{comentarios} </if>            
+        </set>
+        WHERE idDevolucionMinistracion = #{idDevolucionMinistracion}
+    </update>
+    
+    <delete id="eliminar" parameterType="mx.mc.model.Devolucion"  >
+        DELETE FROM devolucionMinistracion 
+        WHERE idDevolucionMinistracion = #{idDevolucionMinistracion}
+    </delete>  
+    <select id="obtenerBusquedaDevolucionLazy" resultType="mx.mc.model.DevolucionMinistracionExtended" parameterType="Map">
+        SELECT 
+        dv.idDevolucionMinistracion,
+        dv.folio,
+        dv.idAlmacenOrigen,
+        dv.idAlmacenDestino,
+        dv.fechaDevolucion,
+        dv.idUsuarioDevolucion,
+        dv.idEstatusDevolucion,
+        dv.idMotivoDevolucion,
+        dv.comentarios,
+        pa.nombreCompleto,
+        pa.apellidoPaterno,
+        pa.apellidoMaterno,
+        pa.pacienteNumero AS numPaciente,
+        e1.nombre AS servicio,
+        ed.nombreEstatusDev AS estatusDevolicion,
+        ps.idPacienteServicio,
+        c.nombreCama,
+        p.idPrescripcion,
+        s.idSurtimiento
+        FROM    devolucionMinistracion dv
+        INNER JOIN    surtimiento s ON s.idSurtimiento = dv.idSurtimiento
+        INNER JOIN    prescripcion p ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN    pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+        INNER JOIN    visita v ON v.idVisita = ps.idVisita
+        INNER JOIN    paciente pa ON pa.idPaciente = v.idPaciente
+        LEFT JOIN     pacienteUbicacion pu ON pu.idPacienteServicio = ps.idPacienteServicio
+        LEFT JOIN     cama c ON c.idCama = pu.idCama
+        INNER JOIN    estructura e1 ON e1.idEstructura = dv.idAlmacenOrigen
+        INNER JOIN    estructura e2 ON e2.idEstructura = dv.idAlmacenDestino
+        INNER JOIN    estatusDevolucion ed ON ed.idEstatusDevolucion = dv.idEstatusDevolucion        
+        WHERE    dv.idEstatusDevolucion IN (1, 2, 3)        
+        AND e1.idEstructura=#{idEstructura}
+        <if test="cadenaBusqueda != '' ">
+            AND (
+                e1.nombre LIKE '%${ cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ cadenaBusqueda }%'
+                OR dv.folio LIKE '%${ cadenaBusqueda }%'
+                )
+        </if>
+        GROUP BY dv.folio
+        <if test="maxPerPage != -1">
+            LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        </if>
+        ;
+    </select>
+    
+    <select id="obtenerListaDevMedMinistracion" resultType="mx.mc.model.DevolucionMinistracionExtended" parameterType="Map">
+        SELECT 
+        dv.idDevolucionMinistracion,
+        dv.folio,
+        dv.idAlmacenOrigen,
+        dv.idAlmacenDestino,
+        dv.fechaDevolucion,
+        dv.idUsuarioDevolucion,
+        dv.idEstatusDevolucion,
+        dv.idMotivoDevolucion,
+        dv.comentarios,
+        pa.nombreCompleto,
+        pa.apellidoPaterno,
+        pa.apellidoMaterno,
+        pa.pacienteNumero AS numPaciente,
+        e1.nombre AS servicio,
+        ed.nombreEstatusDev AS estatusDevolicion,
+        ps.idPacienteServicio,
+        c.nombreCama,
+        p.idPrescripcion,
+        s.idSurtimiento
+        FROM    devolucionMinistracion dv
+        INNER JOIN    surtimiento s ON s.idSurtimiento = dv.idSurtimiento
+        INNER JOIN    prescripcion p ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN    pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+        INNER JOIN    visita v ON v.idVisita = ps.idVisita
+        INNER JOIN    paciente pa ON pa.idPaciente = v.idPaciente
+        LEFT JOIN     pacienteUbicacion pu ON pu.idPacienteServicio = ps.idPacienteServicio
+        LEFT JOIN     cama c ON c.idCama = pu.idCama
+        INNER JOIN    estructura e1 ON e1.idEstructura = dv.idAlmacenOrigen
+        INNER JOIN    estructura e2 ON e2.idEstructura = dv.idAlmacenDestino
+        INNER JOIN    estatusDevolucion ed ON ed.idEstatusDevolucion = dv.idEstatusDevolucion
+        <if test="devolucion == null ">
+            WHERE    dv.idEstatusDevolucion IN (1, 2, 3)
+        </if>
+        <if test="devolucion != null ">
+            WHERE dv.idEstatusDevolucion IN
+            <foreach item="item" index="index" collection="devolucion" open="(" separator="," close=")">
+                    #{item}
+            </foreach>
+        </if>
+        AND e1.idEstructura=#{idEstructura}
+        <if test="cadenaBusqueda != '' ">
+            AND (
+                e1.nombre LIKE '%${ cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ cadenaBusqueda }%'
+                OR dv.folio LIKE '%${ cadenaBusqueda }%'
+                )
+        </if>
+        GROUP BY dv.folio
+        <if test="maxPerPage != -1">
+            LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        </if>
+        ;
+    </select>
+    
+    <select id="obtenerBusquedaDevolucionTotalLazy"  parameterType="Map" resultType="Long">
+        SELECT 
+        COUNT(*) AS total
+        FROM    devolucionMinistracion dv
+        INNER JOIN    surtimiento s ON s.idSurtimiento = dv.idSurtimiento
+        INNER JOIN    prescripcion p ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN    pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+        INNER JOIN    visita v ON v.idVisita = ps.idVisita
+        INNER JOIN    paciente pa ON pa.idPaciente = v.idPaciente
+        LEFT JOIN     pacienteUbicacion pu ON pu.idPacienteServicio = ps.idPacienteServicio
+        LEFT JOIN     cama c ON c.idCama = pu.idCama
+        INNER JOIN    estructura e1 ON e1.idEstructura = dv.idAlmacenOrigen
+        INNER JOIN    estructura e2 ON e2.idEstructura = dv.idAlmacenDestino
+        INNER JOIN    estatusDevolucion ed ON ed.idEstatusDevolucion = dv.idEstatusDevolucion
+        WHERE    dv.idEstatusDevolucion IN (1, 2, 3)
+        AND e1.idEstructura=#{idEstructura}
+        <if test="cadenaBusqueda != '' ">
+            AND (
+                e1.nombre LIKE '%${ cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ cadenaBusqueda }%'
+                OR dv.folio LIKE '%${ cadenaBusqueda }%'
+                )
+        </if>
+        ;
+    </select>
+    
+    <select id="obtenerByFolioSurtimientoForDev"  resultType="mx.mc.model.DevolucionMinistracionExtended" parameterType="Map">
+        SELECT 
+        s.folio,
+        s.fechaProgramada AS fechaDevolucion,
+        pa.nombreCompleto,
+        pa.apellidoPaterno,
+        pa.apellidoMaterno,
+        pa.pacienteNumero AS numPaciente,
+        e1.nombre AS servicio,
+        e1.idEstructura AS idAlmacenOrigen,
+        e2.idEstructura AS idAlmacenDestino,
+        ps.idPacienteServicio,
+        c.nombreCama,
+        p.idPrescripcion,
+        s.idSurtimiento,
+        p.fechaPrescripcion
+        FROM    surtimiento s
+        INNER JOIN		prescripcion p ON p.idPrescripcion = s.idPrescripcion AND s.idPrescripcion = s.idPrescripcion
+        INNER JOIN      pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio AND ps.idEstructura = p.idEstructura
+        INNER JOIN      visita v ON v.idVisita = ps.idVisita
+        INNER JOIN      paciente pa ON pa.idPaciente = v.idPaciente
+        INNER JOIN      estructura e1 ON e1.idEstructura = p.idEstructura 
+        INNER JOIN      estructura e2 ON e2.idEstructura = #{idPadre}
+        LEFT JOIN       pacienteUbicacion pu ON pu.idPacienteServicio = ps.idPacienteServicio
+        LEFT JOIN       cama c ON c.idCama = pu.idCama
+        WHERE
+        <if test="filter == 'Folio'">
+            s.folio = #{folioSurtimiento}
+        </if>
+        <if test="filter == 'Paciente'">
+            CONCAT(pa.nombreCompleto," ",pa.apellidoPaterno," ",pa.apellidoMaterno) like '%${folioSurtimiento}%'
+        </if>    
+            AND s.idEstatusSurtimiento!=2   
+    </select>
+    
+    <select id="obtenerByFolioSurtimientoForDevList"  resultType="mx.mc.model.DevolucionMinistracionExtended" parameterType="Map">
+        SELECT 
+            s.folio,
+            s.fechaProgramada AS fechaDevolucion,
+            se.cantidadEnviado,
+            pa.nombreCompleto,
+            pa.apellidoPaterno,
+            pa.apellidoMaterno,
+            pa.pacienteNumero AS numPaciente,
+            e1.nombre AS servicio,
+            e1.idEstructura AS idAlmacenOrigen,
+            e2.idEstructura AS idAlmacenDestino,
+            ps.idPacienteServicio,
+            c.nombreCama,
+            p.idPrescripcion,
+            s.idSurtimiento,
+            p.fechaPrescripcion
+        FROM    surtimientoInsumo si
+            INNER JOIN    surtimiento s on s.idSurtimiento = si.idSurtimiento
+            LEFT JOIN 	  surtimientoEnviado se on se.idSurtimientoInsumo = si.idSurtimientoInsumo    
+            INNER JOIN    prescripcion p ON p.idPrescripcion = s.idPrescripcion 
+            INNER JOIN    prescripcionInsumo pi ON pi.idPrescripcion = p.idPrescripcion AND pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+            INNER JOIN    pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio AND ps.idEstructura = p.idEstructura
+            INNER JOIN    visita v ON v.idVisita = ps.idVisita
+            INNER JOIN    paciente pa ON pa.idPaciente = v.idPaciente
+            INNER JOIN    estructura e1 ON e1.idEstructura = p.idEstructura 
+            INNER JOIN      estructura e2 ON e2.idEstructura = #{idPadre}
+            LEFT JOIN       pacienteUbicacion pu ON pu.idPacienteServicio = ps.idPacienteServicio
+            LEFT JOIN       cama c ON c.idCama = pu.idCama
+        WHERE
+        <if test="filter == 'Folio'">
+            s.folio = #{folioSurtimiento}
+        </if>
+        <if test="filter == 'Paciente'">
+            CONCAT(pa.nombreCompleto," ",pa.apellidoPaterno," ",pa.apellidoMaterno) like '%${folioSurtimiento}%'
+        </if>    
+            AND s.idEstatusSurtimiento != 2   
+            AND (select 
+                sum(sm1.cantidad) as pendiente 
+            from surtimientoEnviado se1 
+                    inner join surtimientoMinistrado sm1 on sm1.idSurtimientoEnviado = se1.idSurtimientoEnviado
+            where se1.idSurtimientoEnviado=se.idSurtimientoEnviado 
+                    and sm1.idEstatusMinistracion = 1
+            ) > 0
+        group by s.folio
+    </select>
+    <select id="obtenerAlmacenPadreOfSurtimiento"  resultType="String" parameterType="Map">
+        call getAlmacenPrincipal(#{idEstructura});
+    </select>
+    <select id="obteneridEstructuraAlmacenOfSurtimiento"  resultType="String" parameterType="Map">
+        SELECT 
+        idEstructuraAlmacen
+        FROM    surtimiento 
+        WHERE
+        folio = #{folioSurtimiento}
+        ;
+    </select>
+    
+</mapper>

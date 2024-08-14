@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ModuloMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Modulo" parameterType="mx.mc.model.Modulo" >
+        SELECT idModulo , modulo , activo , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario
+        FROM modulos
+        WHERE 1=1
+        <if test=" idModulo != null ">
+            AND idModulo = #{ idModulo , jdbcType = VARCHAR }
+        </if>
+        <if test=" modulo != null ">
+            AND modulo = #{ modulo , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Modulo" parameterType="mx.mc.model.Modulo" >
+        SELECT idModulo , modulo , activo , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario
+        FROM modulos
+        WHERE 1=1
+        <if test=" idModulo != null ">
+            AND idModulo = #{ idModulo , jdbcType = VARCHAR }
+        </if>
+        <if test=" modulo != null ">
+            AND modulo = #{ modulo , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        ORDER BY orden asc
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Modulo" >
+        INSERT INTO modulos (
+        <if test=" idModulo != null ">
+            idModulo
+        </if>
+        <if test=" modulo != null ">
+            , modulo
+        </if>
+        <if test=" activo != null ">
+            , activo
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertUsrId != null ">
+            , insertUsrId
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateUserId != null ">
+            updateUserId
+        </if>
+        ) VALUES (
+        <if test=" idModulo != null ">
+            #{ idModulo , jdbcType = VARCHAR }
+        </if>
+        <if test=" modulo != null ">
+            , #{ modulo , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , #{ activo , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertUsrId != null ">
+            , #{ insertUsrId , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateUserId != null ">
+            , #{ updateUserId , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.Modulo"  >
+        UPDATE modulos SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateUserId = #{ updateUserId , jdbcType = VARCHAR }
+        <if test=" modulo != null ">
+            , modulo = #{ modulo , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        WHERE idModulo = #{ idModulo , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.Modulo"  >
+        DELETE FROM modulos 
+        WHERE idModulo = #{ idModulo , jdbcType = VARCHAR }
+    </delete>
+    
+</mapper>

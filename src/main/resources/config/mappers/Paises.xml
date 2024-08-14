@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.PaisMapper" >
+     
+    <select id="obtenerLista" resultType="mx.mc.model.Pais" parameterType="mx.mc.model.Pais" >
+        SELECT idPais, nombrePais, A2, A3, N3, estatus
+        FROM pais
+        WHERE 1=1
+        <if test=" estatus != null ">
+            AND estatus = #{ estatus , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+</mapper>

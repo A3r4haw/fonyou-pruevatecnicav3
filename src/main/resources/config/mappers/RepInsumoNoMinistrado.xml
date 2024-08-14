@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.RepInsumoNoMinistradoMapper" >
+ 
+   <select id="obtenerListaInsumo" resultType="mx.mc.model.RepInsumoNoMinistrado" parameterType="Map">
+        SELECT 
+        claveInstitucional, 
+        nombreCorto
+        FROM medicamento
+        where 
+        1 = 1
+        <if test="cadenaBusqueda != null">
+            AND (
+            nombreCorto LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+    </select>
+    
+    <select id="consultaInsumoNoMinistrados" resultType="mx.mc.model.RepInsumoNoMinistrado" parameterType="Map">
+        SELECT 
+            p.folio as folioPrescripcion, 
+            p.fechaPrescripcion as fechaPrescripcion , 
+            ep.estatus as estatusPrescripcion  , 
+            s.folio as folioSurtimiento , 
+            s.fechaProgramada as fechaSurtimiento, 
+            concat(us.nombre,' ',us.apellidoPaterno,' ',us.apellidoMaterno) as usuarioSurte , 
+            se.cantidadEnviado as cantidadEnviada, 
+            m.claveInstitucional , 
+            m.nombreCorto , 
+            i.lote, 
+            i.fechaCaducidad , 
+            concat(ur.nombre,' ',ur.apellidoPaterno,' ',ur.apellidoMaterno) as usuarioRecibe , 
+            se.cantidadRecibido , 
+            es.estatus as estatusSurtimiento, 
+            sm.fechaProgramado as FechaProgramadaMinistracion, 
+            sm.cantidad as CantidadMinistrada, 
+            datediff(now() , sm.fechaProgramado) as  diaSinMovimiento
+        from surtimiento s
+            join prescripcion p on s.idPrescripcion = p.idPrescripcion
+            join estatusPrescripcion ep on p.idEstatusPrescripcion = ep.idEstatusPrescripcion
+            join usuarios um on p.idMedico = um.idUsuario
+            join surtimientoInsumo si on s.idSurtimiento = si.idSurtimiento
+            join usuarios us on si.idUsuarioEnviada = us.idUsuario
+            join usuarios ur on si.idUsuarioRecepcion = ur.idUsuario
+            join estatusSurtimiento es on si.idEstatusSurtimiento = es.idEstatusSurtimiento
+            join prescripcionInsumo pi on si.idPrescripcionInsumo = pi.idPrescripcionInsumo
+            join medicamento m on pi.idInsumo = m.idMedicamento
+            join surtimientoEnviado se on si.idSurtimientoInsumo = se.idSurtimientoInsumo
+            join inventario i on se.idInventarioSurtido = i.idInventario
+            join surtimientoMinistrado sm on se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+        where 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            and s.fechaProgramada between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.listaInsumo != null ">
+            and nombreCorto IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaInsumo" open="(" separator="," close=")">
+                #{item.nombreCorto}
+            </foreach>
+        </if>
+            and sm.idEstatusMinistracion != 2
+            and datediff(now() , sm.fechaProgramado)  > 1
+            and se.cantidadRecibido != sm.cantidad
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    <select id="obtenerTotalInsumoNoMinistrado" resultType="Long" parameterType="Map">
+        Select COUNT(*) 
+        From surtimiento s
+            join prescripcion p on s.idPrescripcion = p.idPrescripcion
+            join estatusPrescripcion ep on p.idEstatusPrescripcion = ep.idEstatusPrescripcion
+            join usuarios um on p.idMedico = um.idUsuario
+            join surtimientoInsumo si on s.idSurtimiento = si.idSurtimiento
+            join usuarios us on si.idUsuarioEnviada = us.idUsuario
+            join usuarios ur on si.idUsuarioRecepcion = ur.idUsuario
+            join estatusSurtimiento es on si.idEstatusSurtimiento = es.idEstatusSurtimiento
+            join prescripcionInsumo pi on si.idPrescripcionInsumo = pi.idPrescripcionInsumo
+            join medicamento m on pi.idInsumo = m.idMedicamento
+            join surtimientoEnviado se on si.idSurtimientoInsumo = se.idSurtimientoInsumo
+            join inventario i on se.idInventarioSurtido = i.idInventario
+            join surtimientoMinistrado sm on se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+       where 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            and s.fechaProgramada between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.listaInsumo != null ">
+            and nombreCorto IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listaInsumo" open="(" separator="," close=")">
+                #{item.nombreCorto}
+            </foreach>
+        </if>
+            and sm.idEstatusMinistracion != 2
+            and datediff(now() , sm.fechaProgramado)  > 1
+            and se.cantidadRecibido != sm.cantidad
+    </select>
+    
+</mapper>

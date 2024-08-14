@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.CensoPacienteMapper" >
+
+    <insert id="insertarCensoPaciente" parameterType="mx.mc.model.CensoPaciente" >
+        INSERT INTO censoPaciente (
+            idCensoPaciente, idPaciente, titular, idDerechohabiente, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        ) VALUES (
+            #{ idCensoPaciente , jdbcType = VARCHAR }
+            , #{ idPaciente , jdbcType = VARCHAR }
+            , #{ titular , jdbcType = INTEGER }
+            , #{ idDerechohabiente , jdbcType = VARCHAR }
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        )
+    </insert>
+     
+    <select id="obtener" resultType="mx.mc.model.CensoPaciente" parameterType="mx.mc.model.CensoPaciente" >
+        SELECT idCensoPaciente, idPaciente, titular, idDerechohabiente, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM censoPaciente
+        WHERE 1=1
+        <if test=" idCensoPaciente != null ">
+            AND idCensoPaciente = #{ idCensoPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPaciente != null ">
+            AND idPaciente = #{ idPaciente , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <select id="obtenerRegistrosPorCriterioDeBusquedaLazy" resultType="mx.mc.model.CensoPacienteExtended" parameterType="Map" >
+        SELECT cp.idCensoPaciente, cp.idPaciente, cp.titular, cp.idDerechohabiente, cp.insertFecha, cp.insertIdUsuario, 
+               cp.updateFecha, cp.updateIdUsuario, p.nombreCompleto, p.apellidoPaterno, p.apellidoMaterno, 
+               p.claveDerechohabiencia, p.sexo, p.pacienteNumero, p.rfc
+        FROM censoPaciente cp INNER JOIN paciente p ON cp.idPaciente = p.idPaciente
+        WHERE 1=1
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (p.nombreCompleto LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR p.apellidoPaterno LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR p.apellidoMaterno LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR p.claveDerechohabiencia LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR p.pacienteNumero LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR p.rfc LIKE '%${paramBusquedaReporte.cadenaBusqueda}%')
+        </if>
+        ORDER BY insertFecha ASC
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    <select id="obtenerTotalRegistrosPorCriterioDeBusquedaLazy" resultType="Long" parameterType="Map" >
+        SELECT 
+            count(*)
+        FROM censoPaciente cp INNER JOIN paciente p ON cp.idPaciente = p.idPaciente
+        WHERE 1=1
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (p.nombreCompleto LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR p.apellidoPaterno LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR p.apellidoMaterno LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR p.claveDerechohabiencia LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR p.pacienteNumero LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR p.rfc LIKE '%${paramBusquedaReporte.cadenaBusqueda}%')
+        </if>
+    </select>
+    
+    <select id="obtenerRegistrosHistorico" resultType="mx.mc.model.CensoPacienteExtended" parameterType="Map" >
+        SELECT cp.idCensoPaciente, cp.idPaciente, cp.titular, cp.idDerechohabiente, cp.insertFecha, 
+               cp.insertIdUsuario, cp.updateFecha, cp.updateIdUsuario, p.nombreCompleto, p.apellidoPaterno, 
+               p.apellidoMaterno, p.claveDerechohabiencia, p.sexo, p.pacienteNumero, p.rfc, 
+               CONCAT(m.claveInstitucional, ' - ', m.nombreCorto) AS descripcionMedicamento,
+               CONCAT(d.clave, ' - ', d.nombre) AS descripcionDiagnostico
+        FROM censoPaciente cp INNER JOIN paciente p ON cp.idPaciente = p.idPaciente
+             INNER JOIN censoInsumo ci ON cp.idCensoPaciente = ci.idCensoPaciente
+             INNER JOIN medicamento m ON ci.idMedicamento = m.idMedicamento
+             INNER JOIN diagnostico d ON ci.idDiagnostico = d.idDiagnostico
+        WHERE (
+                cp.idPaciente = #{ idPaciente , jdbcType = VARCHAR }
+                OR p.claveDerechohabiencia = #{ claveDerechohabiencia , jdbcType = VARCHAR }
+              )
+            <if test=" idCensoPaciente != null ">
+                AND cp.idCensoPaciente != #{ idCensoPaciente, jdbcType = VARCHAR }
+            </if>
+        ORDER BY insertFecha ASC
+    </select>
+    
+    <update id="actualizarCensoPaciente" parameterType="mx.mc.model.CensoPaciente" >
+        UPDATE censoPaciente 
+            SET idPaciente = #{ idPaciente , jdbcType = VARCHAR }
+              , titular = #{ titular , jdbcType = INTEGER }
+              , idDerechohabiente = #{ idDerechohabiente , jdbcType = VARCHAR }
+              , updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+              , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        WHERE idCensoPaciente = #{ idCensoPaciente , jdbcType = VARCHAR }
+    </update>
+</mapper>

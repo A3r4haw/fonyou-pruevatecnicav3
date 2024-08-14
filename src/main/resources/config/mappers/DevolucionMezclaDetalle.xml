@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DevolucionMezclaDetalleMapper" >
+    
+    <insert id="insertListDetalleMezcla" parameterType="java.util.List" useGeneratedKeys="false" >
+    	<foreach collection="list" item="item" index="index" separator=";">
+    		INSERT INTO devolucionMezclaDetalle(
+    		<if test=" item.idDevolucionMezclaDetalle != null "> idDevolucionMezclaDetalle</if>
+    		<if test=" item.idDevolucionMezcla != null "> ,idDevolucionMezcla</if>
+    		<if test=" item.idInsumo != null "> ,idInsumo</if>
+    		<if test=" item.idInventario != null "> ,idInventario</if>
+    		<if test=" item.merma != null "> ,merma</if>
+    		<if test=" item.piezas != null "> ,piezas</if>
+    		<if test=" item.insertFecha != null "> ,insertFecha</if>
+    		<if test=" item.insertIdUsuario != null "> ,insertIdUsuario</if>
+    		) VALUES (
+    		<if test=" item.idDevolucionMezclaDetalle != null "> #{ item.idDevolucionMezclaDetalle}</if>
+    		<if test=" item.idDevolucionMezcla != null "> ,#{ item.idDevolucionMezcla}</if>
+    		<if test=" item.idInsumo != null "> ,#{ item.idInsumo}</if>
+    		<if test=" item.idInventario != null "> ,#{ item.idInventario}</if>
+    		<if test=" item.merma != null "> ,#{ item.merma}</if>
+    		<if test=" item.piezas != null "> ,#{ item.piezas}</if>
+    		<if test=" item.insertFecha != null "> ,#{ item.insertFecha}</if>
+    		<if test=" item.insertIdUsuario != null "> ,#{ item.insertIdUsuario}</if>
+    		) 
+    	</foreach>
+    </insert>
+    
+    <select id="detalleDevolucionMezcla"  resultType="mx.mc.model.SurtimientoInsumo_Extend" parameterType="Map">
+        SELECT 
+            m.claveInstitucional,
+            m.nombreCorto,
+            i.lote,
+            i.fechaCaducidad as caducidad,
+            i.noHorasestabilidad as estabilidad,
+            dmd.piezas as cantidadEnviada,
+            CONCAT(pi.dosis,' ',uc.nombreUnidadConcentracion) AS envase,
+            dmd.idInsumo,
+            i.idInventario,
+            dmd.merma,
+            '1' as activo
+        FROM    devolucionMezcla dm
+            INNER JOIN  devolucionMezclaDetalle dmd ON dmd.idDevolucionMezcla = dm.idDevolucionMezcla
+            INNER JOIN  medicamento m ON m.idMedicamento = dmd.idInsumo
+            INNER JOIN  inventario i ON i.idInventario = dmd.idInventario
+            INNER JOIN	solucion so ON so.idSolucion = dm.idSolucion
+            INNER JOIN  surtimiento su ON su.idSurtimiento = so.idSurtimiento
+            INNER JOIN  surtimientoInsumo si ON si.idSurtimiento = su.idSurtimiento
+            INNER JOIN  prescripcionInsumo pi ON (pi.idPrescripcionInsumo = si.idPrescripcionInsumo AND pi.idInsumo = dmd.idInsumo )
+            INNER JOIN  unidadConcentracion uc ON uc.idUnidadConcentracion = m.idUnidadConcentracion
+        WHERE
+            dm.idDevolucionMezcla = #{idDevolucionMezcla};
+    </select>
+</mapper>

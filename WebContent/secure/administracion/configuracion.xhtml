@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <head>
+        <title>Configuracion</title>                
+    </head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content" >
+                <div class="mainPanel">
+                    <h:form id="mainForm" > 
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <div class="A">
+                                <p:outputLabel value="Configuración"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />                                     
+                            </div>
+
+                            <p:inputText id="textSearch" onkeypress="if (event.keyCode eq 13) {
+                                        }" style="margin-top:0px;" 
+                                         value="#{configuracionMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar..."
+                                         tabindex="1"/>
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>
+                            </i>
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{configuracionMB.obtenerListaConfig}"
+                                             update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();" style=" margin-left: 15px; margin-bottom: 8px;" 
+                                             tabindex="2" />
+                        </div>
+                        <p:commandButton class="btnNew" value="Leer Layout" icon="fa fa-plus" 
+                                         actionListener="#{configuracionMB.limpiar}" onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide();PF('modalLayout').show(); "
+                                         ajax="true" update=""  style=" margin: 5px 0; "
+                                         tabindex="4" 
+                                         rendered="#{configuracionMB.permiso.puedeAutorizar}" /> 
+                        <br/>
+                        <p:messages id="validaMsg" globalOnly="true" closable="true" showDetail="false" redisplay="false" rendered="#{configuracionMB.message}" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <p:outputLabel value="No tiene permiso de visualización de esta transacción." 
+                               style="font-size: 18px !important; font-weight: bold; color: red;"
+                               rendered="#{!configuracionMB.permiso.puedeVer}" /> 
+                        
+                        <p:dataTable id="tblConfig" 
+                                     styleClass="cabecera" reflow="true"
+                                     style="margin-bottom:5px;"
+                                     lazy="true"
+                                     value="#{configuracionMB.configLazy}"
+                                     var="item" 
+                                     selectionMode="single"
+                                     selection="#{configuracionMB.configSelect}"
+                                     rowKey="#{item.idConfig}"
+                                     scrollable="true"
+                                     scrollHeight="350" 
+                                     paginatorPosition="bottom"
+                                     rows="10"
+                                     paginator="true"
+                                     paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     rendered="#{configuracionMB.permiso.puedeVer}" 
+                                     >
+                            <p:ajax event="rowDblselect" oncomplete="PF('modalConfig').show();" update=":formConfig" 
+                                    listener="#{configuracionMB.detalleConfigSelect}" 
+                                    rendered="#{configuracionMB.permiso.puedeAutorizar}" />
+                                                        
+                            <p:column style="text-align: left; width: 12%;" sortBy="#{item.nombre}"
+                                      headerText="Nombre"  >
+                                <h:outputText value="#{item.nombre}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left !important;  width: 12%;"
+                                      sortBy="#{item.valor}" headerText="Valor" >
+                                <h:outputText value="#{item.valor}" title="#{item.valor}"  class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left; width: 10%;"
+                                      headerText="Descripción" sortBy="#{item.descripcion}" >
+                                <h:outputText value="#{item.descripcion}" title="#{item.descripcion}"  class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left;width: 5%;" headerText="Activo" sortBy="#{item.activa}" >
+                                <h:outputText value="#{item.activa ? 'Si' : 'No' }" class="altoColumn" />
+                            </p:column>                            
+                            
+                        </p:dataTable>
+                    </h:form>
+                    
+                    <p:dialog header="Información del Parámetro"
+                              widgetVar="modalConfig"
+                              closeOnEscape="true" modal="true"  
+                              resizable="false"
+                              responsive="true"  
+                              style="font-size:xx-small !important; " width="40%" height="auto" >
+
+                        <h:form id="formConfig" >                        
+                            <div align="center">
+                                <p:messages id="validaMsg1" globalOnly="false" closable="true" showDetail="false" >
+                                    <p:autoUpdate />
+                                </p:messages>  
+                                <p:panelGrid>
+                                    <p:row>
+                                        <p:column><p:outputLabel value="Número:"/></p:column>
+                                        <p:column><p:inputText value="#{configuracionMB.configSelect.idConfig}" style=" width: 80px; background-color: #D8D8D8!important; font-weight: bold; text-align: right!important;" readonly="true" /></p:column>
+                                    </p:row><p:row>
+                                        <p:column><p:outputLabel value="Nombre:"/></p:column>
+                                        <p:column><p:inputText value="#{configuracionMB.configSelect.nombre}" style=" width: 300px;background-color: #D8D8D8!important;font-weight: bold;" readonly="true" /></p:column>
+                                    </p:row><p:row>
+                                        <p:column><p:outputLabel value="Descripción:"/></p:column>
+                                        <p:column><p:inputTextarea value="#{configuracionMB.configSelect.descripcion}" style="width: 300px; background-color: #F2F2F2!important;font-weight: bold;" rows="3" cols="40"  readonly="true" /></p:column>
+                                    </p:row><p:row>
+                                        <p:column><p:outputLabel value="Activo:"/></p:column>
+                                        <p:column><p:selectBooleanButton value="#{configuracionMB.configSelect.activa}" offLabel="NO" onLabel="SI" /></p:column>
+                                    </p:row><p:row>
+                                        <p:column><p:outputLabel value="Valor:"/></p:column>
+                                        <p:column>
+                                            <p:inputNumber rendered="#{configuracionMB.configSelect.idTipoParam eq 1 ? true:false}" decimalPlaces="0" decimalSeparator="." 
+                                                           value="#{configuracionMB.number}" style="text-align: right!important;">
+                                                <p:keyFilter regEx="#{configuracionMB.regexNumber}" />
+                                            </p:inputNumber>
+                                            <p:inputNumber rendered="#{configuracionMB.configSelect.idTipoParam eq 2 ? true:false}" maxlength="1" decimalPlaces="0" decimalSeparator="."
+                                                           value="#{configuracionMB.decimal}" style="text-align: right!important;">
+                                                <p:keyFilter regEx="#{configuracionMB.regexDecimal}" />
+                                            </p:inputNumber>
+                                            <p:selectBooleanButton rendered="#{configuracionMB.configSelect.idTipoParam eq 3 ? true:false}"  offLabel="NO" onLabel="SI" 
+                                                                   value="#{configuracionMB.bolean}" onIcon="ui-icon-check" offIcon="ui-icon-close" />
+                                            <p:inputText rendered="#{configuracionMB.configSelect.idTipoParam eq 4 ? true:false}" value="#{configuracionMB.cadena}" style=" width: 300px;" />
+                                            <p:datePicker rendered="#{configuracionMB.configSelect.idTipoParam eq 5 ? true:false}" value="#{configuracionMB.cadena}" timeOnly="true" pattern="HH:mm" style=" width: 300px!important;"/>
+                                            <p:datePicker rendered="#{configuracionMB.configSelect.idTipoParam eq 6 ? true:false}" value="#{configuracionMB.cadena}" style=" width: 300px;" />
+                                            <p:inputText rendered="#{configuracionMB.configSelect.idTipoParam eq 7 ? true:false}" value="#{configuracionMB.cadena}" style=" width: 300px;">
+                                                <p:keyFilter regEx="#{configuracionMB.regexIp}" />
+                                            </p:inputText>
+                                            <p:inputText rendered="#{configuracionMB.configSelect.idTipoParam eq 8 ? true:false}" value="#{configuracionMB.cadena}" style=" width: 300px;" >
+                                                <p:keyFilter regEx="#{configuracionMB.regexMail}" />
+                                            </p:inputText>
+                                            <p:inputText rendered="#{configuracionMB.configSelect.idTipoParam eq 9 ? true:false}" value="#{configuracionMB.cadena}"  style=" width: 300px;">
+                                                <p:keyFilter regEx="#{configuracionMB.regexUrl}" />
+                                            </p:inputText>
+                                            <p:inputText rendered="#{configuracionMB.configSelect.idTipoParam eq 10 ? true:false}" value="#{configuracionMB.cadena}" style=" width: 300px;">
+                                                <p:keyFilter regEx="#{configuracionMB.regexNumSing}" />
+                                            </p:inputText>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>                                    
+                                        <p:column>&nbsp;</p:column>
+                                    </p:row>
+                                </p:panelGrid>                                              
+                                <p:panel class="pnlActions">
+                                    <p:commandButton id="btnCancel"
+                                                     widgetVar="btnCancel"                                    
+                                                     value="Cancelar" style="margin:0"
+                                                     actionListener="#{configuracionMB.limpiar()}"
+                                                     onclick="PF('modalConfig').hide();" />&nbsp;&nbsp;
+                                    <p:commandButton id="btnSave1"
+                                                     widgetVar="btnSave1" 
+                                                     styleClass="btnMusAzul" 
+                                                     update=":mainForm:tblConfig"                                    
+                                                     value="Guardar" style="margin:0"
+                                                     actionListener="#{configuracionMB.saveConfig()}"
+                                                     onclick="PF('statusProcess').show();"
+                                                     oncomplete=" if ( args.estatus ){  PF('modalConfig').hide();  } PF('statusProcess').hide();"
+                                                     tabindex="36" >
+                                        <p:confirm header="Confirmación" message="Desea Guardar los cambios ?" icon="ui-icon-alert"  />
+                                    </p:commandButton>
+                                </p:panel> 
+                            </div>
+                        </h:form>
+                    </p:dialog>
+                   <p:dialog header="Carga de datos de forma masiva"
+                              widgetVar="modalLayout"
+                              closeOnEscape="true" modal="true"
+                              style="font-size:xx-small !important; ">
+                        <h:form id="frmLayout" style="padding: 0px;">                         
+                            <p:messages id="msjLayout" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:fileUpload  dragDropSupport="false" uploadLabel="Subir Archivo" cancelLabel="Cancelar" label="Seleccionar Archivo" 
+                                           allowTypes="/(\.|\/)(xlsx|xls)$/" invalidFileMessage="Tipo de archivo invalido" onstart="PF('statusProcess').show();" 
+                                           oncomplete="PF('statusProcess').hide();"
+                                           fileUploadListener="#{configuracionMB.layoutFileUpload}"  mode="advanced" update="frmLayout"  />
+                            <p:outputPanel rendered="#{configuracionMB.noProcess}" >
+                                <p:dataTable  id="tblNoProcess"
+                                              var="item" editable="true"  
+                                              value="#{configuracionMB.configListLayout}"
+                                              styleClass="styleEventosPlanPrestacion" reflow="true"
+                                              style="margin-bottom:5px;" 
+                                              scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" > 
+
+                                    <f:facet name="header" ><h:outputText style="color: #000;" value="Datos NO procesados" /></f:facet>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.nombre}" headerText="Nombre" >
+                                        <h:outputText value="#{item.nombre}" title="#{item.nombre}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.valor}" headerText="Valor" >
+                                        <h:outputText value="#{item.valor}" title="#{item.valor}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.descripcion}" headerText="Descripción" >
+                                        <h:outputText value="#{item.descripcion}" title="#{item.descripcion}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.activa}" headerText="Activo" >
+                                        <h:outputText value="#{item.activa ? 'SI':'NO'}" title="#{item.activa}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.motivo}" headerText="Motivo" >
+                                        <h:outputText value="#{item.motivo}" title="#{item.motivo}" class="altoColumn" />
+                                    </p:column>
+                                    
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.process}" headerText="Estatus">
+                                        <p:outputPanel rendered="#{item.process}" > <i class="fa fa-check" style="font-size: 2em"></i></p:outputPanel>
+                                        <p:outputPanel rendered="#{!item.process}" > <i class="fa fa-times" style="font-size: 2em"></i></p:outputPanel>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:outputPanel>
+                            <p:panel class="pnlActions">
+                                <p:commandButton class="btnNew" value="Aceptar"
+                                                 actionListener="#{configuracionMB.limpiar()}" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalLayout').hide();"
+                                                 ajax="true" update=":mainForm:tblConfig,:frmLayout"  style=" margin: 5px 0; "  />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+                </div>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+
+</html>

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TransferenciaInsumoMapper">
+   
+    <select id="obtener" parameterType="mx.mc.model.TransferenciaInsumo" resultType="mx.mc.model.TransferenciaInsumo">
+        SELECT idTransferenciaInsumo, idTransferencia, idInsumo, cantidadEnviada, idEstatusTransferencia, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM transferenciaInsumo
+        WHERE 1=1
+        <if test="idTransferenciaInsumo != null"> AND idTransferenciaInsumo = #{idTransferenciaInsumo} </if>
+        <if test="idTransferencia != null">       AND idTransferencia = #{idTransferencia} </if>
+        <if test="idInsumo != null">              AND idInsumo = #{idInsumo} </if>
+        <if test="cantidadEnviada != null">       AND cantidadEnviada = #{cantidadEnviada} </if>
+        <if test="idEstatusTransferencia != null"> AND idEstatusTransferencia = #{idEstatusTransferencia} </if>
+        <if test="insertFecha != null">           AND insertFecha = #{insertFecha} </if>
+        <if test="insertIdUsuario != null">       AND insertIdUsuario = #{insertIdUsuario} </if>
+        <if test="updateFecha != null">           AND updateFecha = #{updateFecha} </if>
+        <if test="updateIdUsuario != null">       AND updateIdUsuario = #{updateIdUsuario} </if>
+    </select>
+    <select id="obtenerLista" parameterType="mx.mc.model.TransferenciaInsumo" resultType="mx.mc.model.TransferenciaInsumo">
+        SELECT idTransferenciaInsumo, idTransferencia, idInsumo, cantidadEnviada, idEstatusTransferencia, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM transferenciaInsumo
+        WHERE 1=1
+        <if test="idTransferenciaInsumo != null"> AND idTransferenciaInsumo = #{idTransferenciaInsumo} </if>
+        <if test="idTransferencia != null">       AND idTransferencia = #{idTransferencia} </if>
+        <if test="idInsumo != null">              AND idInsumo = #{idInsumo} </if>
+        <if test="cantidadEnviada != null">       AND cantidadEnviada = #{cantidadEnviada} </if>
+        <if test="idEstatusTransferencia != null"> AND idEstatusTransferencia = #{idEstatusTransferencia} </if>
+        <if test="insertFecha != null">           AND insertFecha = #{insertFecha} </if>
+        <if test="insertIdUsuario != null">       AND insertIdUsuario = #{insertIdUsuario} </if>
+        <if test="updateFecha != null">           AND updateFecha = #{updateFecha} </if>
+        <if test="updateIdUsuario != null">       AND updateIdUsuario = #{updateIdUsuario} </if>
+    </select>
+    <select id="detalleTransfer" parameterType="Map" resultType="mx.mc.model.TransferenciaInsumo">
+        Select t.idTransferenciaInsumo,t.idTransferencia, t.idInsumo,m.claveInstitucional as clave, m.nombreCorto as nombreComercial,t.cantidadEnviada, t.idEstatusTransferencia,r.nombre,t.lote ,t.insertFecha, t.insertIdUsuario, m.tipo as tipoInsumo
+        FROM transferenciaInsumo t
+        inner join medicamento  m on m.idMedicamento=t.idInsumo
+        inner join estatusReabasto r on r.idEstatusReabasto=t.idEstatusTransferencia
+        where t.idTransferencia = #{idTransferencia}
+    </select>
+    
+    
+    <insert id="insertar" parameterType="mx.mc.model.TransferenciaInsumo">
+        INSERT INTO transferenciaInsumo
+            <if test="idTransferenciaInsumo != null"> idTransferenciaInsumo </if>
+            <if test="idTransferencia != null">       ,idTransferencia </if>
+            <if test="idInsumo != null">              ,idInsumo </if>
+            <if test="cantidadEnviada != null">       ,cantidadEnviada </if>
+            <if test="idEstatusTransferencia != null"> ,idEstatusTransferencia </if>
+            <if test="insertFecha != null">           ,insertFecha </if>
+            <if test="insertIdUsuario != null">       ,insertIdUsuario </if>
+            <if test="updateFecha != null">           ,updateFecha </if>
+            <if test="updateIdUsuario != null">       ,updateIdUsuario </if>
+        )VALUES(
+            <if test="idTransferenciaInsumo != null">  #{idTransferenciaInsumo} </if>
+            <if test="idTransferencia != null">       ,#{idTransferencia} </if>
+            <if test="idInsumo != null">              ,#{idInsumo} </if>
+            <if test="cantidadEnviada != null">       ,#{cantidadEnviada} </if>
+            <if test="idEstatusTransferencia != null"> ,#{idEstatusTransferencia} </if>
+            <if test="insertFecha != null">           ,#{insertFecha} </if>
+            <if test="insertIdUsuario != null">       ,#{insertIdUsuario} </if>
+            <if test="updateFecha != null">           ,#{updateFecha} </if>
+            <if test="updateIdUsuario != null">       ,#{updateIdUsuario} </if>
+        )
+    </insert>
+    <insert id="insertarLista"   parameterType="java.util.List" useGeneratedKeys="false"  >
+        INSERT INTO transferenciaInsumo (
+            idTransferenciaInsumo 
+            ,idTransferencia 
+            ,idInsumo 
+            ,cantidadEnviada 
+            ,idEstatusTransferencia 
+            ,lote
+            ,insertFecha 
+            ,insertIdUsuario 
+            ,updateFecha 
+            ,updateIdUsuario 
+        )VALUES
+        <foreach collection="list" item="item" separator="," index="index"> 
+        (
+            #{item.idTransferenciaInsumo} 
+            ,#{item.idTransferencia} 
+            ,#{item.idInsumo} 
+            ,#{item.cantidadEnviada} 
+            ,#{item.idEstatusTransferencia} 
+            ,#{item.lote} 
+            ,#{item.insertFecha} 
+            ,#{item.insertIdUsuario} 
+            ,#{item.updateFecha} 
+            ,#{item.updateIdUsuario} 
+        )
+        </foreach>
+    </insert>
+    <update id="actualizar" parameterType="mx.mc.model.TransferenciaInsumo">
+        UPDATE transferenciaInsumo
+        <set>
+            updateFecha = #{updateFecha}
+            , updateIdUsuario = #{updateIdUsuario}        
+            <if test="idTransferencia != null">       , idTransferencia = #{idTransferencia} </if>
+            <if test="idInsumo != null">              , idInsumo = #{idInsumo} </if>
+            <if test="cantidadEnviada != null">       , cantidadEnviada = #{cantidadEnviada} </if>
+            <if test="idEstatusTransferencia != null">, idEstatusTransferencia = #{idEstatusTransferencia} </if>
+            <if test="lote != null">           , lote = #{lote} </if>
+            <if test="insertFecha != null">           , insertFecha = #{insertFecha} </if>
+            <if test="insertIdUsuario != null">       , insertIdUsuario = #{insertIdUsuario} </if>        
+        </set>
+        WHERE  idTransferenciaInsumo = #{idTransferenciaInsumo}
+    </update>
+    <update id="actualizarLista" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="list" item="item"  index="index"  separator=";">
+            UPDATE transferenciaInsumo
+            <set>                                 
+                  idTransferencia = #{idTransferencia}
+                , idInsumo = #{idInsumo}
+                , cantidadEnviada = #{cantidadEnviada}
+                , idEstatusTransferencia = #{idEstatusTransferencia}
+                , insertFecha = #{insertFecha}
+                , insertIdUsuario = #{insertIdUsuario}
+                , updateFecha = #{updateFecha}
+                , updateIdUsuario = #{updateIdUsuario}        
+            </set>                  
+            WHERE  idTransferenciaInsumo = #{idTransferenciaInsumo}
+        </foreach>
+    </update>
+     <delete id="eliminarPorIdTransferencia" parameterType="Map">
+        DELETE FROM transferenciaInsumo WHERE  idTransferencia = #{idTransferencia}
+    </delete>
+    
+    <delete id="eliminar" parameterType="mx.mc.model.TransferenciaInsumo">
+        DELETE FROM transferenciaInsumo WHERE  idTransferenciaInsumo = #{idTransferenciaInsumo}
+    </delete>
+</mapper>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.PacienteResponsableMapper" >
+     <select id="obtenerPacienteResponsableByIdPaciente" resultType="mx.mc.model.PacienteResponsable" parameterType="Map" >
+        SELECT idPacienteResponsable,idPaciente,nombreCompleto,apellidoPaterno,apellidoMaterno,
+               telefonoCasa,telefonoCelular,correoElectronico,idParentesco,responsableLegal,
+               rfc,curp,domicilio,comentarios,insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+        FROM pacienteResponsable
+        WHERE 1=1
+        AND idPaciente = #{idPaciente , jdbcType = VARCHAR};
+    </select>
+</mapper>

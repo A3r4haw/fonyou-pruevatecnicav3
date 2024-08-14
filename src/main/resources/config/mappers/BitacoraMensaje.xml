@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.BitacoraMensajeMapper" >
+ 
+    
+    <insert id="insertar" parameterType="mx.mc.model.BitacoraMensaje" >        
+        INSERT INTO bitacora.bitacoraMensaje (        
+            idBitacoraMensaje
+            , fecha
+            , tipoMensaje
+            , entradaSalida
+            , idMensaje        
+            , mensaje        
+        <if test=" codigoRespuesta != null ">
+            , codigoRespuesta
+        </if>        
+        ) VALUES (        
+            #{ idBitacoraMensaje , jdbcType = BIGINT }       
+            , #{ fecha , jdbcType = TIMESTAMP }        
+            , #{ tipoMensaje , jdbcType = VARCHAR }
+            , #{ entradaSalida , jdbcType = VARCHAR }
+            , #{ idMensaje , jdbcType = VARCHAR }
+            , #{ mensaje , jdbcType = VARCHAR }
+        <if test=" codigoRespuesta != null ">
+            , #{ codigoRespuesta , jdbcType = VARCHAR }
+        </if>       
+        )
+    </insert>
+    
+    <update id="updateMensajeBitacora" parameterType="mx.mc.model.BitacoraMensaje" >
+        UPDATE bitacora.bitacoraMensaje
+        <set>
+            <if test="codigoRespuesta != null"> codigoRespuesta = #{ codigoRespuesta , jdbcType = VARCHAR}, </if>            
+        </set>
+        WHERE  idBitacoraMensaje = #{ idBitacoraMensaje , jdbcType = VARCHAR}
+    </update>
+    
+    <select id="validaExistenciaBitacora" resultType="mx.mc.model.BitacoraMensaje" parameterType="Map">
+        SELECT * FROM bitacora.bitacoraMensaje 
+        where idMensaje = #{ idMensaje , jdbcType = VARCHAR}
+        limit 1
+        ;
+    </select>
+        
+    
+</mapper>

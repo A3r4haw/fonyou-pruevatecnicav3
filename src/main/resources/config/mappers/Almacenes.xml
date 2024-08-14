@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.AlmacenMapper" >
+     
+    <select id="obtenerLista" resultType="mx.mc.model.Almacen" parameterType="mx.mc.model.Almacen" >
+        SELECT idAlmacen,nombreAlmacen,descripcion,idAlmacenPadre,idTipoAlmacen,
+               insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+        FROM almacen
+        WHERE 1 = 1
+        <if test="idAlmacen != null">
+            AND idAlmacen = #{idAlmacen, jdbcType VARHCAR}
+        </if>
+
+    </select>
+    
+</mapper>

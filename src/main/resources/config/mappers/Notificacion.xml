@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.NotificacionMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Notificacion" parameterType="mx.mc.model.Notificacion" >
+        SELECT idNotificacion , idTransaccion , fecha , idTipoNotificacion , resumen , descripcion
+        FROM notificacion
+        WHERE 1=1
+        <if test=" idNotificacion != null ">
+            AND idNotificacion = #{ idNotificacion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTransaccion != null ">
+            AND idTransaccion = #{ idTransaccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoNotificacion != null ">
+            AND idTipoNotificacion = #{ idTipoNotificacion , jdbcType = INTEGER }
+        </if>
+        <if test=" resumen != null ">
+            AND resumen = #{ resumen , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" fecha != null ">
+            AND fecha = #{ fecha , jdbcType = INTEGER }
+        </if>
+        LIMIT 0, 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Notificacion" parameterType="mx.mc.model.Notificacion" >
+        SELECT idNotificacion , idTransaccion , fecha , idTipoNotificacion , resumen , descripcion
+        FROM notificacion
+        WHERE 1=1
+        <if test=" idNotificacion != null ">
+            AND idNotificacion = #{ idNotificacion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTransaccion != null ">
+            AND idTransaccion = #{ idTransaccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoNotificacion != null ">
+            AND idTipoNotificacion = #{ idTipoNotificacion , jdbcType = INTEGER }
+        </if>
+        <if test=" resumen != null ">
+            AND resumen = #{ resumen , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" fecha != null ">
+            AND fecha = #{ fecha , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Notificacion" >
+        INSERT INTO notificacion (
+        <if test=" idNotificacion != null ">
+            idNotificacion
+        </if>
+        <if test=" idTransaccion != null ">
+            , idTransaccion
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion
+        </if>
+        <if test=" idTipoNotificacion != null ">
+            , idTipoNotificacion
+        </if>
+        <if test=" fecha != null ">
+            , fecha
+        </if>
+        <if test=" resumen != null ">
+            , resumen
+        </if>
+        
+        ) VALUES (
+        <if test=" idNotificacion != null ">
+            #{ idNotificacion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTransaccion != null ">
+            , #{ idTransaccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoNotificacion != null ">
+            , #{ idTipoNotificacion , jdbcType = INTEGER }
+        </if>
+        <if test=" fecha != null ">
+            , #{ fecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" resumen != null ">
+            , #{ resumen , jdbcType = VARCHAR }
+        </if>
+        
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.Notificacion"  >
+        UPDATE notificacion SET
+        fecha = #{ fecha , jdbcType = TIMESTAMP }
+        <if test=" idTransaccion != null ">
+            , idTransaccion = #{ idTransaccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" resumen != null ">
+            , resumen = #{ resumen , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoNotificacion != null ">
+            , idTipoNotificacion = #{ idTipoNotificacion , jdbcType = INTEGER }
+        </if>
+        WHERE idNotificacion = #{ idNotificacion , jdbcType = VARCHAR }
+    </update>
+    
+    
+</mapper>

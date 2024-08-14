@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>REPORTE DE  MINISTRACIONES</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="movGralesId" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="REPORTE DE INSUMOS SURTIDOS" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" >
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Inicio" />
+                                            <br/>
+                                            <p:calendar style="width: 75%" id="txtFechaInicio" value="#{reporteInsumosSurtidosMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{reporteInsumosSurtidosMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" >
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Fin" />
+                                            <br/>
+                                            <p:calendar style="width: 75%" id="txtFechaFin" value="#{reporteInsumosSurtidosMB.paramBusquedaReporte.fechaFin}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{reporteInsumosSurtidosMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade">
+                                                <p:ajax event="dateSelect" listener="#{reporteInsumosSurtidosMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                            </p:calendar>
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;" value="Servicio" />
+                                            <br/>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{reporteInsumosSurtidosMB.estructuraUsuario.nombre}" 
+                                                           rendered="#{!reporteInsumosSurtidosMB.administrador}"/>
+
+                                            <p:selectOneMenu id="comboAlmacenSubAlmacen" 
+                                                             rendered="#{!reporteInsumosSurtidosMB.mostrarComboServicio}"
+                                                             value="#{reporteInsumosSurtidosMB.idEstructura}"                                                             
+                                                             style="vertical-align: middle; margin-right: 10px; width: 200px"                                                             
+                                                             filter="true" filterMatchMode="contains" panelStyle="width:250px"> 
+
+                                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                                <f:selectItems value="#{reporteInsumosSurtidosMB.listaAuxiliar}"
+
+                                                               var="almacen"
+                                                               itemValue="#{almacen.idEstructura}"
+                                                               itemLabel="#{almacen.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="margin-top: 0px">                                            
+                                            <p:commandButton value="Generar Reporte" style="margin-left: 8px; margin-top: 15px"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{reporteInsumosSurtidosMB.consultar}"
+                                                             update=":formTablaMinistraciones, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"                                                               
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                            
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;"  value="Insumos" />
+                                            <br/>
+
+                                            <p:autoComplete id="txtInsumos"
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum"
+                                                            inputStyleClass="autoComplete-Sum"
+                                                            placeholder="Filtro Insumos"   
+                                                            value="#{reporteInsumosSurtidosMB.paramBusquedaReporte.listInsumos}"
+                                                            completeMethod="#{reporteInsumosSurtidosMB.autocompleteInsumo}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="10" 
+                                                            forceSelection="true"
+                                                            cache="false" 
+                                                            cacheTimeout="0" 
+                                                            var="insum" 
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{insum.nombreCorto}" itemValue="#{insum}" 
+                                                            converter="musGenericConverter"
+                                                            scrollHeight = "150" >
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            <p:outputLabel value="Paciente" style="font-weight: bolder;"/>
+                                            <br/>
+                                            <p:autoComplete id="txtPaciente"                                                                                                                        
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            placeholder="Filtro Pacientes" 
+                                                            value="#{reporteInsumosSurtidosMB.paramBusquedaReporte.pacienteList}"
+                                                            completeMethod="#{reporteInsumosSurtidosMB.autoCompletePacientes}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500"                                                             
+                                                            maxResults="10" 
+                                                            forceSelection="true" 
+                                                            cache="false"
+                                                            cacheTimeout="0" 
+                                                            var="paciente" 
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" itemValue="#{paciente}" 
+                                                            converter="musGenericConverter"
+                                                            scrollHeight="150"
+                                                            >
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Número de Paciente" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.pacienteNumero}" style=" font-size: small;" />
+                                                </p:column>                                                
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.nombreCompleto}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Apellido Paterno" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Apellido Materno" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                            </p:autoComplete>
+
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Diagnostico" />
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;"
+                                                           value="#{reporteInsumosSurtidosMB.usuarioSession.nombre} #{reporteInsumosSurtidosMB.usuarioSession.apellidoPaterno} #{reporteInsumosSurtidosMB.usuarioSession.apellidoMaterno}" 
+                                                           rendered="#{!reporteInsumosSurtidosMB.administrador}"/>
+                                            <br/>
+                                            <p:autoComplete id="txtDiagnostico"                                                                                                                      
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            placeholder="Agregar Diagnósticos" 
+                                                            value="#{reporteInsumosSurtidosMB.paramBusquedaReporte.diagnosticoList}"
+                                                            completeMethod="#{reporteInsumosSurtidosMB.autocompleteDiagnostico}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="10" 
+                                                            forceSelection="true" 
+                                                            cache="false"
+                                                            cacheTimeout="0" 
+                                                            var="diagnos" 
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{diagnos.nombre}" itemValue="#{diagnos.idDiagnostico}" 
+                                                            converter="diagnosticoConverter"
+                                                            scrollHeight = "150" >
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{diagnos.clave}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{diagnos.nombre}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; margin-left: -10px;">
+                                            
+                                            <p:menuButton value="Exportar Archivo" style="margin-top: 15px; width: 200px; margin-left: 8px">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{reporteInsumosSurtidosMB.imprimeReporteSurtimiento()}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"
+                                                            />
+
+                                                <p:menuitem value="Formato EXCEL"
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false"
+                                                            actionListener="#{reporteInsumosSurtidosMB.generaExcelSurtimiento}"
+                                                            />
+                                            </p:menuButton>
+                                        </div>
+                                    </div>                                    
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form><br />
+                    <h:form id="formTablaMinistraciones" >
+                        <style type="text/css">
+                            .ui-datatable-header {
+                                height: 20px
+                            }
+                        </style>
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" " selectionMode="single"
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom" styleClass="styleEventosPlanPrestacion"
+                                     value="#{reporteInsumosSurtidosMB.reporteSurtimientoInsumoLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true" scrollWidth="100%" scrollHeight="390"
+                                     style="font-size: x-small !important;" disabledTextSelection="false"
+                                     >
+                            <f:facet name="header">
+                                <p:commandButton id="toggler" type="button" value="Columnas" style="float:right" icon="fa fa-columns" />
+                                <p:columnToggler datasource="resultadosDT" trigger="toggler" />
+                            </f:facet>
+
+                            <p:column headerText="SERVICIO" filterBy="#{result.servicio}"  filterMatchMode="contains" sortBy="#{result.servicio}" style="width: 8%;" >
+                                <h:outputText value="#{result.servicio}"/>
+                            </p:column>
+
+                            <p:column headerText="PRESCRIPCIÓN" filterBy="#{result.folioPrescripcion}"  filterMatchMode="contains" sortBy="#{result.folioPrescripcion}" style="width: 6%; " >
+                                <h:outputText value="#{result.folioPrescripcion}"/>
+                            </p:column>
+
+                            <p:column headerText="PACIENTE" filterBy="#{result.paciente}" filterMatchMode="contains" sortBy="#{result.paciente}" style="width: 8%;" >
+                                <h:outputText value="#{result.paciente}"/>
+                            </p:column>                          
+
+                            <p:column headerText="DIAGNOSTICO"  filterBy="#{result.diagnostico}" filterMatchMode="contains" sortBy="#{result.diagnostico}" style="width: 10%;" >
+                                <h:outputText value="#{result.diagnostico}"/>
+                            </p:column>                                                    
+
+                            <p:column headerText="SURTIMIENTO"  filterBy="#{result.folioSurtimiento}" filterMatchMode="contains" sortBy="#{result.folioSurtimiento}" style="width: 6%;" >
+                                <h:outputText value="#{result.folioSurtimiento}"/>
+                            </p:column>
+                            
+                            <p:column headerText="CLAVE"  filterBy="#{result.claveInstitucional}" filterMatchMode="contains" sortBy="#{result.claveInstitucional}" style="width: 7%;" >
+                                <h:outputText value="#{result.claveInstitucional}"/>
+                            </p:column>
+
+                            <p:column headerText="MEDICAMENTO"  filterBy="#{result.nombreCorto}"  filterMatchMode="contains" sortBy="#{result.nombreCorto}" style="width: 15%;" >
+                                <h:outputText value="#{result.nombreCorto}"/>
+                            </p:column> 
+
+                            <p:column headerText="LOTE"  filterBy="#{result.lote}"  filterMatchMode="contains" sortBy="#{result.lote}" style="width: 6%;" >
+                                <h:outputText value="#{result.lote}"/>
+                            </p:column>  
+
+                            <p:column headerText="CADUCIDAD" filterBy="#{result.caducidad}" filterMatchMode="contains" sortBy="#{result.caducidad}" style="width: 6%;" >
+                                <h:outputText value="#{result.caducidad}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>
+                            </p:column> 
+                            
+                            <p:column headerText="CANT. SOLICITADA" style="width: 5%;" >
+                                <h:outputText value="#{result.cantidadSolicitada}"/>
+                            </p:column>  
+                            
+                            <p:column headerText="CANT. SURTIDA" style="width: 5%;" >
+                                <h:outputText value="#{result.cantidadEnviada}"/>
+                            </p:column> 
+
+                            <p:column headerText="MÉDICO"  filterBy="#{result.nombreMedico}" filterMatchMode="contains" sortBy="#{result.nombreMedico}" style="width: 8%;" >
+                                <h:outputText value="#{result.nombreMedico}"/>
+                            </p:column>
+
+                            <p:column headerText="FECHA ENTREGA" sortBy="#{result.fechaRecepcion}" style="width: 5%;" >
+                                <h:outputText value="#{result.fechaRecepcion}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:MM:SS" />
+                                </h:outputText>
+                            </p:column>   
+
+                            <p:column headerText="FECHA PRESCRITA" sortBy="#{result.fechaPrescripcion}" style="width: 5%;" >
+                                <h:outputText value="#{result.fechaPrescripcion}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:MM:SS" />
+                                </h:outputText>
+                            </p:column>  
+
+                            <p:column headerText="ESTADO" sortBy="#{result.estatus}" style="width: 8%;" >
+                                <h:outputText value="#{result.estatus}"/>
+                            </p:column> 
+
+                            <p:column headerText="ALMACÉN" sortBy="#{result.almacen}" style="width: 8%;" >
+                                <h:outputText value="#{result.almacen}"/>
+                            </p:column> 
+
+                        </p:dataTable>
+                    </h:form>	
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

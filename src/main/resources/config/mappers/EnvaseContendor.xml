@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.EnvaseContenedorMapper" >
+    <select id="obtener" resultType="mx.mc.model.EnvaseContenedor" parameterType="mx.mc.model.EnvaseContenedor" >
+        SELECT 
+            * 
+        FROM envaseContenedor 
+        WHERE 1=1
+        <if test="idEnvaseContenedor != null">
+            AND idEnvaseContenedor= #{idEnvaseContenedor}
+        </if>
+        <if test="descripcion != null">
+            AND descripcion= #{descripcion}
+        </if>
+        <if test="activo != -1">
+            AND activo = #{activo}
+        </if>
+        LIMIT 1;
+    </select>
+    <select id="obtenerLista" resultType="mx.mc.model.EnvaseContenedor" parameterType="mx.mc.model.EnvaseContenedor" >
+        SELECT * FROM envaseContenedor WHERE activo = 1 ORDER BY descripcion ASC;
+    </select>
+    
+    <select id="obtenerXidEnvase" resultType="mx.mc.model.EnvaseContenedor" parameterType="Map" >
+        SELECT * FROM envaseContenedor WHERE idEnvaseContenedor = #{idEnvase};
+    </select>
+</mapper>

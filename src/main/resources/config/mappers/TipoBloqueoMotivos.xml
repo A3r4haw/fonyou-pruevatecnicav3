@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TipoBloqueoMotivosMapper">
+    
+    <insert id="insertar" parameterType="mx.mc.model.TipoBloqueoMotivos" >
+        INSERT INTO tipoBloqueoMotivos (
+        <if test=" idtipoBloqueoMotivos != null ">
+            idTipoBloqueoMotivos
+        </if>
+        <if test=" tipoBloqueoMotivos != null ">
+            , tipoBloqueoMotivos
+        </if>
+        <if test=" activo != null ">
+            , activo
+        </if>
+      
+       
+        ) VALUES (
+        <if test=" idTipoBloqueoMotivos != null ">
+            #{ idTipoBloqueoMotivos , jdbcType = INTEGER }
+        </if>
+        <if test=" tipoBloqueoMotivos != null ">
+            #{ tipoBloqueoMotivos , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , #{ activo , jdbcType = INTEGER }
+        </if>
+       )
+    </insert>
+   
+    <select id = "obtieneListaByIdTipoBloqueo" resultType="mx.mc.model.TipoBloqueoMotivos" parameterType="Map" >
+        SELECT idtipoBloqueoMotivos, tipoBloqueoMotivos, activo
+        FROM tipoBloqueoMotivos
+        WHERE 1=1
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+      
+</mapper>

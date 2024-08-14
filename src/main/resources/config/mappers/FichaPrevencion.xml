@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.FichaPrevencionMapper" >
+    
+    <select id="obtener" resultType="mx.mc.model.FichaPrevencion" parameterType="mx.mc.model.FichaPrevencion" >
+        SELECT f.*
+        FROM fichaPrevencion f
+        WHERE 1=1
+        <if test=" idPrevencion != null ">
+            AND f.idPrevencion = #{ idPrevencion , jdbcType = VARCHAR }
+        </if>
+        <if test=" folio != null ">
+            AND f.folio = #{ folio , jdbcType = VARCHAR }
+        </if>
+        LIMIT 0, 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.FichaPrevencionExtended" parameterType="mx.mc.model.FichaPrevencion" >
+        SELECT f.idPrevencion , f.folio , f.idEstructura , f.idTurno , f.area , f.sanitizante , f.detergente , f.interiorEquipo 
+        , f.exteriorEquipo , f.mobiliario , f.paredes , f.herramientas , f.pisos , f.pasilloIngreso , f.areaLavado , f.areaAcondicionado 
+        , f.areaPreparado , f.vestidor , f.transfer , f.puertas , f.manijas , f.ventanas , f.areaDesinfeccion , f.areaInspeccion 
+        , f.areaAlmacenamiento , f.idEstatusPrevencion , f.idUsuarioRealizaLimpieza , f.fechaRelizaLimpieza , f.comentariosRealizaLimpieza 
+        , f.idUsuarioSupervisa , f.FechaSupervisa , f.comentariosSupervisa , f.idUsuarioAprueba , f.fechaAprueba , f.comentariosAprueba 
+        , f.insertIdUsuario , f.insertFecha , f.updateIdUsuario , f.updateFecha
+        FROM fichaPrevencion f 
+        WHERE 1=1 
+        <if test=" idPrevencion != null ">
+            AND f.idPrevencion = #{ idPrevencion , jdbcType = VARCHAR }
+        </if>
+        <if test=" folio != null ">
+            AND f.folio = #{ folio , jdbcType = VARCHAR }
+        </if>
+        ORDER BY f.insertFecha DESC
+    </select>
+    
+    
+    
+    <select id="obtenerFicha" resultType="mx.mc.model.FichaPrevencionExtended" parameterType="mx.mc.model.FichaPrevencion" >
+        SELECT f.idPrevencion , f.folio , f.idEstructura , f.idTurno , f.area , f.sanitizante , f.detergente , f.interiorEquipo 
+        , f.exteriorEquipo , f.mobiliario , f.paredes , f.herramientas , f.pisos , f.pasilloIngreso , f.areaLavado , f.areaAcondicionado 
+        , f.areaPreparado , f.vestidor , f.transfer , f.puertas , f.manijas , f.ventanas , f.areaDesinfeccion , f.areaInspeccion 
+        , f.areaAlmacenamiento , f.idEstatusPrevencion , f.idUsuarioRealizaLimpieza , f.fechaRelizaLimpieza , f.comentariosRealizaLimpieza 
+        , f.idUsuarioSupervisa , f.FechaSupervisa , f.comentariosSupervisa , f.idUsuarioAprueba , f.fechaAprueba , f.comentariosAprueba 
+        , f.insertIdUsuario , f.insertFecha , f.updateIdUsuario , f.updateFecha
+        , IFNULL(CONCAT(u1.nombre,' ',u1.apellidoPaterno,' ',u1.apellidoMaterno), '') AS nombreUsuarioRegistra
+        , IFNULL(CONCAT(u2.nombre,' ',u2.apellidoPaterno,' ',u2.apellidoMaterno), '') AS nombreUsuarioActualiza
+        , IFNULL(CONCAT(u3.nombre,' ',u3.apellidoPaterno,' ',u3.apellidoMaterno), '') AS nombreUsuarioRealizaLimpieza
+        , IFNULL(CONCAT(u4.nombre,' ',u4.apellidoPaterno,' ',u4.apellidoMaterno), '') AS nombreUsuarioSupervisa
+        , IFNULL(CONCAT(u5.nombre,' ',u5.apellidoPaterno,' ',u5.apellidoMaterno), '') AS nombreUsuarioAprueba
+        , IFNULL(e.nombre, '') AS nombreEstructura 
+        , IFNULL(efp.descripcion, '') AS estatusPrevencion
+        , IFNULL(t.nombre, '') AS nombreTurno
+        FROM fichaPrevencion f 
+        LEFT JOIN estatusFichaPrevencion efp ON f.idEstatusPrevencion = efp.idEstatusPrevencion
+        LEFT JOIN usuarios u1 ON f.insertIdUsuario = u1.idUsuario 
+        LEFT JOIN usuarios u2 ON f.updateIdUsuario  = u2.idUsuario 
+        LEFT JOIN usuarios u3 ON f.idUsuarioRealizaLimpieza  = u3.idUsuario 
+        LEFT JOIN usuarios u4 ON f.idUsuarioSupervisa  = u4.idUsuario 
+        LEFT JOIN usuarios u5 ON f.idUsuarioAprueba  = u5.idUsuario
+        LEFT JOIN estructura e ON f.idEstructura = e.idEstructura
+        LEFT JOIN turno t ON f.idTurno = t.idTurno
+        WHERE 1=1 
+        <if test=" idPrevencion != null ">
+            AND f.idPrevencion = #{ idPrevencion , jdbcType = VARCHAR }
+        </if>
+        <if test=" folio != null ">
+            AND f.folio = #{ folio , jdbcType = VARCHAR }
+        </if>
+        LIMIT 1
+    </select>
+        
+    <select id="obtenerListaFichas" resultType="mx.mc.model.FichaPrevencionExtended" parameterType="mx.mc.model.FichaPrevencion" >
+        SELECT f.idPrevencion , f.folio , f.idEstructura , f.idTurno , f.area , f.sanitizante , f.detergente , f.interiorEquipo 
+        , f.exteriorEquipo , f.mobiliario , f.paredes , f.herramientas , f.pisos , f.pasilloIngreso , f.areaLavado , f.areaAcondicionado 
+        , f.areaPreparado , f.vestidor , f.transfer , f.puertas , f.manijas , f.ventanas , f.areaDesinfeccion , f.areaInspeccion 
+        , f.areaAlmacenamiento , f.idEstatusPrevencion , f.idUsuarioRealizaLimpieza , f.fechaRelizaLimpieza , f.comentariosRealizaLimpieza 
+        , f.idUsuarioSupervisa , f.FechaSupervisa , f.comentariosSupervisa , f.idUsuarioAprueba , f.fechaAprueba , f.comentariosAprueba 
+        , f.insertIdUsuario , f.insertFecha , f.updateIdUsuario , f.updateFecha
+        , IFNULL(CONCAT(u1.nombre,' ',u1.apellidoPaterno,' ',u1.apellidoMaterno), '') AS nombreUsuarioRegistra
+        , IFNULL(CONCAT(u2.nombre,' ',u2.apellidoPaterno,' ',u2.apellidoMaterno), '') AS nombreUsuarioActualiza
+        , IFNULL(CONCAT(u3.nombre,' ',u3.apellidoPaterno,' ',u3.apellidoMaterno), '') AS nombreUsuarioRealizaLimpieza
+        , IFNULL(CONCAT(u4.nombre,' ',u4.apellidoPaterno,' ',u4.apellidoMaterno), '') AS nombreUsuarioSupervisa
+        , IFNULL(CONCAT(u5.nombre,' ',u5.apellidoPaterno,' ',u5.apellidoMaterno), '') AS nombreUsuarioAprueba
+        , IFNULL(e.nombre, '') AS nombreEstructura 
+        , IFNULL(efp.descripcion, '') AS estatusPrevencion
+        , IFNULL(t.nombre, '') AS nombreTurno
+        FROM fichaPrevencion f 
+        LEFT JOIN estatusFichaPrevencion efp ON f.idEstatusPrevencion = efp.idEstatusPrevencion
+        LEFT JOIN usuarios u1 ON f.insertIdUsuario = u1.idUsuario 
+        LEFT JOIN usuarios u2 ON f.updateIdUsuario  = u2.idUsuario 
+        LEFT JOIN usuarios u3 ON f.idUsuarioRealizaLimpieza  = u3.idUsuario 
+        LEFT JOIN usuarios u4 ON f.idUsuarioSupervisa  = u4.idUsuario 
+        LEFT JOIN usuarios u5 ON f.idUsuarioAprueba  = u5.idUsuario
+        LEFT JOIN estructura e ON f.idEstructura = e.idEstructura
+        LEFT JOIN turno t ON f.idTurno = t.idTurno
+        WHERE 1=1 
+        <if test=" idPrevencion != null ">
+            AND f.idPrevencion = #{ idPrevencion , jdbcType = VARCHAR }
+        </if>
+        <if test=" folio != null ">
+            AND f.folio = #{ folio , jdbcType = VARCHAR }
+        </if>
+        ORDER BY f.insertFecha DESC
+        <!--LIMIT #{ startingAt, jdbcType = INTEGER }, #{ maxPerPage , jdbcType = INTEGER }-->
+    </select>
+    
+
+    <insert id="insertar" parameterType="mx.mc.model.FichaPrevencion">
+        INSERT INTO fichaPrevencion (
+            idPrevencion 
+            , folio 
+            , idEstructura 
+            , idTurno
+            , area 
+            , sanitizante 
+            , detergente 
+            , interiorEquipo 
+            , exteriorEquipo 
+            , mobiliario 
+            , paredes 
+            , herramientas 
+            , pisos 
+            , pasilloIngreso 
+            , areaLavado 
+            , areaAcondicionado 
+            , areaPreparado 
+            , vestidor 
+            , transfer 
+            , puertas 
+            , manijas 
+            , ventanas 
+            , areaDesinfeccion 
+            , areaInspeccion 
+            , areaAlmacenamiento 
+            , idEstatusPrevencion 
+            , idUsuarioRealizaLimpieza 
+            , fechaRelizaLimpieza 
+            , comentariosRealizaLimpieza 
+            , idUsuarioSupervisa 
+            , fechaSupervisa 
+            , comentariosSupervisa 
+            , idUsuarioAprueba 
+            , fechaAprueba 
+            , comentariosAprueba 
+            , insertIdUsuario 
+            , insertFecha 
+            , updateIdUsuario 
+            , updateFecha
+        ) VALUES (
+             #{ idPrevencion  , jdbcType = VARCHAR }
+            , #{ folio  , jdbcType = VARCHAR }
+            , #{ idEstructura  , jdbcType = VARCHAR }
+            , #{ idTurno  , jdbcType = INTEGER }
+            , #{ area  , jdbcType = VARCHAR }
+            , #{ sanitizante  , jdbcType = VARCHAR }
+            , #{ detergente  , jdbcType = VARCHAR }
+            , #{ interiorEquipo  , jdbcType = INTEGER }
+            , #{ exteriorEquipo  , jdbcType = INTEGER }
+            , #{ mobiliario  , jdbcType = INTEGER }
+            , #{ paredes  , jdbcType = INTEGER }
+            , #{ herramientas  , jdbcType = INTEGER }
+            , #{ pisos  , jdbcType = INTEGER }
+            , #{ pasilloIngreso  , jdbcType = INTEGER }
+            , #{ areaLavado  , jdbcType = INTEGER }
+            , #{ areaAcondicionado  , jdbcType = INTEGER }
+            , #{ areaPreparado  , jdbcType = INTEGER }
+            , #{ vestidor  , jdbcType = INTEGER }
+            , #{ transfer  , jdbcType = INTEGER }
+            , #{ puertas  , jdbcType = INTEGER }
+            , #{ manijas  , jdbcType = INTEGER }
+            , #{ ventanas  , jdbcType = INTEGER }
+            , #{ areaDesinfeccion  , jdbcType = INTEGER }
+            , #{ areaInspeccion  , jdbcType = INTEGER }
+            , #{ areaAlmacenamiento  , jdbcType = INTEGER }
+            , #{ idEstatusPrevencion  , jdbcType = INTEGER }
+            , #{ idUsuarioRealizaLimpieza  , jdbcType = VARCHAR }
+            , #{ fechaRelizaLimpieza , jdbcType = TIMESTAMP }
+            , #{ comentariosRealizaLimpieza , jdbcType = VARCHAR }
+            , #{ idUsuarioSupervisa , jdbcType = VARCHAR }
+            , #{ fechaSupervisa  , jdbcType = TIMESTAMP }
+            , #{ comentariosSupervisa , jdbcType = VARCHAR }
+            , #{ idUsuarioAprueba , jdbcType = VARCHAR }
+            , #{ fechaAprueba , jdbcType = TIMESTAMP }
+            , #{ comentariosAprueba , jdbcType = VARCHAR }
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+            )
+        </insert>
+
+    
+        <update id="actualizar" parameterType="mx.mc.model.FichaPrevencion"  >
+        UPDATE fichaPrevencion
+        <set>
+            updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+            , updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+<!--            <if test=" folio != null"> , folio = #{ folio  , jdbcType = VARCHAR } </if>-->
+            <if test=" idEstructura != null"> , idEstructura = #{ idEstructura  , jdbcType = VARCHAR } </if>
+            <if test=" idTurno != null"> , idTurno = #{ idTurno  , jdbcType = INTEGER } </if>
+            <if test=" area  != null"> ,area =  #{ area  , jdbcType = VARCHAR } </if>
+            <if test=" sanitizante != null"> , sanitizante = #{ sanitizante  , jdbcType = VARCHAR } </if>
+            <if test=" detergente != null"> , detergente = #{ detergente  , jdbcType = VARCHAR } </if>
+            <if test=" interiorEquipo != null"> , interiorEquipo = #{ interiorEquipo  , jdbcType = INTEGER } </if>
+            <if test=" exteriorEquipo != null"> , exteriorEquipo = #{ exteriorEquipo  , jdbcType = INTEGER } </if>
+            <if test=" mobiliario != null"> , mobiliario = #{ mobiliario  , jdbcType = INTEGER } </if>
+            <if test=" paredes != null"> , paredes = #{ paredes  , jdbcType = INTEGER } </if>
+            <if test=" herramientas != null"> , herramientas = #{ herramientas  , jdbcType = INTEGER } </if>
+            <if test=" pisos != null"> , pisos = #{ pisos  , jdbcType = INTEGER } </if>
+            <if test=" pasilloIngreso != null"> , pasilloIngreso = #{ pasilloIngreso  , jdbcType = INTEGER } </if>
+            <if test=" areaLavado != null"> , areaLavado = #{ areaLavado  , jdbcType = INTEGER } </if>
+            <if test=" areaAcondicionado != null"> , areaAcondicionado = #{ areaAcondicionado  , jdbcType = INTEGER } </if>
+            <if test=" areaPreparado != null"> , areaPreparado = #{ areaPreparado  , jdbcType = INTEGER } </if>
+            <if test=" vestidor != null"> , vestidor =  #{ vestidor  , jdbcType = INTEGER } </if>
+            <if test=" transfer != null"> , transfer = #{ transfer  , jdbcType = INTEGER } </if>
+            <if test=" puertas != null"> , puertas = #{ puertas  , jdbcType = INTEGER } </if>
+            <if test=" manijas != null"> ,manijas =  #{ manijas  , jdbcType = INTEGER } </if>
+            <if test=" ventanas != null"> , ventanas = #{ ventanas  , jdbcType = INTEGER } </if>
+            <if test=" areaDesinfeccion != null"> , areaDesinfeccion = #{ areaDesinfeccion  , jdbcType = INTEGER } </if>
+            <if test=" areaInspeccion != null"> , areaInspeccion = #{ areaInspeccion  , jdbcType = INTEGER } </if>
+            <if test=" areaAlmacenamiento != null"> , areaAlmacenamiento = #{ areaAlmacenamiento  , jdbcType = INTEGER } </if>
+            <if test=" idEstatusPrevencion != null"> , idEstatusPrevencion = #{ idEstatusPrevencion  , jdbcType = INTEGER } </if>
+            <if test=" idUsuarioRealizaLimpieza != null"> , idUsuarioRealizaLimpieza = #{ idUsuarioRealizaLimpieza  , jdbcType = VARCHAR } </if>
+            <if test=" fechaRelizaLimpieza != null"> , fechaRelizaLimpieza = #{ fechaRelizaLimpieza , jdbcType = TIMESTAMP } </if>
+            <if test=" comentariosRealizaLimpieza != null"> , comentariosRealizaLimpieza = #{ comentariosRealizaLimpieza , jdbcType = VARCHAR } </if>
+            <if test=" idUsuarioSupervisa != null"> , idUsuarioSupervisa = #{ idUsuarioSupervisa , jdbcType = VARCHAR } </if>
+            <if test=" fechaSupervisa != null"> , fechaSupervisa = #{ fechaSupervisa  , jdbcType = TIMESTAMP } </if>
+            <if test=" comentariosSupervisa != null"> , comentariosSupervisa = #{ comentariosSupervisa , jdbcType = VARCHAR } </if>
+            <if test=" idUsuarioAprueba != null"> , idUsuarioAprueba = #{ idUsuarioAprueba , jdbcType = VARCHAR } </if>
+            <if test=" fechaAprueba != null"> , fechaAprueba = #{ fechaAprueba , jdbcType = TIMESTAMP } </if>
+            <if test=" comentariosAprueba != null"> , comentariosAprueba = #{ comentariosAprueba , jdbcType = VARCHAR } </if>
+        </set>
+        WHERE idPrevencion = #{ idPrevencion  , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.Documento"  >
+        DELETE FROM fichaPrevencion 
+        WHERE idPrevencion = #{ idPrevencion , jdbcType = VARCHAR }
+    </delete>
+    
+    
+</mapper>    
+
+

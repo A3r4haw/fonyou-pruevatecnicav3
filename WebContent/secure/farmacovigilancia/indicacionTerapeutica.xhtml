@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">                    
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" closeOnEscape="true" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Indicaciones Terapéuticas"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;" />                            
+                            <p:inputText id="textSearch" style="margin-top:20px;width: 40%!important;" 
+                                         value="#{indTerapeuticaMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar...." />
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>                                
+                            </i>                            
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{indTerapeuticaMB.buscarIndicacionesTerapeutcas()}"
+                                             update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();" style=" margin-left: 20px; margin-bottom: 8px;" />
+                        </div>
+                        <p:commandButton class="btnNew" value="Nueva Indicación" icon="fa fa-file-o" rendered="#{indTerapeuticaMB.permiso.puedeCrear}"
+                                         onclick="PF('statusProcess').show();" actionListener="#{indTerapeuticaMB.nuevaIndicacionTerapeutica()}" 
+                                         oncomplete="PF('statusProcess').hide(); PF('mdlNuevaIndicacion').show();" update=":frmNuevaIndicacion"
+                                         ajax="true"  style=" margin: 5px 0; " styleClass="btnMusAzul" />  &nbsp;&nbsp;
+                        <p:commandButton class="btnNew" value="Cargar Layout" icon="fa fa-plus" rendered="#{indTerapeuticaMB.permiso.puedeProcesar}"
+                                         actionListener="#{indTerapeuticaMB.nuevaIndicacionTerapeutica()}" onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide(); PF('modalLayout').show();"
+                                         ajax="true" update=":frmLayout"  style=" margin: 5px 0; " styleClass="btnMusAzul" 
+                                         tabindex="4"/>
+                        <br/>
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <p:dataTable emptyMessage="No se encontraron registros" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"  reflow="true"                                       
+                                     paginatorPosition="bottom" widgetVar="tblIndicacionTerap" 
+                                     value="#{indTerapeuticaMB.indTerapeuticaLazy}" var="item" 
+                                     lazy="true" id="tblIndicacionTerap" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" selectionMode="single" 
+                                     selection="#{indTerapeuticaMB.indTerapeuticaSelect}"
+                                     rowKey="#{item.idIndTerapeutica}" rowIndexVar="row">                          
+
+                            <p:column style="text-align: left;"  headerText="Clave"  width="10%" sortBy="#{item.claveInstitucional}">
+                                <h:outputText value="#{item.claveInstitucional}" class="" />
+                            </p:column>
+
+                            <p:column style="text-align: left !important; "  headerText="Descripción"  width="25%" sortBy="#{item.nombreMedicamento}">
+                                <h:outputText value="#{item.nombreMedicamento}"   class="" />
+                            </p:column>                            
+
+                            <p:column style="text-align: left;"  headerText="Diagnostico"  width="20%" sortBy="#{item.nombreDiagnostico}">
+                                <h:outputText value="#{item.nombreDiagnostico}" class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Dosis Máx."  width="7%" sortBy="#{item.dosisMax}">
+                                <h:outputText value="#{item.dosisMax}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: center;"  headerText="Frec. Max."  width="7%" sortBy="#{item.frecuenciaSuperior}">
+                                <h:outputText value="#{item.frecuenciaSuperior}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Riesgo"  width="6%" sortBy="#{item.riesgo}">
+                                <h:outputText value="#{item.riesgo}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Paciente"  width="7%" sortBy="#{item.tipoPaciente}">
+                                <h:outputText value="#{item.tipoPaciente}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Estatus"  width="7%" sortBy="#{item.idEstatus}">
+                                <h:outputText value="#{item.idEstatus eq 1 ? 'Activo' : 'Inactivo' }"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;" headerText="Acciones"  width="6%">
+                                <p:commandLink title="Editar"  actionListener="#{indTerapeuticaMB.obtenerIndicacionTerapeutica(item.idIndTerapeutica)}"
+                                                          onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();PF('mdlNuevaIndicacion').show();" 
+                                                          update=":frmNuevaIndicacion" >
+                                        <i class="fa fa-edit" />
+                                    </p:commandLink>&nbsp;&nbsp;
+                                <p:commandLink title="Eliminar"  actionListener="#{indTerapeuticaMB.deleteIndicacion(item.idIndTerapeutica)}"
+                                               rendered="#{indTerapeuticaMB.permiso.puedeEliminar}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":mainForm:tblIndicacionTerap" >
+                                    <i class="fa fa-trash-o iconMusAzul" />
+                                    <p:confirm header="Eliminación de Indicación" message="Está seguro que desea eliminar la indicación ?" icon="ui-icon-alert"  />
+                                </p:commandLink>&nbsp;
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                  
+                    <p:dialog header="Registro de Indicación Terapéutica"
+                              widgetVar="mdlNuevaIndicacion" 
+                              closeOnEscape="true" modal="true" resizable="false" 
+                              closable="true"
+                              style="font-size:xx-small !important;" width="50%">                        
+                        <h:form id="frmNuevaIndicacion">
+                            <p:messages globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:panelGrid>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Tipo Paciente"  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="2">    
+                                        <p:selectOneMenu style="width: 150px;vertical-align: middle;margin-right: 10px;" value="#{indTerapeuticaMB.idTipoEdadPaciente}" 
+                                                            filter="true" filterPlaceholder="Tipo Paciente" >
+                                            <p:ajax listener="#{indTerapeuticaMB.buscarRangos()}" update=":frmNuevaIndicacion:rangoInferior, :frmNuevaIndicacion:rangoSuperior" />
+                                            <f:selectItem itemLabel="Seleccionar un tipo" itemValue="" />
+                                            <f:selectItems value="#{indTerapeuticaMB.listaTipoEdadPaciente}" var="tipo" itemLabel="#{tipo.descripcion}" itemValue="#{tipo.idTipoEdadPaciente}" />
+                                        </p:selectOneMenu>
+                                    </p:column>                                    
+                                    <p:column>
+                                        <p:outputLabel value="Rango Edad"  class="plabel" />&nbsp;&nbsp;
+                                         <p:inputNumber id="rangoInferior" maxlength="3" decimalPlaces="0"  value="#{indTerapeuticaMB.rangoInferior}"                                                             
+                                                            disabled="true" minValue="0" size="3" />  &nbsp;&nbsp;
+                                        <p:inputNumber  id="rangoSuperior" maxlength="3" decimalPlaces="0" value="#{indTerapeuticaMB.rangoSuperior}"                                                             
+                                                            disabled="true" minValue="0" size="3" />
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Diagnóstico"  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:autoComplete id="txtDiagnostico" 
+                                                        class="autoComplete-IndTerap" styleClass="autoComplete-IndTerap" panelStyle="autoComplete-IndTerap" inputStyleClass="autoComplete-IndTerap" 
+                                                        value="#{indTerapeuticaMB.diagnostico}" completeMethod="#{indTerapeuticaMB.autocompleteDiagnostico}"
+                                                        minQueryLength="4" scrollHeight="350" queryDelay="500" maxResults="50" forceSelection="true" 
+                                                        cacheTimeout="0" var="diagnos" placeholder="Buscar Diagnostico" cache="false"
+                                                        emptyMessage="No se encontraron registros"
+                                                        itemLabel="#{diagnos.nombre}" itemValue="#{diagnos.idDiagnostico}" 
+                                                        converter="diagnosticoConverter" > 
+                                            <p:column style="width: 20px; font-size: small;" width="50px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave" />
+                                                </f:facet>
+                                                <h:outputText value="#{diagnos.clave}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="width: 600px; font-size: small;" width="600px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{diagnos.nombre}" style=" font-size: x-small;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Insumo"  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:autoComplete size="45" id="insumo"
+                                                        class="autoComplete-IndTerap" styleClass="autoComplete-IndTerap" panelStyle="autoComplete-IndTerap" inputStyleClass="autoComplete-IndTerap" 
+                                                        value="#{indTerapeuticaMB.medicamento}"  autocomplete="on" 
+                                                        completeMethod="#{indTerapeuticaMB.autoComplete}"  scrollHeight="350" queryDelay="500"  maxResults="50" 
+                                                        minQueryLength="3"  forceSelection="true" cacheTimeout="0" cache="false"
+                                                        var="insumo" placeholder="Buscar Insumos" emptyMessage="No se encontraron registros"
+                                                        itemValue="#{insumo}" 
+                                                        itemLabel="#{insumo.nombreCorto}"
+                                                        converter="insumoConverter"   >
+                                                <p:ajax event="itemSelect" listener="#{indTerapeuticaMB.handleSelect}" update=":frmNuevaIndicacion:unidConce, :frmNuevaIndicacion:sustActiva"></p:ajax>
+                                                <p:ajax event="itemUnselect" listener="#{indTerapeuticaMB.handleUnSelect}" update=":frmNuevaIndicacion:unidConce, :frmNuevaIndicacion:sustActiva"></p:ajax>
+                                                <p:column style="width: 20px; font-size: small;" width="50px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave Institucional" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insumo.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 600px;" width="600px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insumo.nombreCorto}" style=" font-size: small;" />
+                                                </p:column>                                    
+                                        </p:autoComplete>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column> <p:outputLabel value="Unidad"  class="plabel" /> </p:column>
+                                    <p:column> <p:inputText id="unidConce"  disabled="true" value="#{indTerapeuticaMB.medicamento.unidadConcentracion}"/> </p:column>
+                                    <p:column> <p:outputLabel value="Sustancia Activa"  class="plabel"/> </p:column>
+                                    <p:column> <p:inputText id="sustActiva" disabled="true" value="#{indTerapeuticaMB.medicamento.sustanciaActiva}"/> </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column> <p:outputLabel value="Dosis Min."  class="plabel" /> </p:column>
+                                    <p:column> <p:inputNumber id="dosisMin"  decimalPlaces="4" minValue="0.0000" maxValue="9999999" decimalSeparator="." thousandSeparator=","                                                                 
+                                                            value="#{indTerapeuticaMB.indTerapeuticaSelect.dosisMin}"/> </p:column>
+                                    <p:column> <p:outputLabel value="Dosis Max."  class="plabel" /> </p:column>
+                                    <p:column> <p:inputNumber id="dosisMax" decimalPlaces="4" minValue="0.0000" maxValue="9999999" decimalSeparator="." thousandSeparator=","                                                              
+                                                            value="#{indTerapeuticaMB.indTerapeuticaSelect.dosisMax}"/> </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column> <p:outputLabel value="Frecuencia Min."  class="plabel" /> </p:column>
+                                    <p:column> <p:spinner id="frecMin" min="0" value="#{indTerapeuticaMB.indTerapeuticaSelect.frecuenciaInferior}" /> </p:column>
+                                    <p:column> <p:outputLabel value="Frecuencia Max."  class="plabel" /> </p:column>
+                                    <p:column> <p:spinner id="frecMax" min="0" value="#{indTerapeuticaMB.indTerapeuticaSelect.frecuenciaSuperior}" /> </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column> <p:outputLabel value="Duración Min."  class="plabel" /> </p:column>
+                                    <p:column> <p:spinner id="duraMin" min="0" value="#{indTerapeuticaMB.indTerapeuticaSelect.duracionMinima}" /> </p:column>
+                                    <p:column> <p:outputLabel value="Duración Max."  class="plabel" /> </p:column>
+                                    <p:column> <p:spinner id="duraMax" min="0" value="#{indTerapeuticaMB.indTerapeuticaSelect.duracionMaxima}" /> </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Vía Administración"  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:selectOneMenu style="width: 150px;vertical-align: middle;margin-right: 10px;" value="#{indTerapeuticaMB.idViaAdministracion}" 
+                                                            filter="true" filterPlaceholder="Vía administración" >   
+                                            <f:selectItem itemLabel="Seleccionar una vía administración" itemValue="" />
+                                            <f:selectItems value="#{indTerapeuticaMB.listaViasAdmon}" var="via" itemLabel="#{via.nombreViaAdministracion}" itemValue="#{via.idViaAdministracion}" />                                
+                                        </p:selectOneMenu>                                        
+                                    </p:column>
+                                </p:row>    
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Descripción"  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:inputTextarea rows="3" cols="75" counter="descripcion" maxlength="99"
+                                            counterTemplate="{0} Caracteres que faltan." autoResize="false"
+                                            value="#{indTerapeuticaMB.indTerapeuticaSelect.descripcion}"/>
+                                        <p:outputLabel value=""/>
+                                        <h:outputText id="descripcion" class="p-d-block" /> 
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Fuente"  class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu style="width: 150px;vertical-align: middle;margin-right: 10px;" value="#{indTerapeuticaMB.idEmisor}" 
+                                                            filter="true" filterPlaceholder="Origen" >   
+                                            <f:selectItem itemLabel="Seleccionar una fuente" itemValue="" />
+                                            <f:selectItems value="#{indTerapeuticaMB.listaEmisores}" var="emisor" itemLabel="#{emisor.nombreEmisor}" itemValue="#{emisor.idEmisor}" />                                
+                                        </p:selectOneMenu>                                        
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Riesgo: " />
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu style="width: 150px;vertical-align: middle;margin-right: 10px;" value="#{indTerapeuticaMB.indTerapeuticaSelect.riesgo}" 
+                                                            filter="true" filterPlaceholder="Riesgo" >   
+                                            <f:selectItem itemLabel="Seleccionar un riesgo" itemValue="" />
+                                            <f:selectItems value="#{indTerapeuticaMB.riesgosReaccion}" var="riesgo" itemLabel="#{riesgo}" itemValue="#{riesgo}" />                                
+                                          </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Activa"  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:selectOneButton value="#{indTerapeuticaMB.indTerapeuticaSelect.idEstatus}">
+                                            <f:selectItem itemLabel="Si" itemValue="1" />
+                                            <f:selectItem itemLabel="No" itemValue="0" />
+                                        </p:selectOneButton>
+                                    </p:column>
+                                </p:row>                                                         
+                            </p:panelGrid>
+                            <br />
+                            <div class="pnlActions">
+                                <p:commandButton id="btnRegCancel1" class="btnItem" value="Cancelar" style="width: 100px" tabindex="12"
+                                                 ajax="true" onclick="PF('mdlNuevaIndicacion').hide();" validateClient="false" />&nbsp;&nbsp;
+                                <p:commandButton id="btnRegNew1"   styleClass="btnMusAzul"  tabindex="13"
+                                                 value="Guardar" style="margin:0; width: 100px;"  update=":mainForm:tblIndicacionTerap"                                      
+                                                 onclick="PF('statusProcess').show();" actionListener="#{indTerapeuticaMB.crearIndicacion()}"
+                                                 oncomplete="PF('statusProcess').hide();if(args.estatus){ PF('mdlNuevaIndicacion').hide(); }" />
+                            </div>
+                        </h:form>
+                    </p:dialog> 
+                    <p:dialog header="Carga de datos de forma masiva"
+                              widgetVar="modalLayout"
+                              closeOnEscape="true" modal="true"
+                              style="font-size:xx-small !important; ">
+                        <h:form id="frmLayout" style="padding: 0px;">                         
+                            <p:messages id="msjLayout" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:fileUpload  dragDropSupport="false" uploadLabel="Subir Archivo" cancelLabel="Cancelar" label="Seleccionar Archivo" 
+                                           allowTypes="/(\.|\/)(xlsx|xls)$/" invalidFileMessage="Tipo de archivo invalido"
+                                           fileUploadListener="#{indTerapeuticaMB.layoutFileUpload}"  mode="advanced" update="frmLayout"  />
+                            <p:outputPanel rendered="#{indTerapeuticaMB.continuar}" >
+                                <p:dataTable  id="tblNoProcessEstructura"
+                                              var="item" editable="true"  
+                                              value="#{indTerapeuticaMB.indicacionLayout}"
+                                              styleClass="styleEventosPlanPrestacion" reflow="true"
+                                              style="margin-bottom:5px;" 
+                                              scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" > 
+
+                                    <f:facet name="header" ><h:outputText style="color: #000;" value="Datos No procesados" /></f:facet>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.tipoPaciente}" headerText="Tipo Paciente" >
+                                        <h:outputText value="#{item.tipoPaciente}" title="#{item.tipoPaciente}" class="altoColumn" />                                               
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.nombreDiagnostico}" headerText="Diagnostico" >
+                                        <h:outputText value="#{item.nombreDiagnostico}" title="#{item.nombreDiagnostico}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.claveInstitucional}" headerText="Insumo" >
+                                        <h:outputText value="#{item.claveInstitucional}" title="#{item.claveInstitucional}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.dosisMin}" headerText="Dosis Min." >
+                                        <h:outputText value="#{item.dosisMin}" title="#{item.dosisMin}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.dosisMax}" headerText="Dosis Max." >
+                                        <h:outputText value="#{item.dosisMax}" title="#{item.dosisMax}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.frecuenciaInferior}" headerText="Frecuencia Min." >
+                                        <h:outputText value="#{item.frecuenciaInferior}" title="#{item.frecuenciaInferior}" class="altoColumn" />
+                                    </p:column>
+                                    
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.frecuenciaSuperior}" headerText="Frecuencia Max." >
+                                        <h:outputText value="#{item.frecuenciaSuperior}" title="#{item.frecuenciaSuperior}" class="altoColumn" />
+                                    </p:column>
+                                    
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.duracionMinima}" headerText="Duración Min." >
+                                        <h:outputText value="#{item.duracionMinima}" title="#{item.duracionMinima}" class="altoColumn" />
+                                    </p:column>
+                                    
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.duracionMaxima}" headerText="Duración Max." >
+                                        <h:outputText value="#{item.duracionMaxima}" title="#{item.duracionMaxima}" class="altoColumn" />
+                                    </p:column>
+                                    
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.descripcion}" headerText="Descripción" >
+                                        <h:outputText value="#{item.descripcion}" title="#{item.descripcion}" class="altoColumn" />
+                                    </p:column>
+                                    
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.updateIdUsuario}" headerText="Motivo" >
+                                        <h:outputText value="#{item.updateIdUsuario}" title="#{item.updateIdUsuario}" class="altoColumn" />
+                                    </p:column>
+                                    
+                                </p:dataTable>
+                            </p:outputPanel>
+                            <p:panel class="pnlActions">
+                                <p:commandButton class="btnNew" value="Aceptar"
+                                                 actionListener="#{indTerapeuticaMB.actualizarTablaIndicaciones()}" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalLayout').hide();"
+                                                 ajax="true" update=":mainForm:tblIndicacionTerap"  style=" margin: 5px 0; "  />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

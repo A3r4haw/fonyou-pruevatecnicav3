@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Historial Terapéutico</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="RepTerapeutico" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="Reporte Historial Terapéutico por Paciente" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Inicial" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" value="#{repHistorialTerapeuticoMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                                        mindate="" maxdate="#{repHistorialTerapeuticoMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Final" />
+                                            <br/>
+                                            <p:calendar id="txtFechaFin" value="#{repHistorialTerapeuticoMB.paramBusquedaReporte.fechaFin}"
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                                        mindate="" maxdate="#{repHistorialTerapeuticoMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade">
+                                                <p:ajax event="dateSelect" listener="#{repHistorialTerapeuticoMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                            </p:calendar>
+                                            
+                                        </div>
+
+                                        <div class="ui-g-6 ui-md-6 ui-lg-3" style="margin-top: 14px;">                                            
+                                            <p:commandButton value="Generar Reporte"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{repHistorialTerapeuticoMB.validarMedicoyPaciente()}"
+                                                             update=":formTablaTerapeutico, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"  
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+
+                                            <p:menuButton value="Exportar Archivo" style="margin-top: 15px; width: 200px; margin-left: 8px">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{repHistorialTerapeuticoMB.imprimeReporteTerapeutico}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"
+                                                            />
+                                            </p:menuButton>
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+
+                                        <div class="ui-g-20 ui-md-6 ui-lg-4" style="height:60px; float: left; margin-right: 40px; ">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Médico" />
+                                            <br/>
+                                            <p:autoComplete id="txtMedico" 
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            value="#{repHistorialTerapeuticoMB.paramBusquedaReporte.listUsuarios}"
+                                                            completeMethod="#{repHistorialTerapeuticoMB.autocompleteUsuario}"
+                                                            minQueryLength="3"
+                                                            queryDelay="500" 
+                                                            maxResults="10" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="usr" 
+                                                            placeholder="Ingresar Medico.." 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{usr.nombre} #{usr.apellidoPaterno} #{usr.apellidoMaterno}"   itemValue="#{usr}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="#{!repHistorialTerapeuticoMB.permiso.puedeVer}"
+                                                            >
+                                                    <p:column style="width: 50px; font-size: small;" width="50px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.nombre}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 50px; font-size: small;" width="50px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Apellido Paterno" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.apellidoPaterno}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 50px; font-size: small;" width="50px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Apellido Materno" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.apellidoMaterno}" style=" font-size: small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>  
+
+                                        <div class="ui-g-20 ui-md-6 ui-lg-4" style="height:60px; float: left; margin-right: 20px; ">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Paciente" />
+                                            <br/>
+                                            <p:autoComplete id="txtPaciente" 
+                                                            class="autoComplete-Sum"
+                                                            multiple="true"
+                                                            value="#{repHistorialTerapeuticoMB.paramBusquedaReporte.pacienteList}"
+                                                            completeMethod="#{repHistorialTerapeuticoMB.autocompletePaciente}"
+                                                            minQueryLength="3"
+                                                            queryDelay="500" 
+                                                            maxResults="10" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="pac" 
+                                                            placeholder="Ingresar Paciente.." 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{pac.nombreCompleto} #{pac.apellidoPaterno} #{pac.apellidoMaterno}" itemValue="#{pac}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="#{!repHistorialTerapeuticoMB.permiso.puedeVer}"
+                                                            >
+                                                <p:ajax event="itemSelect" listener="#{repHistorialTerapeuticoMB.handleSelect}" ></p:ajax>
+                                                <p:ajax event="itemUnselect" listener="#{repHistorialTerapeuticoMB.handleUnSelect}" ></p:ajax>
+                                                <p:column style="width: 50px; font-size: small;" width="50px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{pac.nombreCompleto}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 50px; font-size: small;" width="50px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Apellido Paterno" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{pac.apellidoPaterno}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 50px; font-size: small;" width="50px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Apellido Materno" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{pac.apellidoMaterno}" style=" font-size: small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form><br />
+                    <h:form id="formTablaTerapeutico" >
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     style="font-size: x-small !important; width: 120% !important;"
+                                     value="#{repHistorialTerapeuticoMB.reporteHistorialTerapeuticoLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true" scrollWidth="100%" scrollHeight="350">
+
+                            <p:column class="" headerText="Tipo Visita"  style="width: 1%;">
+                                <h:outputText value="#{result.tipoVisita}"/>
+                            </p:column>
+                            <p:column class="" headerText="Fecha Ingreso" style="width: 2%;">
+                                <h:outputText value="#{result.fechaIngreso}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>
+
+                            </p:column>
+                            <p:column class="" headerText="Fecha Egreso" style="width: 2%;">
+                                <h:outputText value="#{result.fechaEgreso}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="Paciente" style="width: 4%;">
+                                <h:outputText value="#{result.paciente}"/>
+                            </p:column>
+                            <p:column class="" headerText="Especialidad Servicio" style="width: 2%;">
+                                <h:outputText value="#{result.especialidad}"/>
+                            </p:column>
+                            <p:column class="" headerText="Cama / Consultorio" style="width: 3%;">
+                                <h:outputText value="#{result.nombreCama}"/>
+                            </p:column>
+                            <p:column class="" headerText="Médico" style="width: 3%;" >
+                                <h:outputText value="#{result.medico}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="Folio Prescripción" style="width: 2%;">
+                                <h:outputText value="#{result.folio}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="Estatus" style="width: 2%;">
+                                <h:outputText value="#{result.estausPrescripcion}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="Origen" style="width: 1.5%;">
+                                <h:outputText value="#{result.tipoMedicamento}"/>
+                            </p:column> 
+                            
+                            <p:column class="" headerText="Clave Medicamento" style="width: 3%;">
+                                <h:outputText value="#{result.claveMedicamento}"/>
+                            </p:column>  
+
+                            <p:column class="" headerText="Descripción" style="width: 12%;">
+                                <h:outputText value="#{result.nombreLargo}"/>
+                            </p:column> 
+
+                            <p:column class="" headerText="Presentación" style="width: 3%;">
+                                <h:outputText value="#{result.presentacion}"/>
+                            </p:column> 
+
+                            <p:column class="" headerText="Cantidad Surtida" style="width: 2%;">
+                                <h:outputText value="#{result.cantidadSurtida}"/>
+                            </p:column> 
+                        </p:dataTable>
+
+                    </h:form>	
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

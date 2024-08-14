@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http, jdbcType = VARCHAR//mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ReabastoEnviadoMapper">
+
+<select id="obtener" resultType="mx.mc.model.ReabastoEnviado" parameterType="mx.mc.model.ReabastoEnviado">
+	SELECT idReabastoEnviado, idReabastoInsumo, idInventarioSurtido, cantidadEnviado, cantidadRecibida, cantidadIngresada, idEstatusReabasto, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+	FROM reabastoEnviado
+	WHERE 1 = 1
+	<if test=" idReabastoEnviado != null ">
+		AND idReabastoEnviado = #{ idReabastoEnviado , jdbcType = VARCHAR }
+	</if>
+	<if test=" idReabastoInsumo != null ">
+		AND idReabastoInsumo = #{ idReabastoInsumo , jdbcType = VARCHAR }
+	</if>
+	<if test=" idInventarioSurtido != null ">
+		AND idInventarioSurtido = #{ idInventarioSurtido , jdbcType = VARCHAR }
+	</if>
+	<if test=" idEstatusReabasto != null ">
+		AND idEstatusReabasto = #{ idEstatusReabasto , jdbcType = INTEGER }
+	</if>
+	<if test=" idInsumo != null " >
+		AND idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+	</if>
+	<if test=" idEstructura != null " >
+		AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+	</if>
+	<if test=" loteEnv != null " >
+		AND loteEnv = #{ loteEnv , jdbcType = VARCHAR }
+	</if>
+	<if test=" fechaCad != null ">
+		AND fechaCad = #{ fechaCad , jdbcType = TIMESTAMP }
+	</if>
+	<if test=" insertFecha != null ">
+		AND insertFecha = #{ insertFecha , jdbcType = TIMESTAMP }
+	</if>
+	<if test=" insertIdUsuario != null ">
+		AND insertIdUsuario = #{ insertIdUsuario , jdbcType = VARCHAR }
+	</if>
+	<if test=" updateFecha != null ">
+		AND updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+	</if>
+	<if test=" updateIdUsuario != null ">
+		AND updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+	</if>
+</select>
+	
+<select id="obtenerLista" resultType="mx.mc.model.ReabastoEnviado" parameterType="mx.mc.model.ReabastoEnviado">
+	SELECT idReabastoEnviado, idReabastoInsumo, idInventarioSurtido, cantidadEnviado, cantidadRecibida, cantidadIngresada, idEstatusReabasto, insertFecha, inserIdUsuario, updateFecha, updateIdUsuario
+	FROM reabastoEnviado
+	WHERE 1 = 1
+	<if test=" idReabastoEnviado != null ">
+		AND idReabastoEnviado = #{ idReabastoEnviado , jdbcType = VARCHAR }
+	</if>
+	<if test=" idReabastoInsumo != null ">
+		AND idReabastoInsumo = #{ idReabastoInsumo , jdbcType = VARCHAR }
+	</if>
+	<if test=" idInventarioSurtido != null ">
+		AND idInventarioSurtido = #{ idInventarioSurtido , jdbcType = VARCHAR }
+	</if>
+	<if test=" cantidadEnviado != null ">
+		AND cantidadEnviado = #{ cantidadEnviado , jdbcType = INTEGER }
+	</if>
+	<if test=" cantidadRecibida != null ">
+		AND cantidadRecibida = #{ cantidadRecibida , jdbcType = INTEGER }
+	</if>
+	<if test=" cantidadIngresada != null ">
+		AND cantidadIngresada = #{ cantidadIngresada , jdbcType = INTEGER }
+	</if>
+	<if test=" idEstatusReabasto != null ">
+		AND idEstatusReabasto = #{ idEstatusReabasto , jdbcType = INTEGER }
+	</if>
+	<if test=" idInsumo != null " >
+		AND  = #{ idInsumo , jdbcType = VARCHAR }
+	</if>
+	<if test=" idEstructura != null " >
+		AND  = #{ idEstructura , jdbcType = VARCHAR }
+	</if>
+	<if test=" loteEnv != null " >
+		AND  = #{ loteEnv , jdbcType = VARCHAR }
+	</if>
+	<if test=" fechaCad != null ">
+		AND fechaCad = #{ fechaCad , jdbcType = TIMESTAMP }
+	</if>
+	<if test=" insertFecha != null ">
+		AND insertFecha = #{ insertFecha , jdbcType = TIMESTAMP }
+	</if>
+	<if test=" inserIdUsuario != null ">
+		AND inserIdUsuario = #{ inserIdUsuario , jdbcType = VARCHAR }
+	</if>
+	<if test=" updateFecha != null ">
+		AND updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+	</if>
+	<if test=" updateIdUsuario != null ">
+		AND updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+	</if>
+</select>
+
+<select id="obtenerInventarioPorClveInstEstructuraYLote" resultType="mx.mc.model.ReabastoEnviadoExtended" parameterType="mx.mc.model.ReabastoEnviadoExtended" > 
+    SELECT idReabastoEnviado , cantidadXCaja , ri.idReabasto 
+    FROM reabastoEnviado re 
+    INNER JOIN reabastoInsumo ri ON ri.idReabastoInsumo = re.idReabastoInsumo
+    INNER JOIN medicamento me  ON me.idMedicamento = re.idInsumo
+    WHERE 1 = 1 
+    AND me.claveInstitucional = #{ idInsumo , jdbcType = VARCHAR }
+    AND re.loteEnv = #{ loteEnv , jdbcType = VARCHAR }
+    <if test=" idEstructura != null ">
+        AND re.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+    </if>
+    AND ri.idReabasto = #{ idReabasto , jdbcType = VARCHAR }
+    LIMIT 0,1
+</select>
+
+<select id="obtenerReabastoEnviadoByListaReabastoInsumo" parameterType="java.util.List" resultType="mx.mc.model.ReabastoEnviado" >
+    SELECT idReabastoEnviado , idReabastoInsumo , idInventarioSurtido , cantidadEnviado ,
+    cantidadRecibida ,cantidadIngresada ,idEstatusReabasto ,idInsumo ,idEstructura ,
+    loteEnv ,fechaCad ,cantidadXCaja ,presentacionComercial ,claveProveedor ,estatusAVG ,insertFecha ,
+    insertIdUsuario ,updateFecha ,updateIdUsuario
+    FROM reabastoEnviado
+    WHERE 1 = 1 
+    AND idReabastoInsumo IN 
+    <foreach collection="list" item="item"  index="index" separator="," open="(" close=")">
+        #{ item.idReabastoInsumo , jdbcType = VARCHAR }
+    </foreach>
+</select>
+
+<insert id="insertar" parameterType="mx.mc.model.ReabastoEnviado" >
+	INSERT INTO reabastoEnviado (
+	<if test=" idReabastoEnviado != null ">
+		idReabastoEnviado
+	</if>
+	<if test=" idReabastoInsumo != null ">
+		, idReabastoInsumo
+	</if>
+	<if test=" idInventarioSurtido != null ">
+		, idInventarioSurtido
+	</if>
+	<if test=" cantidadEnviado != null ">
+		, cantidadEnviado
+	</if>
+	<if test=" cantidadRecibida != null ">
+		, cantidadRecibida
+	</if>
+	<if test=" cantidadIngresada != null ">
+		, cantidadIngresada
+	</if>
+	<if test=" idEstatusReabasto != null ">
+		, idEstatusReabasto
+	</if>
+	<if test=" idInsumo != null " >
+		, idInsumo 
+	</if>
+	<if test=" idEstructura != null " >
+		, idEstructura
+	</if>
+	<if test=" loteEnv != null " >
+		, loteEnv
+	</if>
+	<if test=" fechaCad != null ">
+		, fechaCad
+	</if>
+        <if test=" cantidadXCaja != null ">
+		, cantidadXCaja
+	</if>
+	<if test=" insertFecha != null ">
+		, insertFecha
+	</if>
+	<if test=" insertIdUsuario != null ">
+		, insertIdUsuario
+	</if>
+	<if test=" updateFecha != null ">
+		, updateFecha
+	</if>
+	<if test=" updateIdUsuario != null ">
+		updateIdUsuario
+	</if>
+	) VALUES (
+	<if test=" idReabastoEnviado != null ">
+		#{ idReabastoEnviado , jdbcType = VARCHAR }
+	</if>
+	<if test=" idReabastoInsumo != null ">
+		, #{ idReabastoInsumo , jdbcType = VARCHAR }
+	</if>
+	<if test=" idInventarioSurtido != null ">
+		, #{ idInventarioSurtido , jdbcType = VARCHAR }
+	</if>
+	<if test=" cantidadEnviado != null ">
+		, #{ cantidadEnviado , jdbcType = INTEGER }
+	</if>
+	<if test=" cantidadRecibida != null ">
+		, #{ cantidadRecibida , jdbcType = INTEGER }
+	</if>
+	<if test=" cantidadIngresada != null ">
+		, #{ cantidadIngresada , jdbcType = INTEGER }
+	</if>
+	<if test=" idEstatusReabasto != null ">
+		, #{ idEstatusReabasto , jdbcType = INTEGER }
+	</if>
+	<if test=" idInsumo != null " >
+		, #{ idInsumo , jdbcType = VARCHAR }
+	</if>
+	<if test=" idEstructura != null " >
+		, #{ idEstructura , jdbcType = VARCHAR }
+	</if>
+	<if test=" loteEnv != null " >
+		, #{ loteEnv , jdbcType = VARCHAR }
+	</if>
+	<if test=" fechaCad != null ">
+		, #{ fechaCad , jdbcType = TIMESTAMP }
+	</if>
+        <if test=" cantidadXCaja != null ">
+		, #{ cantidadXCaja , jdbcType = INTEGER }
+	</if>
+	<if test=" insertFecha != null ">
+		, #{ insertFecha , jdbcType = TIMESTAMP }
+	</if>
+	<if test=" insertIdUsuario != null ">
+		, #{ insertIdUsuario , jdbcType = VARCHAR }
+	</if>
+	<if test=" updateFecha != null ">
+		, #{ updateFecha , jdbcType = TIMESTAMP }
+	</if>
+	<if test=" updateIdUsuario != null ">
+		, #{ updateIdUsuario , jdbcType = VARCHAR }
+	</if>
+        )
+</insert>
+
+<update id="actualizar" parameterType="mx.mc.model.ReabastoEnviado" >
+	UPDATE reabastoEnviado SET 
+	updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+	updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+	<if test=" idInventarioSurtido != null ">
+		, idInventarioSurtido = #{ idInventarioSurtido , jdbcType = VARCHAR }
+	</if>
+	<if test=" idReabastoInsumo != null ">
+		, idReabastoInsumo = #{ idReabastoInsumo , jdbcType = VARCHAR }
+	</if>
+	<if test=" cantidadEnviado != null ">
+		, cantidadEnviado = #{ cantidadEnviado , jdbcType = INTEGER }
+	</if>
+	<if test=" cantidadRecibida != null ">
+		, cantidadRecibida = #{ cantidadRecibida , jdbcType = INTEGER }
+	</if>
+	<if test=" cantidadIngresada != null ">
+		, cantidadIngresada = #{ cantidadIngresada , jdbcType = INTEGER }
+	</if>
+	<if test=" idEstatusReabasto != null ">
+		, idEstatusReabasto = #{ idEstatusReabasto , jdbcType = INTEGER }
+	</if>
+	WHERE idReabastoEnviado = #{ idReabastoEnviado , jdbcType = VARCHAR }	
+</update>
+
+<delete id="eliminar" parameterType="mx.mc.model.ReabastoEnviado" > 
+	DELETE FROM reabastoEnviado 
+	WHERE idReabastoEnviado = #{ idReabastoEnviado , jdbcType = VARCHAR }	
+</delete>
+
+<delete id="eliminarListaReabastoEnviado" parameterType="String" > 
+    DELETE FROM reabastoEnviado WHERE idReabastoInsumo IN 
+    (
+        SELECT idReabastoInsumo 
+        FROM reabastoInsumo 
+        WHERE idReabasto = #{idReabasto , jdbcType = VARCHAR}
+    )
+</delete>
+
+<select id="obtenerListaReabastoEnviado" resultType="mx.mc.model.ReabastoEnviadoExtended" parameterType="Map" >
+	SELECT re.idReabastoEnviado, re.idReabastoInsumo, re.idInventarioSurtido, re.cantidadEnviado, re.cantidadRecibida, re.cantidadIngresada, re.idEstatusReabasto,
+	re.loteEnv, re.insertFecha, re.fechaCad, re.insertIdUsuario, re.updateFecha, re.updateIdUsuario, re.cantidadXCaja, re.claveProveedor, re.presentacionComercial,  i.lote, i.fechaCaducidad, me.activo
+        , re.osmolaridad , re.densidad , re.noHorasEstabilidad , re.idFabricante , re.idProveedor
+        , re.calorias
+	FROM reabastoEnviado re LEFT JOIN inventario i
+	ON re.idInventarioSurtido = i.idInventario
+	INNER JOIN medicamento me ON me.idMedicamento = re.idInsumo 
+	WHERE 1 = 1
+	<if test=" idReabastoInsumo != null ">
+		AND idReabastoInsumo = #{ idReabastoInsumo, jdbcType = VARCHAR }
+	</if>
+        <if test=" listEstatusReabasto != null ">
+            AND idEstatusReabasto IN
+            <foreach item="item" index="index" collection="listEstatusReabasto" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+</select>
+
+<update id="actualizarListaReabastoEnviado" parameterType="java.util.List" useGeneratedKeys="false" >
+	<foreach collection="list" item="item"  index="index"  separator=";">
+		UPDATE reabastoEnviado 
+		<set>
+                        <if test="item.cantidadEnviado != null ">
+                            cantidadEnviado = #{ item.cantidadEnviado, jdbcType = INTEGER },
+                        </if>
+			cantidadRecibida = #{ item.cantidadRecibida, jdbcType = INTEGER },
+			cantidadIngresada = #{ item.cantidadIngresada, jdbcType = INTEGER },
+                        idInventarioSurtido =#{ item.idInventarioSurtido, jdbcType = VARCHAR},
+                        <if test="item.cantidadXCaja != null ">
+                        cantidadXCaja = #{ item.cantidadXCaja , jdbcType = INTEGER } ,
+                        </if>
+                        
+                        <if test="item.osmolaridad != null"> osmolaridad = #{ item.osmolaridad , jdbcType = DECIMAL } , </if>
+                        <if test="item.densidad != null"> densidad = #{ item.densidad , jdbcType = DECIMAL } , </if>
+                        <if test="item.calorias != null"> calorias = #{ item.calorias , jdbcType = DECIMAL } , </if>
+                        <if test="item.noHorasEstabilidad != null"> noHorasEstabilidad = #{ item.noHorasEstabilidad , jdbcType = INTEGER } , </if>
+                        <if test="item.idFabricante != null"> idFabricante = #{ item.idFabricante , jdbcType = VARCHAR } , </if>
+                        <if test="item.idProveedor != null"> idProveedor = #{ item.idProveedor , jdbcType = VARCHAR } , </if>
+                        
+			idEstatusReabasto = #{ item.idEstatusReabasto , jdbcType = INTEGER },
+			updateFecha = #{ item.updateFecha , jdbcType = TIMESTAMP },
+			updateIdUsuario = #{ item.updateIdUsuario , jdbcType = VARCHAR }
+		</set>
+		WHERE idReabastoEnviado = #{ item.idReabastoEnviado , jdbcType = VARCHAR }
+	</foreach>
+
+</update>
+
+<update id="actualizarListaReabastoEnviadoByIdReabastoInsumo" parameterType="java.util.List" useGeneratedKeys="false" >
+    <foreach collection="list" item="item"  index="index"  separator=";">
+        UPDATE reabastoEnviado 
+        <set>
+            idEstatusReabasto = #{ item.idEstatusReabasto , jdbcType = INTEGER },
+            updateFecha = #{ item.updateFecha , jdbcType = TIMESTAMP },
+            updateIdUsuario = #{ item.updateIdUsuario , jdbcType = VARCHAR }
+        </set>
+        WHERE idReabastoInsumo = #{ item.idReabastoInsumo , jdbcType = VARCHAR }
+    </foreach>
+
+</update>
+    
+    <insert id="insertarDetalleInsumos" parameterType="Map" >
+        <foreach collection="listaDetalle" item="item" separator=";">
+            INSERT INTO reabastoEnviado ( 
+                <if test="item.idReabastoEnviado != null" >
+                    idReabastoEnviado
+                </if>
+                <if test="item.idReabastoInsumo != null">
+                    ,idReabastoInsumo
+                </if>
+                <if test="item.idInventarioSurtido != null">
+                    ,idInventarioSurtido
+                </if>
+                <if test="item.cantidadEnviado != null">
+                    ,cantidadEnviado
+                </if>
+                <if test="item.cantidadRecibida != null">
+                     ,cantidadRecibida
+                </if>
+                <if test="item.cantidadIngresada != null">
+                     ,cantidadIngresada
+                </if>
+                <if test="item.idEstatusReabasto != null">
+                    ,idEstatusReabasto
+                </if>
+                 <if test="item.idInsumo != null">
+                    ,idInsumo
+                </if>
+                <if test="item.idEstructura != null">
+                    ,idEstructura
+                </if>
+                <if test="item.loteEnv != null">
+                    ,loteEnv
+                </if>
+                <if test="item.fechaCad != null">
+                    ,fechaCad
+                </if>
+                <if test="item.cantidadXCaja != null ">
+                    , cantidadXCaja
+                </if>
+                <if test="item.claveProveedor != null ">
+                    , claveProveedor
+                </if>
+                <if test="item.insertFecha != null">
+                    ,insertFecha
+                </if>
+                <if test="item.insertIdUsuario != null">
+                    ,insertIdUsuario
+                </if>
+                <if test="item.updateFecha != null">
+                    ,updateFecha
+                </if>
+                <if test="item.updateIdUsuario != null">
+                    ,updateIdUsuario
+                </if>
+                
+                <if test="item.osmolaridad != null"> , osmolaridad </if>
+                <if test="item.densidad != null"> , densidad </if>
+                <if test="item.calorias != null"> , calorias </if>
+                <if test="item.noHorasEstabilidad != null"> , noHorasEstabilidad </if>
+                <if test="item.idFabricante != null"> , idFabricante </if>
+                <if test="item.idProveedor != null"> , idProveedor </if>
+                
+            )
+            VALUES (
+                <if test="item.idReabastoEnviado != null">
+                    #{item.idReabastoEnviado, jdbcType = VARCHAR }
+                </if>
+                <if test="item.idReabastoInsumo != null">
+                    ,#{item.idReabastoInsumo, jdbcType = VARCHAR }
+                </if>
+                <if test="item.idInventarioSurtido != null">
+                    ,#{item.idInventarioSurtido, jdbcType = VARCHAR }
+                </if>
+                <if test="item.cantidadEnviado != null">
+                    ,#{item.cantidadEnviado, jdbcType = INTEGER }
+                </if>
+                <if test="item.cantidadRecibida != null">
+                    ,#{item.cantidadRecibida, jdbcType = INTEGER }
+                </if>
+                <if test="item.cantidadIngresada != null">
+                    ,#{item.cantidadIngresada, jdbcType = INTEGER }
+                </if>
+                <if test="item.idEstatusReabasto != null">
+                    ,#{item.idEstatusReabasto, jdbcType = VARCHAR }
+                </if>
+                <if test="item.idInsumo != null">
+                    ,#{item.idInsumo, jdbcType = VARCHAR }
+                </if>
+                <if test="item.idEstructura != null">
+                    ,#{item.idEstructura, jdbcType = VARCHAR }
+                </if>
+                <if test="item.loteEnv != null">
+                    ,#{item.loteEnv, jdbcType = VARCHAR }
+                </if>
+                <if test="item.fechaCad != null">
+                    ,#{item.fechaCad, jdbcType = TIMESTAMP }
+                </if>
+                <if test="item.cantidadXCaja != null ">
+                    , #{item.cantidadXCaja , jdbcType = INTEGER }
+                </if>
+                <if test="item.claveProveedor != null ">
+                    , #{item.claveProveedor , jdbcType = INTEGER }
+                </if>
+                <if test="item.insertFecha != null">
+                    ,#{item.insertFecha, jdbcType = TIMESTAMP }
+                </if>
+                <if test="item.insertIdUsuario != null">
+                    ,#{item.insertIdUsuario, jdbcType = VARCHAR }
+                </if>
+                <if test="item.updateFecha != null">
+                    ,#{item.updateFecha, jdbcType = TIMESTAMP }
+                </if>
+                <if test="item.updateIdUsuario != null">
+                    ,#{item.updateIdUsuario, jdbcType = VARCHAR }
+                </if>
+                
+                <if test="item.osmolaridad != null">, #{ item.osmolaridad , jdbcType = DECIMAL } </if>
+                <if test="item.densidad != null">, #{ item.densidad , jdbcType = DECIMAL } </if>
+                <if test="item.calorias != null">, #{ item.calorias , jdbcType = DECIMAL } </if>
+                <if test="item.noHorasEstabilidad != null">, #{ item.noHorasEstabilidad , jdbcType = INTEGER } </if>
+                <if test="item.idFabricante != null">, #{ item.idFabricante , jdbcType = VARCHAR } </if>
+                <if test="item.idProveedor != null">, #{ item.idProveedor , jdbcType = VARCHAR } </if>
+            )
+        </foreach>
+    </insert>
+    
+    <insert id="insertListReabatoEnviado" parameterType="Map" >
+        <foreach collection="listReabastoEnviado" item="item" separator=";">
+            INSERT INTO reabastoEnviado ( 
+                <if test="item.idReabastoEnviado != null" >idReabastoEnviado</if>
+                <if test="item.idReabastoInsumo != null">,idReabastoInsumo</if>
+                <if test="item.idInventarioSurtido != null">,idInventarioSurtido</if>
+                <if test="item.cantidadEnviado != null">,cantidadEnviado</if>
+                <if test="item.cantidadRecibida != null">,cantidadRecibida</if>
+                <if test="item.cantidadIngresada != null">,cantidadIngresada</if>
+                <if test="item.idEstatusReabasto != null">,idEstatusReabasto</if>
+                 <if test="item.idInsumo != null">,idInsumo</if>
+                <if test="item.idEstructura != null">,idEstructura</if>
+                <if test="item.loteEnv != null">,loteEnv</if>
+                <if test="item.fechaCad != null">,fechaCad</if>
+                <if test="item.cantidadXCaja != null">,cantidadXCaja </if>
+                <if test="item.claveProveedor != null">, claveProveedor</if>
+                <if test="item.presentacionComercial != null">,presentacionComercial</if>
+                <if test="item.estatusAVG != null">,estatusAVG</if>
+                <if test="item.insertFecha != null">,insertFecha</if>
+                <if test="item.insertIdUsuario != null">,insertIdUsuario</if>
+                <if test="item.updateFecha != null">,updateFecha</if>
+                <if test="item.updateIdUsuario != null">,updateIdUsuario</if>
+                <if test="item.claveOriginalSurtida != null">,claveOriginalSurtida</if>
+                
+                <if test="item.osmolaridad != null"> , osmolaridad </if>
+                <if test="item.densidad != null"> , densidad </if>
+                <if test="item.calorias != null"> , calorias </if>
+                <if test="item.noHorasEstabilidad != null"> , noHorasEstabilidad </if>
+                <if test="item.idFabricante != null"> , idFabricante </if>
+                <if test="item.idProveedor != null"> , idProveedor </if>
+                
+            ) VALUES (
+                <if test="item.idReabastoEnviado != null">#{item.idReabastoEnviado, jdbcType = VARCHAR }</if>
+                <if test="item.idReabastoInsumo != null">,#{item.idReabastoInsumo, jdbcType = VARCHAR }</if>
+                <if test="item.idInventarioSurtido != null">,#{item.idInventarioSurtido, jdbcType = VARCHAR }</if>
+                <if test="item.cantidadEnviado != null">,#{item.cantidadEnviado, jdbcType = INTEGER }</if>
+                <if test="item.cantidadRecibida != null">,#{item.cantidadRecibida, jdbcType = INTEGER }</if>
+                <if test="item.cantidadIngresada != null">,#{item.cantidadIngresada, jdbcType = INTEGER }</if>
+                <if test="item.idEstatusReabasto != null">,#{item.idEstatusReabasto, jdbcType = VARCHAR }</if>
+                <if test="item.idInsumo != null">,#{item.idInsumo, jdbcType = VARCHAR }</if>
+                <if test="item.idEstructura != null">,#{item.idEstructura, jdbcType = VARCHAR }</if>
+                <if test="item.loteEnv != null">,#{item.loteEnv, jdbcType = VARCHAR }</if>
+                <if test="item.fechaCad != null">,#{item.fechaCad, jdbcType = TIMESTAMP }</if>
+                <if test="item.cantidadXCaja != null">,#{item.cantidadXCaja, jdbcType = INTEGER }</if>
+                <if test="item.claveProveedor != null">, #{item.claveProveedor, jdbcType = VARCHAR }</if>
+                <if test="item.presentacionComercial != null">,#{item.presentacionComercial, jdbcType = INTEGER}</if>
+                <if test="item.estatusAVG != null">,#{item.estatusAVG, jdbcType = INTEGER}</if>
+                <if test="item.insertFecha != null">,#{item.insertFecha, jdbcType = TIMESTAMP }</if>
+                <if test="item.insertIdUsuario != null">,#{item.insertIdUsuario, jdbcType = VARCHAR }</if>
+                <if test="item.updateFecha != null">,#{item.updateFecha, jdbcType = TIMESTAMP }</if>
+                <if test="item.updateIdUsuario != null">,#{item.updateIdUsuario, jdbcType = VARCHAR }</if>
+                <if test="item.claveOriginalSurtida != null">,#{item.claveOriginalSurtida, jdbcType = VARCHAR }</if>
+                
+                <if test="item.osmolaridad != null"> , #{ item.osmolaridad , jdbcType = DECIMAL } </if>
+                <if test="item.densidad != null"> , #{ item.densidad , jdbcType = DECIMAL } </if>
+                <if test="item.calorias != null"> , #{ item.calorias , jdbcType = DECIMAL } </if>
+                <if test="item.noHorasEstabilidad != null"> , #{ item.noHorasEstabilidad , jdbcType = INTEGER } </if>
+                <if test="item.idFabricante != null"> , #{ item.idFabricante , jdbcType = VARCHAR } </if>
+                <if test="item.idProveedor != null"> , #{ item.idProveedor , jdbcType = VARCHAR } </if>
+                
+            )
+        </foreach>
+    </insert>
+    
+    <select id="obtenerListaReabastoEnviadoInv" resultType="mx.mc.model.ReabastoEnviadoExtended" parameterType="Map" >
+	SELECT re.idReabastoEnviado, re.idReabastoInsumo, re.idInventarioSurtido, re.cantidadEnviado, re.cantidadRecibida, re.cantidadIngresada, re.idEstatusReabasto, re.idInsumo, re.idEstructura,
+	re.loteEnv, re.insertFecha, re.fechaCad, re.insertIdUsuario, re.updateFecha, re.updateIdUsuario, re.cantidadXCaja, re.claveProveedor, re.presentacionComercial
+        ,  i.lote, i.fechaCaducidad, me.activo, me.idMedicamento, i.cantidadActual , re.osmolaridad , re.densidad , re.noHorasEstabilidad , re.idFabricante , re.idProveedor
+        , re calorias
+	FROM reabastoEnviado re 
+	INNER JOIN medicamento me ON me.idMedicamento = re.idInsumo 
+        INNER JOIN inventario i ON re.idInventarioSurtido = i.idInventario
+	WHERE 1 = 1
+	<if test=" idReabastoInsumo != null ">
+		AND idReabastoInsumo = #{ idReabastoInsumo, jdbcType = VARCHAR }
+	</if>
+	<if test=" idEstatusReabasto != 0 ">
+		AND idEstatusReabasto = #{ idEstatusReabasto, jdbcType = INTEGER }
+	</if>
+        <if test=" idEstructura != null ">
+            AND i.idEstructura = #{ idEstructura, jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <delete id="eliminarListReabastoEnviado" parameterType="java.util.List" >
+        DELETE FROM reabastoEnviado WHERE  idReabastoEnviado IN 
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")" > 
+            #{ item.idReabastoEnviado , jdbcType=VARCHAR }
+        </foreach>
+    </delete>
+    
+    <select id="obtenerReabastoEnviadoPorIdEstructuraIdInsumoIdInventario" resultType="mx.mc.model.ReabastoEnviadoExtended" parameterType="Map" >
+	SELECT re.idReabastoEnviado , re.idReabastoInsumo , re.idInventarioSurtido , re.cantidadEnviado , re.cantidadRecibida
+                , re.cantidadIngresada , re.idEstatusReabasto , re.idInsumo , re.idEstructura , re.loteEnv , re.fechaCad , re.cantidadXCaja
+                , re.presentacionComercial , re.claveProveedor , re.estatusAVG , re.insertFecha , re.insertIdUsuario , re.updateFecha
+                , re.updateIdUsuario , re.claveOriginalSurtida , re.osmolaridad , re.densidad , re.noHorasestabilidad , re.idFabricante
+                , re.idProveedor , re.calorias
+                , r.fechaSolicitud , r.folio , r.fechaSurtida , ri.cantidadSurtida 
+                , IFNULL(CONCAT(u1.nombre, ' ', u1.apellidoPaterno,' ',u1.apellidoMaterno),'') AS nombrePersonaSolicita 
+                , IFNULL(CONCAT(u2.nombre, ' ', u2.apellidoPaterno,' ',u2.apellidoMaterno),'') AS nombrePersonaSurte 
+                , IFNULL(CONCAT(u3.nombre, ' ', u3.apellidoPaterno, ' ', u3.apellidoMaterno), '') AS nombrePersonaRecibe 
+                , ri.cantidadRecibida , ri.cantidadIngresada , re.insertFecha as fechaRecibida
+                , IFNULL(p.nombreProveedor,'') AS nombreProveedor , IFNULL(f.nombreFabricante, '') AS nombreFabricante
+                , r.fechaSolicitud , ri.cantidadSolicitada 
+        FROM reabasto r 
+        JOIN reabastoInsumo ri ON r.idReabasto = ri.idReabasto
+        JOIN reabastoEnviado re ON re.idReabastoInsumo = ri.idReabastoInsumo 
+        LEFT JOIN usuarios u1 ON r.idUsuarioSolicitud = u1.idUsuario  
+        LEFT JOIN usuarios u2 ON r.idUsuarioSurtida = u2.idUsuario  
+        LEFT JOIN usuarios u3 ON r.idUsuarioRecepcion  = u3.idUsuario
+        LEFT JOIN proveedor p ON re.idProveedor = p.idProveedor 
+        LEFT JOIN fabricante f ON re.idFabricante = f.idFabricante 
+        WHERE 1 = 1
+	<if test=" idEstructura != null ">
+            AND r.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+	</if>
+        <if test=" idInsumo != null ">
+            AND ri.idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+	</if>
+        <if test=" idInventario != null ">
+            AND re.idInventarioSurtido  = #{ idInventario , jdbcType = VARCHAR }
+	</if>
+    </select>
+    
+</mapper>   

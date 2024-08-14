@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+        <h:outputScript library="primefaces" name="jquery/jquery.js" target="body" />
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <p:messages id="msg" globalOnly="false" closable="true" showDetail="false"  >
+                                <p:autoUpdate />
+                        </p:messages>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Dispensación Directa "  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 10px;" />
+                            
+                            <p:outputLabel value="Servicio:" 
+                                           style="margin-right: 10px;margin-left: 10px;color: #FFF;font-size: 14px;font-weight: bold;"/>
+                            
+                            <p:selectOneMenu id="comboAlmacen" 
+                                             value="#{dispensacionDirectaMB.idEstructura}"
+                                             disabled="#{!dispensacionDirectaMB.permiso.puedeVer}"
+                                             style="vertical-align: middle; margin-right: 10px;"
+                                             rendered="#{dispensacionDirectaMB.isAdmin or dispensacionDirectaMB.isJefeArea ? true:false}">
+                                <p:ajax listener="#{dispensacionDirectaMB.obtenerSutimientoMinistrado}" 
+                                             update="tblDispDirec" />              
+                                    <f:selectItems value="#{dispensacionDirectaMB.estructuraList}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+                        
+                            <p:commandButton class="btnNew" value="Nueva" icon="fa fa-plus" rendered="#{dispensacionDirectaMB.permiso.puedeCrear}"
+                                         actionListener="#{dispensacionDirectaMB.crearDispensacion}" onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                                         oncomplete="PF('statusProcess').hide(); PF('modalDispDirecta').show();"
+                                         ajax="true"  style=" margin: 5px 0; " update=":frmNewDispensacion" /> &nbsp;&nbsp;
+                        </div>
+                        <!-- Despues de que se alla generado la consulta descomentar lineas y colocar el '#' en su correspondiente lugar -->
+                        <p:dataTable emptyMessage="" rows="10" 
+                                 paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                 currentPageReportTemplate=" " 
+                                 paginator="true" reflow="true"
+                                 paginatorPosition="bottom" widgetVar="tblOrdenRecibir" 
+                                 lazy="true" id="tblDispDirec" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                 style="margin-bottom:5px;" 
+                                 value="#{dispensacionDirectaMB.dispensacionDirectaLazy}" var="item"
+                                             
+                            >
+                            
+                            <p:column style="text-align: left;width: 15%;" sortBy="#{item.fechaMinistrado}"  headerText="Fecha">
+                                <h:outputText value="#{item.fechaMinistrado}" class="altoColumn" >
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy hh:mm" />
+                                    </h:outputText>
+                            </p:column>                            
+                            
+                            <p:column style="text-align: left;width: 10%;" sortBy="#{item.pacienteNumero}"  headerText="Numero Paciente">
+                                <h:outputText value="#{item.pacienteNumero}" class="altoColumn" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 20%;" sortBy="#{item.nombrePaciente}"  headerText="Nom. Paciente">
+                                <h:outputText value="#{item.nombrePaciente}" class="altoColumn" title="#{item.nombrePaciente}" />
+                            </p:column>                                                        
+                            
+                            <p:column style="text-align: left;width: 15%;" sortBy="#{item.claveInstitucional}"  headerText=" Clave Medicamento">
+                                <h:outputText value="#{item.claveInstitucional}" class="altoColumn" title="#{item.claveInstitucional}" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 15%;" sortBy="#{item.nombreCorto}"  headerText="Medicamento">
+                                <h:outputText value="#{item.nombreCorto}" class="altoColumn" title="#{item.nombreCorto}" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 10%;"  sortBy="#{item.cantidad}"  headerText="Cantidad">
+                                <h:outputText value="#{item.cantidad}" class="altoColumn" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 10%;" sortBy="#{item.nombreUsuarioMinistro}"  headerText="Usuario">
+                                <h:outputText value="#{item.nombreUsuarioMinistro}" class="altoColumn" />                                
+                            </p:column>
+                            <p:column style="text-align: left;width: 5%;"  headerText="Asignar">
+                                <p:commandLink title="Asignar" 
+                                               onclick="PF('statusProcess').show();"
+                                               actionListener="#{dispensacionDirectaMB.obtenerPacienteLazy(item)}"
+                                               oncomplete="PF('statusProcess').hide();PF('mdlBusquedaFolio').show();">
+                                        <i class="fa fa-search iconMusAzul" />
+                                    </p:commandLink>
+                            </p:column>
+                            <!--p:column style="text-align: left;width: 5%;"  headerText="Acciones">
+                                <p:commandLink title="Detalle"  actionListener="{dispensacionDirectaMB.obtenerDetallePrescripcion(item)}"
+                                                       onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();PF('mdlDetalleMedicamentosMin').show();" 
+                                                       update=":frmNewMinistr" >
+                                        <i class="fa fa-edit iconMusAzul" />
+                                    </p:commandLink>
+                            </p:column -->
+                            
+                             <!-- f:facet name="footer" >
+                                <p:outputLabel style="font-size: 1em !important; color: #000;">
+                                    {dispensacionDirectaMB.numeroRegistros} Prescripciones encontrados
+                                </p:outputLabel> 
+                            </f:facet -->
+                        </p:dataTable>
+                    </h:form>
+                   
+                    <p:dialog  header="Dispensación Directa"
+                          widgetVar="modalDispDirecta"
+                          closeOnEscape="true" modal="true"                          
+                          style="font-size:xx-small !important;" width="31%">                          
+                        <h:form id="frmNewDispensacion" onkeypress="if (event.keyCode === 13) return false;">                            
+                            <p:messages id="msgModal" closable="true" showDetail="false" />
+                            <p:panelGrid columns="2" layout="tabular"  style="width:100%;">
+                                <p:outputLabel value="Folio:" style="width:150px;" />
+                                <p:outputLabel value="#{dispensacionDirectaMB.surtimiento.folioSurtimiento}"  class="textoNegrita" />                                                                                               
+                                
+                                <p:outputLabel value="Paciente:"  style="width:150px;" />                                
+                                <p:autoComplete id="autoCPaciente" 
+                                            value="#{dispensacionDirectaMB.pacienteExtended}" 
+                                            autocomplete="on" 
+                                            completeMethod="#{dispensacionDirectaMB.autoCompletePacientes}" 
+                                            minQueryLength="3" 
+                                            forceSelection="true"
+                                            var="paciente"  
+                                            itemValue="#{paciente.idPaciente}" 
+                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}"
+                                            converter="pacienteConverter" 
+                                            placeholder="Buscar Paciente..."
+                                            emptyMessage="Búsqueda sin resultados"                                             
+                                            size="40" 
+                                            scrollHeight="200">
+
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Número de Paciente" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.pacienteNumero}" style=" font-size: small;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave DerechoHabiencia" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.claveDerechohabiencia}" style=" font-size: small;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Nombre" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.nombreCompleto}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Apellido Paterno" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Apellido Materno" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                </p:autoComplete>                         
+                                
+                                <p:outputLabel value="Médico:"  style="width:150px;"  />
+                               <p:autoComplete id="autoCMedico" 
+                                            value="#{dispensacionDirectaMB.medico}" 
+                                            autocomplete="on" 
+                                            completeMethod="#{dispensacionDirectaMB.autoCompleteMedicos}" 
+                                            minQueryLength="3" 
+                                            forceSelection="true"
+                                            var="medico" 
+                                            itemValue="#{medico.idUsuario}" 
+                                            itemLabel="#{medico.nombre} #{medico.apellidoPaterno} #{medico.apellidoMaterno}"
+                                            converter="medicoConverter" 
+                                            placeholder="Buscar Médico..."
+                                            emptyMessage="Búsqueda sin resultados"                                             
+                                            size="40" 
+                                            scrollHeight="200">
+
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Cédula Profesional" />
+                                        </f:facet>
+                                        <h:outputText value="#{medico.cedProfesional}" style=" font-size: small;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Nombre" />
+                                        </f:facet>
+                                        <h:outputText value="#{medico.nombre}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Apellido Paterno" />
+                                        </f:facet>
+                                        <h:outputText value="#{medico.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Apellido Materno" />
+                                        </f:facet>
+                                        <h:outputText value="#{medico.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                   
+                                </p:autoComplete>
+                                <p:outputLabel value="Medicamento"  style="width:150px;"  />
+                                <p:inputText style="width:280px;" id="codRecibir" value="#{dispensacionDirectaMB.codigoBarras}" 
+                                                     onkeypress="if (event.keyCode === 13) { funcionRecibirCodigo(); return false; }"
+                                                     title="Escaneo de Medicamentos" 
+                                                     placeholder="Escanear Medicamento" 
+                                                     >
+                                        <p:remoteCommand name="funcionRecibirCodigo"
+                                                         actionListener="#{dispensacionDirectaMB.recibirInsumosPorCodigo}"
+                                                         update="claveInstitucional, lote, fechaCaducidad, cantidad, codRecibir, msgModal"
+                                                         process="@form"
+                                                         global="false"
+                                                        />
+                                </p:inputText>
+                                <p:outputLabel value="Clave Medicamento: "  style="width:150px;"  />
+                                <p:outputLabel id="claveInstitucional" value="#{dispensacionDirectaMB.medicamento.claveInstitucional}"  class="textoNegrita" />
+                                <p:outputLabel value="Lote: "  style="width:150px;"  />
+                                <p:outputLabel id="lote" value="#{dispensacionDirectaMB.medicamento.lote}"  class="textoNegrita" />
+                                <p:outputLabel value="Fecha Caducidad: "  style="width:150px;"  />
+                                <p:outputLabel id="fechaCaducidad" value="#{dispensacionDirectaMB.fechaCaducidad}"  class="textoNegrita" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </p:outputLabel>
+                                <p:outputLabel value="Cantidad: "  style="width:150px;"  />
+                                <p:outputLabel id="cantidad" value="#{dispensacionDirectaMB.medicamento.cantidadDispensada}"  class="textoNegrita" />
+                            </p:panelGrid>
+                            <br />
+                            
+                           <div class="pnlActions">
+                                <p:commandButton id="btnConfCancel" class="btnItem" value="Cancelar" style="width: 100px;"        
+                                                 ajax="true" onclick="PF('modalDispDirecta').hide();"  tabindex="4"/>&nbsp;&nbsp;
+                                
+                                <p:commandButton id="btnConfSend"  tabindex="5" styleClass="btnMusAzul"
+                                            value="Guardar" style="margin:0; width: 100px;"
+                                            actionListener="#{dispensacionDirectaMB.guardarSurtimientoMinistrado}"
+                                             ajax="true"
+                                            onclick="PF('statusProcess').show();"  update=":mainForm, :frmNewDispensacion:msgModal"     
+                                            oncomplete="if ( args.estatus ){ PF('modalDispDirecta').hide(); } PF('statusProcess').hide(); " />
+                            </div>
+                        </h:form>
+                    </p:dialog>
+                    
+                     <p:dialog  header="Buscar..." widgetVar="mdlBusquedaFolio" closeOnEscape="false" modal="true" style="font-size:xx-small !important;" width="527px">   
+                        <h:form id="frmSearchFolio" >
+                            <p:messages globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:outputLabel value="Buscar por:" style="margin: 5px;"/>
+                            <p:outputLabel id="textFilter" value="" style="margin: 5px 5px 5px 103px;"/>
+                            <div style="width: 100%;">
+                                <p:selectOneMenu  id="filterSearchDevolucion" class="sOneMenu" required="true" tabindex="1" requiredMessage="Elija una opción de filtrado " value="#{dispensacionDirectaMB.filter}" style="width: 140px !important; margin: 5px;" >
+                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="op" noSelectionOption="true"/>
+                                    <f:selectItem itemLabel="Folio" itemValue="Folio" />
+                                    <f:selectItem itemLabel="Paciente" itemValue="Paciente" />
+                                </p:selectOneMenu>
+                            <p:inputText id="txtFolio" placeholder="Filtro Folio"  class="folioInputDisplay" value="#{dispensacionDirectaMB.folio}" style="height: 20px !important; width: 300px;  margin: 5px;" tabindex="1"/>
+                            <p:autoComplete id="txtPaciente"  
+                                            class="autoComplete-Sum" 
+                                            styleClass="autoComplete-Sum" 
+                                            panelStyle="autoComplete-Sum" 
+                                            inputStyleClass="autoComplete-Sum" 
+                                            value="#{dispensacionDirectaMB.pacienteExtended}"
+                                            completeMethod="#{dispensacionDirectaMB.autoCompletePacientes}"
+                                            minQueryLength="4"
+                                            queryDelay="500"                                                             
+                                            maxResults="50" 
+                                            forceSelection="true" 
+                                            cacheTimeout="0" 
+                                            var="paciente" 
+                                            placeholder="Filtro Pacientes" 
+                                            cache="false"
+                                            emptyMessage="No se encontraron registros"
+                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" itemValue="#{paciente}" 
+                                            converter="musGenericConverter"
+                                            style="height: 20px !important; width: 300px;  margin: 5px;"
+                                            >
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Número de Paciente" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.pacienteNumero}" style=" font-size: small;" />
+                                    </p:column>                                                
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Nombre" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                </p:autoComplete>
+                            </div>
+                            <p:commandButton id="btnPaciente" value="Buscar" 
+                                             actionListener="#{dispensacionDirectaMB.buscarFoliorPaciente}"  
+                                             style="margin-right: 5px; float: right; padding: 3px;" 
+                                             styleClass="btnMusAzul"
+                                             update=" :listFolios, txtPaciente" 
+                                             oncomplete="if(args.estatus){PF('carDialog').show()}else{PF('mdlBusquedaFolio').hide()}">
+                            </p:commandButton>
+                             <p:commandButton id="btnFolio" value="Asignar" 
+                                                styleClass="btnMusAzul"
+                                                actionListener="#{dispensacionDirectaMB.buscarFoliorPaciente}"  
+                                                style="margin-right: 5px; float: right; padding: 3px;">
+                            </p:commandButton>
+                            <script>
+                                $('#frmSearchFolio\\:txtFolio').attr('style', 'display: none ;');
+                                $('#frmSearchFolio\\:txtPaciente').attr('style', 'display: none ;');
+                                $('#frmSearchFolio\\:txtPaciente').val('null');
+                                $('#frmSearchFolio\\:btnFolio').attr('style', 'display: none ;');
+                                $('#frmSearchFolio\\:btnPaciente').attr('style', 'display: none ;');
+                                $(document).ready(function() {
+                                    $('#frmSearchFolio\\:filterSearchDevolucion_0').on('click',function(){
+                                            $('#frmSearchFolio\\:txtFolio').attr('style', 'display: none !important;');
+                                            $('#frmSearchFolio\\:txtFolio').attr('style', 'display: none ;');
+                                            $('#frmSearchFolio\\:txtPaciente').attr('style', 'display: none ;');
+                                            $('#frmSearchFolio\\:txtPaciente').val('null');
+                                            $('#frmSearchFolio\\:textFilter').text('');
+                                            $('#frmSearchFolio\\:btnFolio').attr('style', 'display: none ;');
+                                            $('#frmSearchFolio\\:btnPaciente').attr('style', 'display: none ;');
+                                    });
+                                    $('#frmSearchFolio\\:filterSearchDevolucion_2').on('click',function(){
+                                            $('#frmSearchFolio\\:txtFolio').attr('style', 'display: none !important;');
+                                            $('#frmSearchFolio\\:txtPaciente').attr('style', 'display: inline-block ; ');
+                                            $('#frmSearchFolio\\:txtPaciente_input').attr('style', 'display: inline-block ; height: 20px !important; width: 300px !important; margin: 5px;');
+                                            $('#frmSearchFolio\\:textFilter').text('Paciente');
+                                            $('#frmSearchFolio\\:btnFolio').attr('style', 'display: none ;');
+                                            $('#frmSearchFolio\\:btnPaciente').attr('style', 'display:inline-block ; margin: 0px 0px 0px 5px;');
+                                    });
+                                    $('#frmSearchFolio\\:filterSearchDevolucion_1').on('click',function(){
+                                            $('#frmSearchFolio\\:txtPaciente').attr('style', 'display: none ;');
+                                            $('#frmSearchFolio\\:txtFolio').attr('style', 'display: inline-block ; height: 20px !important; width: 300px; margin: 5px;');
+                                            $('#frmSearchFolio\\:textFilter').text('Folio');
+                                            $('#frmSearchFolio\\:btnFolio').attr('style', 'display:inline-block ; margin: 0px 0px 0px 5px;');
+                                            $('#frmSearchFolio\\:btnPaciente').attr('style', 'display: none ;');
+                                    });
+                                  });
+                            </script>
+                        </h:form>
+                    </p:dialog>
+                    <style>
+                        #foliosModal{
+                            width: 45% !important;
+                        }
+                        .ui-inputgroup-addon-checkbox{
+                            display: inline;
+                        }
+                       
+                    </style>
+                    <p:dialog header="Folios" id="foliosModal" widgetVar="carDialog" modal="true" showEffect="blind" hideEffect="explode" resizable="false" style="">
+                        <p:outputPanel id="carDetail"  >
+                            <p:dataTable id="listFolios" widgetVar="tblMedEnv"  var="item"
+                                     styleClass="styleEventosPlanPrestacion" reflow="true" value="#{dispensacionDirectaMB.prescripcionExtendedList}"
+                                    emptyMessage="No existen registros para mostrar." style="margin-bottom:5px;" 
+                                    scrollRows="50" scrollable="true" liveScroll="true">
+                                    
+                                    <p:column style="text-align: left;width: 10%;" sortBy="#{item.folio}"  headerText="Folio">
+                                        <h:outputText value="#{item.folio}" class="altoColumn" />
+                                    </p:column>
+
+                                <p:column style="text-align: left;width:15%;" sortBy="#{item.nombrePaciente}"  headerText="Paciente">
+                                        <h:outputText value="#{item.nombrePaciente}" class="altoColumn" title="#{item.nombrePaciente}" />
+                                    </p:column>
+
+                                <p:column style="text-align: left;width: 10%;" sortBy="#{item.fechaPrescripcion}"  headerText="Fecha y Hora">
+                                        <h:outputText value="#{item.fechaPrescripcion}" class="altoColumn" >
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                        </h:outputText>
+                                    </p:column>
+                                
+                                <p:column style="text-align: left;width: 10%;"  headerText="Asignar">
+                                    <p:commandButton id="btnAsign"  tabindex="5" styleClass="btnMusAzul"
+                                            value="Asignar" style="margin:0; width: 100px;"
+                                            action="#{dispensacionDirectaMB.asignarMinistrado(item)}"
+                                            ajax="true"
+                                            update=" :frmNewDispensacion:msgModal:" 
+                                            onclick="PF('statusProcess').show();" 
+                                            oncomplete="if ( args.estatus ){ PF('mdlBusquedaFolio').hide(); } PF('carDialog').hide(); PF('statusProcess').hide();  " >
+                                        <p:confirm header="Asignación de prescripción"  message="¿ Está seguro que dseea asignar la dispensación directa al siguiente folo de prescripción #{item.folio}? " icon="pi pi-exclamation-triangle" />
+                                    </p:commandButton>
+                                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                        <p:commandButton value="Si"  type="button" styleClass="ui-confirmdialog-yes"   icon="fa fa-check"/>
+                                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" style="float: right !important;" icon="fa fa-times" />
+                                    </p:confirmDialog> 
+                                </p:column>
+                        </p:dataTable>
+                        </p:outputPanel>
+                    </p:dialog>
+                </div>                
+            </ui:define>
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

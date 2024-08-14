@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.seidor.ulises.mapper.ImpBCMapper" >
+    <select id="obtener" resultType="com.seidor.ulises.model.ImpBC" parameterType="com.seidor.ulises.model.ImpBC" >
+        SELECT id,
+            articulo,
+            bc,
+            operacion,
+            tratado,
+            error,
+            version,
+            fechaTratado,
+            orden,
+            nivelEmbalaje,
+            fechaCreacion,
+            unidadMedidaEan
+        FROM impBC
+        WHERE 1=1
+        <if test=" articulo != null ">
+            AND articulo = #{ articulo , jdbcType = VARCHAR }
+        </if>
+        <if test=" bc != null ">
+            AND bc = #{ bc , jdbcType = VARCHAR }
+        </if>
+        <if test=" operacion != null ">
+            AND operacion = #{ operacion , jdbcType = VARCHAR }
+        </if>
+        <if test=" tratado != null ">
+            AND tratado = #{ tratado , jdbcType = VARCHAR }
+        </if>
+        <if test=" error != null ">
+            AND error = #{ error , jdbcType = VARCHAR }
+        </if>
+        <if test=" version != null ">
+            AND version = #{ version , jdbcType = INTEGER }
+        </if>
+        <if test=" fechaTratado != null ">
+            AND fechaTratado = #{ fechaTratado , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" orden != null ">
+            AND orden = #{ orden , jdbcType = INTEGER }
+        </if>
+        <if test=" nivelEmbalaje != null ">
+            AND nivelEmbalaje = #{ nivelEmbalaje , jdbcType = INTEGER }
+        </if>        
+        <if test=" fechaCreacion != null ">
+            AND fechaCreacion = #{ fechaCreacion , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" unidadMedidaEan != null ">
+            AND unidadMedidaEan = #{ unidadMedidaEan , jdbcType = VARCHAR }
+        </if>
+        LIMIT 0, 1
+    </select>
+
+    <select id="obtenerLista" resultType="com.seidor.ulises.model.ImpBC" parameterType="com.seidor.ulises.model.ImpBC" >
+        SELECT id,
+            articulo,
+            bc,
+            operacion,
+            tratado,
+            error,
+            version,
+            fechaTratado,
+            orden,
+            nivelEmbalaje,
+            fechaCreacion,
+            unidadMedidaEan
+        FROM impBC
+        WHERE 1=1
+        <if test=" articulo != null ">
+            AND articulo = #{ articulo , jdbcType = VARCHAR }
+        </if>
+        <if test=" bc != null ">
+            AND bc = #{ bc , jdbcType = VARCHAR }
+        </if>
+        <if test=" operacion != null ">
+            AND operacion = #{ operacion , jdbcType = VARCHAR }
+        </if>
+        <if test=" tratado != null ">
+            AND tratado = #{ tratado , jdbcType = VARCHAR }
+        </if>
+        <if test=" error != null ">
+            AND error = #{ error , jdbcType = VARCHAR }
+        </if>
+        <if test=" version != null ">
+            AND version = #{ version , jdbcType = INTEGER }
+        </if>
+        <if test=" fechaTratado != null ">
+            AND fechaTratado = #{ fechaTratado , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" orden != null ">
+            AND orden = #{ orden , jdbcType = INTEGER }
+        </if>
+        <if test=" nivelEmbalaje != null ">
+            AND nivelEmbalaje = #{ nivelEmbalaje , jdbcType = INTEGER }
+        </if>        
+        <if test=" fechaCreacion != null ">
+            AND fechaCreacion = #{ fechaCreacion , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" unidadMedidaEan != null ">
+            AND unidadMedidaEan = #{ unidadMedidaEan , jdbcType = VARCHAR }
+        </if>
+    </select>
+        
+    <insert id="insertar" parameterType="com.seidor.ulises.model.ImpBC" >
+        INSERT INTO impBC (
+            articulo,
+            bc,
+            operacion,
+            tratado,
+            error,
+            version,
+            fechaTratado,
+            orden,
+            nivelEmbalaje,
+            fechaCreacion,
+            unidadMedidaEan
+        ) VALUES (
+            #{ articulo , jdbcType = VARCHAR }
+            , #{ bc , jdbcType = VARCHAR }
+            , #{ operacion , jdbcType = VARCHAR }
+            , #{ tratado , jdbcType = VARCHAR }
+            , #{ error , jdbcType = VARCHAR }
+            , #{ version , jdbcType = INTEGER }
+            , #{ fechaTratado , jdbcType = TIMESTAMP }
+            , #{ orden , jdbcType = INTEGER }
+            , #{ nivelEmbalaje , jdbcType = INTEGER }
+            , #{ fechaCreacion , jdbcType = TIMESTAMP }
+            , #{ unidadMedidaEan , jdbcType = VARCHAR }
+        )
+    </insert>
+
+    <insert id="registraImpBCList" parameterType="java.util.List" useGeneratedKeys="false" >
+        INSERT INTO impBC (
+            articulo,
+            bc,
+            operacion,
+            tratado,
+            error,
+            version,
+            fechaTratado,
+            orden,
+            nivelEmbalaje,
+            fechaCreacion,
+            unidadMedidaEan
+        ) VALUES
+        <foreach collection="list" item="item" separator="," index="index">  
+        (
+            #{ item.articulo , jdbcType = VARCHAR }
+            , #{ item.bc , jdbcType = VARCHAR }
+            , #{ item.operacion , jdbcType = VARCHAR }
+            , #{ item.tratado , jdbcType = VARCHAR }
+            , #{ item.error , jdbcType = VARCHAR }
+            , #{ item.version , jdbcType = INTEGER }
+            , #{ item.fechaTratado , jdbcType = TIMESTAMP }
+            , #{ item.orden , jdbcType = INTEGER }
+            , #{ item.nivelEmbalaje , jdbcType = INTEGER }
+            , #{ item.fechaCreacion , jdbcType = TIMESTAMP }
+            , #{ item.unidadMedidaEan , jdbcType = VARCHAR }
+        )
+        </foreach>
+    </insert>
+</mapper>

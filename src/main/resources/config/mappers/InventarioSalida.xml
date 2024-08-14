@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.InventarioSalidaMapper">
+    
+    <select id="obtener" resultType="mx.mc.model.InventarioSalida" parameterType="mx.mc.model.InventarioSalida">
+        SELECT idInventarioSalida, idInventario, idEstructura, cantidad, costoUnidosis, idTipoMotivo, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM inventarioSalida
+        WHERE 1=1        
+        <if test="idInventarioSalida != null">   AND idInventarioSalida = #{idInventarioSalida,jdbcType=VARCHAR}</if>
+        <if test="idInventario != null">         AND idInventario  = #{idInventario,jdbcType=VARCHAR}</if>
+        <if test="idEstructura != null">         AND idEstructura  = #{idEstructura,jdbcType=VARCHAR}</if>
+        <if test="cantidad != null">             AND cantidad  = #{cantidad,jdbcType=INTEGER}</if>
+        <if test="costoUnidosis != null">        AND costoUnidosis  = #{costoUnidosis,jdbcType=DOUBLE}</if>
+        <if test="idTipoMotivo != null">         AND idTipoMotivo  = #{idTipoMotivo,jdbcType=INTEGER}</if>
+        <if test="insertFecha != null">          AND insertFecha  = #{insertFecha,jdbcType=DATE}</if>
+        <if test="insertIdUsuario != null">      AND insertIdUsuario  = #{insertIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="updateFecha != null">          AND updateFecha  = #{updateFecha,jdbcType=DATE}</if>
+        <if test="updateIdUsuario != null">      AND updateIdUsuario  = #{updateIdUsuario,jdbcType=VARCHAR}</if>        
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.InventarioSalida" parameterType="mx.mc.model.InventarioSalida">
+        SELECT idInventarioSalida, idInventario, idEstructura, cantidad, costoUnidosis, idTipoMotivo, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM inventarioSalida
+        WHERE 1=1        
+        <if test="idInventarioSalida != null">   AND idInventarioSalida = #{idInventarioSalida,jdbcType=VARCHAR}</if>
+        <if test="idInventario != null">         AND idInventario  = #{idInventario,jdbcType=VARCHAR}</if>
+        <if test="idEstructura != null">         AND idEstructura  = #{idEstructura,jdbcType=VARCHAR}</if>
+        <if test="cantidad != null">             AND cantidad  = #{cantidad,jdbcType=INTEGER}</if>
+        <if test="costoUnidosis != null">        AND costoUnidosis  = #{costoUnidosis,jdbcType=DOUBLE}</if>
+        <if test="idTipoMotivo != null">         AND idTipoMotivo  = #{idTipoMotivo,jdbcType=INTEGER}</if>
+        <if test="insertFecha != null">          AND insertFecha  = #{insertFecha,jdbcType=DATE}</if>
+        <if test="insertIdUsuario != null">      AND insertIdUsuario  = #{insertIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="updateFecha != null">          AND updateFecha  = #{updateFecha,jdbcType=DATE}</if>
+        <if test="updateIdUsuario != null">      AND updateIdUsuario  = #{updateIdUsuario,jdbcType=VARCHAR}</if>        
+    </select>
+    
+    <select id="obtenerDetalleInsumoSalida" resultType="mx.mc.model.InventarioSalida" parameterType="MAP">
+        SELECT 
+        i.idInventario,
+        i.idEstructura,
+        i.fechaCaducidad,
+        m.idMedicamento, 
+        m.claveInstitucional as clave, 
+        m.nombreCorto, 
+        p.nombrePresentacion as presentacion,  
+        (i.cantidadActual - ifnull(v.cantidadComprometida,0)) as existencia,
+        i.costoUnidosis,
+        i.activo,
+        m.activo,
+        i.lote,
+        i.cantidadXCaja as cantidad,
+        i.presentacionComercial as idTipoMotivo 
+        FROM inventario i
+            inner join medicamento m on i.idInsumo=m.idMedicamento
+            left join vwAlmacenInsumoComprometido v on v.idInsumo=i.idInsumo
+            <if test="tipoAlmacen != 2">
+                inner join presentacionMedicamento p on p.idPresentacion = m.idPresentacionSalida
+            </if>
+            <if test="tipoAlmacen == 2">
+                inner join presentacionMedicamento p on p.idPresentacion = m.idPresentacionEntrada
+            </if>
+        where 
+            i.idEstructura=#{idEstructura,jdbcType=VARCHAR}
+            and i.lote=#{idLote,jdbcType=VARCHAR}
+            and m.claveInstitucional=#{clave,jdbcType=VARCHAR}
+        limit 1
+            ; 
+    </select>
+    <select id="obtenerDetalleInsumoSalida2" resultType="mx.mc.model.InventarioSalida" parameterType="MAP">
+        SELECT 
+        i.idInventario,
+        i.idEstructura,
+        i.fechaCaducidad,
+        m.idMedicamento, 
+        m.claveInstitucional as clave, 
+        m.nombreCorto, 
+        p.nombrePresentacion as presentacion,  
+        (i.cantidadActual - ifnull(v.cantidadComprometida,0)) as existencia,
+        i.costoUnidosis,
+        i.activo,
+        m.activo,
+        i.lote,
+        i.cantidadXCaja as cantidad,
+        i.presentacionComercial as idTipoMotivo 
+        FROM inventario i
+            inner join medicamento m on i.idInsumo=m.idMedicamento
+            left join vwAlmacenInsumoComprometido v on v.idInsumo=i.idInsumo
+            <if test="tipoAlmacen != 2">
+                inner join presentacionMedicamento p on p.idPresentacion = m.idPresentacionSalida
+            </if>
+            <if test="tipoAlmacen == 2">
+                inner join presentacionMedicamento p on p.idPresentacion = m.idPresentacionEntrada
+            </if>
+        where 
+            i.idInventario=#{idInventario,jdbcType=VARCHAR};  
+    </select>
+    <insert id="insertarLista" parameterType="Map">    	
+            INSERT INTO inventarioSalida(
+                idInventarioSalida
+                ,idInventario
+                ,idEstructura
+                ,cantidad
+                ,costoUnidosis
+                ,idTipoMotivo
+                ,notas
+                ,insertFecha
+                ,insertIdUsuario
+                ,updateFecha
+                ,updateIdUsuario
+            )            
+            VALUES 
+                <foreach collection="listaAjusteInventario" item="item" separator="," index="index"> 
+                (             
+                    #{item.idInventarioSalida,jdbcType=VARCHAR}
+                    ,#{item.idInventario,jdbcType=VARCHAR}
+                    ,#{item.idEstructura,jdbcType=VARCHAR}
+                    ,#{item.cantidad,jdbcType=INTEGER}
+                    ,#{item.costoUnidosis,jdbcType=DOUBLE}
+                    ,#{item.idTipoMotivo,jdbcType=INTEGER}
+                    ,#{item.notas,jdbcType=VARCHAR}
+                    ,#{item.insertFecha,jdbcType=DATE}
+                    ,#{item.insertIdUsuario,jdbcType=VARCHAR}
+                    ,#{item.updateFecha,jdbcType=DATE}
+                    ,#{item.updateIdUsuario,jdbcType=VARCHAR}
+                )
+                </foreach>
+    </insert>
+    <update id="actualizar" parameterType="mx.mc.model.InventarioSalida" >
+        UPDATE inventarioSalida
+        <set>               
+            <if test="idInventario != null">         idInventario  = #{idInventario,jdbcType=VARCHAR}</if>
+            <if test="idEstructura != null">         ,idEstructura  = #{idEstructura,jdbcType=VARCHAR}</if>
+            <if test="cantidad != null">             ,cantidad  = #{cantidad,jdbcType=INTEGER}</if>
+            <if test="costoUnidosis != null">        ,costoUnidosis  = #{costoUnidosis,jdbcType=DOUBLE}</if>
+            <if test="idTipoMotivo != null">         ,idTipoMotivo  = #{idTipoMotivo,jdbcType=INTEGER}</if>
+            <if test="insertFecha != null">          ,insertFecha  = #{insertFecha,jdbcType=DATE}</if>
+            <if test="insertIdUsuario != null">      ,insertIdUsuario  = #{insertIdUsuario,jdbcType=VARCHAR}</if>
+            <if test="updateFecha != null">          ,updateFecha  = #{updateFecha,jdbcType=DATE}</if>
+            <if test="updateIdUsuario != null">      ,updateIdUsuario  = #{updateIdUsuario,jdbcType=VARCHAR}</if>       
+        </set>
+        WHERE 1=1        
+         idInventarioSalida = #{idInventarioSalida,jdbcType=VARCHAR}
+    </update>
+</mapper>

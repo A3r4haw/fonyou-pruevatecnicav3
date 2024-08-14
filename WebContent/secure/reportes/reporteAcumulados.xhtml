@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>REPORTE DE ACUMULADOS</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="movGralesId" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="REPORTE DE ACUMULADOS" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Inicio" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" value="#{repAcumuladosMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repAcumuladosMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Fin" />
+                                            <br/>
+                                            <p:calendar id="txtFechaFin" value="#{repAcumuladosMB.paramBusquedaReporte.fechaFin}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repAcumuladosMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                            <p:ajax event="dateSelect" listener="#{repAcumuladosMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Tipo Acumulado" />
+                                            <br/>
+                                           <p:selectOneMenu id="comboAcumulados" 
+                                                            value="#{repAcumuladosMB.acumulado}"                                                            
+                                                             >                                                 
+                                                <f:selectItem itemValue="1"
+                                                               itemLabel="Clave"/>
+                                                <f:selectItem itemValue="2"
+                                                               itemLabel="Médico"/>
+                                                <f:selectItem itemValue="3"
+                                                               itemLabel="Paciente"/>                                                
+                                                  <f:selectItem itemValue="4"
+                                                               itemLabel="Colectivo"/>
+                                                  
+                                                  <p:ajax process="@parent" update="txtPaciente,comboTipoReceta,comboMedico"                                                           
+                                                        global="false"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Tipo Origen" />
+                                            <br/>
+
+                                            <p:selectOneMenu id="comboTipoOrigen" 
+                                                             value="#{repAcumuladosMB.paramBusquedaReporte.idTipoOrigen}"
+                                                             rendered="#{repAcumuladosMB.activaCamposReporteAcumulados}"
+                                                             style="width:125px;vertical-align:middle;">
+                                                <f:selectItem itemLabel="--Selecciona--" itemValue="" />
+                                                <f:selectItem itemLabel="Administración" itemValue="1" />
+                                                <f:selectItem itemLabel="Compra Directa" itemValue="2" />                                               
+                                                <p:ajax update="" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                       
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2" style="margin-top: 0px">                                            
+                                            <p:commandButton value="Generar Reporte"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{repAcumuladosMB.consultar}"
+                                                             update=":formTablaMovimientos, :mainForm:msg, :mainForm:comboMedico"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"                                                               
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" rendered="#{repAcumuladosMB.activaCamposReporteAcumulados}" value="Insumos" />
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" rendered="#{!repAcumuladosMB.activaCamposReporteAcumulados}" value="Medicamento" />
+                                            <br/>
+                                            <p:autoComplete id="txtInsumo" 
+                                                            multiple="true"
+                                                            rendered="#{repAcumuladosMB.activaCamposReporteAcumulados}"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{repAcumuladosMB.paramBusquedaReporte.listInsumos}"
+                                                            completeMethod="#{repAcumuladosMB.autocompleteInsumo}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="insum" 
+                                                            placeholder="Filtro Insumos" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{insum.nombreCorto}" itemValue="#{insum}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="#{!repAcumuladosMB.permiso.puedeEditar}" 
+                                                            scrollHeight = "350" >
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                            
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left;  overflow-x:auto; overflow-y: auto;"  >
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Pacientes"  rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}}" />
+                                            <br/>
+                                            <p:autoComplete id="txtPaciente"                                                                                                                        
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{repAcumuladosMB.paramBusquedaReporte.pacienteList}"
+                                                            completeMethod="#{repAcumuladosMB.autocompletePaciente}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500"                                                             
+                                                            maxResults="50" 
+                                                            scrollHeight="300"
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="paciente" 
+                                                            placeholder="Filtro Pacientes" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" itemValue="#{paciente}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="#{repAcumuladosMB.acumulado eq 1? true: repAcumuladosMB.acumulado eq 2? true:repAcumuladosMB.acumulado eq 3?false:true}"
+                                                            
+                                                            >
+                                            </p:autoComplete>
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;" value="Servicio" />
+                                            <br/>
+                                            <p:selectOneMenu id="servicio" 
+                                                             value="#{repAcumuladosMB.idServicio}"
+                                                             autoWidth="false"
+                                                             style="width:120px;vertical-align:middle;"
+                                                             filter="true"
+                                                             filterMatchMode="contains" >
+                                                <f:selectItems value="#{repAcumuladosMB.listaServicios}"
+                                                               var="servicio"
+                                                               itemValue="#{servicio.idEstructura}"
+                                                               itemLabel="#{servicio.nombre}"/>
+                                            </p:selectOneMenu>
+                                            
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+
+                                            <p:menuButton value="Exportar Archivo" style="margin-top: 15px; width: 200px; margin-left: 8px">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{repAcumuladosMB.imprimeReporteMovAcumulados()}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"
+                                                            />
+
+                                                <p:menuitem value="Formato EXCEL"
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false"
+                                                            actionListener="#{repAcumuladosMB.generaExcelGeneral}"
+                                                            />
+                                            </p:menuButton>
+
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px; font-weight: bolder;">Médico</p:outputLabel>
+                                            <br/>
+                                            <p:selectOneMenu id="comboMedico" 
+                                                             value="#{repAcumuladosMB.idMedico}"
+                                                             disabled="#{repAcumuladosMB.acumulado eq 1? true: repAcumuladosMB.acumulado eq 3? true:repAcumuladosMB.acumulado eq 2?false:true}"
+                                                             style="margin-right: 10px;vertical-align: middle;" 
+                                                             filter="true" filterMatchMode="contains"
+                                                             tabindex="2" >
+                                                <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" />
+                                                <f:selectItems value="#{repAcumuladosMB.listaMedicos}"
+                                                               var="medico"
+                                                               itemValue="#{medico.idUsuario}"
+                                                               itemLabel="#{medico.nombre} #{medico.apellidoPaterno} #{medico.apellidoMaterno}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px; font-weight: bolder;">Tipo Insumo</p:outputLabel>
+                                            <br/>
+                                             <p:selectOneMenu id="comboTipoInsumo" 
+                                                              value="#{repAcumuladosMB.paramBusquedaReporte.tipoInsumo}"                                                             
+                                                             style="width:125px;vertical-align:middle;">
+                                                <f:selectItem itemLabel="--Selecciona--" itemValue="#{null}" />
+                                                <f:selectItem itemLabel="Medicamento" itemValue="38" />
+                                                <f:selectItem itemLabel="Material" itemValue="39" />                                               
+                                                <p:ajax update="" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px; font-weight: bolder;">Tipo Receta</p:outputLabel>
+                                            <br/>
+                                            <p:selectOneMenu id="comboTipoReceta" 
+                                                             disabled="#{repAcumuladosMB.acumulado eq 4? true : false}"
+                                                             value="#{repAcumuladosMB.paramBusquedaReporte.tipoReceta}"                                                             
+                                                             style="width:125px;vertical-align:middle;">
+                                                <f:selectItem itemLabel="--Selecciona--" itemValue="N" />
+                                                <f:selectItem itemLabel="Normal" itemValue="E" />
+                                                <f:selectItem itemLabel="Controlado" itemValue="F" /> 
+                                                <f:selectItem itemDisabled="#{repAcumuladosMB.acumulado eq 3 ? true : false}" itemLabel="Colectivo" itemValue="" /> 
+
+                                            </p:selectOneMenu>
+                                        </div>
+                                            
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form><br />
+                    <h:form id="formTablaMovimientos" >
+<style type="text/css">
+    .ui-datatable-header {
+        height: 20px
+    }
+</style>
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     value="#{repAcumuladosMB.reporteAcumuladosLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="font-size: x-small !important; width: 100% !important;"
+                                     >
+
+                            <p:column class="" headerText="CLAVE" style="width: 5%; " >
+                                <h:outputText value="#{result.claveMedicamento}"/>
+                            </p:column>
+                            <p:column class="" headerText="NOMBRE MEDICAMENTO"  style="width: 10%;">
+                                <h:outputText value="#{result.nombreMedicamento}"/>
+                            </p:column>
+                                                   
+                            <p:column class="" headerText="CADUCIDAD" style="width: 5%;">
+                                <h:outputText value="#{result.fechaCaducidad}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="CANTIDA ENVIADA" style="width: 5%;">
+                                <h:outputText value="#{result.cantidadEnviada}"/>
+                            </p:column>
+                            <p:column class="" headerText="LOTE" style="width: 5%;">
+                                <h:outputText value="#{result.lote}"/>
+                            </p:column>
+                            <p:column class="" headerText="FOLIO" style="width: 5%;">
+                                <h:outputText value="#{result.folio}"/>
+                            </p:column>
+                            <p:column class="" headerText="CANT. SURTIDA" style="width: 5%;">
+                                <h:outputText value="#{result.cantidadSurtida}"/>
+                            </p:column>
+                            <p:column class="" headerText="MÉDICO" style="width: 5%;">
+                                <h:outputText value="#{result.medico}"/>
+                            </p:column>
+                            <p:column class="" headerText="SERVICIO" style="width: 5%;">
+                                <h:outputText value="#{result.servicio}"/>
+                            </p:column>
+                            <p:column class="" headerText="PACIENTE" style="width: 5%;">
+                                <h:outputText value="#{result.paciente}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>	
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes" 
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

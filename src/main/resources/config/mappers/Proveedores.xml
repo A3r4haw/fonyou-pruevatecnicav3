@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ProveedorMapper" >
+    
+    <select id="obtener" resultType="mx.mc.model.Proveedor" parameterType="mx.mc.model.Proveedor">
+        SELECT idProveedor,nombreProveedor,telefono,empresa,domicilio,
+        correo,rfc,insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+        FROM proveedor
+        WHERE 1 = 1
+        <if test="idProveedor != null">
+            AND  idProveedor = #{idProveedor, jdbcType = VARCHAR}
+        </if>
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Proveedor" parameterType="mx.mc.model.Proveedor">
+        SELECT idProveedor,nombreProveedor,telefono,empresa,domicilio,
+        correo,rfc,insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+        FROM proveedor
+        WHERE 1 = 1
+        <if test="idProveedor != null">
+            AND  idProveedor = #{idProveedor, jdbcType = VARCHAR}
+        </if>
+    </select>
+    
+    <select id="obtenerProveedorByName" resultType="mx.mc.model.Proveedor" parameterType="mx.mc.model.Proveedor">
+        SELECT idProveedor,nombreProveedor,telefono,empresa,domicilio,
+        correo,rfc,insertFecha,insertIdUsuario,updateFecha,updateIdUsuario 
+        FROM proveedor
+        WHERE 1= 1 
+        <if test="nombreProveedor != null">                   
+            AND nombreProveedor = #{ nombreProveedor , jdbcType = VARCHAR }        
+        </if>
+    </select>
+    
+    <select id="obtenerProveedores" resultType="mx.mc.model.Proveedor">
+        SELECT idProveedor,nombreProveedor,telefono,empresa,domicilio,
+        correo,rfc,insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+        FROM proveedor;
+    </select>
+  
+    <insert id="insertarProveedor" parameterType="mx.mc.model.Proveedor" >
+        INSERT INTO proveedor( 
+        <if test=" idProveedor != null ">
+            idProveedor
+        </if>    
+        <if test="nombreProveedor != null">
+            ,nombreProveedor
+        </if>
+        <if test="telefono != null">
+            ,telefono
+        </if>
+        <if test="empresa != null">
+            ,empresa
+        </if>
+        <if test="domicilio != null">
+            ,domicilio
+        </if>
+        <if test="correo != null">
+            ,correo
+        </if>
+        <if test="rfc != null">
+            ,rfc
+        </if>
+        <if test="insertFecha != null">
+            ,insertFecha
+        </if>
+        <if test="insertIdUsuario != null">
+            ,insertIdUsuario
+        </if>
+        <if test="updateFecha != null">
+            ,updateFecha
+        </if>
+        <if test="updateIdUsuario != null">
+            ,updateIdUsuario
+        </if> 
+        )
+        VALUES (
+        <if test="idProveedor != null">
+            #{idProveedor, jdbcType = VARCHAR}
+        </if>
+        <if test="nombreProveedor != null">
+            ,#{nombreProveedor, jdbcType = VARCHAR}
+        </if>
+        <if test="telefono != null">
+            ,#{telefono, jdbcType = VARCHAR}
+        </if>
+        <if test="empresa != null">
+            ,#{empresa, jdbcType = VARCHAR}
+        </if>
+        <if test="domicilio != null">
+            ,#{domicilio, jdbcType = VARCHAR}
+        </if>
+        <if test="correo != null">
+            ,#{correo, jdbcType = VARCHAR}
+        </if>
+        <if test="rfc != null">
+            ,#{rfc, jdbcType = VARCHAR}
+        </if>
+        <if test="insertFecha != null">
+            ,#{insertFecha, jdbcType = TIMESTAMP}
+        </if>
+        <if test="insertIdUsuario != null">
+            ,#{insertIdUsuario, jdbcType = VARCHAR}
+        </if>
+        <if test="updateFecha != null">
+            ,#{updateFecha, jdbcType = TIMESTAMP}
+        </if>
+        <if test="updateIdUsuario != null">
+            ,#{updateIdUsuario, jdbcType = VARCHAR}
+        </if>
+        )
+    </insert>
+    
+    <delete id="eliminarProveedor" parameterType="Map"  >
+        DELETE FROM proveedor
+        WHERE idProveedor = #{ idProveedor , jdbcType = VARCHAR }
+    </delete>
+    
+    <update id="editarProveedor" parameterType="mx.mc.model.Proveedor">
+        UPDATE proveedor
+        SET
+        <if test="idProveedor != null">
+            idProveedor = #{idProveedor, jdbcType = VARCHAR }
+        </if>
+        <if test="nombreProveedor != null">
+            ,nombreProveedor = #{nombreProveedor, jdbcType = VARCHAR }
+        </if>    
+        <if test="telefono != null">
+            ,telefono = #{telefono, jdbcType = VARCHAR }
+        </if>
+        <if test="empresa != null">
+            ,empresa = #{empresa, jdbcType = VARCHAR }
+        </if>
+        <if test="domicilio != null">
+            ,domicilio = #{domicilio, jdbcType = VARCHAR }
+        </if>
+        <if test="correo">
+            ,correo = #{correo, jdbcType = VARCHAR }
+        </if>
+        <if test="rfc != null">
+            ,rfc = #{rfc, jdbcType = VARCHAR }
+        </if>
+        <if test="insertFecha != null">
+            ,insertFecha = #{insertFecha, jdbcType = VARCHAR }
+        </if>
+        <if test="insertIdUsuario != null">
+            ,insertIdUsuario = #{insertIdUsuario, jdbcType = VARCHAR }
+        </if>
+        <if test="updateFecha != null">
+            ,updateFecha = #{updateFecha, jdbcType = VARCHAR }
+        </if>
+        <if test="updateIdUsuario != null">
+            ,updateIdUsuario = #{updateIdUsuario, jdbcType = VARCHAR }
+        </if>
+        WHERE idProveedor = #{idProveedor, jdbcType = VARCHAR}
+    </update>
+    
+    <select id="obtenerProvedor" resultType="mx.mc.model.Proveedor" parameterType="Map">
+        SELECT idProveedor,nombreProveedor,telefono,empresa,domicilio,
+        correo,rfc,insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+        FROM proveedor
+        WHERE 1 = 1
+        <if test="idProveedor != null">
+            AND  idProveedor = #{idProveedor, jdbcType = VARCHAR}
+        </if>
+    </select>
+</mapper>

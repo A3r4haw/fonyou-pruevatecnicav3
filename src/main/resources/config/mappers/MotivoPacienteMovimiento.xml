@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.MotivoPacienteMovimientoMapper" >
+ 
+    <select id="obtenerLista" resultType="mx.mc.model.MotivoPacienteMovimiento" parameterType="mx.mc.model.MotivoPacienteMovimiento" >
+        SELECT idmotivoPacienteMovimiento,nombreMotivoPacienteMovimiento,tipoMovimiento,activo
+        FROM motivoPacienteMovimiento
+        WHERE 1 = 1
+        <if test=" idmotivoPacienteMovimiento != null ">
+            AND idmotivoPacienteMovimiento = #{ idmotivoPacienteMovimiento , jdbcType = INTEGER }
+        </if>
+        <if test=" nombreMotivoPacienteMovimiento != null ">
+            AND nombreMotivoPacienteMovimiento = #{ nombreMotivoPacienteMovimiento , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipoMovimiento != null ">
+            AND tipoMovimiento = #{ tipoMovimiento , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = VARCHAR }
+        </if>
+    </select>
+        
+</mapper>

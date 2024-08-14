@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">
+
+                <div class="mainPanel" >
+                    <h:form id="mainForm">
+                        <p:focus context="mainForm"/>
+
+                        <div id="busqueda">
+                            <p:outputLabel value="Roles"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+                            <p:spacer width="10"/>
+                            <p:inputText id="busqueda" 
+                                         value="#{seguridadMB.cadenaBusqueda}" 
+                                         style="width: 50% !important;" 
+                                         class="textSearch"
+                                         placeholder="Buscar..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona enter para buscar" alt="15" style=""/>
+                            </i>
+                            <p:spacer width="10px" />
+
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); "
+                                             actionListener="#{seguridadMB.obtenerRoles}"
+                                             update="@form"  />
+                        </div>
+                        <p:messages id="validaMsg" globalOnly="true" showSummary="true"  closable="true" showDetail="false" rendered="#{!seguridadMB.msjRol}"  />
+                        <br />
+
+                        <p:toolbar>
+                            <p:toolbarGroup id="toolbar" >
+                                <p:commandButton id="btnCrear" value="Agregar" 
+                                                 title="Agregar Nuevo Rol" icon="fa fa-plus"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalRegistro').show();"                                               
+                                                 actionListener="#{seguridadMB.creaRegistro}" 
+                                                 class="btnNew" styleClass="btnMusAzul" style=" margin: 5px 0; "
+                                                 rendered="#{seguridadMB.permiso.puedeCrear}"  
+                                                 ajax="true"  update=":formRegistro"
+                                                 disabled="#{!seguridadMB.permiso.puedeCrear}"
+                                                 />&nbsp;&nbsp;
+
+                                <p:commandButton id="btnModificar" value="Modificar"
+                                                 title="Modificar Rol" icon="ui-icon-pencil"
+                                                 onclick="PF('statusProcess').show()"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalRegistro').show();"
+                                                 actionListener="#{seguridadMB.editaRegistro}" 
+                                                 update=":formRegistro"
+                                                 ajax="true"
+                                                 disabled="#{!seguridadMB.permiso.puedeEditar or !seguridadMB.elementoSeleccionado}"
+                                                 rendered="#{seguridadMB.permiso.puedeCrear or seguridadMB.permiso.puedeEditar}"  
+                                                 />&nbsp;&nbsp;
+
+                                <p:commandButton id="btnInactivar" value="Inactivar"
+                                                 title="Inhablitar Rol" icon="fa fa-ban" 
+                                                 update="@form"
+                                                 disabled="#{!seguridadMB.permiso.puedeEliminar or !seguridadMB.elementoSeleccionado}"
+                                                 rendered="false"
+                                                 />
+
+                                <p:commandButton id="btnEliminar" value="Eliminar"
+                                                 title="Eliminar Rol" icon="ui-icon-trash" 
+                                                 update="@form"
+                                                 disabled="#{!seguridadMB.permiso.puedeEliminar or !seguridadMB.elementoSeleccionado}"
+                                                 rendered="false" />
+
+                            </p:toolbarGroup>
+                        </p:toolbar>
+                        
+                        <p:outputLabel value="No tiene permiso de visualización de esta transacción." 
+                               style="font-size: 18px !important; font-weight: bold; color: red;"
+                               rendered="#{!seguridadMB.permiso.puedeVer}" />
+
+                        <p:outputPanel id="dataTable">
+                            <p:dataTable id="tblRoles" 
+                                         widgetVar="tblRoles" 
+                                         value="#{seguridadMB.rolList}"
+                                         selection="#{seguridadMB.rolSelected}"
+                                         var="item" 
+                                         rowKey="#{item.idRol}"
+                                         rowIndexVar="row"
+                                         selectionMode="single"
+                                         style="margin-bottom:5px;"
+                                         scrollRows="10" scrollable="true" scrollHeight="350"
+                                         emptyMessage="No se encontraron Registros"
+                                         rendered="#{seguridadMB.permiso.puedeVer}" >
+
+                                <p:ajax event="rowUnselect" listener="#{seguridadMB.onRowUnselect}" update=":mainForm:btnModificar :mainForm:btnInactivar "  />
+                                <p:ajax event="rowSelect" listener="#{seguridadMB.onRowSelect}" update=":mainForm:btnModificar :mainForm:btnInactivar " />
+
+                                <p:column style="text-align: left; width: 150px;"
+                                          sortBy="#{item.nombre}"
+                                          filterBy="#{item.nombre}" filterStyle="filterStyle" filterMatchMode="contains" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Nombre Rol" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombre} " />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 300px;"
+                                          filterBy="#{item.descripcion}"
+                                          filterStyle="filterStyle"
+                                          filterMatchMode="contains"
+                                          sortBy="#{item.descripcion}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Descripcion" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.descripcion} " />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 100px;" sortBy="#{item.activo}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Activo" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.activo ? 'SI' : 'NO'}" ></h:outputText>
+                                </p:column>
+
+                                <f:facet name="footer" >
+                                    <p:outputLabel class="footerLabel" >
+                                        #{seguridadMB.sizeRolList} Registros han sido encontrados.
+                                    </p:outputLabel> 
+                                </f:facet>
+                            </p:dataTable>
+
+                            <p:contextMenu for="tblRoles">
+                                <p:menuitem id="btnModificarContext" value="Ver / Modificar"
+                                            onclick="PF('statusProcess').show()"
+                                            oncomplete="PF('statusProcess').hide(); PF('modalRegistro').show();"
+                                            actionListener="#{seguridadMB.editaRegistro}" 
+                                            update=":formRegistro"
+                                            icon="ui-icon-pencil"
+                                            disabled="#{!seguridadMB.permiso.puedeEditar}" />
+
+                                <p:menuitem id="btnInactivarContext" value="Activar/Inactivar"
+                                            title="Cambiar Estatus Rol" icon="fa fa-ban" 
+                                            onclick="PF('statusProcess').show()"
+                                            oncomplete="PF('statusProcess').hide(); PF('modalInactiva').show();"
+
+                                            update=":formInactiva"
+                                            rendered="true" 
+                                            disabled="#{!seguridadMB.permiso.puedeEliminar}" />
+
+                                <p:menuitem id="btnEliminarContext" value="Eliminar"
+                                            title="Eliminar Rol" icon="fa fa-trash" 
+                                            onclick="PF('statusProcess').show()"
+                                            oncomplete="PF('statusProcess').hide(); PF('modalElimina').show();"
+                                            actionListener="#{seguridadMB.validaEliminaRegistro}"
+                                            update=":formElimina,mainForm:btnInactivar,:mainForm:btnModificar"
+                                            rendered="true" 
+                                            disabled="#{!seguridadMB.permiso.puedeEliminar}" />
+                            </p:contextMenu>
+
+                        </p:outputPanel>
+                    </h:form>
+                </div>
+
+                <p:dialog header="Información del Rol"
+                          widgetVar="modalRegistro"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          width="70%" height="90%"
+                          style="" >
+
+                    <h:form id="formRegistro"  >
+
+                        <p:focus context="formRegistro"/>
+
+                        <p:messages id="msgValidaRegistro" globalOnly="false" showDetail="false" closable="true" showSummary="true" rendered="#{!seguridadMB.msjRol}" />
+
+                            <div align="center">
+                                <p:panelGrid >
+                                    <p:row style="height: 15px !important; border: #000 !important; "  >
+                                        <p:column >
+                                            <h3 style="text-align: center; background-color: gray; color: white; margin: 0px; padding: 0px !important; ">Datos del Rol</h3>
+                                        </p:column>  
+                                        <p:column >
+                                            <h3 style="text-align: center; background-color: gray; color: white; margin: 0px; padding: 0px !important; ">Transacciones</h3>
+                                        </p:column>  
+                                    </p:row>
+                                    <p:row  style="height: 100px;" >
+                                        <p:column width="45%">
+                                            <p:panelGrid columns="2">
+
+                                                <p:outputLabel value="Nombre Rol" for="txtNombreRol" />
+                                                <p:inputText id="txtNombreRol" style="width: 150px !important;"
+                                                             value="#{seguridadMB.rolSelected.nombre}"
+                                                             maxlength="20" />
+
+                                                <p:outputLabel value="Descripción" for="txtDescripcion" />
+                                                <p:inputText id="txtDescripcion" style="width: 250px !important; "
+                                                             value="#{seguridadMB.rolSelected.descripcion}"
+                                                             maxlength="45" />
+
+                                                <p:outputLabel value="Rol Activo" for="txtActivo" />
+                                                <p:selectBooleanButton id="txtActivo" onLabel="Si" offLabel="No"
+                                                                       onIcon="fa fa-check" offIcon="ui-icon-close"
+                                                                       class="#{seguridadMB.rolSelected.activo ? 'btnMusBoolAzul' :''}"
+                                                                       value="#{seguridadMB.rolSelected.activo}"    
+                                                                       >       
+                                                    <p:ajax update="formRegistro:txtActivo" />
+                                                </p:selectBooleanButton>
+
+                                            </p:panelGrid>
+                                        </p:column>
+                                        <p:column rowspan="5" width="55%" style="height: 100%; border-color: black !important" >
+                                            <p:tree id="transs"  value="#{seguridadMB.root}" var="node" selectionMode="checkbox" animate="true" 
+                                                    selection="#{seguridadMB.selectedNodes}" 
+                                                    style="width:400px; height: 450px; overflow: auto; display: block;"
+                                                    >
+                                                
+                                                <p:ajax event="select"  listener="#{seguridadMB.onNodeSelect}"  onstart="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update="formRegistro:lblSelectNode,formRegistro:Crear,formRegistro:Ver,formRegistro:Editar,formRegistro:Eliminar,formRegistro:Procesar,formRegistro:Autorizar,formRegistro:transs " />   
+                                                <p:ajax event="unselect"  listener="#{seguridadMB.onNodeUnselect}" onstart="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update="formRegistro:lblSelectNode,formRegistro:Crear,formRegistro:Ver,formRegistro:Editar,formRegistro:Eliminar,formRegistro:Procesar,formRegistro:Autorizar,formRegistro:transs "  />   
+                                                
+                                                <p:treeNode class="checkNode"  >
+                                                    <p:outputLabel value="#{node}" />
+                                                </p:treeNode>
+                                            </p:tree>                                                                            
+                                        </p:column>
+                                    </p:row>
+                                    <p:row style="height: 15px !important; border: #000 !important; "  >
+                                        <p:column >
+                                            <h3 style="text-align: center; background-color: gray; color: white; margin: 0px; padding: 0px !important; " >Transacción Actual</h3>
+                                        </p:column>                                        
+                                    </p:row><p:row style="height: 30px !important; border: #000 !important; "  >
+                                        <p:column >
+                                            <p:outputLabel id="lblSelectNode" value="#{seguridadMB.selectNode.data}" class="lbl-rol" />
+                                        </p:column>                                        
+                                    </p:row>
+                                    <p:row style="height: 15px !important; border: #000 !important; "  >
+                                        <p:column >
+                                            <h3 style="text-align: center; background-color: gray; color: white; margin: 0px; padding: 0px !important; ">Permisos</h3>
+                                        </p:column>                                        
+                                    </p:row>
+                                    <p:row style="height: 160px;" >
+                                        <p:column >                                            
+                                            <p:selectBooleanCheckbox id="Crear"  value="#{seguridadMB.checkCrear}" itemLabel="CREAR"  disabled="#{seguridadMB.seleccionado}" >
+                                                <p:ajax update="formRegistro:transs"  listener="#{seguridadMB.changeCheck(1)}" />
+                                            </p:selectBooleanCheckbox>
+                                            <br/>
+                                            <p:selectBooleanCheckbox id="Ver" value="#{seguridadMB.checkVer}" itemLabel="VER" disabled="#{seguridadMB.seleccionado}" >
+                                                <p:ajax update="formRegistro:transs" listener="#{seguridadMB.changeCheck(2)}"  />
+                                            </p:selectBooleanCheckbox>
+                                            <br/>
+                                            <p:selectBooleanCheckbox id="Editar" value="#{seguridadMB.checkEditar}" itemLabel="EDITAR" disabled="#{seguridadMB.seleccionado}" >
+                                                <p:ajax update="formRegistro:transs" listener="#{seguridadMB.changeCheck(3)}"  />
+                                            </p:selectBooleanCheckbox>
+                                            <br/>
+                                            <p:selectBooleanCheckbox id="Eliminar" value="#{seguridadMB.checkEliminar}"  itemLabel="ELIMINAR" disabled="#{seguridadMB.seleccionado}" >
+                                                <p:ajax update="formRegistro:transs" listener="#{seguridadMB.changeCheck(4)}"  />
+                                            </p:selectBooleanCheckbox>
+                                            <br/>
+                                            <p:selectBooleanCheckbox id="Procesar" value="#{seguridadMB.checkProcesar}" itemLabel="PROCESAR" disabled="#{seguridadMB.seleccionado}" >
+                                                <p:ajax  update="formRegistro:transs" listener="#{seguridadMB.changeCheck(5)}"  />
+                                            </p:selectBooleanCheckbox>
+                                            <br/>
+                                            <p:selectBooleanCheckbox id="Autorizar" value="#{seguridadMB.checkAutorizar}" itemLabel="AUTORIZAR" disabled="#{seguridadMB.seleccionado}" >
+                                                <p:ajax  update="formRegistro:transs" listener="#{seguridadMB.changeCheck(6)}"  />
+                                            </p:selectBooleanCheckbox>   
+                                        </p:column>                                        
+                                    </p:row>
+                                </p:panelGrid>
+                            </div>
+                    <div align="center">
+                        <p:commandButton id="btnGuardar" widgetVar="btnGuardar" value="Guardar"
+                                    class="btnNew" styleClass="btnMusAzul" style=" margin: 5px 0; " icon="fa fa-floppy-o"
+                                    rendered="#{seguridadMB.permiso.puedeCrear or seguridadMB.permiso.puedeEditar}" update=":formRegistro,:mainForm"
+                                    disabled="#{!seguridadMB.permiso.puedeCrear and !segseguridadMB.permiso.puedeEditar}"
+                                    onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('modalRegistro').hide();} "
+                                    actionListener="#{seguridadMB.validaRol()}"
+                                    >
+                       </p:commandButton>&nbsp;&nbsp;
+                        <p:commandButton id="btnCancel" 
+                                         widgetVar="btnCancel" 
+                                         value="Cancelar" 
+                                         title="Cancelar"
+                                         class="btnNew"  
+                                         style=" margin: 5px 0; " 
+                                         icon="fa fa-ban"
+                                         actionListener="#{seguridadMB.cancelarRegistro()}"
+                                         update=":mainForm"
+                                         oncomplete="PF('modalRegistro').hide(); "
+                                    >
+                       </p:commandButton>                       
+                    </div>
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="Información de Registro"
+                          id="confInactiva"
+                          widgetVar="modalInactiva"
+                          closeOnEscape="true"
+                          closable="true"                          
+                          modal="true" 
+                          style=" " >
+
+                    <h:form id="formInactiva" >
+
+                        <p:focus context="formInactiva"/>
+
+                        <p:messages id="msgValidaInactiva" globalOnly="false" showDetail="false" closable="true" />
+
+                        <p:panel >
+                            <div align="center">
+
+                                <br/>
+                                <p:outputLabel value="#{seguridadMB.rolSelected.nombre}" 
+                                               class="textoBotontamano1" />
+                                <br/>
+                                <p:outputLabel value="¿Esta Seguro que desea cambiar el Estatus de Rol?" 
+                                               style=" font-weight: bolder !important; color: red !important"/>
+                                <br/>
+                                <br/>
+
+                                <p:commandButton id="btnInactiva" widgetVar="btnInactiva" 
+                                                 value="Guardar" icon="fa fa-check" style="margin:0"
+                                                 actionListener="#{seguridadMB.inactivaRegistro}"
+                                                 update=":mainForm:tblRoles,:mainForm:validaMsg,:formRegistro:msgValidaRegistro,:formRegistro:msgValidaRegistro"
+                                                 process="@form"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('modalInactiva').hide(); } " />
+
+                                <br/>
+                                <br/>
+                            </div>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="Información de Registro"
+                          widgetVar="modalElimina"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          style="" >
+
+                    <h:form id="formElimina" >
+
+                        <p:focus context="formElimina"/>
+
+                        <p:messages id="msgValidaInactiva" globalOnly="false" showDetail="false" closable="true" />
+
+                        <p:panel >
+                            <div align="center">
+
+                                <br/>
+                                <p:outputLabel value="#{seguridadMB.rolSelected.nombre}" 
+                                               />
+                                <br/>
+                                <br/>
+                                <p:outputLabel value="Está seguro de Eliminar el Rol ?" 
+                                               style="font-weight: bolder !important; color: red !important"/>
+                                <br/>
+                                <br/>
+                                <br/>
+
+                                <p:commandButton id="btnElimina" widgetVar="btnElimina" 
+                                                 value="Eliminar" icon="fa fa-check" style="margin:0"
+                                                 actionListener="#{seguridadMB.eliminaRegistro}"
+                                                 update=":mainForm:tblRoles,:mainForm:validaMsg,:formRegistro:msgValidaRegistro,:formElimina,:mainForm:btnModificar "
+                                                 process="@form"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('modalElimina').hide(); } " />
+
+                                <br/>
+                                <br/>
+                            </div>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+
+</html>

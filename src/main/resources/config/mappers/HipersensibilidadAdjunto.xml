@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.HipersensibilidadAdjuntoMapper" >
+    
+    <insert id="insertarListaHiperAdjuntos" parameterType="Map">
+        <foreach collection="listaHiperAdjuntos" item="item" separator=";">
+            INSERT INTO hipersensibilidadAdjunto (
+            <if test="item.idHipersensibilidad != null"> idHipersensibilidad</if>
+            <if test="item.idAdjunto != null">, idAdjunto</if>
+            ) VALUES (
+            <if test="item.idHipersensibilidad != null"> #{item.idHipersensibilidad, jdbcType = VARCHAR }</if>
+            <if test="item.idAdjunto != null">, #{item.idAdjunto, jdbcType = INTEGER }</if>
+            )
+        </foreach>
+    </insert>
+</mapper>    

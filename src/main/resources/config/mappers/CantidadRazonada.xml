@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+
+<mapper namespace="mx.mc.mapper.CantidadRazonadaMapper">
+    <select id="cantidadRazonadaInsumo" resultType="mx.mc.model.CantidadRazonada" parameterType="Map" >
+        SELECT 
+            idcantidadRazonada,
+            claveInstitucional,
+            cantidadPresentacionComercial,
+            periodoPresentacionComercial,
+            cantidadDosisUnitaria,
+            periodoDosisUnitaira,
+            restrictiva,
+            comentarios,
+            activo,
+            insertIdUsuario,
+            insertFecha,
+            updateIdUsuario,
+            updateFecha
+        FROM
+            cantidadRazonada
+        WHERE
+            claveInstitucional = #{claveInstitucional}
+        LIMIT 1;
+    </select>    
+    <select id="cantidadRazonadaInsumoPaciente" resultType="mx.mc.model.CantidadRazonadaExtended" parameterType="Map" >
+        SELECT 
+            m.claveInstitucional,
+            cr.periodoPresentacionComercial,
+            cr.cantidadPresentacionComercial,
+            cr.periodoDosisUnitaira,
+            cr.cantidadDosisUnitaria,
+            s.fechaProgramada AS ultimoSurtimiento,
+            cr.periodoPresentacionComercial - TIMESTAMPDIFF(DAY, p.fechaPrescripcion, NOW()) AS diasRestantes,
+            p.tipoConsulta,
+            IF(ss1.totalDia IS NULL, 0, ss1.totalDia) AS totalSurtDia,
+            IF(ss2.totalMes IS NULL, 0, ss2.totalMes) AS totalSurtMes,
+            pi.fechaInicio AS fechaInicio,
+            DATE_ADD(pi.fechaInicio, INTERVAL cr.periodoPresentacionComercial DAY) AS siguienteSurt
+        FROM    prescripcion p
+            INNER JOIN   prescripcionInsumo pi ON pi.idPrescripcion = p.idPrescripcion
+            LEFT JOIN    surtimiento s ON s.idPrescripcion = p.idPrescripcion
+            INNER JOIN   surtimientoInsumo si ON (si.idSurtimiento = s.idSurtimiento AND si.idPrescripcionInsumo = pi.idPrescripcionInsumo)
+            LEFT JOIN    pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+            LEFT JOIN    visita v ON v.idVisita = ps.idVisita
+            INNER JOIN   paciente pa ON pa.idPaciente = v.idPaciente
+            INNER JOIN   medicamento m ON m.idMedicamento = pi.idInsumo
+            INNER JOIN   cantidadRazonada cr ON cr.claveInstitucional = m.claveInstitucional
+            LEFT JOIN   ( 	
+                SELECT 	m1.claveInstitucional, SUM(si1.cantidadEnviada) AS totalDia
+                FROM   surtimiento s1
+                    INNER JOIN surtimientoInsumo si1 ON si1.idSurtimiento = s1.idSurtimiento
+                    INNER JOIN prescripcionInsumo pi1 ON pi1.idPrescripcionInsumo = si1.idPrescripcionInsumo
+                    INNER JOIN prescripcion p1 ON (p1.idPrescripcion = pi1.idPrescripcion AND si1.idPrescripcionInsumo = pi1.idPrescripcionInsumo)
+                    INNER JOIN pacienteServicio ps1 ON ps1.idPacienteServicio = p1.idPacienteServicio
+                    INNER JOIN visita v1 ON v1.idVisita = ps1.idVisita
+                    INNER JOIN medicamento m1 ON m1.idMedicamento = pi1.idInsumo
+                    INNER JOIN cantidadRazonada cr1 ON cr1.claveInstitucional = m1.claveInstitucional
+                WHERE	DATE_FORMAT(s1.fechaProgramada, '%Y-%m-%d') = DATE_FORMAT(CURDATE(), '%Y-%m-%d')
+                    AND m1.idMedicamento = #{idInsumo}
+                    AND v1.idPaciente = #{idPaciente }
+                    AND s1.idEstatusSurtimiento in (2,3,4,6,8)
+                ) AS ss1 ON ss1.claveInstitucional = m.claveInstitucional
+            LEFT JOIN	(	
+                SELECT	m2.claveInstitucional, SUM(si2.cantidadEnviada) AS totalMes
+                FROM    surtimiento s2
+                    INNER JOIN   surtimientoInsumo si2 ON si2.idSurtimiento = s2.idSurtimiento
+                    INNER JOIN    prescripcionInsumo pi2 ON (pi2.idPrescripcionInsumo = si2.idPrescripcionInsumo)
+                    INNER JOIN    prescripcion p2 ON (p2.idPrescripcion = pi2.idPrescripcion AND si2.idPrescripcionInsumo = pi2.idPrescripcionInsumo)
+                    INNER JOIN    pacienteServicio ps2 ON ps2.idPacienteServicio = p2.idPacienteServicio
+                    INNER JOIN    visita v2 ON v2.idVisita = ps2.idVisita
+                    INNER JOIN    medicamento m2 ON m2.idMedicamento = pi2.idInsumo
+                    INNER JOIN    cantidadRazonada cr2 ON cr2.claveInstitucional = m2.claveInstitucional
+                WHERE
+                    CASE
+                        WHEN
+                            cr2.periodoPresentacionComercial - TIMESTAMPDIFF(DAY, p2.fechaPrescripcion, NOW()) &gt;= 0
+                        THEN
+                            s2.fechaProgramada BETWEEN s2.fechaProgramada AND DATE_ADD(s2.fechaProgramada, INTERVAL cr2.periodoPresentacionComercial DAY)
+                        WHEN
+                            cr2.periodoPresentacionComercial - TIMESTAMPDIFF(DAY, p2.fechaPrescripcion, NOW()) &lt; 0
+                        THEN
+                            s2.fechaProgramada BETWEEN DATE_ADD(s2.fechaProgramada, INTERVAL cr2.periodoPresentacionComercial DAY) AND CURDATE()
+                    END
+                AND m2.idMedicamento = #{idInsumo}
+                AND v2.idPaciente = #{idPaciente }
+                AND p2.idEstatusPrescripcion in ( 2, 3, 5, 6)
+                ORDER BY s2.fechaProgramada DESC
+            ) AS ss2 ON ss2.claveInstitucional = m.claveInstitucional
+        WHERE
+            m.idMedicamento = #{idInsumo}
+            AND pa.idPaciente = #{idPaciente }
+            AND si.idEstatusSurtimiento IN (2 , 3, 4, 6, 8)
+        ORDER BY s.fechaProgramada DESC
+        LIMIT 1
+        ;
+    </select>
+    
+    <select id="cantidadRazonadaInsumoPacienteExt" resultType="mx.mc.model.CantidadRazonadaExtended" parameterType="Map" >
+        SELECT 
+        m.claveInstitucional,
+        cr.periodoPresentacionComercial,
+        cr.cantidadPresentacionComercial,
+        cr.periodoDosisUnitaira,
+        cr.cantidadDosisUnitaria,
+        s.fechaProgramada AS ultimoSurtimiento,
+        cr.periodoPresentacionComercial - TIMESTAMPDIFF(DAY, p.fechaPrescripcion, NOW()) AS diasRestantes,
+        p.tipoConsulta,
+        IF(ss1.totalDia IS NULL, 0, ss1.totalDia) AS totalSurtDia,
+        IF(ss2.totalMes IS NULL, 0, ss2.totalMes) AS totalSurtMes,
+        pi.fechaInicio AS fechaInicio,
+        DATE_ADD(pi.fechaInicio, INTERVAL cr.periodoPresentacionComercial DAY) AS siguienteSurt
+        FROM    prescripcion p
+        INNER JOIN   prescripcionInsumo pi ON pi.idPrescripcion = p.idPrescripcion
+        LEFT JOIN    surtimiento s ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN   surtimientoInsumo si ON (si.idSurtimiento = s.idSurtimiento AND si.idPrescripcionInsumo = pi.idPrescripcionInsumo)
+        INNER JOIN surtimientoEnviado se on se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        LEFT JOIN    pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+        LEFT JOIN    visita v ON v.idVisita = ps.idVisita
+        INNER JOIN   paciente pa ON pa.idPaciente = v.idPaciente
+        INNER JOIN   medicamento m ON m.idMedicamento = pi.idInsumo
+        INNER JOIN   cantidadRazonada cr ON cr.claveInstitucional = m.claveInstitucional
+        LEFT JOIN   ( 	
+        SELECT 	m1.claveInstitucional, SUM(si1.cantidadEnviada) AS totalDia
+        FROM   surtimiento s1
+        INNER JOIN surtimientoInsumo si1 ON si1.idSurtimiento = s1.idSurtimiento
+        INNER JOIN surtimientoEnviado se1 on se1.idSurtimientoInsumo = si1.idSurtimientoInsumo
+        INNER JOIN prescripcionInsumo pi1 ON pi1.idPrescripcionInsumo = si1.idPrescripcionInsumo
+        INNER JOIN prescripcion p1 ON (p1.idPrescripcion = pi1.idPrescripcion AND si1.idPrescripcionInsumo = pi1.idPrescripcionInsumo)
+        INNER JOIN pacienteServicio ps1 ON ps1.idPacienteServicio = p1.idPacienteServicio
+        INNER JOIN visita v1 ON v1.idVisita = ps1.idVisita
+        INNER JOIN medicamento m1 ON m1.idMedicamento = pi1.idInsumo
+        INNER JOIN cantidadRazonada cr1 ON cr1.claveInstitucional = m1.claveInstitucional
+        WHERE	DATE_FORMAT(s1.fechaProgramada, '%Y-%m-%d') = DATE_FORMAT(CURDATE(), '%Y-%m-%d')
+        AND m1.idMedicamento = #{idInsumo}
+        AND v1.idPaciente = #{idPaciente }
+        AND s1.idEstatusSurtimiento in (2,3,4,6,7,8)
+        ) AS ss1 ON ss1.claveInstitucional = m.claveInstitucional
+        LEFT JOIN	(	
+        SELECT	m2.claveInstitucional, SUM(se2.cantidadEnviado) AS totalMes
+        FROM    surtimiento s2
+        INNER JOIN    surtimientoInsumo si2 ON si2.idSurtimiento = s2.idSurtimiento
+        INNER JOIN    surtimientoEnviado se2 ON se2.idSurtimientoInsumo = si2.idSurtimientoInsumo
+        INNER JOIN    prescripcionInsumo pi2 ON (pi2.idPrescripcionInsumo = si2.idPrescripcionInsumo)
+        INNER JOIN    prescripcion p2 ON (p2.idPrescripcion = pi2.idPrescripcion AND si2.idPrescripcionInsumo = pi2.idPrescripcionInsumo)
+        INNER JOIN    pacienteServicio ps2 ON ps2.idPacienteServicio = p2.idPacienteServicio
+        INNER JOIN    visita v2 ON v2.idVisita = ps2.idVisita
+        INNER JOIN    medicamento m2 ON m2.idMedicamento = pi2.idInsumo
+        INNER JOIN    cantidadRazonada cr2 ON cr2.claveInstitucional = m2.claveInstitucional
+        WHERE
+        CASE
+        WHEN
+        cr2.periodoPresentacionComercial - TIMESTAMPDIFF(DAY, p2.fechaPrescripcion, NOW()) &gt;= 0
+        THEN
+        s2.fechaProgramada BETWEEN s2.fechaProgramada AND DATE_ADD(s2.fechaProgramada, INTERVAL cr2.periodoPresentacionComercial DAY)
+        WHEN
+        cr2.periodoPresentacionComercial - TIMESTAMPDIFF(DAY, p2.fechaPrescripcion, NOW()) &lt; 0
+        THEN
+        s2.fechaProgramada BETWEEN DATE_ADD(s2.fechaProgramada, INTERVAL cr2.periodoPresentacionComercial DAY) AND CURDATE()
+        END
+        AND m2.idMedicamento = #{idInsumo}
+        AND v2.idPaciente = #{idPaciente }
+        AND p2.idEstatusPrescripcion in ( 2, 3, 5, 6)
+        ORDER BY s2.fechaProgramada DESC
+        ) AS ss2 ON ss2.claveInstitucional = m.claveInstitucional
+        WHERE
+        m.idMedicamento = #{idInsumo}
+        AND pa.idPaciente = #{idPaciente }
+        AND si.idEstatusSurtimiento IN (2 , 3, 4, 6, 7, 8)
+        ORDER BY s.fechaProgramada DESC
+        LIMIT 1
+        ;
+    </select>
+    <select id="obtenerListaInsumos" resultType="mx.mc.model.CantidadRazonadaExtended" parameterType="Map" >
+        SELECT 
+            m.nombreCorto as insumo,
+            c.idcantidadRazonada,
+            c.idInsumo,
+            c.claveInstitucional,
+            c.cantidadPresentacionComercial,
+            c.periodoPresentacionComercial,
+            c.cantidadDosisUnitaria,
+            c.periodoDosisUnitaira,
+            c.restrictiva,
+            c.comentarios,
+            c.activo
+        FROM	cantidadRazonada c  
+            INNER JOIN medicamento m ON m.idMedicamento = c.idInsumo
+        WHERE m.tipo = #{idTipoInsumo};
+    </select>
+    <update id="actualizar" parameterType="mx.mc.model.CantidadRazonada">
+        UPDATE cantidadRazonada
+        <set>
+            updateFecha = #{updateFecha,jdbcType=DATE}
+            ,updateIdUsuario =#{updateIdUsuario,jdbcType=VARCHAR}        
+            <if test="idInsumo != null">       ,idInsumo = #{idInsumo,jdbcType=VARCHAR} </if>
+            <if test="claveInstitucional != null">   ,claveInstitucional = #{claveInstitucional,jdbcType=VARCHAR} </if>
+            <if test="cantidadPresentacionComercial != null">          ,cantidadPresentacionComercial  = #{cantidadPresentacionComercial,jdbcType=INTEGER} </if>
+            <if test="periodoPresentacionComercial != null">         ,periodoPresentacionComercial  = #{periodoPresentacionComercial,jdbcType=INTEGER} </if>
+            <if test="cantidadDosisUnitaria != null">          ,cantidadDosisUnitaria  = #{cantidadDosisUnitaria,jdbcType=INTEGER} </if>
+            <if test="periodoDosisUnitaira != null">        ,periodoDosisUnitaira  = #{periodoDosisUnitaira,jdbcType=INTEGER} </if>
+            <if test="restrictiva != null">          ,restrictiva  = #{restrictiva,jdbcType=INTEGER} </if>
+            <if test="activo != null">       ,activo = #{activo,jdbcType=INTEGER} </if>
+            <if test="comentarios != null"> ,comentarios = #{comentarios,jdbcType=INTEGER} </if>            
+        </set>
+        WHERE idcantidadRazonada = #{idcantidadRazonada,jdbcType=VARCHAR}    
+    </update>
+    <insert  id="insertar" parameterType="mx.mc.model.CantidadRazonada">
+        INSERT INTO cantidadRazonada (
+            <if test= "idcantidadRazonada!=null">idcantidadRazonada</if>
+            <if test="idInsumo != null">                    ,idInsumo </if>
+            <if test="claveInstitucional != null">          ,claveInstitucional  </if>
+            <if test="cantidadPresentacionComercial != null">,cantidadPresentacionComercial </if>
+            <if test="periodoPresentacionComercial != null"> ,periodoPresentacionComercial </if>
+            <if test="cantidadDosisUnitaria != null">       ,cantidadDosisUnitaria   </if>
+            <if test="periodoDosisUnitaira != null">        ,periodoDosisUnitaira  </if>
+            <if test="restrictiva != null">                 ,restrictiva </if>
+            <if test="activo != null">                      ,activo </if>
+            <if test="comentarios != null">                 ,comentarios </if> 
+            <if test="insertFecha != null">                 ,insertFecha </if>
+            <if test="insertIdUsuario != null">             ,insertIdUsuario </if>
+        )VALUES(
+            <if test= "idcantidadRazonada!=null">#{idcantidadRazonada,jdbcType=VARCHAR} </if>
+            <if test="idInsumo != null">                     ,#{idInsumo,jdbcType=VARCHAR} </if>
+            <if test="claveInstitucional != null">           ,#{claveInstitucional,jdbcType=VARCHAR} </if>
+            <if test="cantidadPresentacionComercial != null">,#{cantidadPresentacionComercial,jdbcType=INTEGER} </if>
+            <if test="periodoPresentacionComercial != null"> ,#{periodoPresentacionComercial,jdbcType=INTEGER} </if>
+            <if test="cantidadDosisUnitaria != null">       , #{cantidadDosisUnitaria,jdbcType=INTEGER} </if>
+            <if test="periodoDosisUnitaira != null">        , #{periodoDosisUnitaira,jdbcType=INTEGER} </if>
+            <if test="restrictiva != null">                 , #{restrictiva,jdbcType=INTEGER} </if>
+            <if test="activo != null">                      ,#{activo,jdbcType=INTEGER} </if>
+            <if test="comentarios != null">                 ,#{comentarios,jdbcType=INTEGER} </if> 
+            <if test="insertFecha != null">                 ,#{insertFecha,jdbcType=DATE} </if>
+            <if test="insertIdUsuario != null">             ,#{insertIdUsuario,jdbcType=VARCHAR}</if>
+            );
+        
+    </insert>
+    <select id="obtener"  resultType="mx.mc.model.CantidadRazonada">
+        SELECT idcantidadRazonada,
+            idInsumo,
+            claveInstitucional,
+            cantidadPresentacionComercial,
+            periodoPresentacionComercial,
+            cantidadDosisUnitaria,
+            periodoDosisUnitaira,
+            restrictiva,
+            activo,
+            comentarios,
+            insertIdUsuario,
+            insertFecha,
+            updateIdUsuario,
+            updateFecha
+        FROM cantidadRazonada
+        WHERE 1=1
+            <if test="idcantidadRazonada!=null">AND idcantidadRazonada = #{idcantidadRazonada}</if>
+            <if test="idInsumo!=null">AND idInsumo = #{idInsumo}</if>
+            <if test="claveInstitucional!=null">AND claveInstitucional = #{claveInstitucional}</if>
+            <if test="cantidadPresentacionComercial!=null">AND cantidadPresentacionComercial = #{cantidadPresentacionComercial}</if>
+            <if test="periodoPresentacionComercial!=null">AND periodoPresentacionComercial = #{periodoPresentacionComercial}</if>
+            <if test="cantidadDosisUnitaria!=null">AND cantidadDosisUnitaria = #{cantidadDosisUnitaria}</if>
+            <if test="periodoDosisUnitaira!=null">AND periodoDosisUnitaira = #{periodoDosisUnitaira}</if>
+            <if test="restrictiva!=null">AND restrictiva = #{restrictiva}</if>
+            <if test="activo!=null">AND activo = #{activo}</if>
+            ;
+    </select>
+</mapper>

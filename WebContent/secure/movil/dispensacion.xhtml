@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanelAmplio" >
+                    <h:form id="mainForm">
+                        <p:focus context="mainForm"/>
+
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value="Surtimiento de Prescripciones"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+                            <p:selectCheckboxMenu id="menu" value="#{dispensacionMB.tipoPrescripcionSelectedList}" label="Tipo" title="Filtro por tipo de Prescripción"
+                                                  filter="true" filterMatchMode="startsWith" panelStyle="width:110px" style="width: 110px;">
+                                <f:selectItem value="#{N}" itemLabel="Normal" itemValue="N" />
+                                <f:selectItem value="#{U}" itemLabel="Urgente" itemValue="U" />
+                                <f:selectItem value="#{D}" itemLabel="Dosis Única" itemValue="D" />
+                            </p:selectCheckboxMenu>
+                            <p:spacer width="10px;" />
+                            <p:inputText id="busqueda" 
+                                         value="#{dispensacionMB.cadenaBusqueda}" 
+                                         class="textSearch"
+                                         style="width: 50% !important;" 
+                                         placeholder="Buscar..." title="Buscar por Número de Cama, Paciente o Servicio" />
+                            <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />
+                            <p:spacer width="12px" />
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); if(args.modal){PF(':formSurtimientoDetail').show();}"
+                                             actionListener="#{dispensacionMB.obtenerSurtimientos}"
+                                             update="@form"  />
+                        </div>
+
+                        <p:toolbar rendered="false">
+                            <p:toolbarGroup id="toolbar"  >
+                                <p:commandButton id="btnModificar" value="Modificar"
+                                                 title="Modificar Rol" icon="ui-icon-pencil"
+                                                 onclick="PF('statusProcess').show()"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalSurtimiento').show();"
+
+                                                 update=":formSurtimientoDetail"
+                                                 disabled="#{!dispensacionMB.puedeEditar or !dispensacionMB.elementoSeleccionado}"
+                                                 rendered="false" />
+
+                                <p:commandButton id="btnCancelar" value="Cancelar"
+                                                 title="Cancelar Surtimiento Prescripción" icon="ui-icon-trash" 
+                                                 update="@form"
+                                                 disabled="#{!dispensacionMB.puedeEliminar or !dispensacionMB.elementoSeleccionado}"
+                                                 rendered="false" />
+
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:messages id="validaMsg" globalOnly="true" showSummary="true" closable="true" showDetail="true"  />
+
+                        <p:panel id="dataTable">
+                            <p:dataTable id="tblSurtimientos" 
+                                         widgetVar="tblSurtimientos" 
+                                         value="#{dispensacionMB.surtimientoExtendedList}"
+                                         selection="#{dispensacionMB.surtimientoExtendedSelected}"
+                                         var="item" 
+                                         rowKey="#{item.idSurtimiento}"
+                                         rowIndexVar="row"
+                                         selectionMode="single"
+                                         style="margin-bottom:5px;"
+                                         styleClass="mystyle"
+                                         scrollRows="10" scrollable="true" scrollHeight="350"
+                                         emptyMessage="No se encontraron Registros"
+                                         reflow="true"
+                                         paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                         currentPageReportTemplate=" "
+                                         paginator="true"
+                                         rows="10"
+                                         paginatorPosition="bottom"
+                                         rendered="#{dispensacionMB.sizeSurtimientoExtendList ne 100}"
+                                         rowStyleClass="#{item.tipoPrescripcion eq 'U' ? 'urgente' : item.tipoPrescripcion eq 'D' ? 'unica': null}" >
+
+                                
+                                <p:ajax event="rowDblselect" listener="#{dispensacionMB.verSurtimiento}" update=":formSurtimientoDetail"
+                                        onstart="PF('statusProcess').show()"
+                                        oncomplete="PF('statusProcess').hide(); PF('modalSurtimiento').show();" />
+
+                                <f:facet name="{Records}">
+                                    <div style="float:left;">
+                                        <p:outputLabel class="footerLabel" value="  Prescripciones Programadas: #{dispensacionMB.sizeSurtimientoExtendList}" rendered="true" />
+                                    </div>
+                                </f:facet>
+
+                                <f:facet name="{Exporters}">
+                                    <div style="float:right">
+                                        <h:commandLink >
+                                            <img src="#{request.contextPath}/resources/img/btnxls.png" style="height: 25px !important; margin-left: 5px !important;" title="Exportar" />
+                                            <p:dataExporter type="xls" target="tblSurtimientos" fileName="prescripcionesPorSurtir" />
+                                        </h:commandLink>
+                                    </div>
+                                </f:facet>
+
+                                <p:column style="text-align: left; width: 10% "
+                                          sortBy="#{item.tipoPrescripcion}" exportable="false" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Tipo" />
+                                    </f:facet>
+                                    <p:outputPanel rendered="#{item.tipoPrescripcion eq 'N'}" >
+                                        <img src="#{request.contextPath}/resources/img/cpnormal.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                        <p:spacer width="8px"/>
+                                        <h:outputText value="Normal"/>
+                                    </p:outputPanel>
+                                    <p:outputPanel rendered="#{item.tipoPrescripcion eq 'U'}" >
+                                        <img src="#{request.contextPath}/resources/img/cpurgente.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                        <p:spacer width="8px"/>
+                                        <h:outputText value="Urgente"/>
+                                    </p:outputPanel>
+                                    <p:outputPanel rendered="#{item.tipoPrescripcion eq 'D'}" >
+                                        <img src="#{request.contextPath}/resources/img/cpunica.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                        <p:spacer width="8px"/>
+                                        <h:outputText value="Dosis Única"/>
+                                    </p:outputPanel>
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10% "
+                                          sortBy="#{item.fechaProgramada}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Fecha" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.fechaProgramada}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10% "
+                                          sortBy="#{item.folio}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Folio" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.folio}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 20% "
+                                          sortBy="#{item.nombrePaciente}" filterMatchMode="contains" filterBy="#{item.nombrePaciente}"  >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Paciente" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombrePaciente}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 20% " 
+                                          sortBy="#{item.nombreEstructura}" filterMatchMode="contains" filterBy="#{item.nombreEstructura}"  >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Ubicación " />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombreEstructura}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 20% "
+                                          sortBy="#{item.cama}" filterMatchMode="contains" filterBy="#{item.cama}"  >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Cama" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.cama}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10% " 
+                                          sortBy="#{item.nombreMedico}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Médico" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombreMedico}" />
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:contextMenu for="tblSurtimientos">
+                                <p:menuitem id="btnModificarContext" value="Ver / Modificar"
+                                            onclick="PF('statusProcess').show()"
+                                            oncomplete="PF('statusProcess').hide(); PF('modalSurtimiento').show();"
+                                            actionListener="#{dispensacionMB.verSurtimiento}"
+                                            update=":formSurtimientoDetail"
+                                            icon="ui-icon-pencil"
+                                            disabled="#{!dispensacionMB.puedeEditar}" />
+                                <p:menuitem id="linkImpresion" value="Imprimir"
+                                            onclick="PF('statusProcess').show()"
+                                            oncomplete="PF('statusProcess').hide(); PF('mdlReport').show(); "
+                                            actionListener="${dispensacionMB.imprimir}" 
+                                            update=":formPDF"
+                                            icon="fa fa-print"
+                                            style="margin: 3px;text-decoration: none; " />
+                            </p:contextMenu>
+
+                        </p:panel>
+
+                    </h:form>
+                </div>
+
+                <p:dialog header="SURTIMIENTO DE PRESCRIPCIÓN"
+                          widgetVar="modalSurtimiento"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          focus="formSurtimientoDetail:codigSurt" 
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formSurtimientoDetail" >
+                        <p:messages id="msgValidaRegistro" globalOnly="false" showDetail="false" closable="true" />
+
+                        <div class="ui-g" >
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel style="margin-right: 10px;">Folio Prescripción:</p:outputLabel>
+                                    <br/>
+                                    <p:outputLabel style="margin-right: 10px;" value="#{dispensacionMB.surtimientoExtendedSelected.folioPrescripcion}"
+                                                   class="textoNegrita lbl-subtitulo" />
+                                    <p:outputLabel class="lbl-Tipo-PrescripcionNormal" value="Normal" rendered="#{dispensacionMB.surtimientoExtendedSelected.tipoPrescripcion eq 'N'}" />
+                                    <p:outputLabel class="lbl-Tipo-PrescripcionUnica" value="Única" rendered="#{dispensacionMB.surtimientoExtendedSelected.tipoPrescripcion eq 'D'}" />
+                                    <p:outputLabel class="lbl-Tipo-PrescripcionUrgente" value="Urgente" rendered="#{dispensacionMB.surtimientoExtendedSelected.tipoPrescripcion eq 'U'}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel style="margin-right: 10px;">Folio Surtimiento:</p:outputLabel>
+                                    <br/>
+                                    <p:outputLabel style="margin-right: 10px;" value="#{dispensacionMB.surtimientoExtendedSelected.folio}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel style="margin-right: 10px;">Fecha Programada:</p:outputLabel>
+                                    <br/>
+                                    <p:outputLabel style="margin-right: 10px;" value="#{dispensacionMB.surtimientoExtendedSelected.fechaProgramada}">
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                    </p:outputLabel>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ui-g panelGris" >
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel style="margin-right: 10px;" value="Servicio:" />
+                                    <br/>
+                                    <p:outputLabel style="margin-right: 10px;" class="textoNegrita" value="#{dispensacionMB.surtimientoExtendedSelected.nombreEstructura}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <i class="fa fa-bed" aria-hidden="true" />
+                                    <br/>
+                                    <p:outputLabel style="margin-right: 10px;" value="#{dispensacionMB.surtimientoExtendedSelected.cama}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel style="margin-right: 10px;" value="Paciente: "/>
+                                    <br/>
+                                    <p:outputLabel style="margin-right: 10px;" class="textoNegrita" value="#{dispensacionMB.surtimientoExtendedSelected.nombrePaciente}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel style="margin-right: 10px;" value="No. Paciente:" />
+                                    <br/>
+                                    <p:outputLabel style="margin-right: 10px;" class="textoNegrita" value="#{dispensacionMB.surtimientoExtendedSelected.pacienteNumero}" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel style="margin-right: 10px;" value="Médico:" />
+                                    <br/>
+                                    <p:outputLabel style="margin-right: 10px;" class="textoNegrita" value="#{dispensacionMB.surtimientoExtendedSelected.nombreMedico}" />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="ui-g">
+                            <div class="ui-g-12">
+                                <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                    <p:selectBooleanCheckbox value="#{dispensacionMB.eliminaCodigoBarras}" 
+                                                             id="chkEliminaCodigoBarras"
+                                                             itemLabel="Eliminar"
+                                                             title="Elimina medicamentos escaneados" 
+                                                             />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                    <p:inputText id="xcantidad"
+                                                 value="#{dispensacionMB.xcantidad}"
+                                                 size="10" 
+                                                 placeholder="Cantidad" 
+                                                 title="Cantidad de medicamentos"
+                                                 onkeypress="if (event.keyCode === 13) { agregaEnviado(); return false; } " >
+                                        <p:keyFilter regEx="/[0-9]{1,4}/i" />
+                                    </p:inputText>
+                                    <p:remoteCommand name="agregaEnviado"
+                                                         actionListener="#{dispensacionMB.validaLecturaPorCodigo}"
+                                                         update="codigSurt,tblInsumos,msgValidaRegistro,xcantidad"
+                                                         oncomplete="$('.focusme').focus()" 
+                                                         process="@form"
+                                                         global="false" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                    <p:inputText id="codigSurt" 
+                                                 placeholder="Escanear Medicamento" 
+                                                 size="40" 
+                                                 title="Escaneo de Medicamentos" 
+                                                 value="#{dispensacionMB.codigoBarras}" 
+                                                 onkeypress="if (event.keyCode === 13) { agregaEnviado(); return false; } " >
+                                    </p:inputText>
+                                </div>
+                                
+                            </div>
+                        </div>
+
+                        <p:dataTable id="tblInsumos" 
+                                     widgetVar="tblInsumos" 
+                                     value="#{dispensacionMB.surtimientoInsumoExtendedList}"
+                                     selection="#{dispensacionMB.surtimientoInsumoExtendedSelected}"
+                                     var="item" 
+                                     rowKey="#{item.idSurtimientoInsumo}"
+                                     rowIndexVar="row"
+                                     selectionMode="single"
+                                     style="margin-bottom:5px;"
+                                     styleClass="mystyle"
+                                     scrollable="true" scrollHeight="250"
+                                     emptyMessage="No se encontraron Registros"
+                                     reflow="true"
+                                     paginatorTemplate="{Records} {CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorPosition="bottom"
+                                     expandedRow="#{true}" 
+                                     disabledSelection="true" 
+                                     rendered="#{dispensacionMB.sizeSurtimientoInsumoExtendedList gt -1}" >
+
+                            <f:facet name="{Records}">
+                                <div style="float:left;">
+                                    <p:outputLabel class="footerLabel" value="  Medicamentos Prescritos: #{dispensacionMB.sizeSurtimientoInsumoExtendedList}" rendered="true" />
+                                </div>
+                            </f:facet>
+
+                            <p:column style="width:3%">
+                                <p:rowToggler />
+                            </p:column>
+                            
+                            <p:column style="text-align: left; width: 10% "
+                                      sortBy="#{item.claveInstitucional}" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Clave" />
+                                </f:facet>
+                                <h:outputText value="#{item.claveInstitucional}" class="textoNegrita" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 37% "
+                                      sortBy="#{item.nombreCorto}" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Nombre" />
+                                </f:facet>
+                                <h:outputText value="#{item.nombreCorto}" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 8% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Can Solicitada" />
+                                </f:facet>
+                                <h:outputText value="#{item.cantidadSolicitada}" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 8% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Lote Sugerido" />
+                                </f:facet>
+                                <h:outputText value="#{item.loteSugerido}" class="textoNegrita" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 8% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Can Surtida" />
+                                </f:facet>
+                                <h:outputText value="#{item.cantidadEnviada}" class="textoNegrita" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 10% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Justificante" />
+                                </f:facet>
+                                    <p:selectOneMenu id="cmbJustificante" value="#{item.idTipoJustificante}" disabled="#{not item.requiereJustificante}" >
+                                        <f:selectItem itemLabel="Completa" itemValue="#{null}" />
+                                        <f:selectItems value="#{dispensacionMB.justificacionList}" 
+                                                       var="just" itemValue="#{just.idTipoJustificacion}" itemLabel="#{just.descripcion}" />
+                                    </p:selectOneMenu>
+                            </p:column>
+                            <p:column style="text-align: left; width: 18% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Notas" />    
+                                </f:facet>
+                                <p:inputText value="#{item.notas}" maxlength="45" />
+                            </p:column>
+
+                            <p:rowExpansion>
+                                <p:dataTable var="enviado"
+                                             value="#{item.surtimientoEnviadoExtendList}"
+                                             scrollable="true" 
+                                             emptyMessage="" >
+                                    <p:column headerText="" style="width: 50%" />
+                                    <p:column headerText="Lote" style="width: 8%">
+                                        <h:outputText value="#{enviado.lote}" />
+                                    </p:column>
+                                    <p:column headerText="Caducidad" style="width: 8%">
+                                        <h:outputLabel value="#{enviado.caducidad}" >
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Can Surtida" style="width: 8%">
+                                        <h:outputLabel value="#{enviado.cantidadEnviado}" class="textoNegrita" />
+                                    </p:column>
+                                    <p:column headerText="" style="width: 28%" />
+                                </p:dataTable>
+                            </p:rowExpansion>
+
+                        </p:dataTable>
+
+                        <p:commandButton value="Surtir" 
+                                         icon="fa fa-check-circle" style="margin-right: 10px;float: right;"
+                                         onclick="PF('statusProcess').show()"
+                                         oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('modalSurtimiento').hide(); actualizaHeader(); }"
+                                         actionListener="#{dispensacionMB.validaSurtimiento}" 
+                                         styleClass="btnMusVerde" 
+                                         update=":formSurtimientoDetail,:mainForm:tblSurtimientos" > 
+                            <p:confirm header="Confirmación" message="Desea surtir la Prescripción ?" icon="ui-icon-alert" />
+                        </p:commandButton>
+                        <p:remoteCommand id="actualizaHeader"
+                                         update=":mainForm:validaMsg"
+                                         process="@none"
+                                         global="false" />
+                        
+                        <p:commandButton value="Cancelar" 
+                                         styleClass="btnMusRed" 
+                                         icon="fa fa-times-circle" 
+                                         onclick="PF('modalSurtimiento').hide();"
+                                         style="margin-right: 10px;float: right;" />
+                        
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                            <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+
+                    </h:form>
+                </p:dialog>
+                
+                <p:dialog widgetVar="mdlReport" width="820px" height="600px"
+                          closeOnEscape="false" modal="true"                          
+                          style="font-size:xx-small !important;" >
+                    <h:form id="formPDF">
+                        <p:media value="#{dispensacionMB.archivo}" player="pdf" width="800px" height="600px" cache="false" />
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="Surtimiento"
+                          widgetVar="modalPrescripcion"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formPrescripcion" >
+
+                        <p:focus context="formPrescripcion"/>
+
+                        <p:messages id="msgValidaPrescripcion" globalOnly="false" showDetail="false" closable="true" />
+
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="Información de Registro"
+                          widgetVar="modalEliminaDiagnosticoConfirm"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          style="font-size:xx-small !important; " >
+
+                </p:dialog>
+
+                <p:dialog header="Información de Registro"
+                          widgetVar="modalEliminaInsumoConfirm"
+                          closeOnEscape="true"
+                          closable="false"
+                          modal="true" 
+                          style="font-size:xx-small !important; " >
+
+                </p:dialog>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+
+</html>

@@ -1,0 +1,1051 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ReabastoMapper">
+   
+    <select id="obtener" parameterType="mx.mc.model.Reabasto" resultType="mx.mc.model.Reabasto">
+        SELECT idReabasto, idEstructura, idEstructuraPadre, idTipoOrden, folio, fechaSolicitud, idUsuarioSolicitud, fechaSurtida, idUsuarioSurtida, documentoSurtida, fechaRecepcion, idUsuarioRecepcion, fechaIngresoInventario, idUsuarioIngresoInventario, idEstatusReabasto, idProveedor, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario,transferencia,destino
+        FROM reabasto
+        WHERE 1=1
+        <if test="idReabasto != null">          AND idReabasto = #{idReabasto,jdbcType=VARCHAR}</if>
+        <if test="idEstructura != null">        AND idEstructura = #{idEstructura,jdbcType=VARCHAR}</if>
+        <if test="idEstructuraPadre != null">   AND idEstructuraPadre = #{idEstructuraPadre,jdbcType=VARCHAR}</if>
+        <if test="idTipoOrden != null">         AND idTipoOrden = #{idTipoOrden,jdbcType=INTEGER}</if>
+        <if test="folio != null">               AND folio = #{folio,jdbcType=VARCHAR}</if>
+        <if test="fechaSolicitud != null">      AND fechaSolicitud = #{fechaSolicitud,jdbcType=TIMESTAMP}</if>
+        <if test="idUsuarioSolicitud != null">  AND idUsuarioSolicitud = #{idUsuarioSolicitud,jdbcType=VARCHAR}</if>
+        <if test="fechaSurtida != null">        AND fechaSurtida = #{fechaSurtida,jdbcType=TIMESTAMP}</if>
+        <if test="idUsuarioSurtida != null">    AND idUsuarioSurtida = #{idUsuarioSurtida,jdbcType=VARCHAR}</if>
+        <if test="documentoSurtida != null">    AND documentoSurtida = #{documentoSurtida,jdbcType=VARCHAR}</if>
+        <if test="fechaRecepcion != null">      AND fechaRecepcion = #{fechaRecepcion,jdbcType=TIMESTAMP}</if>
+        <if test="idUsuarioRecepcion != null">  AND idUsuarioRecepcion = #{idUsuarioRecepcion,jdbcType=VARCHAR}</if>
+        <if test="fechaIngresoInventario != null">AND fechaIngresoInventario = #{fechaIngresoInventario,jdbcType=TIMESTAMP}</if>
+        <if test="idUsuarioIngresoInventario != null">AND idUsuarioIngresoInventario = #{idUsuarioIngresoInventario,jdbcType=VARCHAR}</if>
+        <if test="idEstatusReabasto != null">   AND idEstatusReabasto = #{idEstatusReabasto,jdbcType=INTEGER}</if>
+        <if test="idProveedor != null">         AND idProveedor = #{idProveedor,jdbcType=VARCHAR}</if>
+        <if test="insertFecha != null">         AND insertFecha = #{insertFecha,jdbcType=TIMESTAMP}</if>
+        <if test="insertIdUsuario != null">     AND insertIdUsuario =#{insertIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="updateFecha != null">         AND updateFecha = #{updateFecha,jdbcType=TIMESTAMP}</if>
+        <if test="updateIdUsuario != null">     AND updateIdUsuario = #{updateIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="transferencia != null">        AND transferencia = #{transferencia} </if>
+    </select> 
+    <select id="obtenerPorIdInsumo" parameterType="mx.mc.model.Reabasto" resultType="Map">
+        SELECT idReabasto, idEstructura, idEstructuraPadre, idTipoOrden, folio, fechaSolicitud, idUsuarioSolicitud, fechaSurtida, idUsuarioSurtida, documentoSurtida, fechaRecepcion, idUsuarioRecepcion, fechaIngresoInventario, idUsuarioIngresoInventario, idEstatusReabasto, idProveedor, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario,transferencia,destino
+        FROM reabasto
+        WHERE 1=1
+        <if test="idReabasto != null">          AND idReabasto = #{idReabasto,jdbcType=VARCHAR}</if>
+        <if test="idEstructura != null">        AND idEstructura = #{idEstructura,jdbcType=VARCHAR}</if>
+        <if test="idEstructuraPadre != null">   AND idEstructuraPadre = #{idEstructuraPadre,jdbcType=VARCHAR}</if>
+        <if test="idTipoOrden != null">         AND idTipoOrden = #{idTipoOrden,jdbcType=INTEGER}</if>
+        <if test="folio != null">               AND folio = #{folio,jdbcType=VARCHAR}</if>
+        <if test="fechaSolicitud != null">      AND fechaSolicitud = #{fechaSolicitud,jdbcType=TIMESTAMP}</if>
+        <if test="idUsuarioSolicitud != null">  AND idUsuarioSolicitud = #{idUsuarioSolicitud,jdbcType=VARCHAR}</if>
+        <if test="fechaSurtida != null">        AND fechaSurtida = #{fechaSurtida,jdbcType=TIMESTAMP}</if>
+        <if test="idUsuarioSurtida != null">    AND idUsuarioSurtida = #{idUsuarioSurtida,jdbcType=VARCHAR}</if>
+        <if test="documentoSurtida != null">    AND documentoSurtida = #{documentoSurtida,jdbcType=VARCHAR}</if>
+        <if test="fechaRecepcion != null">      AND fechaRecepcion = #{fechaRecepcion,jdbcType=TIMESTAMP}</if>
+        <if test="idUsuarioRecepcion != null">  AND idUsuarioRecepcion = #{idUsuarioRecepcion,jdbcType=VARCHAR}</if>
+        <if test="fechaIngresoInventario != null">AND fechaIngresoInventario = #{fechaIngresoInventario,jdbcType=TIMESTAMP}</if>
+        <if test="idUsuarioIngresoInventario != null">AND idUsuarioIngresoInventario = #{idUsuarioIngresoInventario,jdbcType=VARCHAR}</if>
+        <if test="idEstatusReabasto != null">   AND idEstatusReabasto = #{idEstatusReabasto,jdbcType=INTEGER}</if>
+        <if test="idProveedor != null">         AND idProveedor = #{idProveedor,jdbcType=VARCHAR}</if>
+        <if test="insertFecha != null">         AND insertFecha = #{insertFecha,jdbcType=TIMESTAMP}</if>
+        <if test="insertIdUsuario != null">     AND insertIdUsuario =#{insertIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="updateFecha != null">         AND updateFecha = #{updateFecha,jdbcType=TIMESTAMP}</if>
+        <if test="updateIdUsuario != null">     AND updateIdUsuario = #{updateIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="transferencia != null">       AND transferencia =  #{transferencia}    </if>
+    </select> 
+    <select id="obtenerLista" parameterType="mx.mc.model.Reabasto" resultType="mx.mc.model.Reabasto">
+        SELECT idReabasto, idEstructura, idEstructuraPadre, idTipoOrden, folio, fechaSolicitud, idUsuarioSolicitud, fechaSurtida, idUsuarioSurtida, documentoSurtida, fechaRecepcion, idUsuarioRecepcion, fechaIngresoInventario, idUsuarioIngresoInventario, idEstatusReabasto, idProveedor, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario,transferencia,destino
+        FROM reabasto
+        WHERE 1=1
+        <if test="idReabasto != null">          AND idReabasto = #{idReabasto,jdbcType=VARCHAR}</if>
+        <if test="idEstructura != null">        AND idEstructura = #{idEstructura,jdbcType=VARCHAR}</if>
+        <if test="idEstructuraPadre != null">   AND idEstructuraPadre = #{idEstructuraPadre,jdbcType=VARCHAR}</if>
+        <if test="idTipoOrden != null">         AND idTipoOrden = #{idTipoOrden,jdbcType=INTEGER}</if>
+        <if test="folio != null">               AND folio = #{folio,jdbcType=VARCHAR}</if>
+        <if test="fechaSolicitud != null">      AND fechaSolicitud = #{fechaSolicitud,jdbcType=TIMESTAMP}</if>
+        <if test="idUsuarioSolicitud != null">  AND idUsuarioSolicitud = #{idUsuarioSolicitud,jdbcType=VARCHAR}</if>
+        <if test="fechaSurtida != null">        AND fechaSurtida = #{fechaSurtida,jdbcType=TIMESTAMP}</if>
+        <if test="idUsuarioSurtida != null">    AND idUsuarioSurtida = #{idUsuarioSurtida,jdbcType=VARCHAR}</if>
+        <if test="documentoSurtida != null">    AND documentoSurtida = #{documentoSurtida,jdbcType=VARCHAR}</if>
+        <if test="fechaRecepcion != null">      AND fechaRecepcion = #{fechaRecepcion,jdbcType=TIMESTAMP}</if>
+        <if test="idUsuarioRecepcion != null">  AND idUsuarioRecepcion = #{idUsuarioRecepcion,jdbcType=VARCHAR}</if>
+        <if test="fechaIngresoInventario != null">AND fechaIngresoInventario = #{fechaIngresoInventario,jdbcType=TIMESTAMP}</if>
+        <if test="idUsuarioIngresoInventario != null">AND idUsuarioIngresoInventario = #{idUsuarioIngresoInventario,jdbcType=VARCHAR}</if>
+        <if test="idEstatusReabasto != null">   AND idEstatusReabasto = #{idEstatusReabasto,jdbcType=INTEGER}</if>
+        <if test="idProveedor != null">         AND idProveedor = #{idProveedor,jdbcType=VARCHAR}</if>
+        <if test="insertFecha != null">         AND insertFecha = #{insertFecha,jdbcType=TIMESTAMP}</if>
+        <if test="insertIdUsuario != null">     AND insertIdUsuario = #{insertIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="updateFecha != null">         AND updateFecha = #{updateFecha,jdbcType=TIMESTAMP}</if>
+        <if test="updateIdUsuario != null">     AND updateIdUsuario =#{updateIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="transferencia != null">       AND transferencia= #{transferencia} </if>
+    </select>
+    
+    <select id="obtenerReabastoExtends" resultType="mx.mc.model.ReabastoExtended" parameterType="Map" >
+       
+        SELECT idReabasto,r.idTipoOrigen,r.idEstructura,r.idEstructuraPadre,r.idTipoOrden,folio,e.idTipoAlmacen, 
+            fechaSolicitud,idUsuarioSolicitud,fechaSurtida,idUsuarioSurtida, 
+            documentoSurtida,fechaRecepcion,idUsuarioRecepcion,fechaIngresoInventario, 
+            idUsuarioIngresoInventario,r.idEstatusReabasto,r.idProveedor,r.insertFecha, 
+            r.insertIdUsuario,r.updateFecha,r.updateIdUsuario,e.nombre as nombreEstructura,
+            <if test=" idTipoAlmacen == 2 ">
+        		p.nombreProveedor,
+        	</if>
+        	u.nombreUsuario as nombreUsrSolicitane,
+            t.nombre as nombreTipoOrden,er.nombre as nombreEstatus , r.idMedico
+        FROM reabasto r INNER JOIN estructura e 
+        ON r.idEstructura = e.idEstructura
+        <if test=" idTipoAlmacen == 2 ">
+        	INNER JOIN proveedor p ON r.idProveedor = p.idProveedor
+        </if>
+        INNER JOIN usuarios u ON r.insertIdUsuario = u.idUsuario       
+        INNER JOIN tipoOrden t ON r.idTipoOrden = t.idTipoOrden 
+        INNER JOIN estatusReabasto er ON er.idEstatusReabasto = r.idEstatusReabasto
+        WHERE 1 = 1
+        <if test=" listEstatusReabasto != null ">
+        	AND r.idEstatusReabasto IN
+        	<foreach item="item" index="index" collection="listEstatusReabasto" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" reabasto.idEstructuraPadre != null ">
+        	AND r.idEstructuraPadre = #{ reabasto.idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" reabasto.idEstructura != null ">
+        	AND r.idEstructura = #{ reabasto.idEstructura , jdbcType = VARCHAR }
+        </if>
+        ORDER BY r.fechaSolicitud DESC
+    </select>
+    
+    <select id="obtenerRegistrosPorCriterioDeBusqueda" resultType="mx.mc.model.ReabastoExtended" parameterType="Map">
+        SELECT idReabasto,r.idEstructura,r.idEstructuraPadre,r.idTipoOrden,folio, 
+            fechaSolicitud,idUsuarioSolicitud,fechaSurtida,idUsuarioSurtida, 
+            documentoSurtida,fechaRecepcion,idUsuarioRecepcion,fechaIngresoInventario, 
+            idUsuarioIngresoInventario,r.idEstatusReabasto,r.idProveedor,r.insertFecha, 
+            r.insertIdUsuario,r.updateFecha,r.updateIdUsuario,e.nombre as nombreEstructura,
+           <if test=" idTipoAlmacen == 2 ">
+        		p.nombreProveedor,
+        	</if>        	
+        	u.nombreUsuario as nombreUsrSolicitane,
+            t.nombre as nombreTipoOrden,er.nombre as nombreEstatus
+        FROM reabasto r INNER JOIN estructura e 
+        ON r.idEstructura = e.idEstructura 
+         <if test=" idTipoAlmacen == 2 ">
+        	INNER JOIN proveedor p ON r.idProveedor = p.idProveedor
+        </if>
+        INNER JOIN usuarios u ON r.insertIdUsuario = u.idUsuario        
+        INNER JOIN tipoOrden t ON r.idTipoOrden = t.idTipoOrden 
+        INNER JOIN estatusReabasto er ON er.idEstatusReabasto = r.idEstatusReabasto
+        WHERE 1 = 1
+        <if test=" listEstatusReabasto != null ">
+        	AND r.idEstatusReabasto IN
+        	<foreach item="item" index="index" collection="listEstatusReabasto" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" idEstructuraPadre != null ">
+        	AND r.idEstructura = #{ idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructura != null ">
+        	AND r.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoAlmacen == 2 ">
+        	AND r.folio LIKE '%${criterioBusqueda}%'
+       	</if>
+        <if test=" textoBusqueda != null">
+        	AND r.folio LIKE '%${textoBusqueda}%'
+       	</if>
+       	<if test=" idTipoAlmacen > 2 ">
+       		AND (r.folio LIKE '%${criterioBusqueda}%')
+       	</if>        
+        
+        ORDER BY r.insertFecha 
+        LIMIT #{numRegistros, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtenerRegistrosPorCriterioDeBusquedas" resultType="mx.mc.model.ReabastoExtended" parameterType="Map">
+        SELECT idReabasto,r.idEstructura,r.idEstructuraPadre,r.idTipoOrden,folio, 
+            fechaSolicitud,idUsuarioSolicitud,fechaSurtida,idUsuarioSurtida, 
+            documentoSurtida,fechaRecepcion,idUsuarioRecepcion,fechaIngresoInventario, 
+            idUsuarioIngresoInventario,r.idEstatusReabasto,r.idProveedor,r.insertFecha, 
+            r.insertIdUsuario,r.updateFecha,r.updateIdUsuario,e.nombre as nombreEstructura,
+           <if test=" idTipoAlmacen == 2 ">
+        		p.nombreProveedor,
+        	</if>        	
+        	u.nombreUsuario as nombreUsrSolicitane,
+            t.nombre as nombreTipoOrden,er.nombre as nombreEstatus
+        FROM reabasto r INNER JOIN estructura e 
+        ON r.idEstructura = e.idEstructura 
+         <if test=" idTipoAlmacen == 2 ">
+        	INNER JOIN proveedor p ON r.idProveedor = p.idProveedor
+        </if>
+        INNER JOIN usuarios u ON r.insertIdUsuario = u.idUsuario        
+        INNER JOIN tipoOrden t ON r.idTipoOrden = t.idTipoOrden 
+        INNER JOIN estatusReabasto er ON er.idEstatusReabasto = r.idEstatusReabasto
+        WHERE 1 = 1
+        <if test=" listEstatusReabasto != null ">
+        	AND r.idEstatusReabasto IN
+        	<foreach item="item" index="index" collection="listEstatusReabasto" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" idEstructuraPadre != null ">
+        	AND r.idEstructura = #{ idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructura != null ">
+        	AND r.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoAlmacen == 2 ">
+        	AND r.folio LIKE '%${criterioBusqueda}%'
+       	</if>
+ 
+       	<if test=" idTipoAlmacen > 2 ">
+       		AND (r.folio LIKE '%${criterioBusqueda}%')
+       	</if>        
+        
+        ORDER BY r.insertFecha 
+        LIMIT #{numRegistros, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtenerBusqueda" parameterType="Map" resultType="mx.mc.model.Reabasto">
+        SELECT r.idReabasto,
+		r.idEstructura,
+		r.idEstructuraPadre,
+		r.idTipoOrden,
+		r.folio,
+		r.fechaSolicitud,
+		r.idUsuarioSolicitud,
+		r.fechaSurtida,
+		r.idUsuarioSurtida,
+		r.documentoSurtida,
+		r.fechaRecepcion,
+		r.idUsuarioRecepcion,
+		r.fechaIngresoInventario,
+		r.idUsuarioIngresoInventario,
+		r.idEstatusReabasto,
+		r.idProveedor,
+		r.insertFecha,
+		r.insertIdUsuario,
+		r.updateFecha,
+		r.updateIdUsuario,
+		e.nombre as estatus,
+		CONCAT(u.nombre , ' ' , u.apellidoPaterno , ' ' , u.apellidoMaterno) as solicitante,
+                e1.nombre as almacen,
+		e2.nombre as proveedor
+        FROM reabasto r
+        inner join usuarios u on u.idUsuario = r.idUsuarioSolicitud
+        inner join estatusReabasto e on e.idEstatusReabasto = r.idEstatusReabasto
+        inner join estructura e1 on r.idEstructura = e1.idEstructura
+        left join estructura e2 on r.idEstructuraPadre = e2.idEstructura
+        WHERE  1=1
+        <if test="cadena != null ">                         
+            AND ( r.idReabasto LIKE '%${cadena}%' 
+            OR r.idEstructura LIKE '%${cadena}%' 
+            OR r.idEstructuraPadre LIKE '%${cadena}%' 
+            OR r.idTipoOrden LIKE '%${cadena}%' 
+            OR r.folio LIKE '%${cadena}%' 
+            OR r.fechaSolicitud LIKE '%${cadena}%' 
+            OR r.idUsuarioSolicitud LIKE '%${cadena}%' 
+            OR r.fechaSurtida LIKE '%${cadena}%' 
+            OR r.idUsuarioSurtida LIKE '%${cadena}%' 
+            OR r.documentoSurtida LIKE '%${cadena}%' 
+            OR r.fechaRecepcion LIKE '%${cadena}%' 
+            OR r.idUsuarioRecepcion LIKE '%${cadena}%' 
+            OR r.fechaIngresoInventario LIKE '%${cadena}%' 
+            OR r.idUsuarioIngresoInventario LIKE '%${cadena}%'             
+            OR r.idProveedor LIKE '%${cadena}%' 
+            OR r.insertFecha LIKE '%${cadena}%' 
+            OR r.insertIdUsuario LIKE '%${cadena}%' 
+            OR r.updateFecha LIKE '%${cadena}%' 
+            OR r.updateIdUsuario LIKE '%${cadena}%' 
+            OR e.nombre LIKE '%${cadena}%' )
+        </if>
+        AND (r.idEstatusReabasto = 1 OR r.idEstatusReabasto = 2 OR r.idEstatusReabasto = 3 OR r.idEstatusReabasto = 4)
+        AND r.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        
+    </select>
+    <select  id="obtenerReabastoPorID" parameterType="mx.mc.model.Reabasto" resultType="mx.mc.model.Reabasto">
+        SELECT r.idReabasto
+        , r.idEstructura
+        , r.idEstructuraPadre
+        , r.idTipoOrden
+        , r.folio
+        , r.fechaSolicitud
+        , r.idUsuarioSolicitud
+        , r.idEstatusReabasto
+        ,e.nombre as almacen
+        ,  r.idProveedor
+        ,(Select nombre from estructura where idEstructura = e.idEstructuraPadre ) as Proveedor
+        ,r.destino
+        FROM  reabasto r
+        inner join estructura  e on r.idEstructura = e.idEstructura
+        where r.idReabasto=#{idReabasto,jdbcType=VARCHAR}
+    </select>
+    <insert id="insertar" parameterType="mx.mc.model.Reabasto">
+        INSERT INTO reabasto (
+            <if test="idReabasto != null">          idReabasto</if>
+            <if test="idEstructura != null">        ,idEstructura</if>
+            <if test="idEstructuraPadre != null">   ,idEstructuraPadre</if>
+            <if test="idTipoOrden != null">         ,idTipoOrden</if>
+            <if test="folio != null">               ,folio</if>
+            <if test="fechaSolicitud != null">      ,fechaSolicitud</if>
+            <if test="idUsuarioSolicitud != null">  ,idUsuarioSolicitud</if>
+            <if test="fechaSurtida != null">        ,fechaSurtida</if>
+            <if test="idUsuarioSurtida != null">    ,idUsuarioSurtida</if>
+            <if test="documentoSurtida != null">    ,documentoSurtida</if>
+            <if test="fechaRecepcion != null">      ,fechaRecepcion</if>
+            <if test="idUsuarioRecepcion != null">  ,idUsuarioRecepcion</if>
+            <if test="fechaIngresoInventario != null">,fechaIngresoInventario</if>
+            <if test="idUsuarioIngresoInventario != null">,idUsuarioIngresoInventario</if>
+            <if test="idEstatusReabasto != null">   ,idEstatusReabasto</if>
+            <if test="idProveedor != null">         ,idProveedor</if>
+            <if test="insertFecha != null">         ,insertFecha</if>
+            <if test="insertIdUsuario != null">     ,insertIdUsuario</if>
+            <if test="updateFecha != null">         ,updateFecha</if>
+            <if test="updateIdUsuario != null">     ,updateIdUsuario</if>
+            <if test="transferencia != null">       ,transferencia</if> 
+            <if test="idTipoOrigen != null">       ,idTipoOrigen</if> 
+            <if test="idMedico != null">       ,idMedico</if>
+            <if test="destino != null">       ,destino</if>
+            ) VALUES (
+            <if test="idReabasto != null">          #{idReabasto,jdbcType=VARCHAR}</if>
+            <if test="idEstructura != null">        ,#{idEstructura,jdbcType=VARCHAR}</if>
+            <if test="idEstructuraPadre != null">   ,#{idEstructuraPadre,jdbcType=VARCHAR}</if>
+            <if test="idTipoOrden != null">         ,#{idTipoOrden,jdbcType=INTEGER}</if>
+            <if test="folio != null">               ,#{folio,jdbcType=VARCHAR}</if>
+            <if test="fechaSolicitud != null">      ,#{fechaSolicitud,jdbcType=TIMESTAMP}</if>
+            <if test="idUsuarioSolicitud != null">  ,#{idUsuarioSolicitud,jdbcType=VARCHAR}</if>
+            <if test="fechaSurtida != null">        ,#{fechaSurtida,jdbcType=TIMESTAMP}</if>
+            <if test="idUsuarioSurtida != null">    ,#{idUsuarioSurtida,jdbcType=VARCHAR}</if>
+            <if test="documentoSurtida != null">    ,#{documentoSurtida,jdbcType=VARCHAR}</if>
+            <if test="fechaRecepcion != null">      ,#{fechaRecepcion,jdbcType=TIMESTAMP}</if>
+            <if test="idUsuarioRecepcion != null">  ,#{idUsuarioRecepcion,jdbcType=VARCHAR}</if>
+            <if test="fechaIngresoInventario != null">,#{fechaIngresoInventario,jdbcType=TIMESTAMP}</if>
+            <if test="idUsuarioIngresoInventario != null">,#{idUsuarioIngresoInventario,jdbcType=VARCHAR}</if>
+            <if test="idEstatusReabasto != null">   ,#{idEstatusReabasto,jdbcType=INTEGER}</if>
+            <if test="idProveedor != null">         ,#{idProveedor,jdbcType=VARCHAR}</if>
+            <if test="insertFecha != null">         ,#{insertFecha,jdbcType=TIMESTAMP}</if>
+            <if test="insertIdUsuario != null">     ,#{insertIdUsuario,jdbcType=VARCHAR}</if>
+            <if test="updateFecha != null">         ,#{updateFecha,jdbcType=TIMESTAMP}</if>
+            <if test="updateIdUsuario != null">     ,#{updateIdUsuario,jdbcType=VARCHAR}</if>
+            <if test ="transferencia != null">      ,#{transferencia}</if>
+            <if test ="idTipoOrigen != null">      ,#{idTipoOrigen,jdbcType=INTEGER}</if>
+            <if test="idMedico != null">           ,#{idMedico,jdbcType=VARCHAR}</if>
+            <if test="destino != null">           ,#{destino,jdbcType=VARCHAR}</if>);
+    </insert>
+    
+    <update id="actualizar" parameterType="mx.mc.model.Reabasto">
+        UPDATE reabasto        
+        <set>            
+            updateFecha = #{updateFecha,jdbcType=TIMESTAMP}
+            ,updateIdUsuario = #{updateIdUsuario,jdbcType=VARCHAR}
+            <if test="idEstructura != null">        ,idEstructura       = #{idEstructura,jdbcType=VARCHAR}</if>
+            <if test="idEstructuraPadre != null">   ,idEstructuraPadre  = #{idEstructuraPadre,jdbcType=VARCHAR}</if>
+            <if test="idTipoOrden != null">         ,idTipoOrden        = #{idTipoOrden,jdbcType=INTEGER}</if>
+            <if test="folio != null">               ,folio              = #{folio,jdbcType=VARCHAR}</if>
+            <if test="fechaSolicitud != null">      ,fechaSolicitud     = #{fechaSolicitud,jdbcType=TIMESTAMP}</if>
+            <if test="idUsuarioSolicitud != null">  ,idUsuarioSolicitud = #{idUsuarioSolicitud,jdbcType=VARCHAR}</if>
+            <if test="fechaSurtida != null">        ,fechaSurtida       = #{fechaSurtida,jdbcType=TIMESTAMP}</if>
+            <if test="idUsuarioSurtida != null">    ,idUsuarioSurtida   = #{idUsuarioSurtida,jdbcType=VARCHAR}</if>
+            <if test="documentoSurtida != null">    ,documentoSurtida   = #{documentoSurtida,jdbcType=VARCHAR}</if>
+            <if test="fechaRecepcion != null">      ,fechaRecepcion     = #{fechaRecepcion,jdbcType=TIMESTAMP}</if>
+            <if test="idUsuarioRecepcion != null">  ,idUsuarioRecepcion = #{idUsuarioRecepcion,jdbcType=VARCHAR}</if>
+            <if test="fechaIngresoInventario != null">,fechaIngresoInventario = #{fechaIngresoInventario,jdbcType=TIMESTAMP}</if>
+            <if test="idUsuarioIngresoInventario != null">,idUsuarioIngresoInventario = #{idUsuarioIngresoInventario,jdbcType=VARCHAR}</if>
+            <if test="idEstatusReabasto != null">   ,idEstatusReabasto  = #{idEstatusReabasto,jdbcType=INTEGER}</if>
+            <if test="idProveedor != null">         ,idProveedor        = #{idProveedor,jdbcType=VARCHAR}</if>
+            <if test="insertFecha != null">         ,insertFecha        = #{insertFecha,jdbcType=TIMESTAMP}</if>
+            <if test="insertIdUsuario != null">     ,insertIdUsuario    = #{insertIdUsuario,jdbcType=VARCHAR}</if> 
+            <if test="idMedico != null">            ,idMedico           = #{idMedico,jdbcType=VARCHAR}</if>
+            <if test="destino != null">            ,destino           = #{destino,jdbcType=VARCHAR}</if>           
+        </set>
+        WHERE idReabasto = #{idReabasto,jdbcType=VARCHAR};
+    </update>
+    <delete id="eliminarPorId" parameterType="Map">
+        DELETE FROM reabasto WHERE idReabasto = #{idReabasto,jdbcType=VARCHAR}
+    </delete>
+    
+    <select id="obtenerReabastoExtendsAdmin" resultType="mx.mc.model.ReabastoExtended" parameterType="Map" >
+       
+        SELECT idReabasto,r.idEstructura,r.idEstructuraPadre,r.idTipoOrden,folio, 
+            fechaSolicitud,idUsuarioSolicitud,fechaSurtida,idUsuarioSurtida, 
+            documentoSurtida,fechaRecepcion,idUsuarioRecepcion,fechaIngresoInventario, 
+            idUsuarioIngresoInventario,r.idEstatusReabasto,r.idProveedor,r.insertFecha, 
+            r.insertIdUsuario,r.updateFecha,r.updateIdUsuario,e.nombre as nombreEstructura,
+            <if test=" idTipoAlmacen == 2 ">
+        		p.nombreProveedor,
+        	</if>
+        	u.nombreUsuario as nombreUsrSolicitane,
+        	t.nombre as nombreTipoOrden,er.nombre as nombreEstatus, r.idMedico
+        FROM reabasto r INNER JOIN estructura e 
+        ON r.idEstructura = e.idEstructura
+        <if test=" idTipoAlmacen == 2 ">
+        	INNER JOIN proveedor p ON r.idProveedor = p.idProveedor
+        </if>
+        INNER JOIN usuarios u ON r.insertIdUsuario = u.idUsuario
+        INNER JOIN tipoOrden t ON r.idTipoOrden = t.idTipoOrden 
+        INNER JOIN estatusReabasto er ON er.idEstatusReabasto = r.idEstatusReabasto
+        WHERE 
+        <if test=" listEstatusReabasto != null ">
+        	r.idEstatusReabasto IN
+        	<foreach item="item" index="index" collection="listEstatusReabasto" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+    
+    <select id="getReabastoByFolio" resultType="mx.mc.model.Reabasto" parameterType="String">
+            SELECT * FROM reabasto
+        WHERE folio = #{ folio, jdbcType = VARCHAR}        
+    </select> 
+    <select id="obtenerTransferencias" parameterType="Map" resultType="mx.mc.model.Reabasto">
+        SELECT r.idReabasto,
+		r.idEstructura,
+		r.idEstructuraPadre,
+		r.idTipoOrden,
+		r.folio,
+		r.fechaSolicitud,
+		r.idUsuarioSolicitud,
+		r.fechaSurtida,
+		r.idUsuarioSurtida,
+		r.documentoSurtida,
+		r.fechaRecepcion,
+		r.idUsuarioRecepcion,
+		r.fechaIngresoInventario,
+		r.idUsuarioIngresoInventario,
+		r.idEstatusReabasto,
+		r.idProveedor,
+		r.insertFecha,
+		r.insertIdUsuario,
+		r.updateFecha,
+		r.updateIdUsuario,
+		e.nombre as estatus,
+		CONCAT(u.nombre , ' ' , u.apellidoPaterno , ' ' , u.apellidoMaterno) as solicitante,
+                e1.nombre as almacen,
+		e2.nombre as proveedor
+        FROM reabasto r
+        inner join usuarios u on u.idUsuario = r.idUsuarioSolicitud
+        inner join estatusReabasto e on e.idEstatusReabasto = r.idEstatusReabasto
+        inner join estructura e1 on r.idEstructura = e1.idEstructura
+        left join estructura e2 on r.idEstructuraPadre = e2.idEstructura
+        WHERE  1=1
+        <if test="cadena != null ">                         
+            AND ( r.idReabasto LIKE '%${cadena}%' 
+            OR r.idEstructura LIKE '%${cadena}%' 
+            OR r.idEstructuraPadre LIKE '%${cadena}%' 
+            OR r.idTipoOrden LIKE '%${cadena}%' 
+            OR r.folio LIKE '%${cadena}%' 
+            OR r.fechaSolicitud LIKE '%${cadena}%' 
+            OR r.idUsuarioSolicitud LIKE '%${cadena}%' 
+            OR r.fechaSurtida LIKE '%${cadena}%' 
+            OR r.idUsuarioSurtida LIKE '%${cadena}%' 
+            OR r.documentoSurtida LIKE '%${cadena}%' 
+            OR r.fechaRecepcion LIKE '%${cadena}%' 
+            OR r.idUsuarioRecepcion LIKE '%${cadena}%' 
+            OR r.fechaIngresoInventario LIKE '%${cadena}%' 
+            OR r.idUsuarioIngresoInventario LIKE '%${cadena}%'             
+            OR r.idProveedor LIKE '%${cadena}%' 
+            OR r.insertFecha LIKE '%${cadena}%' 
+            OR r.insertIdUsuario LIKE '%${cadena}%' 
+            OR r.updateFecha LIKE '%${cadena}%' 
+            OR r.updateIdUsuario LIKE '%${cadena}%' 
+            OR e.nombre LIKE '%${cadena}%' )
+        </if>
+        AND (r.idEstatusReabasto = 1 OR r.idEstatusReabasto = 2 OR r.idEstatusReabasto = 3 OR r.idEstatusReabasto = 4)
+        AND r.idEstructura = #{ idEstructura , jdbcType = VARCHAR }        
+        AND r.transferencia = 1       
+    </select>
+    
+    <select id="obtenerBusquedaLazy" parameterType="Map" resultType="mx.mc.model.Reabasto">
+        SELECT r.idReabasto,
+		r.idEstructura,
+		r.idEstructuraPadre,
+		r.idTipoOrden,
+		r.folio,
+		r.fechaSolicitud,
+		r.idUsuarioSolicitud,
+		r.fechaSurtida,
+		r.idUsuarioSurtida,
+		r.documentoSurtida,
+		r.fechaRecepcion,
+		r.idUsuarioRecepcion,
+		r.fechaIngresoInventario,
+		r.idUsuarioIngresoInventario,
+		r.idEstatusReabasto,
+		r.idProveedor,
+		r.insertFecha,
+		r.insertIdUsuario,
+		r.updateFecha,
+		r.updateIdUsuario,
+		e.nombre as estatus,
+		CONCAT(u.nombre , ' ' , u.apellidoPaterno , ' ' , u.apellidoMaterno) as solicitante,
+                e1.nombre as almacen,
+		e2.nombre as proveedor
+        FROM reabasto r
+        inner join usuarios u on u.idUsuario = r.idUsuarioSolicitud
+        inner join estatusReabasto e on e.idEstatusReabasto = r.idEstatusReabasto
+        inner join estructura e1 on r.idEstructura = e1.idEstructura
+        left join estructura e2 on r.idEstructuraPadre = e2.idEstructura
+        WHERE  1=1
+        <if test="cadena != null ">                         
+            AND ( r.idReabasto LIKE '%${cadena}%' 
+            OR r.idEstructura LIKE '%${cadena}%' 
+            OR r.idEstructuraPadre LIKE '%${cadena}%' 
+            OR r.idTipoOrden LIKE '%${cadena}%' 
+            OR r.folio LIKE '%${cadena}%' 
+            OR r.fechaSolicitud LIKE '%${cadena}%' 
+            OR r.idUsuarioSolicitud LIKE '%${cadena}%' 
+            OR r.fechaSurtida LIKE '%${cadena}%' 
+            OR r.idUsuarioSurtida LIKE '%${cadena}%' 
+            OR r.documentoSurtida LIKE '%${cadena}%' 
+            OR r.fechaRecepcion LIKE '%${cadena}%' 
+            OR r.idUsuarioRecepcion LIKE '%${cadena}%' 
+            OR r.fechaIngresoInventario LIKE '%${cadena}%' 
+            OR r.idUsuarioIngresoInventario LIKE '%${cadena}%'             
+            OR r.idProveedor LIKE '%${cadena}%' 
+            OR r.insertFecha LIKE '%${cadena}%' 
+            OR r.insertIdUsuario LIKE '%${cadena}%' 
+            OR r.updateFecha LIKE '%${cadena}%' 
+            OR r.updateIdUsuario LIKE '%${cadena}%' 
+            OR e.nombre LIKE '%${cadena}%' )
+        </if>
+        AND (r.idEstatusReabasto = 1 OR r.idEstatusReabasto = 2 OR r.idEstatusReabasto = 3 OR r.idEstatusReabasto = 4)
+        AND r.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        <if test="sortOrder != null" >
+            <if test="sortField == 'folio'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY r.folio asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY r.folio desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'fechaSolicitud'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY r.fechaSolicitud asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY r.fechaSolicitud desc
+                </if>
+            </if>
+            <if test="sortField == 'estatus'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY estatus asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY estatus desc
+                </if>
+            </if>
+            <if test="sortField == 'almacen'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY almacen asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY almacen desc
+                </if>
+            </if>                    
+            <if test="sortField == 'solicitante'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY solicitante asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY solicitante desc
+                </if>
+            </if>                    
+        </if>
+        LIMIT #{startingAt}, #{maxPerPage}
+    </select>
+        <select id="obtenerBusquedaTotalLazy" parameterType="Map" resultType="Long">
+        SELECT COUNT(*) AS total
+        FROM reabasto r
+        inner join usuarios u on u.idUsuario = r.idUsuarioSolicitud
+        inner join estatusReabasto e on e.idEstatusReabasto = r.idEstatusReabasto
+        inner join estructura e1 on r.idEstructura = e1.idEstructura
+        left join estructura e2 on r.idEstructuraPadre = e2.idEstructura
+        WHERE  1=1
+        <if test="cadena != null ">                         
+            AND ( r.idReabasto LIKE '%${cadena}%' 
+            OR r.idEstructura LIKE '%${cadena}%' 
+            OR r.idEstructuraPadre LIKE '%${cadena}%' 
+            OR r.idTipoOrden LIKE '%${cadena}%' 
+            OR r.folio LIKE '%${cadena}%' 
+            OR r.fechaSolicitud LIKE '%${cadena}%' 
+            OR r.idUsuarioSolicitud LIKE '%${cadena}%' 
+            OR r.fechaSurtida LIKE '%${cadena}%' 
+            OR r.idUsuarioSurtida LIKE '%${cadena}%' 
+            OR r.documentoSurtida LIKE '%${cadena}%' 
+            OR r.fechaRecepcion LIKE '%${cadena}%' 
+            OR r.idUsuarioRecepcion LIKE '%${cadena}%' 
+            OR r.fechaIngresoInventario LIKE '%${cadena}%' 
+            OR r.idUsuarioIngresoInventario LIKE '%${cadena}%'             
+            OR r.idProveedor LIKE '%${cadena}%' 
+            OR r.insertFecha LIKE '%${cadena}%' 
+            OR r.insertIdUsuario LIKE '%${cadena}%' 
+            OR r.updateFecha LIKE '%${cadena}%' 
+            OR r.updateIdUsuario LIKE '%${cadena}%' 
+            OR e.nombre LIKE '%${cadena}%' )
+        </if>
+        AND (r.idEstatusReabasto = 1 OR r.idEstatusReabasto = 2 OR r.idEstatusReabasto = 3 OR r.idEstatusReabasto = 4)
+        AND r.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+    </select>
+    
+    <select id="obtenerBusquedaRecepcionLazy" parameterType="Map" resultType="mx.mc.model.ReabastoExtended">
+        SELECT r.idReabasto,r.idEstructura,r.idEstructuraPadre,r.idTipoOrden,r.folio, 
+            r.fechaSolicitud,r.idUsuarioSolicitud,r.fechaSurtida,r.idUsuarioSurtida, 
+            r.documentoSurtida,r.fechaRecepcion,r.idUsuarioRecepcion,r.fechaIngresoInventario, 
+            r.idUsuarioIngresoInventario,r.idEstatusReabasto,r.idProveedor,r.insertFecha, 
+            r.insertIdUsuario,r.updateFecha,r.updateIdUsuario,e.nombre as nombreEstructura,
+            concat(us.nombre, " ", us.apellidoPaterno, " ", us.apellidoMaterno) as nombreUsuarioSurte,
+           <if test=" tipoAlmacen == 2 ">
+        		p.nombreProveedor,
+        	</if>        	
+        	u.nombreUsuario as nombreUsrSolicitane,
+            t.nombre as nombreTipoOrden,er.nombre as nombreEstatus
+        FROM reabasto r INNER JOIN estructura e 
+        ON r.idEstructura = e.idEstructura 
+         <if test=" tipoAlmacen == 2 ">
+        	left JOIN proveedor p ON r.idProveedor = p.idProveedor
+        </if>
+        INNER JOIN usuarios u ON r.insertIdUsuario = u.idUsuario 
+        LEFT JOIN usuarios us ON r.idUsuarioSurtida = us.idUsuario        
+        INNER JOIN tipoOrden t ON r.idTipoOrden = t.idTipoOrden 
+        INNER JOIN estatusReabasto er ON er.idEstatusReabasto = r.idEstatusReabasto
+        WHERE    
+        r.idEstatusReabasto = 4           
+        <if test=" idEstructuraPadre != null ">
+        	AND r.idEstructuraPadre = #{ idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructura != null ">
+        	AND r.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipoAlmacen == 2 ">
+            AND (r.folio LIKE '%${criterioBusqueda}%' OR p.nombreProveedor LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d/%m/%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d-%m-%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y-%m-%d') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y/%m/%d') LIKE '%${criterioBusqueda}%' 
+            OR r.documentoSurtida LIKE '%${criterioBusqueda}%'            
+            OR e.nombre LIKE '%${criterioBusqueda}%' 
+            OR CONCAT(u.nombre,'',u.apellidoPaterno,'',u.apellidoMaterno) LIKE '%${criterioBusqueda}%'
+            OR u.nombreUsuario LIKE '%${criterioBusqueda}%')
+       	</if>
+       	<if test=" tipoAlmacen > 2 ">
+            AND (r.folio LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d/%m/%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d-%m-%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y-%m-%d') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y/%m/%d') LIKE '%${criterioBusqueda}%' 
+            OR r.documentoSurtida LIKE '%${criterioBusqueda}%'            
+            OR e.nombre LIKE '%${criterioBusqueda}%' 
+            OR CONCAT(u.nombre,'',u.apellidoPaterno,'',u.apellidoMaterno) LIKE '%${criterioBusqueda}%'
+            OR u.nombreUsuario LIKE '%${criterioBusqueda}%')
+       	</if>        
+        <if test="sortField == null" > ORDER BY r.fechaSolicitud desc </if>
+        <if test="sortOrder != null" >
+            <if test="sortField == 'folio'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY r.folio asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY r.folio desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'fechaSolicitud'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY r.fechaSolicitud asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY r.fechaSolicitud desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreEstructura'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreEstructura asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreEstructura desc
+                </if>
+            </if>                              
+            <if test="sortField == 'nombreEstatus'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreEstatus asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreEstatus desc
+                </if>
+            </if>                    
+            <if test="sortField == 'nombreUsrSolicitane'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreUsrSolicitane asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreUsrSolicitane desc
+                </if>
+            </if>       
+        </if>    
+        LIMIT #{startingAt}, #{maxPerPage}
+    </select>
+    <select id="obtenerBusquedaRecepcionTotalLazy" parameterType="Map" resultType="Long">
+        SELECT COUNT(*) AS total
+        FROM reabasto r INNER JOIN estructura e 
+        ON r.idEstructura = e.idEstructura 
+         <if test=" tipoAlmacen == 2 ">
+        	left JOIN proveedor p ON r.idProveedor = p.idProveedor
+        </if>
+        INNER JOIN usuarios u ON r.insertIdUsuario = u.idUsuario        
+        INNER JOIN tipoOrden t ON r.idTipoOrden = t.idTipoOrden 
+        INNER JOIN estatusReabasto er ON er.idEstatusReabasto = r.idEstatusReabasto
+        WHERE 
+        r.idEstatusReabasto = 4          
+        <if test=" idEstructuraPadre != null ">
+        	AND r.idEstructuraPadre = #{ idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructura != null ">
+        	AND r.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipoAlmacen == 2 ">
+            AND (r.folio LIKE '%${criterioBusqueda}%' OR p.nombreProveedor LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d/%m/%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d-%m-%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y-%m-%d') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y/%m/%d') LIKE '%${criterioBusqueda}%' 
+            OR r.documentoSurtida LIKE '%${criterioBusqueda}%'            
+            OR e.nombre LIKE '%${criterioBusqueda}%' 
+            OR CONCAT(u.nombre,'',u.apellidoPaterno,'',u.apellidoMaterno) LIKE '%${criterioBusqueda}%'
+            OR u.nombreUsuario LIKE '%${criterioBusqueda}%')
+       	</if>
+       	<if test=" tipoAlmacen > 2 ">
+            AND (r.folio LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d/%m/%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d-%m-%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y-%m-%d') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y/%m/%d') LIKE '%${criterioBusqueda}%' 
+            OR r.documentoSurtida LIKE '%${criterioBusqueda}%'            
+            OR e.nombre LIKE '%${criterioBusqueda}%' 
+            OR CONCAT(u.nombre,'',u.apellidoPaterno,'',u.apellidoMaterno) LIKE '%${criterioBusqueda}%'
+            OR u.nombreUsuario LIKE '%${criterioBusqueda}%')
+       	</if>                         
+    </select>
+    
+    <select id="obtenerReabastoByFolio" resultType="mx.mc.model.ReabastoExtended" parameterType="String">
+        SELECT  r.idReabasto, r.idEstructura, r.folio, fa.folioAlternativo, r.fechaSolicitud, r.idUsuarioSolicitud, r.idEstatusReabasto,
+                r.insertFecha, r.updateFecha, r.idTipoOrden, e.nombre AS nombreEstructura, e.descripcion AS descripcionEstructura,
+                e.clavePresupuestal, e.claveEstructura,r.destino FROM reabasto r
+        INNER JOIN estructura e ON r.idEstructura = e.idEstructura
+        INNER join folioAlternativoFolioMus fa on r.folio = fa.folioMUS
+        WHERE folio = #{ folio, jdbcType = VARCHAR}        
+        AND r.idTipoOrigen = 1
+    </select> 
+    
+    <select id="obtenerBusquedaSurtimientoLazy" resultType="mx.mc.model.ReabastoExtended" parameterType="Map" >
+       
+        SELECT idReabasto,r.idTipoOrigen,r.idEstructura,r.idEstructuraPadre,r.idTipoOrden,folio, 
+            fechaSolicitud,idUsuarioSolicitud,fechaSurtida,idUsuarioSurtida, 
+            documentoSurtida,fechaRecepcion,idUsuarioRecepcion,fechaIngresoInventario, 
+            idUsuarioIngresoInventario,r.idEstatusReabasto,r.idProveedor,r.insertFecha, 
+            r.insertIdUsuario,r.updateFecha,r.updateIdUsuario,e.nombre as nombreEstructura,
+            <if test=" idTipoAlmacen == 2 ">
+        		p.nombreProveedor,
+        	</if>
+        	u.nombreUsuario as nombreUsrSolicitane,
+            t.nombre as nombreTipoOrden, er.nombre as nombreEstatus , r.idMedico,e.idTipoAlmacen
+        FROM reabasto r INNER JOIN estructura e 
+        ON r.idEstructura = e.idEstructura
+        <if test=" idTipoAlmacen == 2 ">
+        	LEFT JOIN proveedor p ON r.idProveedor = p.idProveedor
+        </if>
+        INNER JOIN usuarios u ON r.insertIdUsuario = u.idUsuario       
+        INNER JOIN tipoOrden t ON r.idTipoOrden = t.idTipoOrden 
+        INNER JOIN estatusReabasto er ON er.idEstatusReabasto = r.idEstatusReabasto
+        WHERE 
+        r.idEstatusReabasto IN
+        <foreach item="item" index="index" collection="listEstatusReabasto" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="cadena != null ">                         
+            AND ( 
+            r.folio LIKE '%${cadena}%' 
+            OR date_format(r.fechaSolicitud, '%d/%m/%Y') LIKE '%${cadena}%'
+            OR date_format(r.fechaSolicitud, '%d-%m-%Y') LIKE '%${cadena}%'
+            OR date_format(r.fechaSolicitud, '%Y-%m-%d') LIKE '%${cadena}%'
+            OR date_format(r.fechaSolicitud, '%Y/%m/%d') LIKE '%${cadena}%' 
+            OR r.documentoSurtida LIKE '%${cadena}%'            
+            OR e.nombre LIKE '%${cadena}%' 
+            OR CONCAT(u.nombre,'',u.apellidoPaterno,'',u.apellidoMaterno) LIKE '%${cadena}%'
+            OR u.nombreUsuario LIKE '%${cadena}%')
+        </if>               	        
+        <if test=" reabasto.idEstructuraPadre != null ">
+        	AND r.idEstructuraPadre = #{ reabasto.idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" reabasto.idEstructura != null ">
+        	AND r.idEstructura = #{ reabasto.idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test="sortField == null" > ORDER BY r.fechaSolicitud desc </if>
+        <if test="sortOrder != null" >
+            <if test="sortField == 'folio'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY r.folio asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY r.folio desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'fechaSolicitud'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY r.fechaSolicitud asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY r.fechaSolicitud desc
+                </if>
+            </if>
+            <if test="sortField == 'nombreEstructura'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreEstructura asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreEstructura desc
+                </if>
+            </if>
+            <if test="sortField == 'nombreTipoOrden'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreTipoOrden asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreTipoOrden desc
+                </if>
+            </if>                   
+            <if test="sortField == 'nombreEstatus'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreEstatus asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreEstatus desc
+                </if>
+            </if>                    
+            <if test="sortField == 'nombreUsrSolicitane'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreUsrSolicitane asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreUsrSolicitane desc
+                </if>
+            </if>                    
+        </if>        
+    </select>
+    
+    <select id="obtenerBusquedaTotalSurtimientoLazy" resultType="Long" parameterType="Map" >
+       
+        SELECT COUNT(*) AS total
+        FROM reabasto r INNER JOIN estructura e 
+        ON r.idEstructura = e.idEstructura
+        <if test=" idTipoAlmacen == 2 ">
+        	LEFT JOIN proveedor p ON r.idProveedor = p.idProveedor
+        </if>
+        INNER JOIN usuarios u ON r.insertIdUsuario = u.idUsuario       
+        INNER JOIN tipoOrden t ON r.idTipoOrden = t.idTipoOrden 
+        INNER JOIN estatusReabasto er ON er.idEstatusReabasto = r.idEstatusReabasto
+        WHERE 
+        r.idEstatusReabasto IN
+        <foreach item="item" index="index" collection="listEstatusReabasto" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="cadena != null ">                         
+            AND ( 
+            r.folio LIKE '%${cadena}%' 
+            OR date_format(r.fechaSolicitud, '%d/%m/%Y') LIKE '%${cadena}%'
+            OR date_format(r.fechaSolicitud, '%d-%m-%Y') LIKE '%${cadena}%'
+            OR date_format(r.fechaSolicitud, '%Y-%m-%d') LIKE '%${cadena}%'
+            OR date_format(r.fechaSolicitud, '%Y/%m/%d') LIKE '%${cadena}%' 
+            OR r.documentoSurtida LIKE '%${cadena}%'            
+            OR e.nombre LIKE '%${cadena}%' 
+            OR CONCAT(u.nombre,'',u.apellidoPaterno,'',u.apellidoMaterno) LIKE '%${cadena}%'
+            OR u.nombreUsuario LIKE '%${cadena}%')
+        </if>
+        <if test=" reabasto.idEstructuraPadre != null ">
+        	AND r.idEstructuraPadre = #{ reabasto.idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" reabasto.idEstructura != null ">
+        	AND r.idEstructura = #{ reabasto.idEstructura , jdbcType = VARCHAR }
+        </if>        
+    </select>
+    <select  id="obtenerReabastoExtendedPorID" parameterType="Map" resultType="mx.mc.model.ReabastoExtended">
+        SELECT r.idReabasto
+        , r.idEstructura
+        , r.idEstructuraPadre
+        , r.idTipoOrden
+        , r.folio
+        , r.fechaSolicitud
+        , r.idUsuarioSolicitud
+        , r.idEstatusReabasto
+        ,e.nombre as almacen
+        ,e.idTipoAlmacen
+        ,  r.idProveedor
+        ,(Select nombre from estructura where idEstructura = e.idEstructuraPadre ) as Proveedor
+        FROM  reabasto r
+        inner join estructura  e on r.idEstructura = e.idEstructura
+        where r.idReabasto=#{idReabasto,jdbcType=VARCHAR}
+    </select>
+    
+    <select id="obtenerBusquedaIngresoLazy" parameterType="Map" resultType="mx.mc.model.ReabastoExtended">
+        SELECT r.idReabasto,r.idEstructura,r.idEstructuraPadre,r.idTipoOrden,r.folio, 
+            r.fechaSolicitud,r.idUsuarioSolicitud,r.fechaSurtida,r.idUsuarioSurtida, 
+            r.documentoSurtida,r.fechaRecepcion,r.idUsuarioRecepcion,r.fechaIngresoInventario, 
+            r.idUsuarioIngresoInventario,r.idEstatusReabasto,r.idProveedor,r.insertFecha, 
+            r.insertIdUsuario,r.updateFecha,r.updateIdUsuario,r.idTipoOrigen,e.nombre as nombreEstructura,
+            concat(us.nombre, " ", us.apellidoPaterno, " ", us.apellidoMaterno) as nombreUsuarioSurte,
+           <if test=" tipoAlmacen == 2 ">
+        		p.nombreProveedor,
+        	</if>        	
+        	u.nombreUsuario as nombreUsrSolicitane,
+            t.nombre as nombreTipoOrden,er.nombre as nombreEstatus
+        FROM reabasto r INNER JOIN estructura e ON r.idEstructura = e.idEstructura 
+         <if test=" tipoAlmacen == 2 ">
+        	left JOIN proveedor p ON r.idProveedor = p.idProveedor
+        </if>
+        INNER JOIN usuarios u ON r.insertIdUsuario = u.idUsuario 
+        LEFT JOIN usuarios us ON r.idUsuarioSurtida = us.idUsuario        
+        INNER JOIN tipoOrden t ON r.idTipoOrden = t.idTipoOrden 
+        INNER JOIN estatusReabasto er ON er.idEstatusReabasto = r.idEstatusReabasto
+        WHERE 
+        r.idEstatusReabasto IN
+        <foreach item="item" index="index" collection="listEstatusReabasto" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test=" idEstructuraPadre != null ">
+        	AND r.idEstructuraPadre = #{ idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructura != null ">
+        	AND r.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipoAlmacen == 2 ">
+            AND (r.folio LIKE '%${criterioBusqueda}%' OR p.nombreProveedor LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d/%m/%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d-%m-%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y-%m-%d') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y/%m/%d') LIKE '%${criterioBusqueda}%' 
+            OR r.documentoSurtida LIKE '%${criterioBusqueda}%'            
+            OR e.nombre LIKE '%${criterioBusqueda}%' 
+            OR CONCAT(u.nombre,'',u.apellidoPaterno,'',u.apellidoMaterno) LIKE '%${criterioBusqueda}%'
+            OR u.nombreUsuario LIKE '%${criterioBusqueda}%')
+       	</if>
+       	<if test=" tipoAlmacen > 2 ">
+            AND (r.folio LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d/%m/%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d-%m-%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y-%m-%d') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y/%m/%d') LIKE '%${criterioBusqueda}%' 
+            OR r.documentoSurtida LIKE '%${criterioBusqueda}%'            
+            OR e.nombre LIKE '%${criterioBusqueda}%' 
+            OR CONCAT(u.nombre,'',u.apellidoPaterno,'',u.apellidoMaterno) LIKE '%${criterioBusqueda}%'
+            OR u.nombreUsuario LIKE '%${criterioBusqueda}%')
+       	</if>        
+        <if test="sortField == null" > ORDER BY r.fechaSolicitud desc </if>               
+        <if test="sortOrder != null" >
+            <if test="sortField == 'folio'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY r.folio asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY r.folio desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'fechaSolicitud'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY r.fechaSolicitud asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY r.fechaSolicitud desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreEstructura'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreEstructura asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreEstructura desc
+                </if>
+            </if>                              
+            <if test="sortField == 'nombreEstatus'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreEstatus asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreEstatus desc
+                </if>
+            </if>                    
+            <if test="sortField == 'nombreUsrSolicitane'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreUsrSolicitane asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreUsrSolicitane desc
+                </if>
+            </if>       
+        </if>    
+        LIMIT #{startingAt}, #{maxPerPage}
+    </select>
+    
+    <select id="obtenerBusquedaIngresoTotalLazy" parameterType="Map" resultType="Long">
+        SELECT COUNT(*) AS total
+        FROM reabasto r INNER JOIN estructura e 
+        ON r.idEstructura = e.idEstructura 
+         <if test=" tipoAlmacen == 2 ">
+        	left JOIN proveedor p ON r.idProveedor = p.idProveedor
+        </if>
+        INNER JOIN usuarios u ON r.insertIdUsuario = u.idUsuario        
+        INNER JOIN tipoOrden t ON r.idTipoOrden = t.idTipoOrden 
+        INNER JOIN estatusReabasto er ON er.idEstatusReabasto = r.idEstatusReabasto
+        WHERE 1 = 1        
+        <if test=" listEstatusReabasto != null ">
+            AND r.idEstatusReabasto IN
+            <foreach item="item" index="index" collection="listEstatusReabasto" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" idEstructuraPadre != null ">
+        	AND r.idEstructuraPadre = #{ idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructura != null ">
+        	AND r.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+       <if test=" tipoAlmacen == 2 ">
+            AND (r.folio LIKE '%${criterioBusqueda}%' OR p.nombreProveedor LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d/%m/%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d-%m-%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y-%m-%d') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y/%m/%d') LIKE '%${criterioBusqueda}%' 
+            OR r.documentoSurtida LIKE '%${criterioBusqueda}%'            
+            OR e.nombre LIKE '%${criterioBusqueda}%' 
+            OR CONCAT(u.nombre,'',u.apellidoPaterno,'',u.apellidoMaterno) LIKE '%${criterioBusqueda}%'
+            OR u.nombreUsuario LIKE '%${criterioBusqueda}%')
+       	</if>
+       	<if test=" tipoAlmacen > 2 ">
+            AND (r.folio LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d/%m/%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%d-%m-%Y') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y-%m-%d') LIKE '%${criterioBusqueda}%'
+            OR date_format(r.fechaSolicitud, '%Y/%m/%d') LIKE '%${criterioBusqueda}%' 
+            OR r.documentoSurtida LIKE '%${criterioBusqueda}%'            
+            OR e.nombre LIKE '%${criterioBusqueda}%' 
+            OR CONCAT(u.nombre,'',u.apellidoPaterno,'',u.apellidoMaterno) LIKE '%${criterioBusqueda}%'
+            OR u.nombreUsuario LIKE '%${criterioBusqueda}%')
+       	</if>                    
+    </select>
+    
+    <select id="obtenerReabastoByFolioAlternativo" resultType="mx.mc.model.ReabastoExtended" parameterType="String">
+        SELECT r.idReabasto, r.idEstructura, r.idEstructuraPadre, r.folio, fa.folioAlternativo, fa.estatus as estatusFolioAlternativo, r.fechaSolicitud, r.idUsuarioSolicitud,
+               r.idEstatusReabasto, r.insertFecha, r.updateFecha, r.idTipoOrden, e.nombre AS nombreEstructura, e.descripcion AS descripcionEstructura,
+               e.clavePresupuestal, e.claveEstructura FROM reabasto r
+        INNER JOIN estructura e ON r.idEstructura = e.idEstructura
+        INNER join folioAlternativoFolioMus fa on r.folio = fa.folioMUS
+        WHERE fa.folioAlternativo = #{ folioAlternativo, jdbcType = VARCHAR}
+        AND r.idTipoOrigen = 1
+    </select> 
+    
+</mapper>

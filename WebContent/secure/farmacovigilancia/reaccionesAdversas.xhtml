@@ -1,0 +1,854 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanelAmplio" >
+                    <h:form id="mainForm">
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true"  >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <p:focus context="mainForm"/>
+
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value="Reacciones Adversas"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+                            <!--p:selectCheckboxMenu id="menu" value="# {reaccionesAdversasMB.tipoReaccionSelectedList}" label="Tipo" title="Filtro por tipo de Prescripción"
+                                                  filter="true" filterMatchMode="startsWith" panelStyle="width:110px" style="width: 110px;">
+                                <f:selectItem value="# {1}" itemLabel="Sospechas" itemValue="1" />
+                                <f:selectItem value="# {2}" itemLabel="Notificadas" itemValue="2" />
+                                <f:selectItem value="# {3}" itemLabel="Confirmadas" itemValue="3" />
+                            </p:selectCheckboxMenu-->
+                            <p:spacer width="10px;" />
+                            <p:inputText id="busqueda" 
+                                         value="#{reaccionesAdversasMB.cadenaBusqueda}" 
+                                         class="textSearch"
+                                         style="width: 50% !important;" 
+                                         placeholder="Buscar..." title="Buscar por Número de Cama, Paciente o Servicio" />
+                            <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />                    
+                            <p:spacer width="12px" />
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); if(args.modal){PF(':formSurtimientoDetail').show();}"
+                                             actionListener="#{reaccionesAdversasMB.obtenerReacciones}"
+                                             update="@form"  />
+                        </div>                        
+                        <p:commandButton value="Registro Manual"  styleClass="btnMusAzul" actionListener="#{reaccionesAdversasMB.nuevoRegistroRam}" style="margin:5px" 
+                                         update="formReaccionDetail" onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('mdlRam').show();" ajax="true" />
+
+                        <p:commandButton value="Registro Prellenado"  styleClass="btnMusAzul" actionListener="#{reaccionesAdversasMB.registroPrellenadoRam}"  style="margin:5px" 
+                                         update="formBuscaMinis" onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('mdlBuscarMinis').show();" ajax="true" />
+                        <br/>
+                        <p:toolbar rendered="false">
+                            <p:toolbarGroup id="toolbar"  >
+                                <p:commandButton id="btnModificar" value="Modificar"
+                                                 title="Modificar Rol" icon="ui-icon-pencil"
+                                                 onclick="PF('statusProcess').show()"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalReaccion').show();"
+
+                                                 update=":formSurtimientoDetail"
+                                                 disabled="#{!reaccionesAdversasMB.permiso.puedeEditar}"
+                                                 rendered="false" />
+
+                                <p:commandButton id="btnCancelar" value="Cancelar"
+                                                 title="Cancelar Surtimiento Prescripción" icon="ui-icon-trash" 
+                                                 update="@form"
+                                                 disabled="#{!reaccionesAdversasMB.permiso.puedeEliminar}"
+                                                 rendered="false" />
+
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:tabView style="border-bottom-color: transparent!important ;" >
+                            <p:ajax event="tabChange" process="@this" update="mainForm:tblReacciones" listener="#{reaccionesAdversasMB.onTabChange}"/>                            
+                            <p:tab title="SOSPECHAS" id="#{reaccionesAdversasMB.sospecha}" class="borderBottom" />
+                            <p:tab title="NOTIFICADAS" id="#{reaccionesAdversasMB.notificada}"  class="borderBottom" />
+                            <p:tab title="CONFIRMADAS" id="#{reaccionesAdversasMB.confirmada}" class="borderBottom" />
+                        </p:tabView> 
+
+                        <p:panel id="dataTable" style="margin:-28px 0px;"  >
+                            <p:dataTable id="tblReacciones" 
+                                         widgetVar="tblReacciones" 
+                                         value="#{reaccionesAdversasMB.reaccionesAdversasLazy}"
+                                         lazy="true"
+                                         selection="#{reaccionesAdversasMB.reaccionesExtendedSelected}"
+                                         var="item" 
+                                         rowKey="#{item.idReaccion}"
+                                         rowIndexVar="row"
+                                         selectionMode="single"
+                                         style="margin-bottom:5px;"
+                                         styleClass="mystyle"
+                                         scrollRows="8" scrollable="true" scrollHeight="320"
+                                         emptyMessage="No se encontraron Registros"
+                                         reflow="true"
+                                         paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                         currentPageReportTemplate=" "
+                                         paginator="true"
+                                         rows="8"
+                                         paginatorPosition="bottom"
+                                         >
+
+                                <p:ajax event="rowDblselect" listener="#{reaccionesAdversasMB.verReaccion}" update="formReaccionDetail"
+                                        onstart="PF('statusProcess').show()"
+                                        oncomplete="PF('statusProcess').hide(); PF('mdlRam').show(); " />
+
+                                <f:facet name="{Exporters}">
+                                    <div style="float:right">
+                                        <h:commandLink >
+                                            <img src="#{request.contextPath}/resources/img/btnxls.png" style="height: 25px !important; margin-left: 5px !important;" title="Exportar" />
+                                            <p:dataExporter type="xls" target="tblReacciones" fileName="prescripcionesPorSurtir" />
+                                        </h:commandLink>
+                                    </div>
+                                </f:facet>
+
+                                <p:column style="text-align: left; width: 11% "
+                                          sortBy="#{item.fecha}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Fecha" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.fecha}" >
+                                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 7% "
+                                          sortBy="#{item.tipo}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Tipo" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.tipo}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 7% "
+                                          sortBy="#{item.folio}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Folio" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.folio}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 15% " sortBy="#{item.nombrePaciente}">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Paciente" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombrePaciente}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10% " sortBy="#{item.registro}">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Registró" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.registro}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 25% " sortBy="#{item.insumo}">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Insumo" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.insumo}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 8% " 
+                                          sortBy="#{item.riesgo}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Riesgo" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.riesgo}" />
+                                </p:column> 
+                                
+                                <p:column style="text-align: left; width: 7% " 
+                                          sortBy="#{item.estatus}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Estatus" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.estatus}" />
+                                </p:column>                                
+
+                                <p:column style="text-align: left; width: 6% " >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Acciones" />
+                                    </f:facet>
+                                    <p:commandLink title="#{item.idEstatusReaccion == 1 ? 'Notificar' : 'Confirmar'}" id="btnStatus"
+                                                   actionListener="#{reaccionesAdversasMB.cambiarStatusReaccion(item.idReaccion, item.idEstatusReaccion)}" 
+                                                   rendered="#{item.idEstatusReaccion == 1 ? true : item.idEstatusReaccion == 2 ? true : false}"
+                                                   onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update="tblReacciones" >
+                                        <i class="#{item.idEstatusReaccion == 1 || item.idEstatusReaccion == 2 ?'fa fa-toggle-off' : 'fa fa-toggle-on'} iconMusAzul" />
+                                    </p:commandLink>&nbsp;&nbsp;
+                                    <p:commandLink title="Imprimir" id="btnPrint"
+                                                   actionListener="#{reaccionesAdversasMB.imprimirReaccion(item.idReaccion)}"  update=":mainForm,:formPDF"
+                                                   rendered="#{item.idEstatusReaccion == 2 ? true : item.idEstatusReaccion == 3 ? true : false}"
+                                                   onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();if(args.estatus){PF('mdlReport').show();}"  >
+                                        <i class="fa fa-print iconMusAzul" />
+                                    </p:commandLink> 
+                                </p:column> 
+                            </p:dataTable>                            
+
+                        </p:panel>
+
+                    </h:form>
+                </div>
+
+                <p:dialog header="Registro de Reacción Adversa"
+                          widgetVar="mdlRam"
+                          closeOnEscape="true"
+                          closable="true"
+                          width="100%" 
+                          modal="true" 
+                          resizable="false"
+                          responsive="true" 
+                          style=" font-size:xx-small !important; " >
+                    <div style="height: 550px !important; overflow-x:auto; overflow-y: scroll; ">
+                        <h:form id="formReaccionDetail" >
+                            <p:messages id="msgValidaRegistro" globalOnly="false" showDetail="false" closable="true" >                            
+                                <p:autoUpdate />
+                            </p:messages>                                                              
+                            <p:panelGrid columns="8"  >
+                                <p:outputLabel value="Folio"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.folio}" size="15" readonly="true"   />
+
+                                <p:outputLabel value="No. Notificación"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.numeroNotificacion}" size="15" readonly="true" />
+
+                                <p:outputLabel value="Fecha Registró"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.fecha}" size="15" readonly="true" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+                                </p:inputText>
+
+                                <p:outputLabel value="Estatus"/>
+                                <p:selectOneMenu value="#{reaccionesAdversasMB.reaccionSelect.idEstatusReaccion}" disabled="true" >
+                                    <f:selectItems value="#{reaccionesAdversasMB.estatusReaccionList}" var="tipo" itemLabel="#{tipo.descripcion}" itemValue="#{tipo.idEstatusReaccion}" />
+                                </p:selectOneMenu>
+
+                                <p:outputLabel value="Paciente"/>
+                                <p:autoComplete id="auto-paciente" value="#{reaccionesAdversasMB.pacienteSelect}"
+                                                completeMethod="#{reaccionesAdversasMB.autoCompletePaciente}"
+                                                minQueryLength="4" 
+                                                cache="false"
+                                                forceSelection="true"
+                                                var="paciente" 
+                                                itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}"
+                                                itemValue="#{paciente}"
+                                                converter="musGenericConverter"
+                                                placeholder="Buscar por nombre, derechohabiencia..."
+                                                emptyMessage="No se encontro registro."
+                                                size="30"
+                                                tabindex="0"
+                                                scrollHeight = "250">
+                                    <p:ajax event="itemSelect" listener="#{reaccionesAdversasMB.selectPaciente}" 
+                                            update="formReaccionDetail:numPaciente,formReaccionDetail:fechaNacimiento,formReaccionDetail:edad,formReaccionDetail:sexoPac,formReaccionDetail:rfcPac,formReaccionDetail:curpPac" />
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Número Paciente" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.pacienteNumero}" style="font-size: x-small;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Nombre" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" style="font-size: small;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Cve Derechohabiencia" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.claveDerechohabiencia}" style="font-size: x-small;" />
+                                    </p:column>
+                                </p:autoComplete>
+
+                                <p:outputLabel value="Número Paciente"/>
+                                <p:inputText id="numPaciente" value="#{reaccionesAdversasMB.reaccionSelect.numeroPaciente}" size="15" readonly="true"  />
+
+                                <p:outputLabel value="Fecha Nacimiento"/>
+                                <p:datePicker id="fechaNacimiento" value="#{reaccionesAdversasMB.reaccionSelect.fechaNacimiento}" size="15" pattern="dd/MM/yyyy" />
+
+                                <p:outputLabel value="Edad"/>
+                                <p:inputNumber id="edad" value="#{reaccionesAdversasMB.reaccionSelect.edad}"  size="15" 
+                                             minValue="0" maxValue="130" thousandSeparator="," decimalSeparator="" decimalPlaces="0"/>
+
+                                <p:outputLabel value="Sexo"/>
+                                <p:selectOneButton id="sexoPac" value="#{reaccionesAdversasMB.reaccionSelect.sexo}">
+                                    <f:selectItem itemLabel="Femenino" itemValue="0" />
+                                    <f:selectItem itemLabel="Masculino" itemValue="1" />
+                                </p:selectOneButton>
+
+                                <p:outputLabel value="Peso (Kg)"/>
+                                <p:inputNumber value="#{reaccionesAdversasMB.reaccionSelect.peso}"  placeholder="Ejem. 70.00"
+                                             minValue="0.00" size="15" decimalSeparator="." maxValue="650" decimalPlaces="3" thousandSeparator=","/>
+
+                                <p:outputLabel value="Estatura (m)"/>
+                                <p:inputNumber value="#{reaccionesAdversasMB.reaccionSelect.estatura}" placeholder="Ejem. 1.20"
+                                               minValue="0.00" size="15" decimalSeparator="." maxValue="3" decimalPlaces="2" thousandSeparator=","/>                                
+                                
+                                <p:outputLabel value="RFC"/>
+                                <p:inputText id="rfcPac" value="#{reaccionesAdversasMB.reaccionSelect.rfcPaciente}"  size="15"  />
+
+                                <p:outputLabel value="CURP"/>
+                                <p:inputText id="curpPac" value="#{reaccionesAdversasMB.reaccionSelect.curpPaciente}"  size="15"  />
+                            </p:panelGrid>
+                            <p:outputLabel value="Datos de la sospecha de reacción adversa" class="textoNegrita" /> <br/>                       
+                            <p:panelGrid columns="8">
+                                <p:outputLabel value="Fecha Início"/>
+                                <p:datePicker value="#{reaccionesAdversasMB.reaccionSelect.fechaInicioSospecha}"  size="15" pattern="dd/MM/yyyy"  maxdate="#{reaccionesAdversasMB.fecha}" />
+
+                                <p:outputLabel value="Tipo"/>
+                                <p:selectOneMenu value="#{reaccionesAdversasMB.reaccionSelect.idTipoReaccion}" filter="true" filterMatchMode="contains">
+                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="0" noSelectionOption="true" />
+                                    <f:selectItems value="#{reaccionesAdversasMB.tipoReaccionList}" var="item"  itemLabel="#{item.reaccion}" itemValue="#{item.idTipoReaccion}" />                                
+                                </p:selectOneMenu>
+
+                                <p:outputLabel value="Concecuencias"/>
+                                <p:selectOneMenu value="#{reaccionesAdversasMB.reaccionSelect.idConsecuencia}"  filter="true" filterMatchMode="contains">
+                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                    <f:selectItems value="#{reaccionesAdversasMB.consecuenciaList}" var="cons" itemLabel="#{cons.descripcion}" itemValue="#{cons.idConsecuencia}" />
+                                </p:selectOneMenu>                                
+                                
+                                <p:outputLabel value="Riesgo: " />
+                                <p:selectOneMenu style="width: 150px;vertical-align: middle;margin-right: 10px;" value="#{reaccionesAdversasMB.reaccionSelect.riesgo}" 
+                                                 filter="true" filterPlaceholder="Riesgo" >   
+                                    <f:selectItem itemLabel="Seleccionar un riesgo" itemValue="" />
+                                    <f:selectItems value="#{reaccionesAdversasMB.riesgosReaccion}" var="riesgo" itemLabel="#{riesgo}" itemValue="#{riesgo}" />                                
+                                </p:selectOneMenu>
+                                    
+                            </p:panelGrid>                        
+                            <p:panelGrid columns="2">
+                                <p:outputLabel value="Descripción"/>
+                                <p:inputTextarea value="#{reaccionesAdversasMB.reaccionSelect.descripcion}"  rows="3" cols="150" />
+                            </p:panelGrid>    
+                            <p:outputLabel value="Información sobre el Medicamento Sospechoso" class="textoNegrita" /> <br/>  
+                            <p:panelGrid columns="2">
+                                <p:outputLabel value="Nombre" />
+                                <p:autoComplete  size="30" id="insumo"
+                                                 style="width: 1100px !important;"
+                                                 panelStyle="width: 1100px !important;"
+                                                 inputStyle="width: 1100px !important;"
+                                                 value="#{reaccionesAdversasMB.medicamentoSelect}"  autocomplete="on" 
+                                                 completeMethod="#{reaccionesAdversasMB.autoComplete}"  
+                                                 minQueryLength="3"  forceSelection="true" 
+                                                 var="insumo" 
+                                                 itemValue="#{insumo}" 
+                                                 itemLabel="#{insumo.nombreCorto}"
+                                                 converter="medicamentoExtendedHashConverter" >
+                                    <p:ajax event="itemSelect" listener="#{reaccionesAdversasMB.selectMedicamento}" update="formReaccionDetail:clave,formReaccionDetail:sustancia,formReaccionDetail:via,
+                                            formReaccionDetail:lote,formReaccionDetail:caducidad,formReaccionDetail:fabricante" />
+                                    <p:column style="width: 20px; font-size: small;" width="20px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave Institucional" />
+                                        </f:facet>
+                                        <h:outputText value="#{insumo.claveInstitucional}" style=" font-size: small;" />
+                                    </p:column>
+                                    <p:column style="width: 350px; font-size: small;" width="350px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Descripción" />
+                                        </f:facet>
+                                        <h:outputText value="#{insumo.nombreCorto}" style=" font-size: x-small;" />
+                                    </p:column>
+                                    <p:column style="width: 80px; font-size: small;" width="350px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Lote" />
+                                        </f:facet>
+                                        <h:outputText value="#{insumo.lote}" style=" font-size: x-small;" />
+                                    </p:column>
+                                    <p:column style="width: 20px; font-size: small;" width="350px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Fecha de Caducidad" />
+                                        </f:facet>
+                                        <h:outputText value="#{insumo.fechaCaducidad}" style=" font-size: x-small;" >
+                                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column style="width: 20px; font-size: small;" width="350px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Fabricante" />
+                                        </f:facet>
+                                        <h:outputText value="#{insumo.nombreFabricante}" style=" font-size: x-small;" />
+                                    </p:column>
+                                </p:autoComplete>
+                            </p:panelGrid>
+                            <p:panelGrid columns="6">                                
+                                <p:outputLabel value="Clave"/>
+                                <p:inputText id="clave" value="#{reaccionesAdversasMB.reaccionSelect.clave}"  size="15" />
+
+                                <p:outputLabel value="Sustancia Activa"/>
+                                <p:selectOneMenu id="sustancia" value="#{reaccionesAdversasMB.reaccionSelect.idSustanciaActiva}" filter="true" filterMatchMode="contains">
+                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                    <f:selectItems value="#{reaccionesAdversasMB.sustanciaActivaList}" var="item" itemLabel="#{item.nombreSustanciaActiva}" itemValue="#{item.idSustanciaActiva}" />
+                                </p:selectOneMenu>
+
+                                <p:outputLabel value="Vía Administración"/>
+                                <p:selectOneMenu id="via" value="#{reaccionesAdversasMB.reaccionSelect.idViaAdministracion}"  filter="true" filterMatchMode="contains">
+                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                    <f:selectItems value="#{reaccionesAdversasMB.viaList}" var="item" itemLabel="#{item.nombreViaAdministracion}" itemValue="#{item.idViaAdministracion}" />
+                                </p:selectOneMenu>
+
+                                <p:outputLabel value="Lote"/>
+                                <p:inputText id="lote" value="#{reaccionesAdversasMB.reaccionSelect.lote}"  size="15" />
+
+                                <p:outputLabel value="Caducidad"/>
+                                <p:datePicker id="caducidad" value="#{reaccionesAdversasMB.reaccionSelect.caducidad}"  size="15" pattern="dd/MM/yyyy" />
+
+                                <p:outputLabel value="Fabricante"/>
+                                <p:inputText id="fabricante" value="#{reaccionesAdversasMB.reaccionSelect.laboratorio}"  size="15" />
+
+                                <p:outputLabel value="Denominación Distintiva"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.denomincacionDistintiva}"  size="15" />
+
+                                <p:outputLabel value="Dosis"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.dosis}"  size="15" />
+
+                                <p:outputLabel value="Unidad"/>
+                                <p:selectOneMenu value="#{reaccionesAdversasMB.reaccionSelect.idUnidad}" filter="true" filterMatchMode="contains">
+                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                    <f:selectItems value="#{reaccionesAdversasMB.unidadList}" var="item" itemLabel="#{item.nombreUnidadConcentracion}" itemValue="#{item.idUnidadConcentracion}" />
+                                </p:selectOneMenu>
+
+                                <p:outputLabel value="Frecuencia"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.frecuencia}"  size="15" />
+
+                                <p:outputLabel value="Duración (días)"/>                            
+                                <p:inputNumber value="#{reaccionesAdversasMB.reaccionSelect.duracion}"  size="15" />
+                            </p:panelGrid>
+                            <p:panelGrid columns="2">                            
+                                <p:outputLabel value="Motivo prescripción"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.motivoPrescripcion}"  size="160" maxlength="99" />
+                            </p:panelGrid>    
+                            <p:panelGrid columns="4">
+                                <p:outputLabel value="Inicio Administración"/>
+                                <p:datePicker value="#{reaccionesAdversasMB.reaccionSelect.inicioAdministracion}"  size="15" pattern="dd/MM/yyyy" />
+
+                                <p:outputLabel value="Fin Administración"/>
+                                <p:datePicker value="#{reaccionesAdversasMB.reaccionSelect.finAdministracion}"  size="15" pattern="dd/MM/yyyy" />
+                            </p:panelGrid>
+                            <p:panelGrid columns="4">
+                                <p:outputLabel value="¿Se retiró el medicamento sospechoso?"/>
+                                <p:selectOneButton value="#{reaccionesAdversasMB.reaccionSelect.medicamentoSuspendido}" >
+                                    <f:selectItem itemLabel="Si" itemValue="1" />
+                                    <f:selectItem itemLabel="No" itemValue="2" />
+                                    <f:selectItem itemLabel="No se sabe" itemValue="3" />
+                                </p:selectOneButton>
+
+                                <p:outputLabel value="¿Desapareció la reacción al suspénder el medicamento?"/>
+                                <p:selectOneButton value="#{reaccionesAdversasMB.reaccionSelect.desaparecioReaccion}" >
+                                    <f:selectItem itemLabel="Si" itemValue="1" />
+                                    <f:selectItem itemLabel="No" itemValue="2" />
+                                    <f:selectItem itemLabel="No se sabe" itemValue="3" />
+                                </p:selectOneButton>
+
+                                <p:outputLabel value="¿Se disminuyó la dosis?"/>
+                                <p:selectOneButton value="#{reaccionesAdversasMB.reaccionSelect.disminuyoDosis}" >
+                                    <f:selectItem itemLabel="Si" itemValue="1" />
+                                    <f:selectItem itemLabel="No" itemValue="2" />
+                                    <f:selectItem itemLabel="No se sabe" itemValue="3" />
+                                </p:selectOneButton>
+
+                                <p:outputLabel value="¿Cuánto?"/>
+                                <p:inputNumber value="#{reaccionesAdversasMB.reaccionSelect.cuanto}" size="20" placeholder="Solo numeros de 1 a 100"
+                                             minValue="0" maxValue="100" thousandSeparator="," decimalSeparator="." decimalPlaces="2"/>
+
+                                <p:outputLabel value="¿Se cambió la farmacoterapia?"/>                            
+                                <p:selectOneButton value="#{reaccionesAdversasMB.reaccionSelect.cambioFarmacoTerapia}" >
+                                    <f:selectItem itemLabel="Si" itemValue="1" />
+                                    <f:selectItem itemLabel="No" itemValue="2" />
+                                    <f:selectItem itemLabel="No se sabe" itemValue="3" />
+                                </p:selectOneButton>
+
+                                <p:outputLabel value="¿Cuál?"/>
+                                <p:inputText  value="#{reaccionesAdversasMB.reaccionSelect.cual}" />
+
+                                <p:outputLabel value="¿Reapareció la reacción al readministrar el medicamento?"/>
+                                <p:selectOneButton value="#{reaccionesAdversasMB.reaccionSelect.reaparecioReaccionReadministrar}" >
+                                    <f:selectItem itemLabel="Si" itemValue="1" />
+                                    <f:selectItem itemLabel="No" itemValue="2" />
+                                    <f:selectItem itemLabel="No se sabe" itemValue="3" />
+                                </p:selectOneButton>
+
+                                <p:outputLabel value="Si no se retiró el medicamento ¿Persistió la reacción?"/>
+                                <p:selectOneButton value="#{reaccionesAdversasMB.reaccionSelect.persistioReaccion}" >
+                                    <f:selectItem itemLabel="Si" itemValue="1" />
+                                    <f:selectItem itemLabel="No" itemValue="2" />
+                                    <f:selectItem itemLabel="No se sabe" itemValue="3" />
+                                </p:selectOneButton>                            
+                            </p:panelGrid>
+                            <p:outputLabel value="Farmacoterapia Concomitante" class="textoNegrita" /> 
+                            <p:panel id="busqueda" style="height: 40px !important; background-color:#AAAAAA; ">
+                                <p:outputLabel value="Dosis" style="color: #FFFFFF;" />&nbsp;
+                                <p:inputText id="dosiscon" value="#{reaccionesAdversasMB.insumoConcomitante.dosis}" size="2" />
+                                &nbsp;&nbsp;
+                                <p:outputLabel value="Medicamento"  style="color: #FFFFFF;" />&nbsp;
+                                <p:autoComplete  size="30" id="itemCon"
+                                                 value="#{reaccionesAdversasMB.mediCon}"  autocomplete="on" 
+                                                 completeMethod="#{reaccionesAdversasMB.autoComplete}"  
+                                                 minQueryLength="3"  forceSelection="true" 
+                                                 var="item" 
+                                                 itemValue="#{item.idMedicamento}" 
+                                                 itemLabel="#{item.nombreCorto}"
+                                                 converter="medicamentoConverter" >
+                                    <p:ajax event="itemSelect" listener="#{reaccionesAdversasMB.selectConcomitante}" ></p:ajax>
+                                    <p:column style="width: 20px; font-size: small;" width="50px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave Institucional" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.claveInstitucional}" style=" font-size: small;" />
+                                    </p:column>
+                                    <p:column style="width: 600px;" width="600px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Descripción" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.nombreCorto}" style=" font-size: small;" />
+                                    </p:column>                                    
+                                </p:autoComplete>
+                                &nbsp;&nbsp;
+                                <p:outputLabel value="Inicio Tratamiento"  style="color: #FFFFFF;" />&nbsp;
+                                <p:datePicker id="iniciocon" value="#{reaccionesAdversasMB.insumoConcomitante.inicioTratamiento}"   size="10" pattern="dd/MM/yyyy" />
+
+                                <p:outputLabel value="Fin Tratamiento"  style="color: #FFFFFF;"/>&nbsp;
+                                <p:datePicker id="fincon" value="#{reaccionesAdversasMB.insumoConcomitante.finTratamiento}"   size="10" pattern="dd/MM/yyyy" />
+
+                                <p:commandButton value="Agregar"  styleClass="btnMusAzul" actionListener="#{reaccionesAdversasMB.addInsumoConcomitante}"  icon="fa fa-plus" 
+                                                 update="formReaccionDetail:tblConcomitante,formReaccionDetail:dosiscon,formReaccionDetail:itemCon,formReaccionDetail:iniciocon,formReaccionDetail:fincon" oncomplete="PF('statusProcess').hide();" ajax="true" />
+
+                            </p:panel>
+
+                            <p:dataTable id="tblConcomitante"  value="#{reaccionesAdversasMB.insumoConcomitanteList}" var="item" 
+                                         widgetVar="tblConcomitante"  scrollRows="4" scrollable="true" scrollHeight="200" rows="4" reflow="true"
+                                         emptyMessage="Sin resultados" >
+                                <p:column style="width: 10%;">
+                                    <f:facet  name="header" >
+                                        <h:outputText value="Clave" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.clave}" />
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <h:outputText value="Medicamento" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.medicamento}" />
+                                </p:column>
+                                <p:column style="width: 5%;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Dosis" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.dosis}" />
+                                </p:column>
+                                <p:column style="width: 10%;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Vía Administración"  />
+                                    </f:facet>
+                                    <h:outputText value="#{item.viaAdministracion}" />
+                                </p:column>
+                                <p:column style="width: 10%;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Inicio Tratamiento" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.inicioTratamiento}" >
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column style="width: 10%;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Fín Tratamiento" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.finTratamiento}" >
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Motivo Prescripción" >                                    
+                                    <h:outputText value="#{item.motivoPrescripcion}" >
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column style="text-align: left;width: 6%;" headerText="Acciones" >
+                                    <p:commandLink title="Eliminar" id="btnStatus"
+                                                   actionListener="#{reaccionesAdversasMB.deleteItem(item.idConcomitante)}"                                                        
+                                                   onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update="formReaccionDetail:tblConcomitante" >
+                                        <i class="fa fa-trash iconMusRojo" />                                            
+                                    </p:commandLink>                                                                               
+                                </p:column>
+                            </p:dataTable>
+                            <p:outputLabel value="Datos importantes de la historia clínica" class="textoNegrita" /><br/>
+                            <p:inputTextarea value="#{reaccionesAdversasMB.reaccionSelect.historiaClinica}" rows="3" cols="150" />
+                            <p:panelGrid>
+                                <p:row>
+                                    <p:column colspan="4">
+                                        <p:outputLabel value="Procedencia de la información Laboratorio" class="textoNegrita" />                                
+                                    </p:column>
+                                    <p:column colspan="4">                                    
+                                        <p:outputLabel value="Profesional de la Salud" class="textoNegrita" />
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Tipo informe"/>                                    
+                                    </p:column><p:column>
+                                        <p:selectOneMenu value="#{reaccionesAdversasMB.reaccionSelect.idTipoInformeLab}" filter="true" filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                            <f:selectItems value="#{reaccionesAdversasMB.tipoInformeList}" var="item" itemLabel="#{item.descripcion}" itemValue="#{item.idTipoInforme}" />
+                                        </p:selectOneMenu>
+                                    </p:column><p:column>
+                                        <p:outputLabel value="Origen"/>
+                                    </p:column><p:column>
+                                        <p:selectOneMenu value="#{reaccionesAdversasMB.reaccionSelect.idOrigenLab}" filter="true" filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                            <f:selectItems value="#{reaccionesAdversasMB.origenListLab}" var="item" itemLabel="#{item.descripcion}" itemValue="#{item.idOrigen}" />
+                                        </p:selectOneMenu>
+                                    </p:column><p:column>
+                                        <p:outputLabel value="Tipo informe"/>
+                                    </p:column><p:column>
+                                        <p:selectOneMenu value="#{reaccionesAdversasMB.reaccionSelect.idTipoInformeProf}" filter="true" filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                            <f:selectItems value="#{reaccionesAdversasMB.tipoInformeList}" var="item" itemLabel="#{item.descripcion}" itemValue="#{item.idTipoInforme}" />
+                                        </p:selectOneMenu>
+                                    </p:column><p:column>
+                                        <p:outputLabel value="Origen"/>
+                                    </p:column><p:column>
+                                        <p:selectOneMenu value="#{reaccionesAdversasMB.reaccionSelect.idOrigenProf}" filter="true" filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                            <f:selectItems value="#{reaccionesAdversasMB.origenListPro}" var="item" itemLabel="#{item.descripcion}" itemValue="#{item.idOrigen}" />
+                                        </p:selectOneMenu>
+                                    </p:column>                              
+                                </p:row>
+                            </p:panelGrid>
+                            <p:outputLabel value="Informante" class="textoNegrita" />
+                            <p:panelGrid columns="8">                               
+                                <p:outputLabel value="RFC"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.rfcInformante}"  size="15" />
+
+                                <p:outputLabel value="CURP"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.curpInformante}"  size="15" />
+
+                                <p:outputLabel value="Número"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.numeroInformante}"  size="15" />
+
+                                <p:outputLabel value="Cédula"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.cedula}"  size="15" />
+
+                                <p:outputLabel value="Nombre"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.nombre}"  size="15" />
+
+                                <p:outputLabel value="Apellido Pat"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.apellidoPat}"  size="15" />
+
+                                <p:outputLabel value="Apellido Mat"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.apellidoMat}"  size="15" />                            
+
+                                <p:outputLabel value=""/>
+                                <p:outputLabel value=""/>                            
+
+                                <p:outputLabel value="Teléfono"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.telefono}"  size="15" />
+
+                                <p:outputLabel value="Correo Elect"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.correoElectronico}"  size="15" />
+
+                                <p:outputLabel value=""/>
+                                <p:outputLabel value=""/>
+                                <p:outputLabel value=""/>
+                                <p:outputLabel value=""/>
+
+                                <p:outputLabel value="Calle"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.calle}"  size="15" />
+
+                                <p:outputLabel value="No. Exterior"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.numeroExt}"  size="15"/>
+
+                                <p:outputLabel value="No. Interior"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.numeroInt}"  size="15" />
+
+                                <p:outputLabel value="Colonia"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.colonia}"  size="15" />
+
+                                <p:outputLabel value="CP."/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.cp}"  size="15" />
+
+                                <p:outputLabel value="Estado"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.estado}"   size="15"/>
+
+                                <p:outputLabel value="Municipio"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.municipio}"  size="15" />
+
+                                <p:outputLabel value="Localidad"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.localidad}"  size="15" />
+
+                                <p:outputLabel value="País"/>
+                                <p:inputText value="#{reaccionesAdversasMB.reaccionSelect.pais}"  size="15" />
+                            </p:panelGrid><br/>
+                            <p:outputLabel value="Los datos o anexos pueden contener información confidencial, ¿está de acuerdo en hacerlos publicos? " class="textoNegrita" />                                                   
+                            &nbsp;
+                            <p:selectOneButton value="#{reaccionesAdversasMB.reaccionSelect.publicarInformacion}" >
+                                <f:selectItem itemLabel="Si" itemValue="1" />
+                                <f:selectItem itemLabel="No" itemValue="2" />
+                            </p:selectOneButton>
+                            <br/>
+                            <div style="float:right">
+                                <p:commandButton value="Cancelar"  actionListener="#{reaccionesAdversasMB.cancelRAM}" 
+                                                 oncomplete="PF('mdlRam').hide();" ajax="true" />
+                                &nbsp;&nbsp;
+                                <p:commandButton value="Guardar"  styleClass="btnMusAzul" actionListener="#{reaccionesAdversasMB.saveRAM}" 
+                                                 disabled="#{reaccionesAdversasMB.save}" onclick="PF('statusProcess').show()"  oncomplete="PF('statusProcess').hide();if(args.status){ PF('mdlRam').hide();}" ajax="true" 
+                                                 update=":mainForm:tblReacciones"/>
+                                &nbsp;
+                            </div>
+                        </h:form>
+                    </div>
+                </p:dialog>
+
+                <p:dialog header="Buscar Ministración" widgetVar="mdlBuscarMinis"  width="90%"
+                          closeOnEscape="false" modal="true"                          
+                          style="font-size:xx-small !important;" >
+                    <h:form id="formBuscaMinis">
+                        <p:messages id="msgBuscaMinistracion" globalOnly="false" showDetail="false" closable="true"  />
+                        <p:panelGrid style="width: 100%; height: 40px !important; background-color:#AAAAAA; ">                            
+                            <p:row>
+                                <p:column style=" font-weight:bold; background-color:#AAAAAA; ">
+                                    <p:outputLabel value="Fecha Inicio"/>
+                                </p:column>
+                                <p:column style=" background-color:#AAAAAA; ">
+                                    <p:calendar style="width: 75%" id="txtFechaInicio" value="#{reaccionesAdversasMB.fechaInicioMan}" 
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                mindate="" maxdate="#{reaccionesAdversasMB.fecha}"
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                </p:column>
+                                <p:column style=" font-weight:bold; background-color:#AAAAAA; ">
+                                    <p:outputLabel value="Fecha Fín"/>
+                                </p:column>
+                                <p:column style=" background-color:#AAAAAA; ">
+                                    <p:calendar style="width: 75%" id="txtFechaFin" value="#{reaccionesAdversasMB.fechaFinMan}" 
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                mindate="" maxdate="#{reaccionesAdversasMB.fecha}" 
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade">       
+                                        <p:ajax event="dateSelect" listener="#{reaccionesAdversasMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                    </p:calendar> 
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column style=" font-weight:bold; background-color:#AAAAAA; ">
+                                    <p:outputLabel value="Paciente"/>
+                                </p:column>
+                                <p:column style=" font-weight:bold; background-color:#AAAAAA; ">
+                                    <p:autoComplete id="autoPacienteManual" value="#{reaccionesAdversasMB.pacienteManSelect}"
+                                                    completeMethod="#{reaccionesAdversasMB.autoCompletePaciente}"
+                                                    minQueryLength="4" 
+                                                    cache="false"
+                                                    forceSelection="true"
+                                                    var="paMan" 
+                                                    itemLabel="#{paMan.nombreCompleto} #{paMan.apellidoPaterno} #{paMan.apellidoMaterno}"
+                                                    itemValue="#{paMan}"
+                                                    converter="musGenericConverter"
+                                                    placeholder="Buscar por nombre, derechohabiencia..."
+                                                    emptyMessage="No se encontro registro."
+                                                    size="30"
+                                                    tabindex="0"
+                                                    scrollHeight = "250">
+                                        <p:ajax event="itemSelect" listener="#{reaccionesAdversasMB.selectPacienteMan}" 
+                                                update="formReaccionDetail:numPaciente,formReaccionDetail:fechaNacimiento,formReaccionDetail:edad,formReaccionDetail:sexoPac,formReaccionDetail:rfcPac,formReaccionDetail:curpPac" />
+                                        <p:column style="font-size: small;">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Número Paciente" />
+                                            </f:facet>
+                                            <h:outputText value="#{paMan.pacienteNumero}" style="font-size: x-small;" />
+                                        </p:column>
+                                        <p:column style="font-size: small;">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Nombre" />
+                                            </f:facet>
+                                            <h:outputText value="#{paMan.nombreCompleto} #{paMan.apellidoPaterno} #{paMan.apellidoMaterno}" style="font-size: small;" />
+                                        </p:column>
+                                        <p:column style="font-size: small;">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Cve Derechohabiencia" />
+                                            </f:facet>
+                                            <h:outputText value="#{paMan.claveDerechohabiencia}" style="font-size: x-small;" />
+                                        </p:column>
+                                    </p:autoComplete>
+                                </p:column>
+                                <p:column style=" background-color:#AAAAAA; ">
+                                    <p:commandButton value="Buscar"  styleClass="btnMusAzul" actionListener="#{reaccionesAdversasMB.buscarMinistraciones}" 
+                                                     disabled="#{reaccionesAdversasMB.save}" update="tblMinistracion" ajax="true" />
+                                </p:column>
+                            </p:row>
+                        </p:panelGrid>  
+
+                        <p:dataTable id="tblMinistracion"  value="#{reaccionesAdversasMB.ministracionList}" var="item" style="margin: 5px 0px;"
+                                     widgetVar="tblConcomitante"  scrollRows="4" scrollable="true" scrollHeight="200" rows="4" reflow="true"
+                                     emptyMessage="Sin resultados" >
+                            <p:column style="width: 10%;">
+                                <f:facet  name="header" >
+                                    <h:outputText value="Fecha" />
+                                </f:facet>
+                                <h:outputText value="#{item.fechaMinistrado}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column style="width: 8%;">
+                                <f:facet name="header">
+                                    <h:outputText value="Prescripción" />
+                                </f:facet>
+                                <h:outputText value="#{item.folio}" />
+                            </p:column>
+                            <p:column style="width: 12%;">
+                                <f:facet name="header">
+                                    <h:outputText value="Clave" />
+                                </f:facet>
+                                <h:outputText value="#{item.claveInstitucional}" />
+                            </p:column> 
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Medicamento" />
+                                </f:facet>
+                                <h:outputText value="#{item.nombreCorto}" />
+                            </p:column> 
+                            <p:column style="width: 10%;">
+                                <f:facet name="header">
+                                    <h:outputText value="Lote" />
+                                </f:facet>
+                                <h:outputText value="#{item.lote}" />
+                            </p:column> 
+                            <p:column style="width: 8%;">
+                                <f:facet name="header">
+                                    <h:outputText value="Caducidad" />
+                                </f:facet>
+                                <h:outputText value="#{item.fechaCaducidad}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                </h:outputText>
+                            </p:column> 
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Administró" />
+                                </f:facet>
+                                <h:outputText value="#{item.nombre}" />
+                            </p:column> 
+                            <p:column style="text-align: right;width: 6%;">
+                                <f:facet name="header">
+                                    <h:outputText value="Cantidad" />
+                                </f:facet>
+                                <h:outputText value="#{item.cantidadMinistrada}" />
+                            </p:column> 
+                            <p:column style="text-align: left;width: 6%;" headerText="Acciones" >
+                                <p:commandLink title="Nueva RAM" id="btnStatus"
+                                               actionListener="#{reaccionesAdversasMB.rellenarRAM(item)}"                                                        
+                                               onclick="PF('statusProcess').show();" oncomplete="if(args.status){PF('mdlRam').show();PF('mdlBuscarMinis').hide();}PF('statusProcess').hide();" update="formReaccionDetail" >
+                                    <i class="fa fa-file-o iconMusAzul" />                                            
+                                </p:commandLink>                                                                               
+                            </p:column> 
+                        </p:dataTable>
+                    </h:form>
+                </p:dialog>
+                
+                <p:dialog widgetVar="mdlReport" width="820px" height="600px"  header="Reaccion Adversa"
+                          closeOnEscape="true" modal="true"                          
+                          style="font-size:xx-small !important;" >
+                    <h:form id="formPDF"   >                       
+                        <p:media id="vpdf" value="#{reaccionesAdversasMB.archivo}" player="pdf" width="800px" height="600px" cache="false"  class="vpdf"  />
+                    </h:form>                    
+                </p:dialog>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+
+</html>

@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.InteraccionMapper" >
+    
+    <select id="obtenerInteracciones" resultType="mx.mc.model.InteraccionExtended" parameterType="Map">
+        SELECT distinct i.idInteraccion, i.fecha, s.nombreSustanciaActiva as medicamento, sa.nombreSustanciaActiva as medicamentoInteraccion, 
+		ti.tipoInteraccion, i.notas, e.nombreEmisor, i.riesgo
+        FROM interaccion i INNER JOIN sustanciaActiva s ON i.idSustanciaUno = s.idSustanciaActiva
+        INNER JOIN sustanciaActiva sa ON i.idSustanciaDos = sa.idSustanciaActiva
+        LEFT JOIN medicamento m ON s.idSustanciaActiva = m.sustanciaActiva
+        LEFT JOIN medicamento mi ON sa.idSustanciaActiva = mi.sustanciaActiva
+        LEFT JOIN emisor e ON i.idEmisor = e.idEmisor 
+        LEFT JOIN tipoInteraccion ti ON i.idTipoInteraccion = ti.idTipoInteraccion
+        WHERE 1 = 1
+        
+        <if test="cadena != null "> 
+            AND (
+            s.nombreSustanciaActiva LIKE '%${cadena}%'
+            OR sa.nombreSustanciaActiva LIKE '%${cadena}%'
+            OR e.nombreEmisor LIKE '%${cadena}%'
+            OR ti.tipoInteraccion LIKE '%${cadena}%')
+        </if>    
+        <if test="tipoInteraccion != 0 "> 
+            AND ti.idTipoInteraccion = #{tipoInteraccion, jdbcType = INTEGER}
+        </if>
+        <if test="sortField == null" > ORDER BY i.fecha desc </if>
+        <if test="sortOrder != null" >
+            <if test="sortField == 'fecha'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY i.fecha asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY i.fecha desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'medicamento'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY s.nombreSustanciaActiva asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY s.nombreSustanciaActiva desc
+                </if>
+            </if>
+            <if test="sortField == 'medicamentoInteraccion'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY sa.nombreSustanciaActiva asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY sa.nombreSustanciaActiva desc
+                </if>
+            </if>
+            <if test="sortField == 'tipoInteraccion'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY ti.tipoInteraccion asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY ti.tipoInteraccion desc
+                </if>
+            </if>
+            <if test="sortField == 'notas'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY i.notas asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY i.notas desc
+                </if>
+            </if>
+            <if test="sortField == 'nombreEmisor'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY e.nombreEmisor asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY e.nombreEmisor desc
+                </if>
+            </if>
+            
+        </if>
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}                   
+    </select>
+    
+    <select id="obtenerTotalInteracciones" resultType="Long" parameterType="Map">
+        SELECT COUNT(distinct i.idInteraccion)
+        FROM interaccion i INNER JOIN sustanciaActiva s ON i.idSustanciaUno = s.idSustanciaActiva
+        INNER JOIN sustanciaActiva sa ON i.idSustanciaDos = sa.idSustanciaActiva
+        LEFT JOIN medicamento m ON s.idSustanciaActiva = m.sustanciaActiva
+        LEFT JOIN medicamento mi ON sa.idSustanciaActiva = mi.sustanciaActiva
+        LEFT JOIN emisor e ON i.idEmisor = e.idEmisor 
+        LEFT JOIN tipoInteraccion ti ON i.idTipoInteraccion = ti.idTipoInteraccion
+        WHERE 1 = 1
+        
+        <if test="cadena != null "> 
+            AND (
+            s.nombreSustanciaActiva LIKE '%${cadena}%'
+            OR sa.nombreSustanciaActiva LIKE '%${cadena}%'
+            OR e.nombreEmisor LIKE '%${cadena}%'
+            OR ti.tipoInteraccion LIKE '%${cadena}%')
+        </if>    
+        <if test="tipoInteraccion != 0 "> 
+            AND ti.idTipoInteraccion = #{tipoInteraccion, jdbcType = INTEGER}
+        </if>           
+    </select>
+    
+    <select id="obtenerSiguienteIdInteraccion" parameterType="Map" resultType="Integer">
+        SELECT MAX(idInteraccion) + 1 FROM interaccion;
+    </select>
+    
+    <insert id="insertarInteraccion" parameterType="mx.mc.model.InteraccionExtended">
+        INSERT INTO interaccion(
+        <if test="idInteraccion != null">idInteraccion,</if>
+        <if test="fecha !=null">fecha,</if>
+        <if test="idSustanciaUno != null">idSustanciaUno,</if>
+        <if test="idSustanciaDos != null">idSustanciaDos,</if>
+        <if test="idTipoInteraccion != null">idTipoInteraccion,</if>
+        <if test="notas != null">notas,</if>
+        <if test="idEmisor != null">idEmisor,</if>
+        <if test="riesgo != null">riesgo,</if>
+        <if test="insertFecha != null">insertFecha,</if>
+        <if test="insertIdUsuario != null">insertIdUsuario</if>
+        )
+        values(
+        <if test="idInteraccion != null">#{idInteraccion, jdbcType = INTEGER},</if>
+        <if test="fecha !=null">#{fecha, jdbcType = TIMESTAMP},</if>
+        <if test="idSustanciaUno != null">#{idSustanciaUno, jdbcType = INTEGER},</if>
+        <if test="idSustanciaDos != null">#{idSustanciaDos, jdbcType = INTEGER},</if>
+        <if test="idTipoInteraccion != null">#{idTipoInteraccion, jdbcType = INTEGER},</if>
+        <if test="notas != null">#{notas, jdbcType = VARCHAR},</if>
+        <if test="idEmisor != null">#{idEmisor, jdbcType = INTEGER},</if>
+        <if test="riesgo != null">#{riesgo, jdbcType = VARCHAR},</if>
+        <if test="insertFecha != null">#{insertFecha, jdbcType = TIMESTAMP},</if>
+        <if test="insertIdUsuario != null">#{insertIdUsuario, jdbcType = VARCHAR}</if>
+        );
+    </insert>
+    
+    <select id="buscarInteraccion" resultType="mx.mc.model.InteraccionExtended" parameterType="mx.mc.model.InteraccionExtended">
+        SELECT distinct i.idInteraccion, i.fecha, s.nombreSustanciaActiva as medicamento, sa.nombreSustanciaActiva as medicamentoInteraccion
+        FROM interaccion i 
+        INNER JOIN sustanciaActiva s ON i.idSustanciaUno = s.idSustanciaActiva
+        INNER JOIN sustanciaActiva sa ON i.idSustanciaDos = sa.idSustanciaActiva
+        LEFT JOIN medicamento m ON s.idSustanciaActiva = m.sustanciaActiva
+        LEFT JOIN medicamento mi ON sa.idSustanciaActiva = mi.sustanciaActiva
+        INNER JOIN tipoInteraccion ti ON i.idTipoInteraccion = ti.idTipoInteraccion        
+        WHERE 1 = 1   
+        <if test = "idInteraccion != null">
+            AND idInteraccion != #{idInteraccion, jdbcType = INTEGER}
+        </if> 
+        AND i.idTipoInteraccion = #{idTipoInteraccion, jdbcType = INTEGER}   
+        AND (i.idSustanciaUno = #{idSustanciaUno, jdbcType = INTEGER} AND i.idSustanciaDos = #{idSustanciaDos, jdbcType = INTEGER}) 
+        OR (i.idSustanciaUno = #{idSustanciaDos, jdbcType = INTEGER} AND i.idSustanciaDos = #{idSustanciaUno, jdbcType = INTEGER}) 
+        ORDER BY medicamento ASC;
+    </select>
+    
+    <delete id="eliminarInteraccionPorId" parameterType="Map">
+        DELETE FROM interaccion WHERE idInteraccion = #{idInteraccion, jdbcType = INTEGER};
+    </delete>
+    
+    <select id="obtenerAlertaInteraccion" resultType="mx.mc.model.InteraccionExtended">
+        SELECT i.idSustanciaUno, i.idSustanciaDos, t.tipoInteraccion, e.nombreEmisor,
+                m.nombreCorto as medicamento, me.nombreCorto as medicamentoInteraccion, i.riesgo
+        FROM prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        INNER JOIN medicamento m ON pi.idInsumo = m.idMedicamento
+        INNER JOIN interaccion i ON m.sustanciaActiva = i.idSustanciaUno 
+        INNER JOIN medicamento me on me.sustanciaActiva = i.idSustanciaDos
+        INNER JOIN tipoInteraccion t ON i.idTipoInteraccion = t.idTipoInteraccion
+        INNER JOIN emisor e ON i.idEmisor = e.idEmisor
+        where v.fechaEgreso is null and pa.pacienteNumero = #{pacienteNumero, jdbcType = VARCHAR}
+        group by i.idSustanciaUno, idSustanciaDos
+        HAVING COUNT(*) > 1;
+    </select>
+    
+    <select id="obtenerInteraccionById" resultType="mx.mc.model.InteraccionExtended" parameterType="Map">
+        SELECT  i.idInteraccion, i.fecha, i.idSustanciaUno, i.idSustanciaDos,
+                s.nombreSustanciaActiva as medicamento, sa.nombreSustanciaActiva as medicamentoInteraccion, 
+		i.idTipoInteraccion, i.idEmisor, i.notas, i.riesgo
+        FROM interaccion i INNER JOIN sustanciaActiva s ON i.idSustanciaUno = s.idSustanciaActiva
+        INNER JOIN sustanciaActiva sa ON i.idSustanciaDos = sa.idSustanciaActiva
+        WHERE i.idInteraccion = #{idInteraccion, jdbcType = INTEGER};
+    </select>
+    
+    <update id="actualizarInteraccion" parameterType="mx.mc.model.InteraccionExtended">
+        UPDATE interaccion
+        <set>
+            updateFecha = #{updateFecha,jdbcType=DATE}
+            ,updateIdUsuario = #{updateIdUsuario,jdbcType=VARCHAR}
+            <if test="fecha !=null">, fecha = #{fecha, jdbcType = TIMESTAMP}</if>
+        <if test="idSustanciaUno != null">, idSustanciaUno = #{idSustanciaUno, jdbcType = INTEGER}</if>
+        <if test="idSustanciaDos != null">, idSustanciaDos = #{idSustanciaDos, jdbcType = INTEGER}</if>
+        <if test="idTipoInteraccion != null">, idTipoInteraccion = #{idTipoInteraccion, jdbcType = INTEGER}</if>
+        <if test="notas != null">, notas = #{notas,jdbcType=VARCHAR}</if>
+        <if test="idEmisor != null">, idEmisor = #{idEmisor, jdbcType = INTEGER}</if>
+        <if test="riesgo != null">, riesgo = #{riesgo, jdbcType=VARCHAR}</if>    
+        </set>
+         WHERE idInteraccion = #{idInteraccion, jdbcType = INTEGER};
+    </update>
+    
+    <select id="obtenerInteraccionesClavesMedicamento" parameterType="Map" resultType="mx.mc.model.InteraccionExtended">
+        SELECT i.idSustanciaUno, i.idSustanciaDos, m.claveInstitucional AS claveMedicamentoUno, me.claveInstitucional AS claveMedicamentoDos, m.sustanciaActiva,
+               m.nombreCorto AS medicamento, me.nombreCorto AS medicamentoInteraccion, t.tipoInteraccion, e.nombreEmisor, i.riesgo
+        FROM interaccion i
+        INNER JOIN medicamento m ON m.sustanciaActiva = i.idSustanciaUno
+        INNER JOIN medicamento me on me.sustanciaActiva = i.idSustanciaDos
+        INNER JOIN tipoInteraccion t ON i.idTipoInteraccion = t.idTipoInteraccion
+        INNER JOIN emisor e ON i.idEmisor = e.idEmisor
+        WHERE idInteraccion IN(
+              SELECT idInteraccion FROM interaccion i
+                    WHERE i.idSustanciaUno IN(SELECT DISTINCT sustanciaActiva FROM medicamento WHERE claveInstitucional IN
+                    <foreach item="item" index="index" collection="listaMedicamentos" open="(" separator="," close=")">
+                        #{item.claveMedicamento}
+                    </foreach>
+                    )
+                    AND i.idSustanciaDos IN(SELECT DISTINCT sustanciaActiva FROM medicamento WHERE claveInstitucional IN
+                    <foreach item="item" index="index" collection="listaMedicamentos" open="(" separator="," close=")">
+                        #{item.claveMedicamento}
+                    </foreach>
+                    )
+		)
+        GROUP BY i.idSustanciaUno, i.idSustanciaDos;                    
+    </select>    
+    
+    <select id="obtenerListaMedicamentosPrescrpByPacienteNumero" resultType="mx.mc.dto.MedicamentoDTO" parameterType="Map">
+        SELECT distinct m.claveInstitucional AS claveMedicamento
+        FROM prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        INNER JOIN medicamento m ON pi.idInsumo = m.idMedicamento
+        WHERE v.fechaEgreso is null and pa.pacienteNumero = #{pacienteNumero, jdbcType = VARCHAR}
+        <if test=" tipoInsumo != null ">
+            AND m.tipo = #{ tipoInsumo , jdbcType = INTEGER }
+        </if>
+    </select>
+                
+</mapper>

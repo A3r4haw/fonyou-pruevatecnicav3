@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    
+    <h:head>
+        <title>Reporte de Gastos Anuales en el Hospital</title>
+    </h:head>
+        
+    <h:body>
+    	<ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel">  
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>                        
+                        <p:panelGrid>
+                            
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="Costos Anuales del Hospital" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;" value="Fecha inicio" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" value="#{repCostoHospitalMB.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repCostoHospitalMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;" value="Fecha Fin" />
+                                            <br/>
+                                            <p:calendar id="txtFechaFin" value="#{repCostoHospitalMB.fechaFin}" 
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                mindate="" maxdate="#{repCostoHospitalMB.fechaActual}"
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade" >
+                                                <p:ajax event="dateSelect" listener="#{repCostoHospitalMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                            </p:calendar>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:commandButton class="btnNew" value="Generar reporte"  icon="fa fa-area-chart"  styleClass="btnMusAzul"
+                                                             actionListener="#{repCostoHospitalMB.generaReporte}" onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide()"                                             
+                                             ajax="true" update=":mainForm"  style=" margin: 5px 0; "  />                                            
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:menuButton rendered="false" value="Exportar" 
+                                                style="">
+                                                <p:menuitem value="Excel"  
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false">
+                                                    <p:dataExporter type="xls" target="tblCostoHospital" fileName="CostoHospital" />
+                                                </p:menuitem>
+                                                <p:menuitem value="Pdf" 
+                                                            icon="fa fa-file-pdf-o" 
+                                                            ajax="false"> 
+                                                    <p:dataExporter type="pdf" target="tblCostoHospital" fileName="CostoHospital" />
+                                                </p:menuitem>
+                                            </p:menuButton>                                            
+                                        </div>
+                                    </div>	                            		
+                                </div>
+                            </div>
+                        </p:panelGrid>
+                        
+                        <p:chart type="bar" model="#{repCostoHospitalMB.combinedModel}" style="height:300px" />
+                        
+                        <p:dataTable id="tblCostoHospital" widgetVar="tblCostoHospital" var="item" value="#{repCostoHospitalMB.costoHospitalList}" 
+                                     emptyMessage="No existen registros para mostrar." resizeMode="true"
+                                     styleClass="cabecera" reflow="true" style="margin-bottom:5px;"
+                                     scrollRows="20" scrollable="true" liveScroll="true" scrollHeight="250" >
+                            <p:column style="text-align: left;"  headerText="Periodo">                                
+                                <h:outputText value="#{item.periodo} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Enero">
+                                <h:outputText value="#{item.mes1} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Febrero">
+                                <h:outputText value="#{item.mes2} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Marzo">
+                                <h:outputText value="#{item.mes3} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Abril">
+                                <h:outputText value="#{item.mes4} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Mayo">
+                                <h:outputText value="#{item.mes5} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Junio">
+                                <h:outputText value="#{item.mes6} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Julio">
+                                <h:outputText value="#{item.mes7} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Agosto">
+                                <h:outputText value="#{item.mes8} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Septiembre">
+                                <h:outputText value="#{item.mes9} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Octubre">
+                                <h:outputText value="#{item.mes10} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Noviembre">
+                                <h:outputText value="#{item.mes11} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Diciembre">
+                                <h:outputText value="#{item.mes12} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Costo Anual">
+                                <h:outputText value="#{item.montoporservicio} " class="altoColumn" />
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                </div>
+            </ui:define>
+        </ui:composition>
+     </h:body>	
+</html>

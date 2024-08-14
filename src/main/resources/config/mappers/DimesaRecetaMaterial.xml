@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DimesaRecetaMaterialMapper" >
+ 
+    <select id="obtenerLista" resultType="mx.mc.model.DimesaRecetaMaterial" parameterType="mx.mc.model.DimesaRecetaMaterial" >
+        SELECT DISTINCT p.folio AS folio , s.folio AS folioPago, se.cantidadEnviado AS cantidadEntregada, si.cantidadSolicitada AS cantidadSolicitada
+            , '' AS clave , m.claveInstitucional AS claveInterna , '' AS descripcionSAP, '' AS dosis, ''  AS posicion, '' AS tratamiento
+        , i.cantidadXCaja , i.claveProveedor as claveSap
+        FROM prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento and pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+        INNER JOIN medicamento m on pi.idInsumo = m.idMedicamento
+        INNER JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        INNER JOIN inventario i ON se.idInventarioSurtido = i.idInventario
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        WHERE 
+        p.folio = #{ folio , jdbcType = VARCHAR }
+        AND s.folio = #{ folioPago , jdbcType = VARCHAR }
+        AND se.cantidadEnviado <![CDATA[ > ]]> 0
+    </select>
+    
+    <select id="obtenerListaVale" resultType="mx.mc.model.DimesaRecetaMaterial" parameterType="mx.mc.model.DimesaRecetaMaterial" >
+        SELECT DISTINCT si.folioVale AS folio , s.folio AS folioPago, si.cantidadVale AS cantidadVale, si.cantidadSolicitada AS cantidadSolicitada
+        , '' AS clave , m.claveInstitucional AS claveInterna , '' AS descripcionSAP, '' AS dosis, ''  AS posicion, '' AS tratamiento  
+        , (select ii.claveProveedor from inventario ii where pi.idInsumo = ii.idInsumo order by ii.idInsumo asc limit 1) as claveSap
+        , (select ii.cantidadXCaja from inventario ii where pi.idInsumo = ii.idInsumo order by ii.idInsumo asc limit 1) as cantidadXCaja
+        FROM prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento and pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+        INNER JOIN medicamento m on pi.idInsumo = m.idMedicamento
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        WHERE p.folio = #{ folioPago , jdbcType = VARCHAR }
+        AND si.folioVale = #{ folio , jdbcType = VARCHAR }
+        AND si.cantidadVale <![CDATA[ > ]]> 0
+        AND p.idEstatusPrescripcion = 3 
+        AND s.idEstatusSurtimiento = 2 
+    </select>
+    
+</mapper>

@@ -1,0 +1,771 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanelAmplio" >
+                    <h:form id="mainForm">
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" rendered="#{!estructuraMB.msjMdlEstructura}" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <p:focus context="mainForm"/>                        
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <div class="A" style="width: 25%;">
+                                <p:outputLabel value="Estructura Organizativa"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />                                     
+                            </div>
+                            <p:selectOneMenu value="#{estructuraMB.idGrupo}" style="margin: -4px 0px 5px 0px!important;"
+                                             rendered="false">
+                                <f:selectItem itemLabel="Seleccione un Grupo" itemValue="#{null}"/>
+                                <f:selectItem itemLabel="Grupo 1" itemValue="1" />
+                                <f:selectItem itemLabel="Grupo 2" itemValue="2" />
+                                <f:selectItem itemLabel="Grupo 3" itemValue="3" />
+                            </p:selectOneMenu>
+                            <p:spacer width="10"/>
+                            <p:selectOneMenu value="#{estructuraMB.idEntidadHospitalaria}" style="margin: -4px 0px 5px 0px!important;" >
+                                <f:selectItem itemLabel="Seleccione un Hospital" itemValue="#{null}"/>
+                                <f:selectItems value="#{estructuraMB.entidadList}" var="item" itemLabel="#{item.nombre}" itemValue="#{item.idEntidadHospitalaria}" />
+                                <p:ajax event="change" listener="#{estructuraMB.obtenerEntidad()}" update="mainForm:tabView" />
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="ui-g" style="margin:0px; padding:0px; " >
+                            <div class="ui-g-12" style="margin:0px; padding: 0px;" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin:0px; padding: 0px; ">                                    
+                                    
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-2" style="margin:0px; padding: 0px; ">
+                                   
+                                </div>
+                            </div>
+                        </div><br />
+                        
+                        <p:outputLabel value="No tiene permiso de visualización de esta transacción." 
+                               style="font-size: 18px !important; font-weight: bold; color: red;"
+                               rendered="#{!estructuraMB.permiso.puedeVer}" />
+                        
+                        <p:tabView id="tabView" rendered="#{estructuraMB.permiso.puedeVer}"  >
+                            <p:ajax event="tabChange" process="@this" listener="#{estructuraMB.onTabChange}" update="mainForm:tabView"/>
+                            <p:tab title="Almacén - Servicio" id="#{estructuraMB.inicio}"  >
+                                <div class="ui-g" style="margin:0px; padding:0px; " >
+                                    <div class="ui-g-12" style="margin:0px; padding: 0px;" >
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin:0px; padding: 0px; ">
+                                            <p:outputLabel value="Seleccione una opción:" />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-8 ui-lg-4" style="margin:0px; padding: 0px; ">
+                                            <p:selectOneRadio value="#{estructuraMB.almacenServicio}" >
+                                                <f:selectItem itemLabel="Almacén - Servicio" itemValue="almacen" />
+                                                <f:selectItem itemLabel="Servicio - Camas/Consultorio" itemValue="servicio" />
+                                                <p:ajax event="change" listener="#{estructuraMB.obtenerAlmacenServicio()}" update="mainForm:tabView" />
+                                            </p:selectOneRadio>
+                                        </div>
+                                    </div>
+                                </div>   
+                                <p:dataTable id="tblAlmacenServicio" rendered="#{estructuraMB.tblAlmacenServicio}" 
+                                             widgetVar="tblAlmacenServicio"                                          
+                                             value="#{estructuraMB.almacenServicioLazy}"
+                                             lazy="true"                                         
+                                             selection="#{estructuraMB.almacenServicioSelect}"
+                                             var="item" 
+                                             rowKey="#{item.idAlmacenServicio}"
+                                             rowIndexVar="row"
+                                             selectionMode="single"
+                                             style="margin-bottom:5px;"
+                                             styleClass="mystyle"
+                                             scrollRows="10" scrollable="true" scrollHeight="350"
+                                             emptyMessage="No se encontraron Registros"
+                                             reflow="true"
+                                             paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                             currentPageReportTemplate=" "
+                                             paginator="true"
+                                             rows="10"
+                                             paginatorPosition="bottom"                                         
+                                             >
+
+                                    <f:facet name="{Exporters}">
+                                        <div style="float:right">
+                                            <h:commandLink >
+                                                <img src="#{request.contextPath}/resources/img/btnxls.png" style="height: 25px !important; margin-left: 5px !important;" title="Exportar" />
+                                                <p:dataExporter type="xlsx" target="tblAlmacenServicio" fileName="AlmacenServicios" />
+                                            </h:commandLink>
+                                        </div>
+                                    </f:facet>
+
+                                    <p:column style="text-align: left; width: 10% "
+                                              sortBy="#{item.almacen}" filterBy="#{item.almacen}"  >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Almacén" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.almacen}" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 10% " filterBy="#{item.servicio}"
+                                              sortBy="#{item.servicio}"  >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Servicio" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.servicio}" />                                        
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 10% "
+                                              sortBy="#{item.tipo}" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Tipo Insumo" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.tipo}"  />
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 10% " sortBy="#{item.estado}"  >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Estado" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.estado==1?'Activo':'Desactivado'}" />
+                                    </p:column>
+                                </p:dataTable>
+
+                                <p:dataTable id="tblServicioCamas"  rendered="#{!estructuraMB.tblAlmacenServicio}"
+                                             widgetVar="tblServicioCamas"                                          
+                                             value="#{estructuraMB.servicioCamasLazy}"
+                                             lazy="true"                                         
+                                             selection="#{estructuraMB.camaExtSelect}"
+                                             var="item" 
+                                             rowKey="#{item.idCama}"
+                                             rowIndexVar="row"
+                                             selectionMode="single"
+                                             style="margin-bottom:5px;"
+                                             styleClass="mystyle"
+                                             scrollRows="10" scrollable="true" scrollHeight="350"
+                                             emptyMessage="No se encontraron Registros"
+                                             reflow="true"
+                                             paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                             currentPageReportTemplate=" "
+                                             paginator="true"
+                                             rows="10"
+                                             paginatorPosition="bottom"                                         
+                                             >
+
+                                    <f:facet name="{Exporters}">
+                                        <div style="float:right">
+                                            <h:commandLink >
+                                                <img src="#{request.contextPath}/resources/img/btnxls.png" style="height: 25px !important; margin-left: 5px !important;" title="Exportar" />
+                                                <p:dataExporter type="xlsx" target="tblServicioCamas" fileName="ServicioCamas" />
+                                            </h:commandLink>
+                                        </div>
+                                    </f:facet>
+
+                                    <p:column style="text-align: left; width: 10% " sortBy="#{item.servicio}" filterBy="#{item.servicio}"  >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Servicio" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.servicio}" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 10% " sortBy="#{item.nombreCama}"  filterBy="#{item.nombreCama}" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Nombre Cama" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.nombreCama}" />                                        
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 10% "
+                                              sortBy="#{item.tipoCama}" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Tipo" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.tipoCama}"  />
+                                    </p:column>
+
+                                    <p:column style="text-align: left; width: 10% " >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Estado" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.estatus}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:tab>
+                            <p:tab title="Servicios" id="#{estructuraMB.servicios}">
+                                <p:panelGrid style="margin: 0 auto!important;">
+                                    <p:row>
+                                        <p:column style="margin: 0px; padding: 0px !important;">
+                                            <h3 class="textoNegrita" style="text-align: left;  margin: 0px; padding: 0px !important; ">Servicios</h3>
+                                        </p:column> 
+                                        <p:column rowspan="2" style="margin: 0px; padding: 0px !important;">
+                                            <p:dataGrid var="cama" value="#{estructuraMB.listCamas}" columns="4"
+                                                        rows="12" paginator="false" id="grdCamas" 
+                                                        rendered="#{(estructuraMB.listCamas.size() le 12 ? true : false) }"
+                                                        emptyMessage="No existen registros para mostrar."
+                                                        >
+                                                <f:facet name="header" class="tituloDatagrid">
+                                                    <p:outputLabel style="color:#FFFFFF !important;">Camas</p:outputLabel>
+                                                </f:facet>
+                                                <p:panel style="width: 220px; margin: -2px -5px !important; padding: 0px !important;">
+                                                    <p:panelGrid style=" margin: 0px 0px 0px -15px; padding: 0px !important; ">
+                                                        <p:row>
+                                                            <p:column colspan="2" style="margin: 0px; padding: 0px !important;">
+                                                                <i class="fa fa-bed" />&nbsp;<h:outputText style="font-weight:bold" value="#{cama.nombreCama}" />
+                                                            </p:column>
+                                                        </p:row>
+                                                        <p:row>
+                                                            <p:column style="margin: 0px; padding: 0px !important;">
+                                                                <p:outputLabel value="Tipo:" />
+                                                            </p:column>
+                                                            <p:column>
+                                                                <h:outputText value="#{cama.nombreTipoCama}" style="font-weight: bolder;"/>
+                                                            </p:column>	        									
+                                                        </p:row>
+                                                        <p:row>
+                                                            <p:column style="margin: 0px; padding: 0px !important;">
+                                                                <p:outputLabel value="Ubicación:" />
+                                                            </p:column>
+                                                            <p:column>
+                                                                <h:outputText value="#{cama.ubicacion}" style="font-weight: bolder;"  class="limitText"/>
+                                                            </p:column>	        									
+                                                        </p:row>
+                                                        <p:row >
+                                                            <p:column style="margin: 0px; padding: 0px !important;">
+                                                                <p:outputLabel value="Estado:" />
+                                                            </p:column>
+                                                            <p:column>
+                                                                <h:outputText value="#{cama.nombreEstatusCama}" class="descEstatusLibre" rendered="#{cama.nombreEstatusCama eq 'Disponible'}" />
+                                                                <h:outputText value="#{cama.nombreEstatusCama}" class="descEstatusOcupada" rendered="#{cama.nombreEstatusCama ne 'Disponible'}" />
+                                                            </p:column>	        									
+                                                        </p:row>
+                                                        <p:row>
+                                                            <p:column colspan="2" style="margin: 0px; padding: 0px !important;">
+                                                                <p:commandLink title="Editar" update=":formCama" oncomplete="PF('modalCama').show();"
+                                                                               actionListener="#{estructuraMB.obtenerCama(cama.idCama)}" disabled="!#{estructuraMB.permiso.puedeEditar}" >
+                                                                    <h:outputText styleClass="fa fa-pencil-square-o" 
+                                                                                  style="margin:0 auto; float:right; font-size: large; color: #0088cc; font-weight: bolder; " />
+                                                                </p:commandLink>
+                                                            </p:column>
+                                                        </p:row>
+                                                    </p:panelGrid>
+                                                </p:panel>	                     		
+                                            </p:dataGrid>
+
+                                            <p:dataTable var="cama" value="#{estructuraMB.listCamas}" style="width: 770px;" 
+                                                         rendered="#{(estructuraMB.listCamas.size() gt 12 ? true : false) }"
+                                                         emptyMessage="No existen registros para mostrar." id="tblCamas" scrollRows="12" scrollHeight="400" scrollable="true" >
+                                                <f:facet name="header" class="tituloDatagrid">
+                                                    <p:outputLabel style="color:#2185d0 !important;">Camas</p:outputLabel>
+                                                </f:facet>
+                                                <p:column headerText="Código">
+                                                    <h:outputText value="#{cama.nombreCama}" />
+                                                </p:column>
+                                                <p:column headerText="Tipo">
+                                                    <h:outputText value="#{cama.nombreTipoCama}" />
+                                                </p:column>
+                                                <p:column headerText="Ubicación">
+                                                    <h:outputText value="#{cama.ubicacion}" />
+                                                </p:column>
+                                                <p:column headerText="Estado">
+                                                    <h:outputText value="#{cama.nombreEstatusCama}" />
+                                                </p:column>
+                                                <p:column width="80px;" headerText="">
+                                                    <p:commandLink title="Editar" update=":formCama" oncomplete="PF('modalCama').show();"
+                                                                   actionListener="#{estructuraMB.obtenerCama(cama.idCama)}" disabled="!#{estructuraMB.permiso.puedeEditar}" >
+                                                        <h:outputText styleClass="fa fa-pencil-square-o" style="margin:0 auto;" />
+                                                    </p:commandLink>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column style="margin: 0px; padding: 0px !important;">
+                                            <p:tree id="treeService"  value="#{estructuraMB.rootServicio}" var="node" selectionMode="single" animate="true" 
+                                                    selection="#{estructuraMB.selectNodeServicio}"  
+                                                    style="width:350px; height: 400px; overflow: auto; display: block;" >
+                                                <p:ajax event="select"  listener="#{estructuraMB.onNodeServiceSelect}" update="mainForm:tabView" />
+                                                <p:ajax event="unselect"  listener="#{estructuraMB.onNodeServiceUnselect}" update=""  />   
+
+                                                <p:treeNode class="checkNode"  >
+                                                    <p:outputLabel value="#{node}" />
+                                                </p:treeNode>
+                                            </p:tree>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column style="margin: 0px; padding: 0px !important;">
+                                            <p:commandButton id="btnAddServicio" widgetVar="btnAddServicio" value="Agregar" title="Agregar #{estructuraMB.titleServicio}"
+                                                             class="btnNew" styleClass="btnMusAzul" style="margin: 5px 0; " icon="fa fa-plus"
+                                                             update=":frmUnidad"
+                                                             disabled="#{!estructuraMB.crearServicio}"
+                                                             onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('modalUnidad').show();} "
+                                                             actionListener="#{estructuraMB.crearServicio()}"
+                                                             />
+                                            &nbsp;
+                                            <p:commandButton id="btnEditServicio" widgetVar="btnEditServicio" value="Editar" title="Editar #{estructuraMB.titleServicio}"
+                                                             class="btnNew" styleClass="btnMusAzul" style="margin: 5px 0; " icon="fa fa-pencil-square-o"
+                                                             update=":frmUnidad"
+                                                             disabled="#{!estructuraMB.crearServicio}"
+                                                             onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('modalUnidad').show();} "
+                                                             actionListener="#{estructuraMB.obtenerServicio()}"
+                                                             />
+                                        </p:column>
+                                        <p:column style="margin: 0px; padding: 0px !important;">
+                                            <p:commandButton id="btnAddCama" widgetVar="btnAddCama" value="Agregar Cama" title="Agregar Cama"
+                                                             class="btnNew" styleClass="btnMusAzul" style="margin: 5px 0; " icon="fa fa-hotel"
+                                                             update=":formCama"
+                                                             disabled="#{!estructuraMB.crearCama}"
+                                                             onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();if( args.estatus ){PF('modalCama').show();} "
+                                                             actionListener="#{estructuraMB.crearCama()}"
+                                                             />
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>                                                                    
+                            </p:tab>
+                            <p:tab title="Almacenes" id="#{estructuraMB.almacenes}" >
+                                <p:panelGrid style="margin: 0 auto!important;">
+                                    <p:row>
+                                        <p:column style="margin: 0px; padding: 0px !important;">
+                                            <h3 class="textoNegrita" style="text-align: left;  margin: 0px; padding: 0px !important; ">Almacenes</h3>
+                                        </p:column> 
+                                        <p:column rowspan="2" style="margin: 0px; padding: 0px !important;">                                            
+                                            <p:dataTable var="serv" value="#{estructuraMB.almacenServicioList}" style="width: 770px;" 
+                                                         emptyMessage="No existen registros para mostrar." id="tblServicios" scrollRows="12" scrollHeight="400" scrollable="true" >
+                                                <f:facet name="header" class="tituloDatagrid">
+                                                    <p:outputLabel style="color:#2185d0 !important;" value="Servicios" />
+                                                </f:facet>
+                                                <p:column headerText="Servicio">
+                                                    <h:outputText value="#{serv.servicio}" />
+                                                </p:column>
+                                                <p:column headerText="Tipo">
+                                                    <h:outputText value="#{serv.tipo}" />
+                                                </p:column>
+                                                <p:column headerText="Estado">
+                                                    <h:outputText value="#{serv.estado==1?'Activo':'Desactivado'}" />
+                                                </p:column>
+                                            </p:dataTable>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column style="margin: 0px; padding: 0px !important;">
+                                            <p:tree id="treeAlmacen"  value="#{estructuraMB.rootAlmacen}" var="node" selectionMode="single" animate="true" 
+                                                    selection="#{estructuraMB.selectNodeAlmacen}"  
+                                                    style="width:350px; height: 400px; overflow: auto; display: block;" >
+                                                <p:ajax event="select"  listener="#{estructuraMB.onNodeAlmacenSelect}" update="mainForm:tabView" />
+                                                <p:ajax event="unselect"  listener="#{estructuraMB.onNodeAlmacenUnselect}" update="mainForm:tabView"  />   
+
+                                                <p:treeNode class="checkNode"  >
+                                                    <p:outputLabel value="#{node}" />
+                                                </p:treeNode>
+                                            </p:tree>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column style="margin: 0px; padding: 0px !important;">
+                                            <p:commandButton id="btnAddAlmacen" widgetVar="btnAddAlmacen" value="Agregar" title="Agrear Almacén"
+                                                             class="btnNew" styleClass="btnMusAzul" style="margin: 5px 0; " icon="fa fa-plus"
+                                                             update=":frmAlmacen"
+                                                             disabled="#{!estructuraMB.crearAlmacen}"
+                                                             onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('modalAlmacen').show();} "
+                                                             actionListener="#{estructuraMB.crearAlmacen()}"
+                                                             />
+                                            &nbsp;
+                                            <p:commandButton id="btnEditAlmacen" widgetVar="btnEditServicio" value="Editar" title="Editar Almacén"
+                                                             class="btnNew" styleClass="btnMusAzul" style="margin: 5px 0; " icon="fa fa-pencil-square-o"
+                                                             update=":frmAlmacen"
+                                                             disabled="#{!estructuraMB.crearAlmacen}"
+                                                             onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('modalAlmacen').show();} "
+                                                             actionListener="#{estructuraMB.obtenerAlmacen()}"
+                                                             />
+                                        </p:column>
+                                        <p:column style="margin: 0px; padding: 0px !important;">
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid> 
+                            </p:tab>
+                            <p:tab title="Asignación" id="#{estructuraMB.asignacion}" >
+                                <p:panelGrid style="margin: 0 auto!important;">
+                                    <p:row>
+                                        <p:column style="margin: 0px; padding: 0px 30px!important;">
+                                            <h3 class="textoNegrita" style="text-align: left;  margin: 0px; padding: 0px !important; ">Almacenes</h3>
+                                        </p:column>
+                                        <p:column style="margin: 0px; padding: 0px 50px!important;">
+                                            <h3 class="textoNegrita" style="text-align: left;  margin: 0px; padding: 0px !important; ">Servicios</h3>
+                                        </p:column> 
+                                    </p:row>
+                                    <p:row>
+                                        <p:column  style="margin: 0px; padding: 0px 30px!important;">
+                                            <p:tree id="treeAlmacenAsig"  value="#{estructuraMB.rootAlmacen}" var="node" selectionMode="single" animate="true" 
+                                                    selection="#{estructuraMB.selectedNodeAlmacen}"  
+                                                    style=" width:500px; height: 400px; overflow: auto; display: block;" >
+                                                <p:ajax event="select"  listener="#{estructuraMB.onNodeAsigAlmacenSelect}" update="mainForm:tabView" />
+                                                <p:ajax event="unselect"  listener="#{estructuraMB.onNodeAsigAlmacenUnselect}" update="mainForm:tabView"  />   
+
+                                                <p:treeNode class="checkNode"  >
+                                                    <p:outputLabel value="#{node}" />
+                                                </p:treeNode>
+                                            </p:tree>
+                                        </p:column>                                    
+                                        <p:column style="margin: 0px !important; padding: 0 50px!important;">
+                                            <p:tree id="treeServiceAsigMult"  value="#{estructuraMB.rootServicios}" var="node" selectionMode="checkbox" animate="true" 
+                                                    selection="#{estructuraMB.selectedNodesServicio}" rendered="#{estructuraMB.funAlmacenServicioMultiple}"  
+                                                    style="width:500px; height: 400px; overflow: auto; display: block;" >
+                                                <p:ajax event="select"  listener="#{estructuraMB.onNodeMultServiceSelect}" update="mainForm:tabView:treeServiceAsigMult" />
+                                                <p:ajax event="unselect"  listener="#{estructuraMB.onNodeMultAsigServiceUnselect}" update="mainForm:tabView"  />   
+
+                                                <p:treeNode class="checkNode"  >
+                                                    <p:outputLabel value="#{node}" />
+                                                </p:treeNode>
+                                            </p:tree>
+                                            <p:tree id="treeServiceAsigSing"  value="#{estructuraMB.rootServicio}" var="node" selectionMode="single" animate="true" 
+                                                    selection="#{estructuraMB.selectedNodeServicio}"  rendered="#{!estructuraMB.funAlmacenServicioMultiple}"  
+                                                    style="width:500px; height: 400px; overflow: auto; display: block;" >
+                                                <p:ajax event="select"  listener="#{estructuraMB.onNodeSingAsigServiceSelect}" update="mainForm:tabView" />
+                                                <p:ajax event="unselect"  listener="#{estructuraMB.onNodeSingServiceUnselect}" update="mainForm:tabView"  />   
+
+                                                <p:treeNode class="checkNode"  >
+                                                    <p:outputLabel value="#{node}" />
+                                                </p:treeNode>
+                                            </p:tree>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <div align="right">                                                 
+                                                <p:commandButton id="btnSave" 
+                                                     value="Guardar" 
+                                                     style="float: right;margin: 10px;"
+                                                     actionListener="#{estructuraMB.guardarAsignacion}"
+                                                     update=":mainForm, frmUnidad:msgValidaUnidad"
+                                                     onclick="PF('statusProcess').show();"
+                                                     oncomplete="if ( args.estatus ){ PF('modalUnidad').hide(); } PF('statusProcess').hide(); " 
+                                                     disabled="!#{estructuraMB.permiso.puedeCrear or estructuraMB.permiso.puedeEditar}" 
+                                                     styleClass="btnMusAzul" />
+                                            </div>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="Prioridad" id="#{estructuraMB.prioridad}" rendered="#{estructuraMB.mostrarPrioridad}" >
+                                <p:panelGrid style="margin: 0 auto!important;">
+                                    <p:row>
+                                        <p:column>
+                                            <h3 class="textoNegrita" style="text-align: left;  margin: 0px; padding: 0px !important; ">Servicios</h3>
+                                        </p:column> 
+                                        <p:column>
+                                            <h3 class="textoNegrita" style="text-align: left;  margin: 0px; padding: 0px !important; ">Almacenes</h3>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>                                        
+                                        <p:column>
+                                            <p:selectOneListbox id="listaServicio" value="#{estructuraMB.idServicioSelect}" style="height: 200px" >
+                                                <f:selectItems value="#{estructuraMB.serviciosXOrdenarList}" var="servicio" itemLabel="#{servicio.servicio}" itemValue="#{servicio.idEstructuraServicio}" /> 
+                                                <p:ajax event="change" listener="#{estructuraMB.llenarListaAlmacenes}" update="mainForm:tabView" />
+                                            </p:selectOneListbox>
+                                        </p:column>
+                                        <p:column>
+                                            <p:orderList value="#{estructuraMB.almacenesOrdenadosList}" var="almacen"    
+                                                         style="margin-top: -35px !important; margin-left: -20px !important;"
+                                                         itemLabel="#{almacen}" itemValue="#{almacen}" />
+                                        </p:column>
+                                    </p:row>                                    
+                                    <p:row>
+                                        <p:column>
+                                            <div align="right">                                                 
+                                                <p:commandButton id="btnSavePrioridad" 
+                                                     value="Guardar" 
+                                                     style="float: right;"
+                                                     actionListener="#{estructuraMB.guardarPrioridad}"
+                                                     disabled="!#{estructuraMB.permiso.puedeCrear or estructuraMB.permiso.puedeEditar or estructuraMB.savePrioridad}" 
+                                                     styleClass="btnMusAzul" />
+                                            </div>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                            </p:tab>
+                        </p:tabView>
+                    </h:form>
+                    
+                    
+                    <p:dialog header=" Registrar / Actualizar Estructura Hospitalaria "
+                              widgetVar="modalUnidad"
+                              modal="true"
+                              resizable="false"
+                              closeOnEscape="true"
+                              closable="true">
+                        <h:form id="frmUnidad" >
+                            <p:focus context="frmUnidad" id="focusController"/>
+                            <p:messages id="msgValidaUnidad" closable="true" showDetail="false"/>                        	 	
+                            <p:panelGrid styleClass="ui-noborder">
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Nombre Estructura *" />
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:outputLabel value="Tipo de Estructura *" />
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:inputText style="width: 350px;" value="#{estructuraMB.estructuraServicio.nombre}" />
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:selectOneMenu style="width: 250px;" id="tipoEstructura" value="#{estructuraMB.estructuraServicio.idTipoArea}" >
+                                            <f:selectItem itemLabel="Selecciona una opción" itemValue="#{0}" />
+                                            <f:selectItems value="#{estructuraMB.listTipoArea}" var="tipoAreaModal" itemLabel="#{tipoAreaModal.nombreArea}" itemValue="#{tipoAreaModal.idTipoAreaEstructura}" />            								
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Clave Unidad *" />
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:outputLabel value="Clave Presupuestal" />
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:inputText value="#{estructuraMB.estructuraServicio.claveEstructura}"/>                                        
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText value="#{estructuraMB.estructuraServicio.clavePresupuestal}"/>                                        
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:selectBooleanCheckbox value="#{estructuraMB.estructuraServicio.mostrarPC}" />
+                                        <p:spacer width="10"/> <h:outputText value=" Mostrar en puntos de control " />
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Estructura Padre *"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:selectBooleanCheckbox value="#{estructuraMB.servicioActivo}" />
+                                        <p:spacer width="10"/> <h:outputText value=" Activo " />
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu style="width: 250px;" id="idServicioPadre" value="#{estructuraMB.estructuraServicio.idEstructuraPadre}" >
+                                            <f:selectItem itemLabel="Selecciona una opción" itemValue="#{null}" />
+                                            <f:selectItems value="#{estructuraMB.serviciosPadreList}" var="servicio" itemLabel="#{servicio.nombre}" itemValue="#{servicio.idEstructura}" />  
+                                            <p:ajax event="change" listener="#{estructuraMB.asignarPadre}" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>       	 	
+                            <br /><br /> 
+                            <div align="right">  
+                                <p:commandButton id="buttonInsertar" 
+                                                 value="Guardar" 
+                                                 style="float: right;margin: 10px;"
+                                                 actionListener="#{estructuraMB.guardarServicio}"
+                                                 update=":mainForm, frmUnidad:msgValidaUnidad"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="if ( args.estatus ){ PF('modalUnidad').hide(); } PF('statusProcess').hide(); " 
+                                                 disabled="!#{estructuraMB.permiso.puedeCrear or estructuraMB.permiso.puedeEditar}" 
+                                                 styleClass="btnMusAzul" />    
+                                &nbsp;&nbsp;                          
+                                <p:commandButton id="buttonActualizar" 
+                                                 value="Cancelar" 
+                                                 style="float: right;margin: 10px;"
+                                                 oncomplete="PF('modalUnidad').hide(); " />            
+                            </div>
+
+                        </h:form>
+                    </p:dialog>
+                    
+                    <p:dialog header="Información de Cama"
+                              widgetVar="modalCama"
+                              modal="true"
+                              resizable="false"
+                              closeOnEscape="true"
+                              closable="true">
+                        <h:form id="formCama" >
+                            <p:focus context="formCama" id="focusController"/>
+                            <p:messages id="msgValidaCama" globalOnly="true" closable="true" showDetail="false"/> 
+                            <p:panelGrid styleClass="ui-noborder">
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Nombre Cama *"/>
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:outputLabel value="Ubicación *" />
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:inputText style="width: 350px;" value="#{estructuraMB.camaSelect.nombreCama}" />                                        
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:inputText style="width: 350px;"  value="#{estructuraMB.camaSelect.ubicacion}" />
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Tipo de Cama *" />
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:outputLabel value="Estado de la Cama *" />
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:selectOneMenu style="width: 330px;" id="tipoCama" value="#{estructuraMB.idTipoCama}">
+                                            <f:selectItem itemLabel="Selecciona una opción" itemValue="" />
+                                            <f:selectItems value="#{estructuraMB.tipoCamaList}" var="tipoCama" itemLabel="#{tipoCama.nombreTipoCama}" itemValue="#{tipoCama.idTipoCama}" />            								
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:selectOneMenu style="width: 330px;" id="tipoEstado" value="#{estructuraMB.idEstatusCama}">
+                                            <f:selectItem itemLabel="Selecciona una opción" itemValue="" />
+                                            <f:selectItems value="#{estructuraMB.estatusCamaList}" var="tipoEstatus" itemLabel="#{tipoEstatus.nombreEstatusCama}" itemValue="#{tipoEstatus.idEstatusCama}" />            								
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            <div align="right">  
+                                <p:commandButton value="Guardar" 
+                                                 style="float: right;margin: 10px;"
+                                                 actionListener="#{estructuraMB.guardarCama}"
+                                                 update=":mainForm:tabView, formCama:msgValidaCama"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="if(args.estatus2){ PF('modalCama').hide(); } PF('statusProcess').hide();"                                                 
+                                                 disabled="!#{estructuraMB.permiso.puedeCrear or estructuraMB.permiso.puedeEditar}"
+                                                 styleClass="btnMusAzul" />&nbsp;&nbsp;
+                                <p:commandButton value="Cancelar" 
+                                                 style="float: right;margin: 10px;"                                                 
+                                                 onclick="PF('modalCama').hide();"  />                                      
+                            </div> 
+                        </h:form>		                         
+                    </p:dialog>
+                    
+                    <p:dialog header=" Registrar / Actualizar Almacén "
+                              widgetVar="modalAlmacen"
+                              modal="true" width="650"
+                              resizable="false"
+                              closeOnEscape="true"
+                              closable="true">
+                        <h:form id="frmAlmacen" >
+                            <p:messages id="msgValidaAlmacen" closable="true" showDetail="false"/>
+                            <p:panelGrid styleClass="ui-noborder" >
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Nombre Del Almacén *" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Tipo Almacén *"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:inputText style="width: 300px;" value="#{estructuraMB.estructuraAlmacen.nombre}" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu class="sOneMenu" id="tipoAlmacenes" value="#{estructuraMB.estructuraAlmacen.idTipoAlmacen}">
+                                            <f:selectItem itemLabel="Selecciona una opción" itemValue="#{0}" />
+                                            <f:selectItems value="#{estructuraMB.tipoAlmacenList}" var="almacen" itemLabel="#{almacen.nombreTipoAlmacen}" itemValue="#{almacen.idTipoAlmacen}" />            								
+                                        </p:selectOneMenu>
+                                    </p:column>                                    
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Clave de Almacén" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Clave Presupuestal" />
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:inputText placeholder="" value="#{estructuraMB.estructuraAlmacen.claveEstructura}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText placeholder="" value="#{estructuraMB.estructuraAlmacen.clavePresupuestal}"/>
+                                    </p:column>
+                                </p:row>    
+                                <p:row>
+                                    <p:column >
+                                        <p:selectBooleanCheckbox value="#{estructuraMB.transAutomatica}" /> 
+                                        <p:spacer width="10"/>
+                                        <h:outputText value="Transferencia Automática" />
+                                    </p:column>
+                                    <p:column >
+                                        <p:outputLabel value="Tipo Surtimiento *" />
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column >
+                                        <p:selectBooleanCheckbox value="#{estructuraMB.estructuraAlmacen.envioHL7}" />
+                                        <p:spacer width="10"/>
+                                        <h:outputText value="Envío de mensajes Hl7"/> 
+                                    </p:column>
+                                    <p:column >
+                                        <p:selectCheckboxMenu id="multiple" value="#{estructuraMB.tipoSurtimientosSelected}" label="Envio Hl7" style="min-width: 15rem; max-width: 30rem;"
+                                                                multiple="true" filter="true" filterMatchMode="startsWith" panelStyle="width: 15rem" scrollHeight="250" >
+                                            <f:selectItems value="#{estructuraMB.tipoSurtimientoList}" var="tipo" itemLabel="#{tipo.nombre}" itemValue="#{tipo.idTipoSurtimiento}"/>
+                                        </p:selectCheckboxMenu>
+                                    </p:column> 
+                                </p:row>
+                                <p:row>
+                                    <p:column>                  	 				
+                                        <p:selectBooleanCheckbox value="#{estructuraMB.almacenActivo}"/> 
+                                        <p:spacer width="10"/> 
+                                        <h:outputText value=" Activo / Inactivo" />    
+                                    </p:column>   
+                                    <p:column  rendered="#{estructuraMB.mostrarComboPadre}">
+                                        <p:outputLabel value="Estructura Padre" /><br/>
+                                        <p:selectOneMenu class="sOneMenu" value="#{estructuraMB.estructuraAlmacen.idEstructuraPadre}" >
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                            <f:selectItems value="#{estructuraMB.almacenPadreList}" var="padre" itemLabel="#{padre.nombre}" itemValue="#{padre.idEstructura}" />
+                                        </p:selectOneMenu>
+                                    </p:column>                               
+                                </p:row>
+                                
+                            </p:panelGrid>
+                            <div align="right">
+                                <p:commandButton id="btnGuardaAlmacen"
+                                                 value="Guardar" 
+                                                 style="float: right;margin: 10px;"
+                                                 actionListener="#{estructuraMB.guardarAlmacen}" 
+                                                 update=":mainForm:tabView, frmAlmacen:msgValidaAlmacen"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="if ( args.estatus ){  PF('modalAlmacen').hide(); } PF('statusProcess').hide();"
+                                                 disabled="!#{estructuraMB.permiso.puedeCrear or estructuraMB.permiso.puedeEditar}" 
+                                                 styleClass="btnMusAzul" />    
+                                <p:commandButton value="Cancelar" 
+                                                 style="float: right;margin: 10px;"
+                                                 onclick="PF('modalAlmacen').hide();" />                                        
+                            </div>	
+                        </h:form>                     	
+                    </p:dialog>
+                    
+                    <p:dialog header="Registrar Prioridad del Almacén "
+                              widgetVar="modalPrioridad"
+                              modal="true"
+                              resizable="false"
+                              closeOnEscape="true"
+                              closable="true">
+                        <h:form id="frmPriodidad" >
+                            <p:messages id="msgPrioridadAlmacen" closable="true" showDetail="false"/>
+                            
+                            <div align="right">
+                                <p:commandButton id="btnGuardaPrioridad"
+                                                 value="Guardar" 
+                                                 style="float: right;margin: 10px;"
+                                                 actionListener="#{estructuraMB.guardarAlmacen}" 
+                                                 update=":mainForm:tabView, frmPriodidad:msgPrioridadAlmacen"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="if ( args.estatus ){  PF('modalPrioridad').hide(); } PF('statusProcess').hide();"
+                                                 disabled="!#{estructuraMB.permiso.puedeCrear or estructuraMB.permiso.puedeEditar}" 
+                                                 styleClass="btnMusAzul" />    
+                                <p:commandButton value="Cancelar" 
+                                                 style="float: right;margin: 10px;"
+                                                 onclick="PF('modalPrioridad').hide();" />                                        
+                            </div>
+                        </h:form>
+                    </p:dialog>
+                
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">                    
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" closeOnEscape="true" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Prueba Farmacovigilancia"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;" />                                                                                         
+                        </div>
+                        <p:commandButton class="btnNew" value="Buscar Alertas" icon="fa fa-file-o" 
+                                         onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();"  actionListener="#{pruebaFarmacovigilanciaMB.buscarAlertas()}" 
+                                         update=":mainForm:tblAlertaFarmaco, :mainForm:tblValidacionNoCumplida, :mainForm:tblAlertaProtocolos"
+                                         ajax="true"  style=" margin: 5px 0; " styleClass="btnMusAzul" />  &nbsp;&nbsp;
+                        
+                        <br/>
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <p:dataTable emptyMessage="No se encontraron registros" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"  reflow="true"                                       
+                                     paginatorPosition="bottom" widgetVar="tblAlertaFarmaco" 
+                                     value="#{pruebaFarmacovigilanciaMB.listaAlertaFarmacovigilancia}" var="item" 
+                                     lazy="true" id="tblAlertaFarmaco" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" >                          
+
+                            <p:column style="text-align: left;"  headerText="Número"  width="15%">
+                                <h:outputText value="#{item.numero}" class="" />
+                            </p:column>
+
+                            <p:column style="text-align: left !important; "  headerText="Factor Uno"  width="30%" >
+                                <h:outputText value="#{item.factor1}"   class="" />
+                            </p:column>                            
+
+                            <p:column style="text-align: left;"  headerText="Factor Dos"  width="30%" >
+                                <h:outputText value="#{item.factor2}" class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Riesgo"  width="10%" >
+                                <h:outputText value="#{item.riesgo}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Tipo"  width="12%" >
+                                <h:outputText value="#{item.tipo}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Origen"  width="10%" >
+                                <h:outputText value="#{item.origen}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Clasificacion"  width="18%" >
+                                <h:outputText value="#{item.clasificacion}"  class="" />
+                            </p:column>
+                        </p:dataTable>
+                        <br /><br /><br />
+                        
+                        <p:dataTable emptyMessage="No se encontraron registros" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"  reflow="true"                                       
+                                     paginatorPosition="bottom" widgetVar="tblAlertaFarmaco" 
+                                     value="#{pruebaFarmacovigilanciaMB.validacionNoCumplidas}" var="item" 
+                                     lazy="true" id="tblValidacionNoCumplida" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" >                          
+
+                            <p:column style="text-align: left;"  headerText="Codigo"  width="15%">
+                                <h:outputText value="#{item.codigo}" class="" />
+                            </p:column>
+
+                            <p:column style="text-align: left !important; "  headerText="Descripción"  width="40%" >
+                                <h:outputText value="#{item.descripcion}"   class="" />
+                            </p:column>                            
+                        </p:dataTable>
+                        <br /><br /><br />
+                        
+                        <p:dataTable emptyMessage="No se encontraron registros" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"  reflow="true"                                       
+                                     paginatorPosition="bottom" widgetVar="tblAlertaProtocolos" 
+                                     value="#{pruebaFarmacovigilanciaMB.listaProtocolos}" var="item" 
+                                     lazy="true" id="tblAlertaProtocolos" scrollable="true" scrollWidth="100%" scrollHeight="350"                                    
+                                      >                                                             
+                             <p:ajax event="rowDblselect" oncomplete="PF('modalDetalleProtocolo').show();" 
+                                    update=":formDetalleProtocolo" listener="#{pruebaFarmacovigilanciaMB.obtenerDetalle}"/>
+                            <p:column style="text-align: left;"  headerText="Protocolo"  width="70px;">
+                                <h:outputText value="#{item.claveProtocolo}"  />
+                            </p:column>
+
+                            <p:column style="text-align: left !important; "  headerText="Diagnóstico"  width="270px;" >
+                                <h:outputText value="#{item.diagnostico}"    />
+                            </p:column>                            
+
+                            <p:column style="text-align: left;"  headerText="Clave"  width="120px;" >
+                                <h:outputText value="#{item.claveMedicamento}" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Descripcion"  width="370px;" >
+                                <h:outputText value="#{item.nombreMedicamento}"  />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Dosis"  width="90px;" >
+                                <h:outputText value="#{item.dosis}" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Frec"  width="70px;" >
+                                <h:outputText value="#{item.frecuencia}"  />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Cilcos"  width="50px;" >
+                                <h:outputText value="#{item.ciclos}"  />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Estab"  width="50px;" >
+                                <h:outputText value="#{item.estabilidad}" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Area"  width="50px;" >
+                                <h:outputText value="#{item.area}" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Peso"  width="50px;" >
+                                <h:outputText value="#{item.peso}" />
+                            </p:column>
+                             <p:column style="text-align: left;"  headerText="Acciones"  width="80px;" >
+                                 
+                                 <p:commandLink title="Medicación correcta" rendered="#{item.valido}">
+                                     <i class="fa fa-check-square iconMusAzul" />
+                                 </p:commandLink>                                 
+                                 <p:commandLink title="Ver detalle"  actionListener="#{pruebaFarmacovigilanciaMB.obtenerDetalle(item)}" update=":formDetalleProtocolo"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();PF('modalDetalleProtocolo').show();" >
+                                    <i class="fa fa-pencil-square-o iconMusAzul" />                                    
+                                </p:commandLink>
+                             </p:column>
+                        </p:dataTable>
+                        
+                    </h:form>
+                  
+                    
+                </div>
+                
+                <p:dialog header="DETALLE DE PROTOCOLO"
+                          widgetVar="modalDetalleProtocolo"
+                          closeOnEscape="true"
+                          width="60%" 
+                          modal="true" 
+                          resizable="false"
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formDetalleProtocolo" >
+                        <p:dataTable emptyMessage="No se encontraron registros" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"  reflow="true"                                       
+                                     paginatorPosition="bottom" widgetVar="tblDetallePro" 
+                                     value="#{pruebaFarmacovigilanciaMB.listaDetalleProtocolos}" var="item" 
+                                     lazy="true" id="tblDetallePro" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" >                          
+
+                            <p:column style="text-align: left;"  headerText="Nombre"  width="20%">
+                                <h:outputText value="#{item.nombre}" class="" />
+                            </p:column>
+
+                            <p:column style="text-align: left !important; "  headerText="Indicada"  width="25%" >
+                                <h:outputText value="#{item.indicada}"   class="" />
+                            </p:column>                                                         
+                            
+                            <p:column style="text-align: left !important; "  headerText="Comentarios"  width="40%" >
+                                 <h:outputText value="#{item.causa}"   class="" />
+                            </p:column> 
+                            
+                            <p:column style="text-align: left !important; "  headerText="Prescrita"  width="25%" >
+                                 <h:outputText value="#{item.prescrita}"   class="" />
+                            </p:column> 
+                        </p:dataTable>
+                    </h:form>
+                </p:dialog>    
+                
+            </ui:define>
+            <ui:define name="footer">
+
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

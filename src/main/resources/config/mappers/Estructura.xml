@@ -1,0 +1,959 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.EstructuraMapper" >
+ 
+    <select id="obtenerAlmacenesActivos" resultType="mx.mc.model.Estructura" parameterType="mx.mc.model.Estructura" >
+        SELECT idEstructura, idEstructuraPadre, nombre, descripcion,envioHL7, activa, idTipoAreaEstructura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE 
+        activa = 1
+        AND idTipoAreaEstructura in ( 2 )
+        order by idTipoAlmacen asc, idTipoAreaEstructura asc, nombre asc
+    </select>
+    <select id="obtenerAlmacenPadre" resultType="mx.mc.model.Estructura" parameterType="mx.mc.model.Estructura" >
+        SELECT 
+            idEstructura, idEstructuraPadre, nombre, descripcion,envioHL7, activa, idTipoAreaEstructura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,claveEstructura,mostrarPC
+        FROM
+            estructura
+        WHERE   1 = 1 
+            AND idTipoAreaEstructura = #{ idTipoAreaEstructura , jdbcType = INTEGER }
+            ANd idTipoAlmacen &lt; 4
+            AND activa = 1
+        ORDER BY insertFecha ASC; 
+    </select>
+    <select id="obtenerAlmacenServicio" resultType="mx.mc.model.Estructura" parameterType="mx.mc.model.Estructura" >
+        SELECT 
+            idEstructura,
+            idEstructuraPadre,
+            nombre,
+            descripcion,
+            envioHL7,
+            activa,
+            idTipoAreaEstructura,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario,
+            idTipoAlmacen,
+            idTipoArea,
+            idEntidadHospitalaria,
+            mostrarPC
+        FROM
+            estructura
+        WHERE
+            1 = 1 
+             AND idTipoAreaEstructura in( 2,3) 
+             and (idTipoArea &gt; 6 or idTipoArea is null )
+             and idTipoAlmacen in(1, 4)
+                AND activa = 1
+        ORDER BY insertFecha ASC;
+
+    </select>
+    <select id="obtenerAlmacenes" resultType="mx.mc.model.Estructura" parameterType="mx.mc.model.Estructura" >
+        SELECT 
+            idEstructura,
+            idEstructuraPadre,
+            nombre,
+            descripcion,
+            envioHL7,
+            activa,
+            idTipoAreaEstructura,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario,
+            idTipoAlmacen,
+            idTipoArea,
+            idEntidadHospitalaria,
+            mostrarPC
+        FROM
+            estructura
+        WHERE   1 = 1 
+            AND activa = 1
+            AND (idTipoAreaEstructura = 2 OR idTipoAreaEstructura = 1)
+        ORDER BY idTipoAreaEstructura ASC;  
+    </select>
+    
+    <select id="almacenesTransfer" resultType="mx.mc.model.Estructura" parameterType="mx.mc.model.Estructura" >
+        SELECT idEstructura, idEstructuraPadre, nombre, descripcion,envioHL7, activa, idTipoAreaEstructura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE idTipoAreaEstructura = 2 AND idTipoAlmacen=3
+        and idEstructura != #{idEstructura}
+        order by nombre asc;  
+    </select>
+    
+    <select id="almacenesForTransfer" resultType="mx.mc.model.Estructura" parameterType="mx.mc.model.Estructura" >
+        SELECT idEstructura, idEstructuraPadre, nombre, descripcion,envioHL7, activa, idTipoAreaEstructura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE idTipoAreaEstructura = 2 
+        AND idTipoAlmacen= #{idTipoAlmacen}
+        and idEstructura != #{idEstructura}
+        order by nombre asc;  
+    </select>
+    
+    <select id="obtenerEstructurasPorTipo" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        SELECT idEstructura,idEstructuraPadre,nombre,descripcion,envioHL7,activa,idTipoAreaEstructura,
+        insertFecha,insertIdUsuario,updateFecha,updateIdUsuario,idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE 1 = 1
+        <if test=" listaTipoEstructura != null ">
+            AND idTipoAreaEstructura IN
+            <foreach item="item" collection="listaTipoEstructura" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        order by nombre asc;  
+    </select>
+    
+    <select id="obtenerEstructura" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        SELECT idEstructura, idEstructuraPadre, nombre, descripcion,envioHL7, activa, idTipoAreaEstructura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,claveEstructura,clavePresupuestal,ubicacion,mostrarPC
+        FROM estructura
+        WHERE idEstructura = #{ idEstructura , jdbcType = VARCHAR }; 
+    </select>
+    
+    <select id="obtener" resultType="mx.mc.model.Estructura" parameterType="mx.mc.model.Estructura" >
+        SELECT idEstructura, idEstructuraPadre, nombre, descripcion,envioHL7, activa, idTipoAreaEstructura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,claveEstructura, clavePresupuestal, idAlmacenPeriferico,mostrarPC
+        FROM estructura
+        WHERE 1=1
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructuraPadre != null ">
+            AND idEstructuraPadre = #{ idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>        
+        <if test=" idTipoAreaEstructura != null ">
+            AND idTipoAreaEstructura = #{ idTipoAreaEstructura , jdbcType = INTEGER }
+        </if>
+        <if test=" activa != null ">
+            AND activa = #{ activa , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            AND insertFecha = #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            AND insertIdUsuario = #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            AND updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            AND updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoAlmacen != null ">
+            AND idTipoAlmacen = #{ idTipoAlmacen  , jdbcType = INTEGER }
+        </if>
+        <if test=" idTipoArea != null ">
+            AND idTipoArea = #{ idTipoArea , jdbcType = INTEGER}
+        </if>
+        <if test="idEntidadHospitalaria!=null">
+            AND idEntidadHospitalaria=#{idEntidadHospitalaria,jdbcType=VARCHAR}
+        </if>
+        <if test="claveEstructura!=null">
+            AND claveEstructura=#{claveEstructura,jdbcType=VARCHAR}
+        </if>
+        LIMIT 1;
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Estructura" parameterType="mx.mc.model.Estructura" >
+        SELECT idEstructura, idEstructuraPadre, nombre, descripcion,envioHL7, activa, idTipoAreaEstructura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE 1=1
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructuraPadre != null ">
+            AND idEstructuraPadre = #{ idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoAreaEstructura != null ">
+            AND idTipoAreaEstructura = #{ idTipoAreaEstructura , jdbcType = INTEGER }
+        </if>
+        <if test=" activa != null ">
+            AND activa = #{ activa , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            AND insertFecha = #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            AND insertIdUsuario = #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            AND updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            AND updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoAlmacen != null ">
+            AND idTipoAlmacen = #{ idTipoAlmacen  , jdbcType = INTEGER }
+        </if>
+        <if test=" idTipoArea != null ">
+            AND idTipoArea = #{ idTipoArea , jdbcType = INTEGER}
+        </if>
+        <if test="idEntidadHospitalaria!=null">
+            AND idEntidadHospitalaria=#{idEntidadHospitalaria,jdbcType=VARCHAR}
+        </if>    
+        ORDER BY insertFecha asc
+    </select>
+        
+    <insert id="insertar" parameterType="mx.mc.model.Estructura" >
+        INSERT INTO estructura (
+        <if test=" idEstructura != null ">
+            idEstructura
+        </if>
+        <if test=" idEstructuraPadre != null ">
+            , idEstructuraPadre
+        </if>
+        <if test=" nombre != null ">
+            , nombre
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion
+        </if> 
+        <if test="envioHL7 != null">
+            , envioHL7
+        </if>   
+        <if test=" activa != null ">
+            , activa
+        </if>
+        <if test=" idTipoAreaEstructura != null ">
+            , idTipoAreaEstructura
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , updateIdUsuario
+        </if>
+        <if test=" idTipoAlmacen != null ">
+            , idTipoAlmacen
+        </if>
+        <if test=" idTipoArea != null ">
+            , idTipoArea
+        </if>
+        <if test="idEntidadHospitalaria!=null">
+            ,idEntidadHospitalaria
+        </if>
+        <if test="claveEstructura!=null">
+            ,claveEstructura
+        </if>
+        <if test="clavePresupuestal != null">
+            ,clavePresupuestal
+        </if>
+        <if test="idAlmacenPeriferico != null">
+            ,idAlmacenPeriferico
+        </if>
+        <if test="mostrarPC!=null">
+            ,mostrarPC
+        </if>
+        ) VALUES (
+        <if test=" idEstructura != null ">
+            #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructuraPadre != null ">
+            , #{ idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            , #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test="envioHL7 != null ">
+            , #{envioHL7, jdbcType=INTEGER}
+        </if>
+        <if test=" activa != null ">
+            , #{ activa , jdbcType = INTEGER }
+        </if>
+        <if test=" idTipoAreaEstructura != null ">
+            , #{ idTipoAreaEstructura , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoAlmacen != null ">
+            , #{ idTipoAlmacen , jdbcType = INTEGER }
+        </if>
+        <if test=" idTipoArea != null ">
+            , #{ idTipoArea , jdbcType = INTEGER}
+        </if>
+        <if test="idEntidadHospitalaria!=null">
+            ,#{idEntidadHospitalaria,jdbcType=VARCHAR}
+        </if>
+        <if test="claveEstructura!=null">
+            ,#{claveEstructura,jdbcType=VARCHAR}
+        </if>
+        <if test="clavePresupuestal != null">
+            ,#{clavePresupuestal, jdbcType=VARCHAR}
+        </if>
+        <if test="idAlmacenPeriferico != null">
+            ,#{idAlmacenPeriferico, jdbcType=VARCHAR}
+        </if>
+        <if test="mostrarPC!=null">
+            ,#{mostrarPC,jdbcType=INTEGER}
+        </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.Estructura" >
+        UPDATE estructura SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" idEstructuraPadre != null ">
+            , idEstructuraPadre = #{ idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            , nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoAreaEstructura != null ">
+            , idTipoAreaEstructura = #{ idTipoAreaEstructura , jdbcType = INTEGER }
+        </if>
+        <if test="envioHL7 != null">
+            , envioHL7= #{envioHL7,jdbcType = INTEGER}
+        </if>
+        <if test=" activa != null ">
+            , activa = #{ activa , jdbcType = INTEGER }
+        </if>
+        <if test=" idTipoAlmacen != null ">
+            , idTipoAlmacen = #{ idTipoAlmacen , jdbcType = INTEGER }
+        </if>
+        <if test=" idTipoArea != null ">
+            , idTipoArea = #{ idTipoArea , jdbcType = INTEGER}
+        </if>
+        <if test="idEntidadHospitalaria!=null">
+            ,idEntidadHospitalaria=#{idEntidadHospitalaria,jdbcType=VARCHAR}
+        </if>
+        <if test="claveEstructura!=null">
+            ,claveEstructura=#{claveEstructura,jdbcType=VARCHAR}
+        </if>
+        <if test="clavePresupuestal != null">
+            ,clavePresupuestal = #{clavePresupuestal, jdbcType=VARCHAR}
+        </if>
+        <if test="idAlmacenPeriferico != null">
+            ,idAlmacenPeriferico =  #{idAlmacenPeriferico, jdbcType=VARCHAR}
+        </if>
+        <if test="mostrarPC != null">
+            ,mostrarPC = #{mostrarPC,jdbcType=INTEGER}
+        </if>
+        
+        WHERE idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.Estructura"  >
+        DELETE FROM estructura 
+        WHERE idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+    </delete>
+    
+    <select id="obtenerEstructuraPadre" resultType="mx.mc.model.Estructura" parameterType="String" >
+        SELECT idEstructura, idEstructuraPadre, nombre, descripcion, envioHL7, activa, idTipoAreaEstructura, claveEstructura, clavePresupuestal, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE idEstructuraPadre IS NULL
+        
+    </select>
+    
+    <select id="obtenerUnidadesJerarquicas" resultType="mx.mc.model.Estructura" parameterType="Integer" >
+        SELECT idEstructura , idEstructuraPadre , nombre , descripcion, envioHL7 , activa , idTipoAreaEstructura , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE 1 = 1        
+        <if test="idTipoAreaEstructura != null ">
+            AND idTipoAreaEstructura = #{ idTipoAreaEstructura, jdbcType = INTEGER }
+        </if>
+        ORDER BY insertFecha 
+    </select>
+    
+    <select id="obtenerUnidadesOrderTipo" resultType="mx.mc.model.Estructura">
+        SELECT idEstructura , idEstructuraPadre , nombre , descripcion,envioHL7 , activa , idTipoAreaEstructura , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE 1 = 1    AND activa = 1 ORDER BY idTipoAreaEstructura, insertFecha
+    </select>
+       
+    <select id="obtenerServiciosAlmcenPorIdEstructura" resultType="mx.mc.model.Estructura">
+        SELECT distinct t4.idEstructura, t4.nombre AS Nombre
+        FROM estructura AS t1 
+        LEFT JOIN estructura AS t2 ON (t2.idEstructuraPadre = t1.idEstructura OR t1.idEstructura = t2.idEstructura )
+        LEFT JOIN estructura AS t3 ON (t3.idEstructuraPadre = t2.idEstructura OR t2.idEstructura = t3.idEstructura )
+        LEFT JOIN estructura AS t4 ON (t4.idEstructuraPadre = t3.idEstructura OR t3.idEstructura = t4.idEstructura )
+        WHERE 1 = 1 
+        AND (t4.envioHL7 = 0 OR t4.envioHL7 is null)
+        AND t4.idTipoAreaEstructura != 2
+        AND (
+        t1.idEstructuraPadre IN (
+        SELECT ea.idEstructuraServicio
+        FROM estructuraAlmacenServicio ea
+        INNER JOIN estructura alm ON ea.idEstructuraAlmacen = alm.idEstructura
+        INNER JOIN estructura are ON ea.idEstructuraServicio = are.idEstructura
+        WHERE ea.idEstructuraAlmacen = #{ idEstructura , jdbcType = VARCHAR }
+        )
+        OR t4.idEstructura  IN (
+        SELECT ea.idEstructuraServicio
+        FROM estructuraAlmacenServicio ea
+        INNER JOIN estructura alm ON ea.idEstructuraAlmacen = alm.idEstructura
+        INNER JOIN estructura are ON ea.idEstructuraServicio = are.idEstructura
+        WHERE ea.idEstructuraAlmacen = #{ idEstructura , jdbcType = VARCHAR }
+        )
+        )
+    </select>
+    
+    <select id="getEstructuraPadreIdEstructura" resultType="mx.mc.model.Estructura" parameterType="String" >
+        SELECT idEstructura , idEstructuraPadre , nombre , descripcion,envioHL7 , activa , idTipoAreaEstructura , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura 
+        WHERE 1 = 1
+        <if test=" idEstructura != null">
+            AND idEstructura =  (SELECT idEstructuraPadre FROM estructura WHERE idEstructura = #{ idEstructura , jdbcType = VARCHAR } )
+        </if>
+        LIMIT 1
+    </select>
+    
+    <select id="getEstructuraByLisTipoAlmacen" resultType="mx.mc.model.Estructura" parameterType="Map">
+        SELECT idEstructura, nombre , descripcion,envioHL7, idTipoAlmacen, idEstructuraPadre,mostrarPC
+        FROM estructura 
+        WHERE 1 = 1
+        AND activa = 1
+        <if test=" listTipoAlmacen != null ">
+            AND idTipoAlmacen IN
+            <foreach item="item" index="index" collection="listTipoAlmacen" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY insertFecha
+    </select> 
+    
+    <select id="getEstructuraByLisTipoAreaEstructura" resultType="mx.mc.model.Estructura" parameterType="Map">
+        SELECT idEstructura, nombre , descripcion,envioHL7, idTipoAlmacen, idEstructuraPadre,mostrarPC
+        FROM estructura 
+        WHERE 1 = 1
+        AND activa = 1
+        <if test=" listTipoAreaEstructura != null ">
+            AND idTipoAreaEstructura IN
+            <foreach item="item" index="index" collection="listTipoAreaEstructura" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY insertFecha
+    </select>            
+    
+    <select id="getEstructuraServicios" resultType="mx.mc.model.Estructura" parameterType="Map">
+        SELECT idEstructura, nombre , descripcion,envioHL7, idTipoAlmacen, idEstructuraPadre,mostrarPC
+        FROM estructura 
+        WHERE 1 = 1
+        AND activa = 1
+        AND idTipoAreaEstructura = 3
+        <if test=" listTipoAlmacen != null ">
+            AND idTipoAlmacen IN
+            <foreach item="item" index="index" collection="listTipoAlmacen" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        
+        <if test=" listaEstructuras != null ">
+            AND idEstructura IN 
+            <foreach item="item" index="index" collection="listaEstructuras" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        
+        ORDER BY insertFecha
+    </select>
+    
+    <select id="getEstructuraForName" resultType="mx.mc.model.Estructura" parameterType="Map">
+        SELECT idEstructura,idEstructuraPadre,nombre,descripcion,envioHL7,activa,idTipoAreaEstructura,idTipoAlmacen,idTipoArea,idEntidadHospitalaria,mostrarPC 
+        FROM estructura
+        WHERE nombre = #{nombre}        
+    </select>
+    <select id="getAlmacenesForEntidad" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        SELECT 
+            es.idEstructura,
+            es.idEstructuraPadre,
+            es.nombre,
+            es.descripcion,
+            es.activa,
+            es.idTipoAreaEstructura,
+            es.insertFecha,
+            es.insertIdUsuario,
+            es.updateFecha,
+            es.updateIdUsuario,
+            es.idTipoAlmacen,
+            es.idTipoArea,
+            es.envioHL7,
+            es.idEntidadHospitalaria,
+            es.mostrarPC
+        FROM  estructura es
+        INNER JOIN  entidadHospitalaria eh ON eh.idEntidadHospitalaria = es.idEntidadHospitalaria
+        WHERE es.idTipoAreaEstructura = 2 
+            AND es.idTipoAlmacen = #{ idTipoAlmacen , jdbcType = VARCHAR }
+            AND es.idEntidadHospitalaria = #{ idEstructura , jdbcType = VARCHAR };
+    </select>
+    
+    <select id="obtenerEstructurasLista" resultType="mx.mc.model.Estructura" parameterType="Map">
+        select distinct * FROM 
+        (
+        select e1.nombre , e1.idEstructura
+        from estructura as e1
+        left join estructura e2 on e2.idEstructuraPadre = e1.idEstructura
+        left join estructura e3 on e3.idEstructuraPadre = e2.idEstructura
+        left join estructura e4 on e4.idEstructuraPadre = e3.idEstructura
+        left join estructura e5 on e5.idEstructuraPadre = e4.idEstructura
+        left join estructura e6 on e6.idEstructuraPadre = e5.idEstructura
+        where e1.nombre = 'Área Consulta Interna'
+
+        union all
+        select
+        e2.nombre as niv_2, e2.idEstructura
+        from estructura as e1
+        left join estructura e2 on e2.idEstructuraPadre = e1.idEstructura
+        left join estructura e3 on e3.idEstructuraPadre = e2.idEstructura
+        left join estructura e4 on e4.idEstructuraPadre = e3.idEstructura
+        left join estructura e5 on e5.idEstructuraPadre = e4.idEstructura
+        left join estructura e6 on e6.idEstructuraPadre = e5.idEstructura
+        where e1.nombre in( 'Pediatría ' , 'Oftalmología')
+
+
+        union all
+        select
+        e2.nombre as niv_3, e2.idEstructura
+        from estructura as e1
+        left join estructura e2 on e2.idEstructuraPadre = e1.idEstructura
+        left join estructura e3 on e3.idEstructuraPadre = e2.idEstructura
+        left join estructura e4 on e4.idEstructuraPadre = e3.idEstructura
+        left join estructura e5 on e5.idEstructuraPadre = e4.idEstructura
+        left join estructura e6 on e6.idEstructuraPadre = e5.idEstructura
+        where e1.nombre in( 'Cirugía Gástrica')
+
+
+        union all
+        select
+        e2.nombre as niv_4, e2.idEstructura
+        from estructura as e1
+        left join estructura e2 on e2.idEstructuraPadre = e1.idEstructura
+        left join estructura e3 on e3.idEstructuraPadre = e2.idEstructura
+        left join estructura e4 on e4.idEstructuraPadre = e3.idEstructura
+        left join estructura e5 on e5.idEstructuraPadre = e4.idEstructura
+        left join estructura e6 on e6.idEstructuraPadre = e5.idEstructura
+        where e1.nombre = 'Área Consulta Interna'
+
+        ) s1
+
+
+
+
+    </select>
+    <select id="obtenerAlmacenPadreDesc" resultType="mx.mc.model.Estructura" parameterType="mx.mc.model.Estructura" >
+        SELECT 
+            idEstructura, idEstructuraPadre, nombre, descripcion,envioHL7, activa, idTipoAreaEstructura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,claveEstructura,mostrarPC
+        FROM
+            estructura
+        WHERE   1 = 1 
+            AND idTipoAreaEstructura = #{ idTipoAreaEstructura , jdbcType = INTEGER }
+            ANd idTipoAlmacen in (3,4)   <!-- Almacen, SubAlmacen -->
+            AND activa = 1
+        ORDER BY nombre DESC; 
+    </select>
+    
+    <select id="getEstructuraForClave" resultType="mx.mc.model.Estructura" parameterType="Map">
+        SELECT idEstructura,idEstructuraPadre,nombre,descripcion,envioHL7,activa,idTipoAreaEstructura,idTipoAlmacen,idTipoArea,idEntidadHospitalaria,mostrarPC 
+        FROM estructura
+        WHERE claveEstructura = #{claveEstructura, jdbcType = VARCHAR}        
+    </select>
+    
+    <select id="obtenerEstructuraHl7" resultType="mx.mc.model.Estructura" parameterType="Map">
+        select * from estructura where 
+        idEstructura = #{idEstructura, jdbcType = VARCHAR}        
+        and envioHL7 = 1 and activa = 1;        
+    </select>
+     <select id="obtenerEstructuraSnHl7" resultType="mx.mc.model.Estructura" parameterType="mx.mc.model.Estructura" >
+        SELECT 
+            idEstructura,
+            idEstructuraPadre,
+            nombre,
+            descripcion,
+            envioHL7,
+            activa,
+            idTipoAreaEstructura,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario,
+            idTipoAlmacen,
+            idTipoArea,
+            idEntidadHospitalaria,
+            mostrarPC
+        FROM
+            estructura
+        WHERE   1 = 1 
+            AND activa = 1
+            AND (envioHL7=0 OR envioHL7 is null)
+            AND idTipoAlmacen= 1
+        ORDER BY idTipoAreaEstructura ASC;  
+    </select>
+    
+    <select id="obtenerIdsEstructuraJerarquica" resultType="String" parameterType="Map">
+        call getChildrens(#{ idEstructuraPadre, jdbcType = VARCHAR }, #{ almacen, jdbcType = BOOLEAN });
+    </select>
+    
+    <select id="obtenerEstructurasPadreCadit" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        select * from estructura where idEstructuraPadre = #{idEstructuraPadre, jdbcType = VARCHAR}        
+    </select>
+    
+    <select id="obtenerclaveEstructuraPeriferico" resultType="String" parameterType="String">
+         SELECT es.claveEstructura FROM estructura e 
+         INNER JOIN estructura es ON e.idAlmacenPeriferico = es.idEstructura
+         WHERE e.idEstructura = #{idEstructura, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="validarExistenciaEstrucutra" resultType="String" parameterType="String">
+        select nombre from estructura where nombre = #{nombre, jdbcType = VARCHAR}
+    </select>
+    
+    
+    <select id="getEstructuraListTipoAreaEstructura" resultType="mx.mc.model.Estructura" parameterType="Map">
+         SELECT 
+            idEstructura,
+            idEstructuraPadre,
+            nombre,
+            descripcion,
+            envioHL7,
+            activa,
+            idTipoAreaEstructura,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario,
+            idTipoAlmacen,
+            idTipoArea,
+            idEntidadHospitalaria,
+            mostrarPC
+        FROM
+            estructura
+        WHERE   1 = 1 
+            AND activa = 1
+            AND idTipoAreaEstructura IN
+        <foreach collection="listIdAreaEstructura" item="item"  index="index" separator="," open="(" close=")">
+            #{ item , jdbcType = VARCHAR }
+        </foreach>
+        order by insertFecha asc
+    </select>
+    
+    <select id="getEstructurDugthersYMe" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        select * from estructura where idEstructuraPadre = #{idEstructuraPadre, jdbcType = VARCHAR}
+        or idEstructura = #{idEstructuraPadre, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtenerServicioQueSurtePorIdEstructura" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        SELECT eas.idEstructuraServicio AS idEstructura, e.nombre, e.descripcion
+        FROM estructuraAlmacenServicio eas INNER JOIN estructura e ON eas.idEstructuraServicio = e.idEstructura
+        WHERE  idEstructuraAlmacen = #{ idEstructura , jdbcType = VARCHAR}
+        ORDER BY e.nombre ASC
+    </select>
+    
+    <select id="obtenerAlmacenQueSurtePorIdEstructura" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        SELECT idEstructuraAlmacen AS idEstructura
+        FROM estructuraAlmacenServicio 
+        WHERE idEstructuraServicio  = #{ idEstructura , jdbcType = VARCHAR}
+        limit 1;
+    </select>
+    
+     <select id="validarExistenciaClave" resultType="String" parameterType="String">
+        select claveEstructura from estructura where claveEstructura = #{claveEstructura, jdbcType = VARCHAR}
+    </select>
+    
+    
+    <select id="obtenerEstructurasPorIdAlmacenPeriferico" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        SELECT idEstructura , nombre
+        FROM estructura
+        WHERE idAlmacenPeriferico  = #{ idEstructura , jdbcType = VARCHAR}
+        AND activa = 1
+    </select>
+    
+    
+    <select id="obtenerEstructurasActivosPorId" resultType="mx.mc.model.Estructura" parameterType="Map">
+        SELECT idEstructura, idEstructuraPadre, nombre, descripcion,envioHL7, activa, idTipoAreaEstructura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE 
+        activa = 1
+        <if test=" listaIdEstructuras != null ">
+            AND idEstructura IN
+            <foreach item="item" index="index" collection="listaIdEstructuras" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        order by  idTipoAreaEstructura asc  , idTipoAreaEstructura asc ,idTipoAlmacen asc , nombre asc;  
+    </select>
+    
+    <select id="obtenerAlmacenesQueSurtenServicio" resultType="mx.mc.model.Estructura" parameterType="String" >
+    	SELECT e.idEstructura, idEstructuraPadre, nombre, descripcion,envioHL7, activa, idTipoAreaEstructura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura e
+        INNER JOIN estructuraAlmacenServicio eas ON e.idEstructura = eas.idEstructuraAlmacen
+        WHERE eas.idEstructuraServicio = #{ idEstructura , jdbcType = VARCHAR }   
+        AND e.activa = 1
+        AND e.idTipoAlmacen in ( 2, 4)
+    </select>
+    
+    <select id="obtenerEstructuraAlmacenPerifericoPorNombreEstructura" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        SELECT es.idEstructura , es.nombre
+        FROM estructura e INNER JOIN estructura es on e.idAlmacenPeriferico = es.idEstructura
+        WHERE e.nombre  = #{ nombreEstructura , jdbcType = VARCHAR}
+        AND e.activa = 1
+    </select>
+    
+    <update id="quitarAlmacenPeriferico" parameterType="mx.mc.model.Estructura" >
+        UPDATE estructura SET
+        idAlmacenPeriferico = #{idAlmacenPeriferico, jdbcType = VARCHAR}
+        , updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        WHERE idEstructura = #{idEstructura, jdbcType = VARCHAR}
+    </update>  
+    
+    <select id="obtenerPorTipoAreayTipoAreaEstructura" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        SELECT idEstructura , idEstructuraPadre , nombre , descripcion, envioHL7 , activa , idTipoAreaEstructura , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , idTipoAlmacen, idTipoArea, idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE 1 = 1    
+        <if test="idTipoArea != null ">
+            AND idTipoArea = #{ idTipoArea, jdbcType = INTEGER }
+        </if>    
+        <if test="idTipoAreaEstructura != null ">
+            AND idTipoAreaEstructura = #{ idTipoAreaEstructura, jdbcType = INTEGER }
+        </if>
+        ORDER BY insertFecha
+    </select>  
+    
+    <select id="obtenerAlmacenesServicioPCActivos" resultType="mx.mc.model.Estructura" parameterType="mx.mc.model.Estructura" >
+        SELECT idEstructura, idEstructuraPadre, nombre, descripcion,envioHL7, activa, idTipoAreaEstructura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE 
+        activa = 1
+        AND (idTipoAreaEstructura IN (2) OR mostrarPC = 1)
+        ORDER BY  idTipoAreaEstructura ASC,nombre ASC, idTipoAlmacen DESC;
+    </select>
+        
+    <select id="estructurasByFolioMUS" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        SELECT 
+            e.idEstructura,
+            e.idEstructuraPadre,
+            e.nombre,
+            e.descripcion,
+            e.activa,
+            e.idTipoAreaEstructura,
+            e.insertFecha,
+            e.insertIdUsuario,
+            e.updateFecha,
+            e.updateIdUsuario,
+            e.idTipoAlmacen,
+            e.idTipoArea,
+            e.envioHL7,
+            e.idEntidadHospitalaria,
+            e.claveEstructura,
+            e.clavePresupuestal,
+            e.idAlmacenPeriferico,
+            f.folioAlternativo as ubicacion,
+            e.mostrarPC
+        FROM    folioAlternativoFolioMus f
+            INNER JOIN    detalleInsumoSiam d ON d.idFolioAlternativo = f.idFolioAlternativo
+            INNER JOIN    estructura e ON e.idEstructura = d.idEstructura
+        WHERE f.folioMUS = #{Folio}
+        <if test="Status != null">
+            AND f.estatus = #{Status}
+        </if>
+        GROUP BY idEstructura;
+    </select>
+    
+    <select id="estFarmAlmacenSubalmacen" resultType="mx.mc.model.Estructura" parameterType="Map">
+        SELECT idEstructura, idEstructuraPadre, nombre, descripcion,envioHL7, activa, idTipoAreaEstructura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE 
+        activa = 1
+        AND idTipoAreaEstructura in ( 2 )
+        and idTipoAlmacen in (2,3,4)
+        <if test="idEstructura != null"> AND idEstructura = #{idEstructura, jdbcType = VARCHAR}</if>
+        order by idTipoAlmacen asc, idTipoAreaEstructura asc, nombre asc
+    </select>
+    
+    <update id="actualizarEntidadTodas" parameterType="Map">
+        UPDATE estructura SET 
+        idEntidadHospitalaria = #{ idEntidadHospitalaria , jdbcType = VARCHAR }
+        , updateFecha  = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario  = #{ idUsuario , jdbcType = VARCHAR }
+    </update>
+    
+    <select id="obtenerEstructurasPorIdEntidad" resultType="mx.mc.model.Estructura" parameterType="String">
+        SELECT idEstructura, idEstructuraPadre, nombre, descripcion,envioHL7, activa, idTipoAreaEstructura, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, idTipoAlmacen, idTipoArea,idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE idEntidadHospitalaria = #{idEntidadHospitalaria, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="estructuraItemList" resultType="mx.mc.model.Estructura" parameterType="Map">
+        SELECT e.* FROM   almacenPuntosControl pc
+            INNER JOIN estructura e ON e.idEstructura = pc.idAlmacen
+        WHERE pc.idMedicamento = #{idInsumo}
+            AND pc.activo = '1'
+            AND e.activa = '1'
+            AND pc.solicitud = '0'
+        <if test=" serviciosList != null ">
+            AND pc.idAlmacen IN
+            <foreach item="item" index="index" collection="serviciosList" open="(" separator="," close=")">
+                #{item.idEstructura}
+            </foreach>
+        </if>
+    </select>
+     <select id="getEstructuraMedicoSIAM" resultType="mx.mc.model.Estructura" parameterType="Map">
+        SELECT idEstructura,idEstructuraPadre,nombre,descripcion,envioHL7,activa,idTipoAreaEstructura,idTipoAlmacen,idTipoArea,idEntidadHospitalaria,mostrarPC 
+        FROM estructura
+        WHERE nombre LIKE '%${ nombre }%'   
+    </select>
+    
+    <select id="obtenerEstructurasByEntidadTipoArea"  resultType="mx.mc.model.EstructuraExtended" parameterType="Map">
+        SELECT  c.*,f.nombre as nombrePadre,c.nombre as nodo
+        FROM  estructura c 
+            INNER JOIN estructura f on f.idEstructura = c.idEstructuraPadre
+        WHERE   1=1
+        <if test="idTipoAreaEstructura == 2">
+            AND c.idTipoAreaEstructura = 2
+        </if>    
+        <if test="idTipoAreaEstructura != 2">
+            AND c.idTipoAreaEstructura &gt; 2
+        </if>    
+        <if test="idEntidadHosp != null">
+            AND c.idEntidadHospitalaria = #{idEntidadHosp}
+        </if>                        
+        ORDER BY c.idTipoArea, c.insertFecha ASC;
+    </select>
+    
+    <select id="obtenerPorTipoAlmacen" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        SELECT idEstructura , idEstructuraPadre , nombre , descripcion, envioHL7 , activa , idTipoAreaEstructura , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , idTipoAlmacen, idTipoArea, idEntidadHospitalaria,mostrarPC
+        FROM estructura
+        WHERE 1 = 1    
+        <if test="idTipoAlmacen != null ">
+            AND idTipoAlmacen = #{ idTipoAlmacen }
+        </if>     
+        <if test="idEntidad != null ">
+            AND idEntidadHospitalaria = #{ idEntidad }
+        </if>   
+        ORDER BY insertFecha
+    </select>  
+    <select id="obtenerServicios" resultType="mx.mc.model.Estructura" parameterType="mx.mc.model.Estructura" >
+        SELECT 
+            idEstructura,
+            idEstructuraPadre,
+            nombre,
+            descripcion,
+            envioHL7,
+            activa,
+            idTipoAreaEstructura,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario,
+            idTipoAlmacen,
+            idTipoArea,
+            idEntidadHospitalaria,
+            mostrarPC
+        FROM
+            estructura
+        WHERE   1 = 1 
+            AND idTipoAreaEstructura in(1,3,4) 
+            AND (idTipoArea &gt; 5 or idTipoArea is null )
+            AND idTipoAlmacen in(1)
+            AND activa = 1
+        ORDER BY insertFecha ASC;
+
+    </select>
+    
+    
+    <select id="obtenerAlmacenesPorInsumo" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        SELECT DISTINCT e.idEstructura , e.idEstructuraPadre , e.nombre , e.descripcion , e.activa , e.idTipoAreaEstructura
+            , e.insertFecha , e.insertIdUsuario , e.updateFecha , e.updateIdUsuario , e.idTipoAlmacen , e.idTipoArea
+            , e.envioHL7 , e.idEntidadHospitalaria , e.claveEstructura , e.clavePresupuestal , e.idAlmacenPeriferico
+            , e.ubicacion , e.mostrarPC
+        FROM estructura e
+        JOIN inventario i  ON e .idEstructura = i.idEstructura
+        WHERE 1=1
+        <if test=" estructura.idEstructura != null ">
+            AND e.idEstructura = #{ estructura.idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" estructura.idEstructuraPadre != null ">
+            AND e.idEstructuraPadre = #{ estructura.idEstructuraPadre , jdbcType = VARCHAR }
+        </if>
+        <if test=" estructura.nombre != null ">
+            AND e.nombre = #{ estructura.nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" estructura.descripcion != null ">
+            AND e.descripcion = #{ estructura.descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" estructura.idTipoAreaEstructura != null ">
+            AND e.idTipoAreaEstructura = #{ estructura.idTipoAreaEstructura , jdbcType = INTEGER }
+        </if>
+        <if test=" estructura.activa != null ">
+            AND e.activa = #{ estructura.activa , jdbcType = INTEGER }
+        </if>
+        <if test=" estructura.idTipoAlmacen != null ">
+            AND e.idTipoAlmacen = #{ estructura.idTipoAlmacen  , jdbcType = INTEGER }
+        </if>
+        <if test=" estructura.idTipoArea != null ">
+            AND e.idTipoArea = #{ estructura.idTipoArea , jdbcType = INTEGER }
+        </if>
+        <if test=" estructura.idEntidadHospitalaria != null">
+            AND e.idEntidadHospitalaria = #{ estructura.idEntidadHospitalaria , jdbcType = VARCHAR }
+        </if>    
+        
+        <if test=" idInsumo != null">
+            AND i.idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+        </if>    
+        
+        ORDER BY e.nombre asc
+    </select>
+
+    <select id="obtenerServicioActivosPorIdEstructuraOporIdAlmacen" resultType="mx.mc.model.Estructura" parameterType="Map" >
+        SELECT DISTINCT e.idEstructura , e.claveEstructura , e.nombre 
+        FROM estructuraAlmacenServicio eas 
+        INNER JOIN estructura e ON eas.idEstructuraServicio = e.idEstructura 
+        WHERE e.idTipoArea IN ( 5, 7 )
+        AND e.activa = 1
+        <if test=" idEstructura != null " >
+            AND e.idEstructura = #{ idEstructura }
+        </if>
+        <if test=" idEstructuraAlmacen != null " >
+            AND eas.idEstructuraAlmacen  = #{ idEstructuraAlmacen }
+        </if>
+        ORDER BY e.nombre ASC;
+    </select>
+    
+    
+    <select id="obtenerAlmacenPadreOfSurtimiento"  resultType="String" parameterType="Map">
+        call getAlmacenPrincipal(#{idEstructura});
+    </select>
+    
+    
+    
+    
+</mapper>
+        

@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>        
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">     
+                        <div style="background: #808080;padding: 10px;">
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                                <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                            </p:confirmDialog>
+                            <p:outputLabel value="Orden de Reabasto Automática" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>                            
+
+                            
+                            <p:outputLabel style="margin-right: 10px;">Almacén</p:outputLabel>
+                            <p:selectOneMenu id="comboAlmacen" rendered="#{ordenReabastoAutomaticoMB.administrador}"
+                                             value="#{ordenReabastoAutomaticoMB.idEstructura}"                                             
+                                             style="margin-right: 10px;vertical-align: middle;">
+                                <f:selectItems value="#{ordenReabastoAutomaticoMB.listaEstructuras}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>                            
+                            <p:outputLabel value="#{ordenReabastoAutomaticoMB.nombreAlmace}" rendered="#{!ordenReabastoAutomaticoMB.administrador}"
+                                           style="margin-right: 10px;margin-left: 10px;color: #FFF;font-size: 14px;font-weight: bold;"/>
+                            
+                            
+                            <p:inputText id="busqueda" 
+                                         value="#{ordenReabastoAutomaticoMB.busquedaFolio}"
+                                         style="width: 20%!important;border-radius:10px!important;margin-left: 30px;" 
+                                         placeholder="Buscar Folio..." />                        
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>
+                            </i>                            
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             actionListener="#{ordenReabastoAutomaticoMB.buscarOrdenReabastoAutomatico()}"
+                                             update=":mainForm" ajax="false" validateClient="true" 
+                                             style=" margin-left: 15px; margin-bottom: 8px;"
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();"
+                                             />
+                            <p:commandButton class="btnNew" value="Agregar Layout" disabled="#{ordenReabastoAutomaticoMB.btnNew}" icon="fa fa-plus" rendered="#{ordenReabastoAutomaticoMB.permiso.puedeProcesar}"
+                                             actionListener="#{ordenReabastoAutomaticoMB.crear}" onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); PF('mdlLayout').show();"
+                                             ajax="true"   style=" margin: 5px 0; "  />                            
+
+                        </div>
+                        
+                        <p:panel rendered="#{ordenReabastoAutomaticoMB.reabastoAutomaticoFormulario}" id="tableManual">
+                            
+                            <table>
+                                <tr> 
+                                    <!-- Clave instit -->
+                                      <td>
+                                        <p:outputLabel value="Clave Institucional *" class="plabel" /><br/>
+                                        <p:autoComplete id="txtClave"
+                                                autocomplete="off"
+                                                placeholder="Ingresar Clave"
+                                                autoHighlight="false" 
+                                                minQueryLength="2"
+                                                forceSelection="true" 
+                                                disabled="#{!ordenReabastoAutomaticoMB.permiso.puedeEditar}"
+                                                completeMethod="#{ordenReabastoAutomaticoMB.autocompleteInsumo}"
+                                                value="#{ordenReabastoAutomaticoMB.medicamentoSelect}"
+                                                var="insum" 
+                                                itemLabel="#{insum.claveInstitucional}" 
+                                                itemValue="#{insum}"
+                                                converter="musGenericConverter"
+                                                maxResults="10" 
+                                                emptyMessage="No se encontraron registros"
+                                                scrollHeight="250"
+                                                size="26" 
+                                                >
+                                                <p:ajax event="itemSelect" listener="#{ordenReabastoAutomaticoMB.handleSelect}" ></p:ajax>
+                                                <p:ajax event="itemUnselect" listener="#{ordenReabastoAutomaticoMB.handleUnSelect}" ></p:ajax>                                                
+                                              <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>                               
+                                    </td>
+                                    <!-- Clave instit fin-->
+                                    <td>
+                                        <p:outputLabel value="Fecha Caducidad *" class="plabel"  /><br />
+                                        <p:inputMask id="fechaCad" label="Fecha Caducidad"  class="ptxt1"  tabindex="0"  
+                                                     value="#{ordenReabastoAutomaticoMB.fechaCad}"
+                                            mask="9999-99-99" style=" margin-right: 30px ">                         
+                                        </p:inputMask>                                        
+                                    </td>
+                                    <td>
+                                        <p:outputLabel value="Cantidad por Caja *" class="plabel"  /><br />
+                                        <p:inputNumber id="cantXcaja" label="Cantidad por Caja"  class="ptxt1"  decimalPlaces="0" size="15"  tabindex="0"  
+                                                       value="#{ordenReabastoAutomaticoMB.cantXCajaManual}" >                         
+                                        </p:inputNumber>                                        
+                                    </td>    
+                                    <td>
+                                        <p:outputLabel value="Cantidad Recibida *" class="plabel" /><br />
+                                        <p:inputNumber id="cantRecibida" label="Cantidad Recibida"  class="ptxt1"  decimalPlaces="0" size="15"  tabindex="0"  
+                                                       value="#{ordenReabastoAutomaticoMB.cantRecibidaManual}" >                         
+                                        </p:inputNumber>                                        
+                                    </td>
+                                    <td>
+                                        <p:outputLabel value="Lote *" class="plabel" /><br />
+                                        <p:inputText id="lote" label="Lote"  class="ptxt1"  tabindex="0"  
+                                                     value="#{ordenReabastoAutomaticoMB.loteManual}"
+                                            maxlength="45" >                         
+                                        </p:inputText>                                        
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <br/>
+                                        <p:outputLabel value="Clave Proveedor" class="plabel" /><br />
+                                        <p:inputText id="claveProv" label="Clave Proveedor"  class="ptxt1"  tabindex="0"                                                       
+                                                     value="#{ordenReabastoAutomaticoMB.claveProveedor}" size="26"
+                                            maxlength="45" >                         
+                                        </p:inputText>                                        
+                                    </td>                                    
+                                    <td>
+                                        <br/>
+                                        <p:outputLabel value="Código Barras" class="plabel"   /><br />
+                                        <p:inputText id="codBarras" label="Codigo Barras" class="ptxt1"  tabindex="0"  
+                                                     value="#{ordenReabastoAutomaticoMB.codigoBarras}"
+                                            maxlength="45" >                         
+                                        </p:inputText>                                        
+                                    </td>
+                                    <td>
+                                        <br/>
+                                        <p:outputLabel value="Tipo Origen" class="plabel"   /><br />
+                                        <p:selectOneMenu id="cmbTipoOrigen" 
+                                                         value="#{ordenReabastoAutomaticoMB.idTipoOrigen}"
+                                                         style="margin-right: 10px;vertical-align: middle;">
+                                            <f:selectItems value="#{ordenReabastoAutomaticoMB.tipoOrigenLista}"
+                                                           var="tipoOrigen"
+                                                           itemValue="#{tipoOrigen.idTipoOrigen}"
+                                                           itemLabel="#{tipoOrigen.nombre}"/>
+                                        </p:selectOneMenu>
+                                    </td>
+                                   <td>
+                                       <br/>
+                                       <p:commandButton title="Agregar" value="Agregar Medicamento" icon="ui-icon-plusthick"
+                                                        actionListener="#{ordenReabastoAutomaticoMB.agregarMedicamentoList()}"
+                                                        ajax="true" style="margin-top: 18px" update=":mainForm:tableManual,tblOrdenRecibir,btnRecibir"
+                                              />
+                                    </td>
+                                </tr>
+                                
+                            </table>  
+                               
+                        </p:panel>
+
+                        <p:dialog header="AGREGAR MEDICAMENTOS DE FORMA MASIVA"
+                                  widgetVar="mdlLayout" id="agreg"
+                                  closeOnEscape="true"
+                                  closable="true"   styleClass="autoWidthDialog"                     
+                                  modal="true" responsive="true" >                             
+
+
+                            <p:messages id="msjLayout" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:fileUpload  dragDropSupport="false" 
+                                           uploadLabel="Subir Archivo"
+                                           cancelLabel="Cancelar" 
+                                           label="Seleccionar Archivo"                                                
+                                           allowTypes="/(\.|\/)(xlsx|xls)$/" 
+                                           invalidFileMessage="Tipo de archivo invalido"                                                 
+                                           oncomplete="PF('statusProcess').hide(); "
+                                           update="mainForm" 
+                                           fileUploadListener="#{ordenReabastoAutomaticoMB.layoutFileUpload}"  mode="advanced"   />
+                            <p:outputPanel rendered="#{ordenReabastoAutomaticoMB.noProcess}" >
+
+                            </p:outputPanel>
+
+
+                        </p:dialog>    
+
+                        
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <p:dataTable id="tblOrdenRecibir"
+                                     var="item"
+                                     value="#{ordenReabastoAutomaticoMB.listaInsumos}"                                                     
+                                     styleClass="styleEventosPlanPrestacion" reflow="true"
+                                     style="margin-bottom:5px; margin-top: 10px" emptyMessage="No se encontraron resultados" 
+                                     scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" 
+                                     editable="true" editMode="cell"
+                                     >
+
+                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.claveInstitucional}"  headerText="Clave Institucional">
+                                <p:cellEditor>  
+                                    <f:facet name="output">  
+                                        <h:outputText value="#{item.claveInstitucional}" class="altoColumn" /> 
+                                    </f:facet>  
+                                    <f:facet name="input">  
+                                        <p:inputText id="modelInput" value="#{item.claveInstitucional}" class="altoColumn" />  
+                                    </f:facet>  
+                                </p:cellEditor>                            
+                            </p:column>
+                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.claveProveedor}" headerText="Clave Proveedor">
+                                <h:outputText value="#{item.claveProveedor}" />
+                            </p:column>
+                            <p:column style="text-align: left;width: 200px;" sortBy="#{item.codigoBarras}" headerText="Codigo Barras">
+                                <p:cellEditor>
+                                    <f:facet name="output">  
+                                        <h:outputText value="#{item.codigoBarras}" />
+                                    </f:facet>  
+                                    <f:facet name="input"> 
+                                        <p:inputText id="modelInputBarras" value="#{item.codigoBarras}" class="altoColumn" />  
+                                    </f:facet>
+                                </p:cellEditor>
+                            </p:column >
+                            <p:column style="text-align: left;width: 100px;"  headerText="Lote">
+                                <h:outputText value="#{item.lote}" />
+                            </p:column>
+                            <p:column style="text-align: left;width: 100px;"  headerText="Fecha Caducidad">
+                                <h:outputText value="#{item.fechaCaducidad}">
+                                    <f:convertDateTime pattern="yyyy-MM-dd"/>
+                                </h:outputText>    
+                            </p:column>
+                            <p:column style="text-align: left;width: 100px;"  headerText="Cantidad por Caja">
+                                <p:cellEditor>  
+                                    <f:facet name="output">  
+                                        <h:outputText value="#{item.cantidadXCaja}" class="altoColumn" /> 
+                                    </f:facet>  
+                                    <f:facet name="input">  
+                                        <p:inputText id="inputCaja" value="#{item.cantidadXCaja}" class="altoColumn" />  
+                                    </f:facet>  
+                                </p:cellEditor>                            
+                            </p:column>
+                            <p:column style="text-align: left;width: 100px;"  headerText="Cantidad Recibido">
+                                <p:cellEditor>  
+                                    <f:facet name="output"> 
+                                        <h:outputText value="#{item.cantidadRecibida}" />
+                                    </f:facet>
+                                    <f:facet name="input">  
+                                        <p:inputText id="inputRecibida" value="#{item.cantidadRecibida}" class="altoColumn" />  
+                                    </f:facet>
+                                </p:cellEditor>    
+                            </p:column>                                             
+                            <f:facet name="footer" >
+                                <p:outputLabel style="font-size: 1em !important; color: #000;">
+                                    Medicamentos encontrados  #{ordenReabastoAutomaticoMB.numeroRegistros}
+                                </p:outputLabel> 
+                            </f:facet>
+                        </p:dataTable>
+                        <p:panel id="btnRecibir" class="panel-recibir" >
+                            <p:commandButton value="Recibir"                                              
+                                         update="mainForm"                                      
+                                         actionListener="#{ordenReabastoAutomaticoMB.recibirOrdenReabasto()}"
+                                         onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide();"
+                                         icon="fa fa-check-circle" 
+                                         style="margin-right: 10px;float: right;"
+                                         rendered="#{ordenReabastoAutomaticoMB.recibir}"
+                                         disabled="#{!ordenReabastoAutomaticoMB.permiso.puedeProcesar}"
+                                         styleClass="btnMusAzul"
+                                         >
+                        </p:commandButton>
+                            
+                        </p:panel>                        
+                    </h:form>   
+                    <script>
+                        $(document).ready(function () {
+                            $('#mainForm').attr("autocomplete","off");
+                        });
+                    </script>
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

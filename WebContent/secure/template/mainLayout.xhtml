@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <f:view/>
+    <h:head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" ></meta>
+        <h:outputStylesheet library="css" name="busqueda.css" />
+        <h:outputStylesheet name="style.css" library="css" />
+    </h:head>
+
+    <h:body>   
+
+        <div id="page" class="ui-g">
+
+            <div id="header" class=" mainHeader"> <!--class="fijo"-->
+                <ui:insert name="header" >
+                    <ui:include src="/secure/template/headerView.xhtml"  />
+                </ui:insert>
+            </div>
+
+            <div id="content" class="mainContent"> <!--class="contenido"-->
+                <p:dialog widgetVar="statusProcess" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                    <p:graphicImage name="img/cargando.gif"/>
+                </p:dialog>
+                
+                <p:idleMonitor timeout="#{sesionMB.sessionTimeout * 1000 * 60}" >
+                    <p:ajax event="idle" listener="#{sesionMB.idleListener}" oncomplete=" PF('statusProcess').show(); PF('dlgSession').show();" />
+                </p:idleMonitor>
+                <p:dialog widgetVar="dlgSession" closable="false" modal="true" height="100" width="300" 
+                          header="Sesión caducada"  >
+                    <form action="#{request.contextPath}/index.xhtml?timeout_expire" method="post">
+                        <br />
+                        <h:outputText value="Mas de #{sesionMB.sessionTimeout} minutos sin actividad..." />
+                        <br />
+                        <br />
+                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                        <button type="submit" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" >
+                            <span class="ui-button-text ui-c">Iniciar Sesión</span>
+                        </button>
+                    </form>
+                </p:dialog>
+                
+                <ui:insert name="content" >
+                    <ui:include src="/secure/template/contentView.xhtml" />
+                </ui:insert>
+            </div>
+
+            <div id="footer" class="ui-g-12">
+                <ui:insert name="footer" >
+                    <ui:include src="/secure/template/footerView.xhtml" />
+                </ui:insert>
+            </div>
+
+        </div>
+
+        <script>
+            PrimeFaces.locales['es_MX'] = {
+                closeText: 'Cerrar',
+                prevText: 'Anterior',
+                nextText: 'Siguiente',
+                monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+                monthNamesShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+                dayNamesShort: ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'],
+                dayNamesMin: ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
+                weekHeader: 'Semana',
+                firstDay: 1,
+                isRTL: false,
+                showMonthAfterYear: false,
+                yearSuffix: '',
+                timeOnlyTitle: 'Defina tiempo',
+                timeText: 'Hora',
+                hourText: 'Hora',
+                minuteText: 'Minuto',
+                secondText: 'Segundo',
+                currentText: 'Fecha actual',
+                ampm: false,
+                month: 'Mes',
+                week: 'Semana',
+                day: 'Día',
+                allDayText: 'Todo el día'
+            };
+        </script>
+    </h:body>
+</html>

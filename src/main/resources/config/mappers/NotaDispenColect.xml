@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.NotaDispenColectMapper" >
+    
+    <select id="obtener" resultType="mx.mc.model.NotaDispenColect" parameterType="mx.mc.model.NotaDispenColect" >
+        SELECT * FROM notaDispenColect
+        WHERE 1=1
+        <if test=" idNotaDispenColect !=  null ">
+            AND idNotaDispenColect = #{ idNotaDispenColect }
+        </if>
+        <if test=" folio !=  null ">
+            AND folio = #{ folio }
+        </if>
+        <if test=" idEstructura !=  null ">
+            AND idEstructura = #{ idEstructura }
+        </if>
+        <if test=" idTipoSolucion !=  null ">
+            AND idTipoSolucion = #{ idTipoSolucion }
+        </if>
+        <if test=" idTurno !=  null ">
+            AND idTurno = #{ idTurno }
+        </if>
+        <if test=" comentarios !=  null ">
+            AND comentarios = #{ comentarios }
+        </if>
+        <if test=" fechaEntrega !=  null ">
+            AND fechaEntrega = #{ fechaEntrega }
+        </if>
+        <if test=" idUsuarioEntrega !=  null ">
+            AND idUsuarioEntrega = #{ idUsuarioEntrega }
+        </if>
+        <if test=" fechaDispensa !=  null ">
+            AND fechaDispensa = #{ fechaDispensa }
+        </if>
+        <if test=" idUsuarioDispensa !=  null ">
+            AND idUsuarioDispensa = #{ idUsuarioDispensa }
+        </if>
+        <if test=" fechaDistribuye !=  null ">
+            AND fechaDistribuye = #{ fechaDistribuye }
+        </if>
+        <if test=" idUsuarioDistribuye !=  null ">
+            AND idUsuarioDistribuye = #{ idUsuarioDistribuye }
+        </if>
+        <if test=" fechaRecibe !=  null ">
+            AND fechaRecibe = #{ fechaRecibe }
+        </if>
+        <if test=" idUsuarioRecibe !=  null ">
+            AND idUsuarioRecibe = #{ idUsuarioRecibe }
+        </if>
+        <if test=" notas !=  null ">
+            AND notas = #{ notas }
+        </if>
+        <if test=" idEstatusDispenColect !=  null ">
+            AND idEstatusDispenColect = #{ idEstatusDispenColect }
+        </if>
+        <if test=" userRecibe !=  null ">
+            AND userRecibe = #{ userRecibe }
+        </if>
+        LIMIT 1;
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.NotaDispenColect" parameterType="mx.mc.model.NotaDispenColect" >
+        SELECT * FROM notaDispenColect
+        WHERE 1=1
+        <if test=" idNotaDispenColect !=  null ">
+            AND idNotaDispenColect = #{ idNotaDispenColect }
+        </if>
+        <if test=" folio !=  null ">
+            AND folio = #{ folio }
+        </if>
+        <if test=" idEstructura !=  null ">
+            AND idEstructura = #{ idEstructura }
+        </if>
+        <if test=" idTipoSolucion !=  null ">
+            AND idTipoSolucion = #{ idTipoSolucion }
+        </if>
+        <if test=" idTurno !=  null ">
+            AND idTurno = #{ idTurno }
+        </if>
+        <if test=" comentarios !=  null ">
+            AND comentarios = #{ comentarios }
+        </if>
+        <if test=" fechaEntrega !=  null ">
+            AND fechaEntrega = #{ fechaEntrega }
+        </if>
+        <if test=" idUsuarioEntrega !=  null ">
+            AND idUsuarioEntrega = #{ idUsuarioEntrega }
+        </if>
+        <if test=" fechaDispensa !=  null ">
+            AND fechaDispensa = #{ fechaDispensa }
+        </if>
+        <if test=" idUsuarioDispensa !=  null ">
+            AND idUsuarioDispensa = #{ idUsuarioDispensa }
+        </if>
+        <if test=" fechaDistribuye !=  null ">
+            AND fechaDistribuye = #{ fechaDistribuye }
+        </if>
+        <if test=" idUsuarioDistribuye !=  null ">
+            AND idUsuarioDistribuye = #{ idUsuarioDistribuye }
+        </if>
+        <if test=" fechaRecibe !=  null ">
+            AND fechaRecibe = #{ fechaRecibe }
+        </if>
+        <if test=" idUsuarioRecibe !=  null ">
+            AND idUsuarioRecibe = #{ idUsuarioRecibe }
+        </if>
+        <if test=" notas !=  null ">
+            AND notas = #{ notas }
+        </if>
+        <if test=" idEstatusDispenColect !=  null ">
+            AND idEstatusDispenColect = #{ idEstatusDispenColect }
+        </if>
+        <if test=" userRecibe !=  null ">
+            AND userRecibe = #{ userRecibe }
+        </if>
+    </select>
+
+    <insert id="insertar" parameterType="mx.mc.model.NotaDispenColect" >
+        INSERT INTO notaDispenColect(
+        idNotaDispenColect
+        , folio
+        <if test=" idEstructura !=  null "> , idEstructura </if>
+        <if test=" idTipoSolucion !=  null "> , idTipoSolucion </if>
+        <if test=" idTurno !=  null "> , idTurno </if>
+        <if test=" comentarios !=  null "> , comentarios </if>
+        <if test=" fechaEntrega !=  null "> , fechaEntrega </if>
+        <if test=" idUsuarioEntrega !=  null "> , idUsuarioEntrega </if>
+        <if test=" fechaDispensa !=  null "> , fechaDispensa </if>
+        <if test=" idUsuarioDispensa !=  null "> , idUsuarioDispensa </if>
+        <if test=" fechaDistribuye !=  null "> , fechaDistribuye </if>
+        <if test=" idUsuarioDistribuye !=  null "> , idUsuarioDistribuye </if>
+        <if test=" fechaRecibe !=  null "> , fechaRecibe </if>
+        <if test=" idUsuarioRecibe !=  null "> , idUsuarioRecibe </if>
+        <if test=" notas !=  null "> , notas </if>
+        <if test=" idEstatusDispenColect !=  null "> , idEstatusDispenColect </if>
+        , insertFecha
+        , insertIdUsuario
+        <if test=" updateFecha !=  null "> , updateFecha </if>
+        <if test=" updateIdUsuario !=  null "> , updateIdUsuario </if>
+        <if test=" userRecibe !=  null "> , userRecibe </if>
+        ) VALUES(
+        #{ idNotaDispenColect }
+        , #{ folio }
+        <if test=" idEstructura !=  null "> , #{ idEstructura } </if>
+        <if test=" idTipoSolucion !=  null "> , #{ idTipoSolucion } </if>
+        <if test=" idTurno !=  null "> , #{ idTurno } </if>
+        <if test=" comentarios !=  null "> , #{ comentarios } </if>
+        <if test=" fechaEntrega !=  null "> , #{ fechaEntrega } </if>
+        <if test=" idUsuarioEntrega !=  null "> , #{ idUsuarioEntrega } </if>
+        <if test=" fechaDispensa !=  null "> , #{ fechaDispensa } </if>
+        <if test=" idUsuarioDispensa !=  null "> , #{ idUsuarioDispensa } </if>
+        <if test=" fechaDistribuye !=  null "> , #{ fechaDistribuye } </if>
+        <if test=" idUsuarioDistribuye !=  null "> , #{ idUsuarioDistribuye } </if>
+        <if test=" fechaRecibe !=  null "> , #{ fechaRecibe } </if>
+        <if test=" idUsuarioRecibe !=  null "> , #{ idUsuarioRecibe } </if>
+        <if test=" notas !=  null "> , #{ notas } </if>
+        <if test=" idEstatusDispenColect !=  null "> , #{ idEstatusDispenColect } </if>
+        , #{ insertFecha }
+        , #{ insertIdUsuario }
+        <if test=" updateFecha !=  null "> , #{ updateFecha } </if>
+        <if test=" updateIdUsuario !=  null "> , #{ updateIdUsuario } </if>
+        <if test=" userRecibe !=  null "> , #{ userRecibe } </if>
+        );
+    </insert>
+    
+    <update id="actualizar" parameterType="mx.mc.model.NotaDispenColect"  >
+        UPDATE notaDispenColect SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        , folio= #{ folio }
+        <if test=" idEstructura !=  null "> , idEstructura = #{ idEstructura } </if>
+        <if test=" idTipoSolucion !=  null "> , idTipoSolucion = #{ idTipoSolucion } </if>
+        <if test=" idTurno !=  null "> , idTurno = #{ idTurno } </if>
+        <if test=" comentarios !=  null "> , comentarios = #{ comentarios } </if>
+        <if test=" fechaEntrega !=  null "> , fechaEntrega = #{ fechaEntrega } </if>
+        <if test=" idUsuarioEntrega !=  null "> , idUsuarioEntrega = #{ idUsuarioEntrega } </if>
+        <if test=" fechaDispensa !=  null "> , fechaDispensa = #{ fechaDispensa } </if>
+        <if test=" idUsuarioDispensa !=  null "> , idUsuarioDispensa = #{ idUsuarioDispensa } </if>
+        <if test=" fechaDistribuye !=  null "> , fechaDistribuye = #{ fechaDistribuye } </if>
+        <if test=" idUsuarioDistribuye !=  null "> , idUsuarioDistribuye = #{ idUsuarioDistribuye } </if>
+        <if test=" fechaRecibe !=  null "> , fechaRecibe = #{ fechaRecibe } </if>
+        <if test=" idUsuarioRecibe !=  null "> , idUsuarioRecibe = #{ idUsuarioRecibe } </if>
+        <if test=" notas !=  null "> , notas = #{ notas } </if>
+        <if test=" idEstatusDispenColect !=  null "> , idEstatusDispenColect = #{ idEstatusDispenColect } </if>
+        <if test=" userRecibe !=  null "> , userRecibe = #{ userRecibe } </if>
+        WHERE idNotaDispenColect = #{ idNotaDispenColect } ;
+    </update>
+    
+    <select id="obtenerListaNotas" resultType="mx.mc.model.NotaDispenColect_Extended" parameterType="mx.mc.model.NotaDispenColect_Extended" >
+        SELECT ndc.* 
+        , IFNULL(concat(u1.nombre, " ", u1.apellidoPaterno, " ", u1.apellidoMaterno), '') AS nombreUsuarioEntrega
+        , IFNULL(concat(u2.nombre, " ", u2.apellidoPaterno, " ", u2.apellidoMaterno), '') AS nombreUsuarioDispensa
+        , IFNULL(concat(u3.nombre, " ", u3.apellidoPaterno, " ", u3.apellidoMaterno), '') AS nombreUsuarioDistribuye
+        <!-- , IFNULL(concat(u4.nombre, " ", u4.apellidoPaterno, " ", u4.apellidoMaterno), '') AS nombreUsuarioRecibe -->
+        , userRecibe AS nombreUsuarioRecibe
+        , IFNULL(ts.descripcion, '') AS tipoSolucion
+        , IFNULL(e.nombre, '') AS nombreEstructura 
+        , IFNULL(endc.descripcion, '') AS  estatusNotaDispencolect
+        FROM notaDispenColect ndc
+        LEFT JOIN usuarios u1 ON ndc.idUsuarioEntrega = u1.idUsuario 
+        LEFT JOIN usuarios u2 ON ndc.idUsuarioDispensa = u2.idUsuario 
+        LEFT JOIN usuarios u3 ON ndc.idUsuarioDistribuye = u3.idUsuario 
+        <!-- LEFT JOIN usuarios u4 ON ndc.idUsuarioRecibe = u4.idUsuario -->
+        LEFT JOIN tipoSolucion ts ON ndc.idTipoSolucion = ts.idTipoSolucion 
+        LEFT JOIN estructura e ON ndc.idEstructura = e.idEstructura 
+        LEFT JOIN estatusNotaDispColec endc ON ndc.idEstatusDispenColect = endc.idEstatusNota 
+        WHERE 1=1
+        <if test=" idNotaDispenColect !=  null ">
+            AND ndc.idNotaDispenColect = #{ idNotaDispenColect }
+        </if>
+        <if test=" folio !=  null ">
+            AND ndc.folio = #{ folio }
+        </if>
+        <if test=" idEstructura !=  null ">
+            AND ndc.idEstructura = #{ idEstructura }
+        </if>
+        <if test=" idTipoSolucion !=  null ">
+            AND ndc.idTipoSolucion = #{ idTipoSolucion }
+        </if>
+        <if test=" idTurno !=  null ">
+            AND ndc.idTurno = #{ idTurno }
+        </if>
+        <if test=" comentarios !=  null ">
+            AND ndc.comentarios = #{ comentarios }
+        </if>
+        <if test=" fechaEntrega != null ">
+            <if test=" fechaEntregaFin != null ">
+                AND ndc.fechaEntrega BETWEEN #{ fechaEntrega } AND #{ fechaEntregaFin }
+            </if>
+        </if>        
+        <if test=" idUsuarioEntrega !=  null ">
+            AND ndc.idUsuarioEntrega = #{ idUsuarioEntrega }
+        </if>
+        <if test=" fechaDispensa !=  null ">
+            AND ndc.fechaDispensa = #{ fechaDispensa }
+        </if>
+        <if test=" idUsuarioDispensa !=  null ">
+            AND ndc.idUsuarioDispensa = #{ idUsuarioDispensa }
+        </if>
+        <if test=" fechaDistribuye !=  null ">
+            AND ndc.fechaDistribuye = #{ fechaDistribuye }
+        </if>
+        <if test=" idUsuarioDistribuye !=  null ">
+            AND ndc.idUsuarioDistribuye = #{ idUsuarioDistribuye }
+        </if>
+        <if test=" fechaRecibe !=  null ">
+            AND ndc.fechaRecibe = #{ fechaRecibe }
+        </if>
+        <if test=" idUsuarioRecibe !=  null ">
+            AND ndc.idUsuarioRecibe = #{ idUsuarioRecibe }
+        </if>
+        <if test=" notas !=  null ">
+            AND ndc.notas = #{ notas }
+        </if>
+        <if test=" idEstatusDispenColect !=  null ">
+            AND ndc.idEstatusDispenColect = #{ idEstatusDispenColect }
+        </if>
+        <if test=" userRecibe !=  null ">
+            AND ndc.userRecibe = #{ userRecibe }
+        </if>
+    </select>
+    
+</mapper>

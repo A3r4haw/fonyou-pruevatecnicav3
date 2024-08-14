@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>REPORTE DE  MINISTRACIONES</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="BITÁCORA DE ACCIONES DE USUARIO" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha de: " />                                            
+                                            <p:calendar style="width: 50%" id="txtFechaInicio" value="#{bitacoraAccionesUsuarioMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{bitacoraAccionesUsuarioMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade" size="11" /> 
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value=" A: " /> 
+                                            <p:calendar style="width: 75%" id="txtFechaFin" value="#{bitacoraAccionesUsuarioMB.paramBusquedaReporte.fechaFin}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{bitacoraAccionesUsuarioMB.paramBusquedaReporte.fechaFin}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade" size="11" >
+                                                <p:ajax event="dateSelect" listener="#{bitacoraAccionesUsuarioMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                            </p:calendar>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Usuario" />
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;"
+                                                           value="#{bitacoraAccionesUsuarioMB.usuarioSession.nombre} #{bitacoraAccionesUsuarioMB.usuarioSession.apellidoPaterno} #{bitacoraAccionesUsuarioMB.usuarioSession.apellidoMaterno}" 
+                                                           rendered="#{!bitacoraAccionesUsuarioMB.administrador}"/>                                            
+                                            <p:autoComplete id="txtUsuario" 
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{bitacoraAccionesUsuarioMB.paramBusquedaReporte.listUsuarios}"
+                                                            completeMethod="#{bitacoraAccionesUsuarioMB.autocompleteUsuario}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="usr" 
+                                                            placeholder="Filtro Usuarios" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{usr.nombreUsuario}" itemValue="#{usr}" 
+                                                            converter="musGenericConverter"                                                            
+                                                            rendered="#{bitacoraAccionesUsuarioMB.administrador}"
+                                                            scrollHeight = "350" >
+                                                <p:column style="width: 80px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Usuario" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.nombreUsuario}" style=" font-size: small;" />
+                                                </p:column>
+                                                <br/>
+                                                <p:column style="width: 80px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.nombre}  #{usr.apellidoPaterno}   #{usr.apellidoMaterno}" style=" font-size: small;" />
+                                                </p:column>                                                
+                                            </p:autoComplete>                                            
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2" align="center">
+                                            <p:commandButton value="Consultar Acciones"
+                                                             rendered="#{bitacoraAccionesUsuarioMB.permiso.puedeVer}"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{bitacoraAccionesUsuarioMB.consultarAcciones}"
+                                                             update=":formTablaAcciones"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"  
+
+                                                             class="btnNew" styleClass="btnMusAzul"  />                                            
+                                        </div> 
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2" align="right">
+                                            <p:menuButton value="Exportar Archivo"
+                                                           
+                                                          rendered="#{bitacoraAccionesUsuarioMB.permiso.puedeVer}">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{bitacoraAccionesUsuarioMB.imprimeReporteAccionesUsuario}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();" 
+                                                            icon="fa fa-file-pdf-o" />
+                                                <p:menuitem value="Formato EXCEL"
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false"
+                                                            actionListener="#{bitacoraAccionesUsuarioMB.generaExcelBitacoraAcciones}" />
+                                            </p:menuButton>
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-5">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;" value="Servicio" rendered="false"/>                                            
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{bitacoraAccionesUsuarioMB.estructura.nombre}" 
+                                                           rendered="false" />
+
+                                            <p:selectOneMenu id="comboAlmacenSubAlmacen" 
+                                                             rendered="false"                                                                                                                      
+                                                             value="#{bitacoraAccionesUsuarioMB.idEstructura}"                                                             
+                                                             style="vertical-align: middle; margin-right: 10px; width: 200px"                                                             
+                                                             filter="true" filterMatchMode="contains" panelStyle="width:250px"                                                             > 
+
+                                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                                <f:selectItems value="#{bitacoraAccionesUsuarioMB.listaAuxiliar}"
+
+                                                               var="almacen"
+                                                               itemValue="#{almacen.idEstructura}"
+                                                               itemLabel="#{almacen.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                         
+                                        
+                                    </div>    
+                                </div>
+                            </div>
+                        </p:panelGrid>  
+                    </h:form>
+                    <p:outputLabel value="No tiene Permiso para esta Transacción"
+                                   rendered="#{!bitacoraAccionesUsuarioMB.permiso.puedeVer}" style="color: red; font-weight: bolder;"  />                    
+                    
+                    <h:form id="formTablaAcciones" >
+                        <style type="text/css">
+                            .ui-datatable-header {
+                                height: 20px
+                            }
+                        </style>
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     value="#{bitacoraAccionesUsuarioMB.bitacoraAccionesUsuarioLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="font-size: x-small !important; width: 100% !important;"
+                                     >
+                            <f:facet name="header" >
+                                <p:commandButton rendered="false" id="toggler" type="button" value="Columnas" style="float:right" icon="fa fa-columns" />
+                                <p:columnToggler datasource="resultadosDT" trigger="toggler" />
+                            </f:facet>
+
+                            <p:column class="" headerText="Fecha" style="width: 10%;">
+                                <h:outputText value="#{result.fecha}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm:ss" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="Usuario" style="width: 15%; " >
+                                <h:outputText value="#{result.usuario}"/>
+                            </p:column>
+                            <p:column class="" headerText="Acción"  style="width: 5%;">
+                                <h:outputText value="#{result.accion}"/>
+                            </p:column>
+                            <p:column class="" headerText="Entidad" style="width: 10%;">
+                                <h:outputText value="#{result.entidad}"/>
+                            </p:column>
+                            <p:column class="" headerText="Campo" style="width: 10%;">
+                                <h:outputText value="#{result.campo}"/>
+                            </p:column>                            
+                            <p:column class="" headerText="Valor Anterior" style="width: 25%;">
+                                <h:outputText value="#{result.valorAnterior}"/>
+                            </p:column>                                                     
+                            <p:column class="" headerText="Valor Nuevo" style="width: 25%;">
+                                <h:outputText value="#{result.valorNuevo}"/>
+                            </p:column>                            
+                        </p:dataTable>
+                    </h:form>
+                    
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false"
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                    
+                </div>    
+            </ui:define>    
+        </ui:composition>
+    </h:body>    
+</html>

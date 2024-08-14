@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.LogMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Log" parameterType="mx.mc.model.Log" >
+        SELECT idEstructura , idTransaccion , idUsuario , fechaHora , nivel , ip , so , cliente , texto, browser, userAgent, url
+        FROM bitacora.logs
+        WHERE 1=1
+        <if test=" idTransaccion != null ">
+            AND idTransaccion = #{ idTransaccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idUsuario != null ">
+            AND idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" nivel != null ">
+            AND nivel = #{ nivel , jdbcType = VARCHAR }
+        </if>
+        <if test=" ip != null ">
+            AND ip = #{ ip , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaHora != null ">
+            AND fechaHora = #{ fechaHora , jdbcType = TIMESTAMP }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Log" >
+        INSERT INTO bitacora.logs (
+        <if test=" idEstructura != null ">
+            idEstructura
+        </if>
+        <if test=" idTransaccion != null ">
+            , idTransaccion
+        </if>
+        <if test=" idUsuario != null ">
+            , idUsuario
+        </if>
+        <if test=" fechaHora != null ">
+            , fechaHora
+        </if>
+        <if test=" nivel != null ">
+            , nivel
+        </if>
+        <if test=" ip != null ">
+            , ip
+        </if>
+        <if test=" so != null ">
+            , so
+        </if>
+        <if test=" cliente != null ">
+            , cliente
+        </if>
+        <if test=" texto != null ">
+            , texto
+        </if>
+        <if test=" browser != null ">
+            , browser
+        </if>
+        <if test=" userAgent != null ">
+            , userAgent
+        </if>
+        <if test=" url != null ">
+            , url
+        </if>
+        ) VALUES (
+        <if test=" idEstructura != null ">
+            #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTransaccion != null ">
+            , #{ idTransaccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idUsuario != null ">
+            , #{ idUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaHora != null ">
+            , #{ fechaHora , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" nivel != null ">
+            , #{ nivel , jdbcType = VARCHAR }
+        </if>
+        <if test=" ip != null ">
+            , #{ ip , jdbcType = VARCHAR }
+        </if>
+        <if test=" so != null ">
+            , #{ so , jdbcType = VARCHAR }
+        </if>
+        <if test=" cliente != null ">
+            , #{ cliente , jdbcType = VARCHAR }
+        </if>
+        <if test=" texto != null ">
+            , #{ texto , jdbcType = VARCHAR }
+        </if>
+        <if test=" browser != null ">
+            , #{ browser , jdbcType = VARCHAR }
+        </if>
+        <if test=" userAgent != null ">
+            , #{ userAgent , jdbcType = VARCHAR }
+        </if>
+        <if test=" url != null ">
+            , #{ url , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+
+    
+</mapper>

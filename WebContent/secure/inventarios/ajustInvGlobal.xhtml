@@ -1,0 +1,773 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <div class="ui-g panelGris" >
+                            <p:outputLabel value="Ajuste Inventario Global" class="fontCenter"   />
+                            <div class="ui-g-12" >	                            		
+                                <div class="ui-g-12 " style="padding: 0em !important;font-weight: bolder;">
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4" 
+                                         style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                        <p:outputLabel style="margin-right: 10px;" value="Insumo" />
+                                        <br/>
+                                        <!-- to do  verificar el tamaño del div para ponerlo en una tabla -->
+                                        <p:autoComplete id="txtInsumo" 
+                                                        multiple="true"
+                                                        class="autoComplete-Sum" 
+                                                        styleClass="autoComplete-Sum" 
+                                                        panelStyle="autoComplete-Sum" 
+                                                        inputStyleClass="autoComplete-Sum" 
+                                                        value="#{ajusteInventarioGlobalMB.paramBusquedaReporte.listInsumos}"
+                                                        completeMethod="#{ajusteInventarioGlobalMB.autocompleteInsumo}"
+                                                        scrollHeight="600"
+                                                        minQueryLength="4"
+                                                        queryDelay="500" 
+                                                        maxResults="50" 
+                                                        forceSelection="true" 
+                                                        cacheTimeout="0" 
+                                                        var="insum" 
+                                                        placeholder="Filtro Insumos" 
+                                                        cache="false"
+                                                        emptyMessage="No se encontraron registros"
+                                                        itemLabel="#{insum.nombreCorto}" itemValue="#{insum}" 
+                                                        converter="musGenericConverter"
+                                                        >
+                                            <p:column style="width: 20px; font-size: small;" width="20px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave" />
+                                                </f:facet>
+                                                <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="width: 150px; font-size: small;" width="150px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Nombre Corto" />
+                                                </f:facet>
+                                                <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </div>
+
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+
+                                        <p:outputLabel style="margin-right: 10px;font-weight: bold;" value="Almacen / Sub-Almacen" />
+                                        <br/>
+                                        <p:selectOneMenu id="comboAlmacenSubAlmacen"  
+                                                         value="#{ajusteInventarioGlobalMB.idEstructura}"
+                                                         style="vertical-align: middle; margin-right: 10px; width: 300px"
+                                                         filter="true" 
+                                                         filterMatchMode="contains"
+                                                         >
+                                            <c:if test="#{ajusteInventarioGlobalMB.isAdmin}">
+                                                <f:selectItem itemLabel="Todos" itemValue="#{null}" />					                                         
+                                            </c:if>                                            
+                                            <f:selectItems value="#{ajusteInventarioGlobalMB.listAlmacenesSubAlm}"
+                                                           var="almacen"
+                                                           itemValue="#{almacen.idEstructura}"
+                                                           itemLabel="#{almacen.nombre}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <br/>
+                                        <p:commandButton 
+                                            value="Activar o Bloquear Insumos"
+                                            onclick="PF('statusProcess').show();"
+                                            icon="fa fa-medkit"  
+                                            style="float:right;"
+                                            oncomplete="PF('statusProcess').hide();PF('dlgBloqueaInsumos').show();"
+                                            actionListener="#{ajusteInventarioGlobalMB.limpiarDialogo()}"
+                                            disabled="#{!ajusteInventarioGlobalMB.permiso.puedeEditar}" 
+                                            update="formInsumo"
+                                            resetValues="true"
+                                            >
+                                         </p:commandButton>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-1" align="center">
+                                        <h:outputText value="Existencia en cero" />  
+                                        <br/>
+                                        <p:selectBooleanCheckbox value="#{ajusteInventarioGlobalMB.buscaCantidadCero}" >
+                                            <p:ajax update=":mainForm" listener="#{ajusteInventarioGlobalMB.cambiarBusquedaCantidadCero}"/>
+                                        </p:selectBooleanCheckbox>    
+                                    </div>
+                                    <!--se agrego este div para el reporte de existencias-->
+                                    <div class="ui-g-12 ui-md-6 ui-lg-1" align="center">
+                                        <p:commandButton value="Consultar"
+                                                         onclick="PF('statusProcess').show();"
+                                                         actionListener="#{ajusteInventarioGlobalMB.consultar}"
+                                                         update="mainForm"
+                                                         oncomplete="PF('statusProcess').hide();" 
+                                                         icon="fa fa-check-circle"  
+                                                         style="float:right;"
+                                                         class="btnNew" styleClass="btnMusAzul"  />
+                                    </div>
+                                    <!--aqui termina el div-->
+
+                                </div>  
+                                <br/>
+                                <div>
+
+
+                                </div>
+                            </div>
+                        </div>
+                        <p:remoteCommand update="mainForm" name="actualizarTabla" oncomplete="PF('statusProcess').hide();"/>
+
+                        <p:dataTable id="tablaInvent"
+                                     emptyMessage="" rows="10"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     style="font-size: x-small !important;"
+                                     value="#{ajusteInventarioGlobalMB.listReportInventarioExistencias}" 
+                                     var="result" 
+                                     rowKey="#{result.idInventario}"
+                                     selection="#{ajusteInventarioGlobalMB.registroSelect}"
+                                     scrollable="true"  
+                                     scrollHeight="390"
+                                     editable="true"
+                                     editMode="cell"
+                                     selectionMode="single"
+                                     disabledTextSelection="false" 
+                                     >
+
+                            <p:ajax event="cellEdit" listener="#{ajusteInventarioGlobalMB.onCellEdit}" 
+                                    oncomplete="actualizarTabla();" onstart="PF('statusProcess').show();"/>  
+
+
+                            <p:column class="columnLeft8" headerText="Almacén" style="width: 8%;" sortBy="#{result.nombreAlmacen}" >
+                                <h:outputText value="#{result.nombreAlmacen}"/>
+                            </p:column>
+
+                            <p:column class="columnLeft8" headerText="Origen" style="width: 8%;" rendered="#{ajusteInventarioGlobalMB.registrarOrigenInsumos}" sortBy="#{result.nombreOrigen}" >
+                                <h:outputText value="#{result.nombreOrigen}"/>
+                            </p:column>
+
+                            <p:column class="columnLeft10" headerText="Clave"  style="width: 10%;" sortBy="#{result.claveMedicamento}" filterBy="#{result.claveMedicamento}" filterMatchMode="contains" >
+                                <h:outputText value="#{result.claveMedicamento}"/>
+                            </p:column>
+
+                            <p:column class="columnLeft8" headerText="Clave Proveedor" rendered="false" style="width: 6%;">
+                                <h:outputText value="#{result.claveSap}"/>
+                            </p:column>
+
+                            <p:column class="columnLeft8" headerText="Código Barras" style="width: 6%;" rendered="false">
+                                <p:cellEditor>
+                                    <f:facet name="output">
+                                        <h:outputText value="#{result.codigoBarras}"/>
+                                    </f:facet>
+                                    <f:facet name="input" >
+                                        <p:inputText value="#{result.codigoBarras}" style="width:70%"/>
+                                    </f:facet>
+                                </p:cellEditor>
+                            </p:column>
+
+                            <p:column class="columnLeft20" headerText="Nombre" style="width: 20%;" sortBy="#{result.nombreMedicamento}" filterBy="#{result.nombreMedicamento}" filterMatchMode="contains" >
+                                <h:outputText value="#{result.nombreMedicamento}"/>
+                            </p:column>
+
+                            <p:column class="columnLeft30" headerText="Presentación" style="width: 8%;" >
+                                <h:outputText value="#{result.nombrePresentacion}"/>
+                            </p:column>
+
+                            <p:column class="columnLeft10" headerText="Unidosis" style="width: 5%;" rendered="#{ajusteInventarioGlobalMB.permiteAjusteInventarioGlobal}">
+
+                                <p:selectBooleanButton id="value1" onLabel="#{result.presentacionComercial eq 1 ? 'NO':'SI'}"  offLabel="#{result.presentacionComercial ne 1 ? 'SI':'NO'}" style="width:40px" >
+                                    <p:ajax event="change" update=":mainForm:tablaInvent"  
+                                            listener="#{ajusteInventarioGlobalMB.alterarUnidosis(result.idInventario,result.idInsumo, result.idAlmacen, result.cantidadXCaja, result.lote, result.claveSap, result.presentacionComercial,result.cantidadActual,result.cantidadXCaja)}" >
+                                    </p:ajax>
+
+                                </p:selectBooleanButton>
+
+                            </p:column>
+
+                            <p:column class="columnLeft8" headerText="Cant X Caja" style="width: 4%;" rendered="#{ajusteInventarioGlobalMB.permiteAjusteInventarioGlobal}">
+                                <h:outputText value="#{result.cantidadXCaja}"/>
+                            </p:column>
+
+                            <p:column class="columnLeft8" headerText="Lote"  style="width: 8%;" sortBy="#{result.lote}" filterBy="#{result.lote}" filterMatchMode="contains" >
+                                <p:cellEditor class="celdaEditable" >
+                                    <f:facet name="output">
+                                        <h:outputText value="#{result.lote}"/>
+                                    </f:facet>
+                                    <f:facet name="input" rendered="#{ajusteInventarioGlobalMB.permiteAjusteInventarioGlobal}" >
+                                        <p:inputText value="#{result.lote}" style="width:70%"/>
+                                    </f:facet>
+                                </p:cellEditor>
+                            </p:column>
+
+                            <p:column class="columnLeft14" headerText="Fecha Caducidad" style="width: 8%;" sortBy="#{result.fechaCaducidad}" >
+                                <p:cellEditor>
+                                    <f:facet name="output">
+                                        <h:outputText value="#{result.fechaCaducidad}">
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                    <f:facet name="input" rendered="#{ajusteInventarioGlobalMB.permiteAjusteInventarioGlobal}">
+                                        <p:calendar value="#{result.fechaCaducidad}" navigator="true" pattern="dd/MM/yyyy" showButtonPanel="true"  locale="es_MX" >
+                                        </p:calendar>
+                                    </f:facet>
+                                </p:cellEditor>
+                            </p:column>
+
+                            <p:column class="columnLeft8" headerText="Cant Comprom." style="width: 6%;" rendered="#{ajusteInventarioGlobalMB.utilizarCantidadComprometida}" >
+                                <h:outputText value="#{result.comprometidas}"/>
+                            </p:column>
+
+                            <p:column class="columnLeft8"  headerText="Cant Dosis Unitaria " style="width: 6%;" >
+                                <p:cellEditor>
+                                    <f:facet name="output">
+                                        <h:outputText value="#{result.existencias}"/>
+                                    </f:facet>
+                                    <f:facet name="input" rendered="#{ajusteInventarioGlobalMB.permiteAjusteInventarioGlobal}" >
+                                        <p:inputText value="#{result.existencias}" style="width:70%"/>
+                                    </f:facet>
+                                </p:cellEditor>
+                            </p:column>
+
+                            <p:column id="ec" class="columnLeft8" rendered="#{ajusteInventarioGlobalMB.permiteAjusteInventarioGlobal}"  
+                                      headerText="Cant Pres. Comercial" style="width: 6%;">
+                                <h:outputText value="#{result.existencias / result.cantidadXCaja}">
+                                    <f:convertNumber pattern="#0.0" locale="MX_es" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column class="columnLeft8" headerText="Costo Dosis Unitaria" style="width: 6%;">
+                                <h:outputText value="#{result.costoUnidosis}"/>
+                            </p:column>
+
+                            <p:column class="columnLeft8" headerText="Costo por Lote"  style="width: 6%;" rendered="#{ajusteInventarioGlobalMB.permiteAjusteInventarioGlobal}">
+                                <h:outputText value="#{result.costeXLote}"/>
+                            </p:column>
+
+                            <p:column class="columnLeft8" headerText="Semáforo" sortBy="#{result.estatusCaducidad}"  style="width: 6%;" rendered="#{ajusteInventarioGlobalMB.parametrosemaforo}">
+                                <p:graphicImage name="rojo.PNG" library="img" style="width: 15px; height: 15px" rendered="#{result.estatusCaducidad lt ajusteInventarioGlobalMB.sem1  ? true : false }"/>
+                                <p:graphicImage name="naranja.PNG" library="img" style="width: 15px; height: 15px" rendered="#{result.estatusCaducidad gt ajusteInventarioGlobalMB.sem1 and result.estatusCaducidad lt ajusteInventarioGlobalMB.sem2  ? true : false }"/>
+                                <p:graphicImage name="verde.PNG" library="img" style="width: 15px; height: 15px" rendered="#{result.estatusCaducidad gt ajusteInventarioGlobalMB.sem2  ? true : false }"/>
+                            </p:column>
+                            
+                            <p:column class="columnLeft8" headerText="Acciones" style="width: 10%;" >
+                                <p:commandLink id="linkFabrican" onclick="PF('statusProcess').show();" 
+                                               title="Ver / Registrar Laboratorio Fabricante" 
+                                               oncomplete="PF('statusProcess').hide();PF('mdlFabricante').show();"
+                                               actionListener="#{ajusteInventarioGlobalMB.obtieneIdInventario(result)}"
+                                               style="margin: 5px;text-decoration: none;"
+                                               styleClass="iconMusAzul" update=":frmFabricante"
+                                               rendered="#{ajusteInventarioGlobalMB.permiso.puedeAutorizar}" >
+                                    <i class="fa fa-flask" style="font-size: larger  !important; " />
+                                </p:commandLink>
+                                <p:commandLink id="linkCodBarras" onclick="PF('statusProcess').show();" 
+                                               title="Ver / Registrar Códigos de Barra de Fabricante" 
+                                               oncomplete="PF('statusProcess').hide();PF('mdlBarrCode').show();"
+                                               actionListener="#{ajusteInventarioGlobalMB.obtienelistaCodigoBarras(result)}"
+                                               style="margin: 5px;text-decoration: none;"
+                                               styleClass="iconMusAzul" update="frmCodBarrasSelect"
+                                               rendered="#{ajusteInventarioGlobalMB.permiso.puedeProcesar}" >
+                                    <i class="fa fa-barcode" style="font-size: larger  !important; " />
+                                </p:commandLink>
+                                <p:commandLink id="linkImprimir" onclick="PF('statusProcess').show();" 
+                                               title="Imprimir Códigos de QR" 
+                                               oncomplete="PF('statusProcess').hide();PF('mdlPrint').show();"
+                                               actionListener="#{ajusteInventarioGlobalMB.previewPrint(result)}"
+                                               style="margin: 5px;text-decoration: none;"
+                                               styleClass="iconMusAzul" update="frmPrintSelect"
+                                               rendered="#{ajusteInventarioGlobalMB.permiso.puedeAutorizar}" >
+                                    <i class="fa fa-print" style="font-size: larger  !important; " />
+                                </p:commandLink>
+                            </p:column>
+                            
+
+                        </p:dataTable>
+                    </h:form>						
+
+                    <p:dialog header="Fabricante de Insumo" width="500" 
+                              widgetVar="mdlFabricante" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="frmFabricante">
+                            <p:messages id="validaFabricante" globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                                <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                            </p:confirmDialog>
+                            <p:panelGrid style="padding: 10px !important;">
+                                <p:row>
+                                    <h:outputText value="Clave:" />
+                                    <h:outputText value="#{ajusteInventarioGlobalMB.registroSelect.claveMedicamento}" style="width:400px; font-weight: bolder; "  />
+                                    <br/>
+                                </p:row>
+                                <p:row>
+                                    <h:outputText value="Nombre:" />
+                                    <h:outputText value="#{ajusteInventarioGlobalMB.registroSelect.nombreMedicamento}" style="width:400px; font-weight: bolder; "  />
+                                    <br/>
+                                </p:row>
+                                <p:row>
+                                    <h:outputText value="Lote:" />
+                                    <h:outputText value="#{ajusteInventarioGlobalMB.registroSelect.lote}" style="width:400px; font-weight: bolder; "  />
+                                    <br/>
+                                </p:row>
+                                <p:row>
+                                    <h:outputText value="Caducidad:" />
+                                    <h:outputText value="#{ajusteInventarioGlobalMB.registroSelect.fechaCaducidad}" style="width:400px; font-weight: bolder; " >
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                    </h:outputText>
+                                    <br/>
+                                </p:row>
+                                <p:row>
+                                    <h:outputText value="Laboratorio Fabricante: "/><br/>
+                                </p:row>
+                                <p:row>
+                                    <p:selectOneMenu style="width: 290px;" value="#{ajusteInventarioGlobalMB.idFabricante}" tabindex="4" >
+                                        <f:selectItems value="#{ajusteInventarioGlobalMB.listaFabricante}"
+                                                       var="fabric"
+                                                       itemValue="#{fabric.idFabricante}" itemLabel="#{fabric.nombreFabricante}" />
+                                        <f:selectItem itemLabel="Ninguno" itemValue="#{null}" noSelectionOption="true" />
+                                    </p:selectOneMenu>
+                                    <br/><br/>
+                                </p:row>
+                            </p:panelGrid>
+                            <p:panel class="pnlActions">
+                                <p:commandButton id="btnTipCancel" class="btnItem" value="Cancelar"  style="width: 100px;"
+                                                 ajax="true" onclick="PF('mdlFabricante').hide();" />
+                                <p:commandButton id="btnTipNew" class="btnItem" 
+                                                 value="Guardar" style="margin:0; width: 100px; "
+                                                 actionListener="#{ajusteInventarioGlobalMB.actualizarFabricante()}"
+                                                 onclick="PF('statusProcess').show();"
+                                                 styleClass="btnMusAzul"
+                                                 oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('mdlFabricante').hide(); } "
+                                                 update=":mainForm , validaFabricante " />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+
+                    <p:dialog header="Activar / Bloquear Insumos" 
+                              widgetVar="dlgBloqueaInsumos"
+                              resizable="false"
+                              closeOnEscape="true"
+                              style="font-size:xx-small !important; ">
+                        <h:form id="formInsumo" >
+                            <p:panelGrid columns="2" styleClass="ui-noborder" id="panelInsumos">
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel  >Clave Insumo :</p:outputLabel>   
+                                    </p:column>
+                                </p:row>
+                                <p:autoComplete id="txtClave"
+                                                autocomplete="on"
+                                                placeholder="Ingresar Clave"
+                                                style="width: 250px;"
+                                                autoHighlight="false" 
+                                                minQueryLength="2"
+                                                forceSelection="true" 
+                                                disabled="#{!ajusteInventarioGlobalMB.permiso.puedeEditar}"
+                                                completeMethod="#{ajusteInventarioGlobalMB.autoCompletarCodigoMedicamento}"
+                                                var="insum" 
+                                                itemLabel="#{insum.claveInstitucional}" 
+                                                itemValue="#{insum}"
+                                                converter="musGenericConverter"
+                                                maxResults="10" 
+                                                emptyMessage="No se encontraron registros"
+                                                scrollHeight="250"
+                                                >
+                                    <p:ajax event="itemSelect" 
+                                            listener="#{ajusteInventarioGlobalMB.onItemSelect}"
+                                            update="cmbLotes,activarmedi,checkmedi,cmbEstructura"
+                                            resetValues="claveInstitucional"/>
+
+                                    <p:column style="width: 20px; font-size: small;" width="20px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave" />
+                                        </f:facet>
+                                        <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                    </p:column>
+                                    <p:column style="width: 150px; font-size: small;" width="150px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Nombre Corto" />
+                                        </f:facet>
+                                        <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                    </p:column>
+                                    <p:column style="width: 350px; font-size: small;" width="350px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Nombre Largo" />
+                                        </f:facet>
+                                        <h:outputText value="#{insum.nombreLargo}" style=" font-size: x-small;" />
+                                    </p:column>
+                                </p:autoComplete>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel  >
+                                            Almacén :
+                                        </p:outputLabel>   
+                                    </p:column>
+                                </p:row> 
+                                <p:row>
+                                    <p:column>
+                                        <p:selectOneMenu id="cmbEstructura" 
+                                                         value="#{ajusteInventarioGlobalMB.estructura}"
+                                                         autoWidth="false"
+                                                         style="width: 32px;"
+                                                         disabled="#{ajusteInventarioGlobalMB.desabilitado}"
+                                                         filter="true" 
+                                                         filterMatchMode="contains"
+                                                         >
+                                            <f:selectItem itemLabel="Seleccionar Almacén"
+                                                          itemValue="#{null}"/>/>
+                                            <f:selectItems value="#{ajusteInventarioGlobalMB.listaEstructura}"
+                                                           var="estruc"
+                                                           itemLabel="#{estruc.nombre}" 
+                                                           itemValue="#{estruc.idEstructura}"/>
+                                            <p:ajax listener="#{ajusteInventarioGlobalMB.onSelectEstructura()}"
+                                                    update="cmbLotes,cmbFechasCaducidad,activarmedi,checkmedi,comboTipoBloqueo" 
+                                                    />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel  >
+                                            Lote Insumo :
+                                        </p:outputLabel>   
+                                    </p:column>
+                                </p:row>      
+                                <p:row>
+                                    <p:column>
+                                        <p:selectOneMenu id="cmbLotes" 
+                                                         value="#{ajusteInventarioGlobalMB.lote}"
+                                                         autoWidth="false"
+                                                         style="width: 32px;"
+                                                         disabled="#{ajusteInventarioGlobalMB.desabilitado}"
+                                                         filter="true" 
+                                                         filterMatchMode="contains"
+                                                         >
+                                            <f:selectItem itemLabel="Seleccionar Lote"
+                                                          itemValue="#{null}"/>/>
+                                            <f:selectItems value="#{ajusteInventarioGlobalMB.listaLotes}"
+                                                           var="lot"
+                                                           itemLabel="#{lot.lote}" 
+                                                           itemValue="#{lot.lote}"/>
+                                            <p:ajax listener="#{ajusteInventarioGlobalMB.onItemSelectLote()}"
+                                                    update="cmbFechasCaducidad,activarmedi,checkmedi,comboTipoBloqueo" 
+                                                    />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel  >
+                                            Fecha de Caducidad :
+                                        </p:outputLabel>   
+                                    </p:column>
+                                </p:row>      
+                                <p:row>
+                                    <p:column>
+                                        <p:selectOneMenu id="cmbFechasCaducidad" 
+                                                         value="#{ajusteInventarioGlobalMB.fechacaducidad}"
+                                                         autoWidth="false"
+                                                         style="width: 32px;"
+                                                         disabled="#{ajusteInventarioGlobalMB.desabilitado}"
+                                                         filter="true" 
+                                                         filterMatchMode="contains"
+                                                         >
+                                            <f:selectItem itemLabel="Seleccionar Fecha"
+                                                          itemValue="#{null}"/>
+                                            <f:selectItems value="#{ajusteInventarioGlobalMB.listaFechas}"
+                                                           var="fechas"
+                                                           itemLabel="#{fechas.fecha}"
+                                                           itemValue="#{fechas.fechaCaducidad}"/>
+                                            <p:ajax listener="#{ajusteInventarioGlobalMB.onSelectFechaCaduciadad()}"
+                                                    update="cmbFechasCaducidad,activarmedi,checkmedi,comboTipoBloqueo" 
+                                                    />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel  >
+                                            Estaus Insumo :
+                                        </p:outputLabel>   
+                                    </p:column>
+                                </p:row>  
+
+                                <p:row>     
+                                    <p:commandLink id="checkmedi" title="#{ajusteInventarioGlobalMB.activo > 0 ? 'Bloquear' : 'Activar'}" actionListener="#{ajusteInventarioGlobalMB.desactivarInsumo}" rendered="#{ajusteInventarioGlobalMB.permiso.puedeEditar}"
+                                                   onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update="activarmedi,checkmedi,comboTipoBloqueo" >
+                                        <i class="#{ajusteInventarioGlobalMB.activo > 0 ? 'fa fa-unlock' : 'fa fa-lock'} iconMusAzul" />
+                                        <p:confirm header="Confirmación" message="¿Desea #{ajusteInventarioGlobalMB.activo > 0 ? 'Bloquear' : 'Activar'} el Insumo?" icon="ui-icon-alert" /> 
+                                    </p:commandLink>&nbsp;&nbsp;
+                                    <h:outputText  id="activarmedi" value="#{ajusteInventarioGlobalMB.activo > 0 ? 'Activo ' : 'Bloqueado ' }" style="font-weight: bolder;"  />
+                                </p:row>
+
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel  >
+                                            Tipo de Bloqueo :
+                                        </p:outputLabel>   
+                                    </p:column>
+                                </p:row>
+
+                                <p:row>
+                                    <p:selectOneMenu id="comboTipoBloqueo" 
+                                                     value="#{ajusteInventarioGlobalMB.tipobloq}"
+                                                     autoWidth="false"
+                                                     disabled="#{ajusteInventarioGlobalMB.activo eq 1}"
+                                                     style="vertical-align: middle; ">
+                                        <f:selectItem itemLabel="Seleccionar Bloqueo"
+                                                      itemValue="#{null}"/>
+                                        <f:selectItems value="#{ajusteInventarioGlobalMB.listTipoBloqueoMotivos}"
+                                                       var="tipoMotivo"
+                                                       itemValue="#{tipoMotivo.tipoBloqueoMotivos}"
+                                                       itemLabel="#{tipoMotivo.tipoBloqueoMotivos}"
+                                                       />
+                                    </p:selectOneMenu>
+                                </p:row>
+
+                                <p:outputLabel value="Comentarios : "/>
+                                <p:inputTextarea id="txtComentarios"
+                                                 cols="30" 
+                                                 rows="3" 
+                                                 style="margin-right: 10px;vertical-align: middle;" 
+                                                 value="#{ajusteInventarioGlobalMB.comentarios}"
+                                                 tabindex="6" 
+                                                 />
+                                <br />
+                                <h:outputText id="display" />
+
+                                <p:commandButton value="Guardar Cambios"
+                                                 widgetVar="btnSave"
+                                                 actionListener="#{ajusteInventarioGlobalMB.activarInactivarInsumos}"
+                                                 icon="fa fa-refresh"  
+                                                 style="float:right;"
+                                                 class="btnNew" styleClass="btnMusAzul" 
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('dlgBloqueaInsumos').hide(); }" 
+                                                 update="mainForm"
+                                                 >
+                                </p:commandButton>
+                            </p:panelGrid>
+                        </h:form> 
+                    </p:dialog>
+
+                    <p:dialog header="Impresión de Etiqueta" width="350" 
+                              widgetVar="mdlPrint" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="frmPrintSelect">
+                            <p:messages id="validaMsg1" globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                                <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                            </p:confirmDialog>
+                            <p:panelGrid style="padding: 10px !important;">
+                                <p:row>
+                                    <h:outputText value="Clave:" />
+                                    <h:outputText value="#{ajusteInventarioGlobalMB.registroSelect.claveMedicamento}" style="width:400px; font-weight: bolder; "  />
+                                    <br/>
+                                </p:row>
+                                <p:row>
+                                    <h:outputText value="Nombre:" />
+                                    <h:outputText value="#{ajusteInventarioGlobalMB.registroSelect.nombreMedicamento}" style="width:400px; font-weight: bolder; "  />
+                                    <br/>
+                                </p:row>
+                                <p:row>
+                                    <h:outputText value="Lote:" />
+                                    <h:outputText value="#{ajusteInventarioGlobalMB.registroSelect.lote}" style="width:400px; font-weight: bolder; "  />
+                                    <br/>
+                                </p:row>
+                                <p:row>
+                                    <h:outputText value="Caducidad:" />
+                                    <h:outputText value="#{ajusteInventarioGlobalMB.registroSelect.fechaCaducidad}" style="width:400px; font-weight: bolder; " >
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                    </h:outputText>
+                                    <br/><br/><br/>
+                                </p:row>
+                                <p:row>
+                                    <h:outputText value="Seleccione una impresora: "/><br/>
+                                </p:row>
+                                <p:row>
+                                    <p:selectOneMenu style="width: 290px;" value="#{ajusteInventarioGlobalMB.idPrintSelect}" tabindex="4" >
+                                        <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true" />
+                                        <f:selectItems value="#{ajusteInventarioGlobalMB.listaImpresoras}"
+                                                       var="print"
+                                                       itemValue="#{print.idImpresora}" itemLabel="#{print.descripcion}" />
+                                        <p:ajax update="btnTipNew" 
+                                                listener="#{ajusteInventarioGlobalMB.changePrint}" />
+                                    </p:selectOneMenu>
+                                    <br/><br/>
+                                </p:row>
+                                <p:row rendered="#{ajusteInventarioGlobalMB.numTemp > 1 ? true : false}">
+                                    <h:outputText value="Seleccione un template: " />
+                                    <br/>
+                                </p:row>
+                                <p:row rendered="#{ajusteInventarioGlobalMB.numTemp > 1 ? true : false}">
+                                    <p:selectOneMenu style="width: 290px;" value="#{ajusteInventarioGlobalMB.template}" tabindex="4" >
+                                        <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true" />
+                                        <f:selectItems value="#{ajusteInventarioGlobalMB.templateList}"
+                                                       var="temp" 
+                                                       itemLabel="#{temp.nombre}" itemValue="#{temp.idTemplate}" />
+                                        <p:ajax update="btnTipNew" 
+                                                listener="#{ajusteInventarioGlobalMB.changePrint}" />
+                                    </p:selectOneMenu>
+                                    <br/><br/>
+                                </p:row>
+                                <p:row>
+                                    <h:outputText value="Etiquetas a imprimir: "/>&nbsp;&nbsp;
+                                </p:row>
+                                <p:row>
+                                    <p:inputNumber size="10" value="#{ajusteInventarioGlobalMB.cantPrint}" 
+                                                   inputStyle="text-align:right" decimalPlaces="0" decimalSeparator="," > 
+                                        <p:ajax update="btnTipNew" event="change" 
+                                                listener="#{ajusteInventarioGlobalMB.changePrint}" />
+                                    </p:inputNumber>                                
+                                </p:row>
+                            </p:panelGrid>
+                            <p:panel class="pnlActions">
+                                <p:commandButton id="btnTipCancel" class="btnItem" value="Cancelar"  style="width: 100px;"
+                                                 actionListener="#{ajusteInventarioGlobalMB.cancelImprimirEtiqueta}"
+                                                 ajax="true" onclick="PF('mdlPrint').hide();" />
+                                <p:commandButton id="btnTipNew" class="btnItem" 
+                                                 disabled="#{!ajusteInventarioGlobalMB.activeBtnPrint}"
+                                                 value="Imprimir" style="margin:0; width: 100px; "
+                                                 actionListener="#{ajusteInventarioGlobalMB.imprimirEtiquetaItem}"
+                                                 onclick="PF('statusProcess').show();"
+                                                 styleClass="btnMusAzul"
+                                                 oncomplete="if(args.estatus == true){PF('mdlPrint').hide();} PF('statusProcess').hide();"
+                                                 />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+
+                    <p:dialog header="Cotrol de Código de Barras" width="550" 
+                              widgetVar="mdlBarrCode" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="frmCodBarrasSelect">
+                            <p:messages id="validaMsg1" globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                                <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                            </p:confirmDialog>
+                            <p:panelGrid style="padding: 10px !important;">
+                                <p:row>
+                                    <h:outputText style="width:400px; font-weight: bolder; " value="Clave : " />
+                                    <h:outputText value="#{ajusteInventarioGlobalMB.registroSelect.claveMedicamento}" />
+                                    <br/>
+                                </p:row>
+                                <p:row>
+                                    <h:outputText style="width:400px; font-weight: bolder; " value="Nombre : " />
+                                    <h:outputText value="#{ajusteInventarioGlobalMB.registroSelect.nombreMedicamento}" />
+                                    <br/><br/>
+                                </p:row>
+                                <br/>                               
+                                <p:panel class="pnlCodBarras">
+                                    <f:facet name="header">
+                                        Asignar nueva clave de proveedor y código de barras de insumo :  
+                                    </f:facet>
+                                    <br/>
+                                    <p:outputLabel style="width:400px; font-weight: bolder;" >
+                                        Clave por Proveedor * 
+                                    </p:outputLabel>  
+                                    <p:inputText id="txtClaveProveedor" style="width: 200px !important;"
+                                                 value="#{ajusteInventarioGlobalMB.claveProveedor}"
+                                                 >
+                                        <p:keyFilter regEx="#{usuariosMB.regexNomAp}"   />    
+                                    </p:inputText>
+                                    <br/><br/>
+                                    <p:outputLabel style="width:400px; font-weight: bolder;" >
+                                        Código de Barras *
+                                    </p:outputLabel>  
+                                    <p:inputText id="txtCodBar" style="width: 200px !important;"
+                                                 value="#{ajusteInventarioGlobalMB.newCodBarInsert}" >
+                                        <p:keyFilter regEx="#{usuariosMB.regexNomAp}"   />    
+                                    </p:inputText>
+                                    <br/><br/>
+                                    <p:commandButton class="btnNew" value="Agregar" 
+                                                     ajax="true" update="frmCodBarrasSelect"  style="margin: 5px 0; " resetValues="true" 
+                                                     actionListener="#{ajusteInventarioGlobalMB.insertarCodigoProveedor()}"
+                                                     onclick="PF('statusProcess').show();"
+                                                     styleClass="btnMusAzul"
+                                                     oncomplete="if(args.estatus == true){PF('mdlBarrCode').hide();} PF('statusProcess').hide();"/> &nbsp;&nbsp;
+
+                                </p:panel> 
+                            </p:panelGrid>
+
+                            <p:panel class="tblBarrCod">
+                                <f:facet name="header">
+                                    Códigos de Barra Registrados: 
+                                </f:facet>
+                                <p:dataTable id="tlbarras"
+                                             emptyMessage="" rows="5"
+                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                             currentPageReportTemplate=" "
+                                             paginator="true"                                         
+                                             paginatorPosition="bottom"
+                                             style="font-size: x-small !important;"
+                                             value="#{ajusteInventarioGlobalMB.listaCodigoBarras}" 
+                                             var="item" 
+                                             >
+
+                                    <p:column class="columnLeft8" headerText="Clave Proveedor" style="width: 8%;">
+                                        <h:outputText value="#{item.claveProveedor}"/>
+                                    </p:column>
+                                    
+                                    <p:column class="columnLeft8" headerText="Código Barras" style="width: 8%;">
+                                        <h:outputText value="#{item.codigoBarras}"/>
+                                    </p:column>
+
+                                    <p:column class="columnLeft8" headerText="Eliminar" style="width: 6%;" rendered="#{ajusteInventarioGlobalMB.permiso.puedeProcesar}">
+                                        <p:commandLink id="linkCodBarras" 
+                                                       style="margin: 5px;text-decoration: none;"
+                                                       actionListener="#{ajusteInventarioGlobalMB.eliminarCodigoProveedor(item.codigoBarras)}"
+                                                       onclick="PF('statusProcess').show();"
+                                                       oncomplete="PF('statusProcess').hide();" 
+                                                       update="frmCodBarrasSelect" 
+                                                       >
+                                            <i class="fa fa-trash" />
+                                        </p:commandLink>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </p:panel> 
+
+                            <p:panel class="pnlActions2">
+                                <p:commandButton id="btnTipCancel" class="btnItem" value="Cancelar"  style="width: 100px;" 
+                                                 ajax="true" onclick="PF('mdlBarrCode').hide();"  validateClient="false"/>
+                                
+                                <p:commandButton id="btnTipAcept" class="btnItem" value="Aceptar"   style="width: 100px; float: right"  
+                                                 actionListener="#{ajusteInventarioGlobalMB.consultar()}"
+                                                 ajax="true" onclick="PF('mdlBarrCode').hide();"  validateClient="false"
+                                                 update="mainForm"/>
+
+                            </p:panel>
+                            
+                     
+
+                        </h:form>
+                    </p:dialog>
+
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

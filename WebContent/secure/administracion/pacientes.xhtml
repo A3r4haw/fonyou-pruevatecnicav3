@@ -1,0 +1,1178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" > 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:head>
+        <title>Pacientes</title>
+        <h:outputScript library="primefaces" name="jquery/jquery.js" target="body" />
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="padding: 10px;">
+
+                    <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+                    <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                        <p:graphicImage name="/img/cargando.gif" />
+                    </p:dialog>
+
+                    <!--<h3>Hospital Motion</h3>-->
+                    <h:form id="formPrincipal">
+                        <p:messages id="msg" globalOnly="false" closable="true" showDetail="true"/>
+                        <p:inputText value="#{pacienteMB.show}" id="hiddenfield" type="hidden" />
+                        <div style="background: #808080;padding: 10px;">
+                            <p:outputLabel value="Pacientes" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+                            <p:inputText id="busqueda" 
+                                         value="#{pacienteMB.textoBusqueda}" 
+                                         style="width: 50%!important;border-radius:10px!important;" 
+                                         placeholder="Buscar por nombre, número o clave de derechohabiencia de paciente..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15" style=""/>
+                            </i>
+
+                            <p:commandButton value="Buscar" 
+                                             actionListener="#{pacienteMB.buscarRegistros}"
+                                             icon="fa fa-search" 
+                                             style="margin-left: 20px;"
+                                             update="tablaPacientes"
+                                             global="false"
+                                             disabled="#{!pacienteMB.permiso.puedeVer}">
+                            </p:commandButton>
+                        </div>
+                        <p:toolbar>
+                            <p:toolbarGroup id="toolbar" >
+                                
+                                <p:commandButton id="btnCrear" value="Registrar paciente" icon="fa fa-address-card" title="Registro de Paciente"
+                                                 style="margin-right: 10px;" class="btnNew" styleClass="btnMusAzul"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalPaciente').show();"                                               
+                                                 actionListener="#{pacienteMB.mostrarModalInsertarPaciente}"
+                                                 rendered="#{pacienteMB.permiso.puedeCrear}"
+                                                 ajax="true"  update="formPrincipal"
+                                                 disabled="#{!pacienteMB.permiso.puedeCrear}" />
+                                
+                                <p:commandButton id="btnCrearEmer" value="Registrar paciente desconocido" icon="fa fa-ambulance" title="Registro de Emergencia Paciente"
+                                                style="margin-right: 10px;" class="btnNew" styleClass=""
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalPacienteEmergencia').show();" 
+                                                 actionListener="#{pacienteMB.mostrarModalInsertarPacienteGenerico}"
+                                                 rendered="#{pacienteMB.permiso.puedeCrear}"
+                                                 ajax="true" 
+                                                 disabled="#{!pacienteMB.permiso.puedeCrear}"
+                                                 update="formPrincipal" />
+                            </p:toolbarGroup>
+                        </p:toolbar>
+                        
+                        <p:outputLabel value="No tiene permiso de visualización de esta transacción." 
+                               style="font-size: 18px !important; font-weight: bold; color: red;"
+                               rendered="#{!pacienteMB.permiso.puedeVer}" />
+                        
+                        <p:dataTable id="tablaPacientes"
+                                     var="paciente" 
+                                     value="#{pacienteMB.pacientesLazy}" 
+                                     lazy="true"
+                                     selectionMode="single"
+                                     selection="#{pacienteMB.pacienteSelect}"
+                                     rowKey="#{paciente.idPaciente}"
+                                     style="text-align: center;"
+                                     scrollHeight="300"
+                                     scrollable="true"
+                                     scrollRows="10" 
+                                     emptyMessage="No se encontraron Registros"
+                                     reflow="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorPosition="bottom"
+                                     rendered="#{pacienteMB.permiso.puedeVer}" >
+
+                            <p:ajax event="rowDblselect" oncomplete="PF('modalPaciente').show();" update="formPrincipal" 
+                                    listener="#{pacienteMB.mostrarDetallePacienteSelect}"/>
+                            
+                            <p:column headerText="#{msg['pac.numPac']}" style="text-align: left; width: 10%;"
+                                      sortBy="#{paciente.pacienteNumero}" >
+                                <h:outputText value="#{paciente.pacienteNumero}" />
+                            </p:column>
+                            
+                            <p:column headerText="No de Seguro" style="text-align: left; width: 10%;"
+                                      sortBy="#{paciente.claveDerechohabiencia}" >
+                                <h:outputText value="#{paciente.claveDerechohabiencia}" />
+                            </p:column>
+                            
+                            <p:column headerText="Nombre" style="text-align: left; width: 30%; " 
+                                      sortBy="#{paciente.nombreCompleto}" >
+                                <p:commandLink id="lnkPaciente"
+                                               actionListener="#{pacienteMB.mostrarDetallePacienteBotonRegistro}" 
+                                               style="margin: 5px;text-decoration: none;"
+                                               oncomplete="PF('modalPaciente').show();"
+                                               update=":formPrincipal">
+                                    <f:param name="idPacienteParam" value="#{paciente.idPaciente}"/>
+                                    <p:outputLabel value="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" />
+                                </p:commandLink>
+                            </p:column>
+                            
+                            <p:column headerText="Fecha Nacimiento" style="text-align: left; width: 10%;"
+                                      sortBy="#{paciente.fechaNacimiento}" >
+                                <h:outputText value="#{paciente.fechaNacimiento}" >
+                                    <f:convertDateTime pattern="yyyy-MM-dd"/>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Tipo Paciente" style="text-align: left; width: 15%;"
+                                      sortBy="#{paciente.idTipoPaciente}" >
+                                <h:outputText value="#{paciente.tipoPaciente}" >
+                                    <f:convertDateTime pattern="yyyy-MM-dd"/>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <ui:remove>
+                            <p:column headerText="Servicio" style="text-align: left; width: 20%;"
+                                      sortBy="#{paciente.nombreEstructura}" >
+                                <h:outputText value="#{paciente.claveEstructura} - #{paciente.nombreEstructura}" />
+                            </p:column>
+                            
+                            
+                            <p:column headerText="Periférico" style="text-align: left; width: 15%;"
+                                      sortBy="#{paciente.nombreEstructura}" >
+                                <h:outputText value="#{paciente.nombreEstructuraPeriferico}" />
+                            </p:column>
+                            </ui:remove>
+                            
+                            <p:column headerText="Fecha Registro" sortBy="#{paciente.insertFecha}" style="width: 10%;">
+                                <h:outputText value="#{paciente.insertFecha}" >
+                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Estatus" sortBy="#{paciente.idEstatusPaciente}" style="width: 10%;">
+                                <h:outputText value="#{paciente.estatusPaciente}" />
+                            </p:column>
+                            
+                            <p:column headerText="Acciones" exportable="false" style="width: 5%;">
+                                <p:commandLink  id="linkEditar"
+                                                actionListener="#{pacienteMB.mostrarModalActualizarPaciente}" 
+                                               style="margin: 5px;text-decoration: none;"
+                                                oncomplete="PF('modalPaciente').show();"
+                                                update=":formPrincipal"
+                                                styleClass="iconMusAzul"
+                                                rendered="#{pacienteMB.permiso.puedeEditar}" >
+                                    <f:param name="idPacienteParam" value="#{paciente.idPaciente}"/>
+                                    <i class="fa fa-pencil"/>
+                                </p:commandLink>
+                                
+                                <p:tooltip for="linkDetalle" value="Detalle" position="top"/>
+                                <p:commandLink id="linkDetalle"
+                                               actionListener="#{pacienteMB.mostrarDetallePacienteBotonRegistro}" 
+                                               style="margin: 5px;text-decoration: none;"
+                                               oncomplete="PF('modalPaciente').show();"
+                                               styleClass="iconMusAzul"
+                                               update=":formPrincipal">
+                                    <f:param name="idPacienteParam" value="#{paciente.idPaciente}"/>
+                                    <i class="fa fa-list" />
+                                </p:commandLink>
+                                
+                                <ui:remove>
+                                    <p:tooltip for="linkSalidaServ" value="Salida de Servicio" position="top"/>
+                                    <p:commandLink id="linkSalidaServ"
+                                                   style="margin: 5px;text-decoration: none;"
+                                                   oncomplete="PF('modalSalidaServ').show();">
+                                        <i class="fa fa-sign-out" />
+                                    </p:commandLink>
+                                </ui:remove>
+                                <ui:remove>
+                                <p:tooltip for="linkHistorial" value="Historial de prescripciones" position="top"/>
+                                <p:commandLink id="linkHistorial"
+                                               actionListener="#{pacienteMB.initialize}" 
+                                               styleClass="iconMusAzul"
+                                               style="margin: 5px;text-decoration: none;">
+                                    <i class="fa fa-heartbeat" />
+                                </p:commandLink>
+                                <p:tooltip for="linkPrescripcion" value="Prescripción" position="top"/>
+                                <p:commandLink id="linkPrescripcion"
+                                               actionListener="#{pacienteMB.initialize}" 
+                                               styleClass="iconMusAzul"
+                                               style="margin: 5px;text-decoration: none;">
+                                    <i class="fa fa-stethoscope"/>
+                                </p:commandLink>
+                                </ui:remove>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <p:dialog header="Registro de Paciente" 
+                                  widgetVar="modalPaciente"
+                                  modal="true"
+                                  resizable="false"
+                                  closeOnEscape="true"
+                                  closable="true">
+
+                            <p:messages id="msgModalInsertar" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <h:inputHidden value="#{pacienteMB.idPaciente}"/>
+                            <h:inputHidden value="#{pacienteMB.idPacienteDomicilio}"/>
+                            <h:inputHidden value="#{pacienteMB.idPacienteResponsable}"/>
+                            <p:tabView id="tabContainer" activeIndex="#{pacienteMB.tabIndex}">
+                                <p:tab>
+                                    <f:facet name="title">
+                                        <h:outputText value="Datos Personales" style="margin-right: 5px;"/>
+                                        <p:graphicImage name="/img/green_check.jpg" rendered="#{pacienteMB.tabCheckPersonales}"/>
+                                    </f:facet>
+                                    <p:panelGrid columns="3" styleClass="ui-noborder">
+                                        <p:outputLabel value="#{msg['pac.numPac']} *" />
+                                        <p:outputLabel>
+                                            Número de Seguro *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Tipo de Paciente *
+                                        </p:outputLabel>
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.pacienteNumero}"
+                                                     disabled="true" maxlength="20" >
+                                        </p:inputText>
+                                        <p:inputText id="polizaSeguro"
+                                                     style="width: 350px;" 
+                                                     value="#{pacienteMB.claveDerechohabiencia}"
+                                                     disabled="#{pacienteMB.desabilitado}"  maxlength="20"
+                                                     onkeyup="this.value = this.value.toUpperCase();" />
+                                        <p:selectOneMenu id="tipoPaciente" 
+                                                         value="#{pacienteMB.idTipoPaciente}"
+                                                         autoWidth="false"
+                                                         style="width: 332px;"
+                                                         filter="true" filterMatchMode="contains" 
+                                                         disabled="#{pacienteMB.desabilitado}">
+                                            <f:selectItem itemLabel=""/>
+                                            <f:selectItems value="#{pacienteMB.listaTipoPacientes}"
+                                                           var="tipoPaciente"
+                                                           itemValue="#{tipoPaciente.idCatalogoGeneral}"
+                                                           itemLabel="#{tipoPaciente.nombreCatalogo}"/>
+<!--                                            <p:ajax process="@parent" update="polizaSeguro,unidadMedica" 
+                                                    listener="# {pacienteMB.desabilitarCamposPorTipoPaciente}" 
+                                                    global="false"/>-->
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel>
+                                            Unidad Médica de Referencia *
+                                        </p:outputLabel >
+                                        <p:outputLabel>
+                                            Nombre(s) *
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            Apellido Paterno *
+                                        </p:outputLabel>    
+
+                                        <p:selectOneMenu id="unidadMedica" 
+                                                         value="#{pacienteMB.idUnidadMedica}"
+                                                         autoWidth="false"
+                                                         style="width: 332px;"
+                                                         filter="true" filterMatchMode="contains" 
+                                                         disabled="#{pacienteMB.desabilitado}">
+                                            <f:selectItem itemLabel=""/>
+                                            <f:selectItems value="#{pacienteMB.listaUnidadesMedicas}"
+                                                           var="unidadMedica"
+                                                           itemValue="#{unidadMedica.idCatalogoGeneral}"
+                                                           itemLabel="#{unidadMedica.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.nombres}"
+                                                     disabled="#{pacienteMB.desabilitado}"  maxlength="45" >
+                                            <!--<p:keyFilter regEx="# {pacienteMB.regexNomAp}"  />-->
+                                        </p:inputText>    
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.appPaterno}"
+                                                     disabled="#{pacienteMB.desabilitado}"  maxlength="45" >
+                                            <!--<p:keyFilter regEx="# {pacienteMB.regexNomAp}"  />-->
+                                        </p:inputText>    
+                                        <p:outputLabel>
+                                            Apellido Materno 
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            Sexo *
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            Fecha de nacimiento *
+                                        </p:outputLabel>    
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.appMaterno}"
+                                                     disabled="#{pacienteMB.desabilitado}"  maxlength="45" >
+                                            <!--<p:keyFilter regEx="# {pacienteMB.regexNomAp}"  />-->
+                                        </p:inputText>    
+                                        <p:selectOneButton value="#{pacienteMB.sexo}">
+                                            <f:selectItem itemLabel="Masculino" itemValue="M" />
+                                            <f:selectItem itemLabel="Femenino" itemValue="F" />
+                                        </p:selectOneButton>
+                                        <p:calendar 
+                                            value="#{pacienteMB.fechaNac}"
+                                            size="39"
+                                            disabled="#{pacienteMB.desabilitado}"
+                                            navigator="true"
+                                            yearRange="c-100:c"
+                                            pattern="dd/MM/yyyy"
+                                            locale="es_MX" 
+                                            maxdate="#{pacienteMB.fechaActual}"
+                                            pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                                                               
+                                        <p:outputLabel>
+                                            RFC 
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            CURP
+                                        </p:outputLabel>    
+                                        <p:outputLabel>
+                                            Ocupación *
+                                        </p:outputLabel >
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.rfc}"
+                                                     disabled="#{pacienteMB.desabilitado}" maxlength="13"
+                                                     onkeyup="this.value = this.value.toUpperCase();" />
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.curp}"
+                                                     disabled="#{pacienteMB.desabilitado}" maxlength="18"
+                                                     onkeyup="this.value = this.value.toUpperCase();" />
+                                        <p:selectOneMenu id="ocupacion" 
+                                                         value="#{pacienteMB.idOcupacion}"
+                                                         autoWidth="false"
+                                                         style="width: 332px;" filter="true" filterMatchMode="contains" 
+                                                         disabled="#{pacienteMB.desabilitado}">
+                                            <f:selectItem itemLabel=""/>
+                                            <f:selectItems value="#{pacienteMB.listaOcupacion}"
+                                                           var="ocupacion"
+                                                           itemValue="#{ocupacion.idCatalogoGeneral}"
+                                                           itemLabel="#{ocupacion.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+
+
+                                        <p:outputLabel>
+                                            Grupo Étnico *
+                                        </p:outputLabel >
+                                        <p:outputLabel>
+                                            Estado Civil *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Escolaridad *
+                                        </p:outputLabel >
+
+
+                                        <p:selectOneMenu id="gpoEtnico" 
+                                                         value="#{pacienteMB.idGrupoEtnico}"
+                                                         autoWidth="false"
+                                                         style="width: 332px;" filter="true" filterMatchMode="contains" 
+                                                         disabled="#{pacienteMB.desabilitado}">
+                                            <f:selectItem itemLabel=""/>
+                                            <f:selectItems value="#{pacienteMB.listaGrupEtnico}"
+                                                           var="gpoEtnico"
+                                                           itemValue="#{gpoEtnico.idCatalogoGeneral}"
+                                                           itemLabel="#{gpoEtnico.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu id="estadoCivil" 
+                                                         value="#{pacienteMB.idEstadoCivil}"
+                                                         autoWidth="false"
+                                                         style="width: 332px;" filter="true" filterMatchMode="contains" 
+                                                         disabled="#{pacienteMB.desabilitado}">
+                                            <f:selectItem itemLabel=""/>
+                                            <f:selectItems value="#{pacienteMB.listaEstadoCivil}"
+                                                           var="estadoCivil"
+                                                           itemValue="#{estadoCivil.idCatalogoGeneral}"
+                                                           itemLabel="#{estadoCivil.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu id="escolaridad" 
+                                                         value="#{pacienteMB.idEscolaridad}"
+                                                         autoWidth="false"
+                                                         style="width: 332px;" filter="true" filterMatchMode="contains" 
+                                                         disabled="#{pacienteMB.desabilitado}">
+                                            <f:selectItem itemLabel=""/>
+                                            <f:selectItems value="#{pacienteMB.listaEscolaridad}"
+                                                           var="escolaridad"
+                                                           itemValue="#{escolaridad.idCatalogoGeneral}"
+                                                           itemLabel="#{escolaridad.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel>
+                                            Religión *
+                                        </p:outputLabel >
+                                        <p:outputLabel>
+                                            Grupo Sanguíneo *
+                                        </p:outputLabel >
+                                        <p:outputLabel>
+                                            Nivel Socioeconómico *
+                                        </p:outputLabel >
+
+
+                                        <p:selectOneMenu id="religion" 
+                                                         value="#{pacienteMB.idReligion}"
+                                                         autoWidth="false"
+                                                         style="width: 332px;" filter="true" filterMatchMode="contains" 
+                                                         disabled="#{pacienteMB.desabilitado}">
+                                            <f:selectItem itemLabel=""/>
+                                            <f:selectItems value="#{pacienteMB.listaReligion}"
+                                                           var="religion"
+                                                           itemValue="#{religion.idCatalogoGeneral}"
+                                                           itemLabel="#{religion.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu id="gpoSanguineo" 
+                                                         value="#{pacienteMB.idGpoSanguineo}"
+                                                         autoWidth="false"
+                                                         style="width: 332px;" filter="true" filterMatchMode="contains" 
+                                                         disabled="#{pacienteMB.desabilitado}">
+                                            <f:selectItem itemLabel=""/>
+                                            <f:selectItems value="#{pacienteMB.listaGpoSanguineo}"
+                                                           var="gpoSanguineo"
+                                                           itemValue="#{gpoSanguineo.idCatalogoGeneral}"
+                                                           itemLabel="#{gpoSanguineo.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu id="nvelSocEconom" 
+                                                         value="#{pacienteMB.idNivSocEconom}"
+                                                         autoWidth="false"
+                                                         style="width: 332px;" filter="true" filterMatchMode="contains" 
+                                                         disabled="#{pacienteMB.desabilitado}">
+                                            <f:selectItem itemLabel=""/>
+                                            <f:selectItems value="#{pacienteMB.listaNivSocEconom}"
+                                                           var="nvelSocEconom"
+                                                           itemValue="#{nvelSocEconom.idCatalogoGeneral}"
+                                                           itemLabel="#{nvelSocEconom.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+
+
+                                        <p:outputLabel>
+                                            Tipo de vivienda *
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Turno 
+                                        </p:outputLabel>
+                                        <p:outputLabel value="Presenta Discapacidad" />
+
+                                        <p:selectOneMenu id="tipoVivienda" 
+                                                         value="#{pacienteMB.idTipoVivienda}"
+                                                         autoWidth="false"
+                                                         style="width: 332px;" filter="true" filterMatchMode="contains" 
+                                                         disabled="#{pacienteMB.desabilitado}">
+                                            <f:selectItem itemLabel=""/>
+                                            <f:selectItems value="#{pacienteMB.listaTipoVivienda}"
+                                                           var="tipoVivienda"
+                                                           itemValue="#{tipoVivienda.idCatalogoGeneral}"
+                                                           itemLabel="#{tipoVivienda.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+
+                                        <p:selectCheckboxMenu id="turnoGenerico"
+                                                              label="Turnos"
+                                                              value="#{pacienteMB.listaIdTurnos}" 
+                                                              style="width: 332px;"
+                                                              disabled="#{pacienteMB.desabilitado}">
+                                            <f:selectItems value="#{pacienteMB.listaTurnos}"
+                                                           var="turno"
+                                                           itemValue="#{turno.idTurno}"
+                                                           itemLabel="#{turno.nombre}"/>
+                                        </p:selectCheckboxMenu>
+                                        
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.descripcionDiscapacidad}"
+                                                     disabled="#{pacienteMB.desabilitado}" maxlength="45" />
+                                        
+                                        <p:outputLabel value="Lugar de Nacimiento" />
+                                        <p:outputLabel value="Pais de Residencia" />
+                                        <p:outputLabel value="" />
+                                        
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.lugarNacimiento}"
+                                                     disabled="#{pacienteMB.desabilitado}" maxlength="45" />
+                                        
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.paisResidencia}"
+                                                     disabled="#{pacienteMB.desabilitado}" maxlength="45" />
+
+                                    </p:panelGrid>
+                                </p:tab>
+                                <p:tab id="tabDireccion">
+                                    <f:facet name="title">
+                                        <h:outputText value="Dirección" style="margin-right: 5px;"/>
+                                        <p:graphicImage name="/img/green_check.jpg" rendered="#{pacienteMB.tabCheckDireccion}"/>
+                                    </f:facet>
+                                    <p:panelGrid styleClass="ui-noborder" id="panelDireccion">
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Calle *
+                                                </p:outputLabel >
+                                            </p:column>
+                                            <p:column> 
+                                                <p:outputLabel>
+                                                    No. Ext. *
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    No. Int. 
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteMB.calle}"
+                                                             disabled="#{pacienteMB.desabilitado}" maxlength="200" />
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteMB.noExt}"
+                                                             disabled="#{pacienteMB.desabilitado}" maxlength="45" />
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteMB.noInt}"
+                                                             disabled="#{pacienteMB.desabilitado}" maxlength="45" />
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Teléfono Principal (10 Dígitos) *
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Teléfono Secundario (10 Dígitos) 
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Extensión 
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:inputText id="telPrincipal"
+                                                             style="width: 350px;" 
+                                                             value="#{pacienteMB.telPrincipal}"
+                                                             disabled="#{pacienteMB.desabilitado}" 
+                                                             validatorMessage="Solo se permiten numeros !!!" 
+                                                             maxlength="10">
+                                                    <p:keyFilter regEx="/[0-9]/i"/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteMB.telSecundario}"
+                                                             disabled="#{pacienteMB.desabilitado}"
+                                                             maxlength="10">
+                                                    <p:keyFilter regEx="/[0-9]/i"/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteMB.extencion}"
+                                                             disabled="#{pacienteMB.desabilitado}"
+                                                             maxlength="10"/>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Teléfono Celular (10 Dígitos) 
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Correo Electrónico 
+                                                </p:outputLabel>
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    Cuenta de Facebook  
+                                                </p:outputLabel>   
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteMB.telCelular}"
+                                                             disabled="#{pacienteMB.desabilitado}"
+                                                             maxlength="10">
+                                                    <p:keyFilter regEx="/[0-9]/i"/>
+                                                </p:inputText>
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteMB.correo}"
+                                                             disabled="#{pacienteMB.desabilitado}"  maxlength="90" />
+                                            </p:column>
+                                            <p:column>
+                                                <p:inputText style="width: 350px;" 
+                                                             value="#{pacienteMB.cuentaFacebook}"
+                                                             disabled="#{pacienteMB.desabilitado}" maxlength="45" />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel>
+                                                    País  *
+                                                </p:outputLabel>   
+                                            </p:column>
+
+                                            <p:column>
+                                                <p:outputLabel rendered="#{pacienteMB.show}" >
+                                                    Estado *
+                                                </p:outputLabel>   
+                                            </p:column>
+                                            <p:column>
+                                                <p:outputLabel rendered="#{pacienteMB.show}">
+                                                    Municipio *
+                                                </p:outputLabel>    
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:selectOneMenu id="pais" 
+                                                                 value="#{pacienteMB.idPais}"
+                                                                 autoWidth="false"
+                                                                 style="width: 332px;" filter="true" filterMatchMode="contains" 
+                                                                 disabled="#{pacienteMB.desabilitado}">
+                                                    <p:ajax listener="#{pacienteMB.changeRender}" 
+                                                            update="panelDireccion" 
+                                                            process="@form"/>
+                                                    <f:selectItem itemLabel=""/>
+                                                    <f:selectItems value="#{pacienteMB.listaPaises}"
+                                                                   var="pais"
+                                                                   itemValue="#{pais.idPais}"
+                                                                   itemLabel="#{pais.nombrePais}"/>
+
+                                                </p:selectOneMenu>
+                                            </p:column>
+
+                                            <p:column>
+                                                <p:selectOneMenu id="estado" filter="true" filterMatchMode="contains"
+                                                                 value="#{pacienteMB.idEstado}"
+                                                                 autoWidth="false"
+                                                                 style="width: 332px;"
+                                                                 rendered="#{pacienteMB.show}"
+                                                                 disabled="#{pacienteMB.desabilitado}">
+                                                    <f:selectItem itemLabel=""/>
+                                                    <f:selectItems value="#{pacienteMB.listaEstados}"
+                                                                   var="estados"
+                                                                   itemValue="#{estados.cEstado}"
+                                                                   itemLabel="#{estados.dEstado}"/>
+                                                    <p:ajax update="municipio,colonia,codPostal" listener="#{pacienteMB.onChangeEstados}"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+
+                                            <p:column>
+                                                <p:selectOneMenu id="municipio" filter="true" filterMatchMode="contains"
+                                                                 value="#{pacienteMB.idMunicipio}"
+                                                                 autoWidth="false"
+                                                                 style="width: 332px;"
+                                                                 rendered="#{pacienteMB.show}"
+                                                                 disabled="#{pacienteMB.desabilitado}">
+                                                    <f:selectItem itemLabel=""/>
+                                                    <f:selectItems value="#{pacienteMB.listaMunicipios}"
+                                                                   var="municipio"
+                                                                   itemValue="#{municipio.cMnpio}"
+                                                                   itemLabel="#{municipio.dMnpio}"/>
+                                                    <p:ajax update="colonia,codPostal" listener="#{pacienteMB.onChangeMunicipios()}"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel rendered="#{pacienteMB.show}">
+                                                    Colonia *
+                                                </p:outputLabel>  
+                                            </p:column>                                            
+                                            <p:column>
+                                                <p:outputLabel rendered="#{pacienteMB.show}">
+                                                    Código Postal 
+                                                </p:outputLabel>     
+                                            </p:column>
+                                        </p:row>
+
+                                        <p:row>
+                                            <p:column>
+                                                <p:selectOneMenu id="colonia" filter="true" filterMatchMode="contains"
+                                                                 value="#{pacienteMB.idColonia}"
+                                                                 autoWidth="false"
+                                                                 style="width: 332px;"
+                                                                 rendered="#{pacienteMB.show}"
+                                                                 disabled="#{pacienteMB.desabilitado}">
+                                                    <f:selectItem itemLabel=""/>
+                                                    <f:selectItems value="#{pacienteMB.listaColonias}"
+                                                                   var="colonia"
+                                                                   itemValue="#{colonia.idAsentaCpcons}"
+                                                                   itemLabel="#{colonia.dAsenta}"/>
+                                                    <p:ajax update="panelDireccion" 
+                                                            process="panelDireccion" listener="#{pacienteMB.onChangeColonias}"/>
+                                                </p:selectOneMenu>
+                                            </p:column>
+                                            <p:column>
+
+                                                <p:autoComplete id="codPostal"
+                                                                style="width: 350px;" 
+                                                                autoHighlight="false"
+                                                                minQueryLength="5"
+                                                                forceSelection="true"
+                                                                rendered="#{pacienteMB.show}" 
+                                                                value="#{pacienteMB.codigoPostalSepomex}"
+                                                                disabled="#{pacienteMB.desabilitado}" 
+                                                                completeMethod="#{pacienteMB.autoCompletarCodigoPostal}" 
+                                                                var="item"  
+                                                                itemLabel="#{item.dAsenta}" 
+                                                                itemValue="#{item}" maxlength="5"
+                                                                converter="sepomexConverter" 
+                                                                >
+                                                    <p:ajax event="itemSelect" 
+                                                            listener="#{pacienteMB.onItemSelect}" 
+                                                            update="panelDireccion" 
+                                                            process="panelDireccion"
+                                                            />
+                                                </p:autoComplete>
+                                                <p:keyFilter for="codPostal" regEx="/[0-9]/i" />
+
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                </p:tab>               
+                                <p:tab>
+                                    <f:facet name="title">
+                                        <h:outputText value="Datos de Responsable Familiar" style="margin-right: 5px;"/>
+                                        <p:graphicImage name="/img/green_check.jpg" rendered="#{pacienteMB.tabCheckResponsable}"/>
+                                    </f:facet>
+                                    <p:panelGrid columns="3" styleClass="ui-noborder">
+                                        <p:outputLabel>
+                                            Nombre(s) 
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Apellido Paterno 
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Apellido Materno 
+                                        </p:outputLabel>
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.nombRespFamiliar}"
+                                                     disabled="#{pacienteMB.desabilitado}" maxlength="45" />
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.appRespFamiliar}"
+                                                     disabled="#{pacienteMB.desabilitado}" maxlength="45" />
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.apmRespFamiliar}"
+                                                     disabled="#{pacienteMB.desabilitado}" maxlength="45" />
+
+                                        <p:outputLabel>
+                                            Parentesco 
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            RFC 
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            CURP
+                                        </p:outputLabel>
+
+                                        <p:selectOneMenu id="parentesco" 
+                                                         value="#{pacienteMB.idParentesco}"
+                                                         autoWidth="false"
+                                                         style="width: 332px;" filter="true" filterMatchMode="contains"
+                                                         disabled="#{pacienteMB.desabilitado}">
+                                            <f:selectItem itemLabel=""/>
+                                            <f:selectItems value="#{pacienteMB.listaParentesco}"
+                                                           var="parentesco"
+                                                           itemValue="#{parentesco.idCatalogoGeneral}"
+                                                           itemLabel="#{parentesco.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.rfcRespFamiliar}"
+                                                     disabled="#{pacienteMB.desabilitado}" maxlength="13" />
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.curpRespFamiliar}"
+                                                     disabled="#{pacienteMB.desabilitado}" maxlength="18" />
+
+                                        <p:outputLabel>
+                                            Teléfono Principal (10 Dígitos) 
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Teléfono Secundario (10 Dígitos) 
+                                        </p:outputLabel>
+                                        <p:outputLabel>
+                                            Correo electrónico 
+                                        </p:outputLabel>
+
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.telPrincRespFamiliar}"
+                                                     disabled="#{pacienteMB.desabilitado}"
+                                                     maxlength="10">
+                                            <p:keyFilter regEx="/[0-9]/i"/>
+                                        </p:inputText>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.telSecRespFamiliar }"
+                                                     disabled="#{pacienteMB.desabilitado}"
+                                                     maxlength="10">
+                                            <p:keyFilter regEx="/[0-9]/i"/>
+                                        </p:inputText>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{pacienteMB.correoRespFamiliar}"
+                                                     disabled="#{pacienteMB.desabilitado}" maxlength="45" />
+
+                                        <p:outputLabel>
+                                            Responsable Legal 
+                                        </p:outputLabel>
+                                        <p:outputLabel />
+                                        <p:outputLabel />
+
+                                        <p:selectOneButton value="#{pacienteMB.respLegal}">
+                                            <f:selectItem itemLabel="SI" itemValue="1" />
+                                            <f:selectItem itemLabel="NO" itemValue="0" />
+                                        </p:selectOneButton>
+
+                                        <p:outputLabel />
+                                        <p:outputLabel />
+                                    </p:panelGrid>
+                                </p:tab>
+                            </p:tabView>
+                            <p:commandButton id="buttonGuardar" 
+                                             value="Guardar" 
+                                             style="float: right;margin: 10px;" class="btnNew" styleClass="btnMusAzul"
+                                             action="#{pacienteMB.insertarPaciente}"
+                                             oncomplete="if(args.estatusModal){ PF('modalPaciente').hide();}"
+                                             update="tabContainer,tablaPacientes,msg"
+                                             rendered="#{pacienteMB.renderBotonGuardar}"/>     
+                            <p:commandButton id="buttonActualizar" 
+                                             value="Actualizar" 
+                                             style="float: right;margin: 10px;" class="btnNew" styleClass="btnMusAzul"
+                                             action="#{pacienteMB.actualizarPaciente}"
+                                             update="tabContainer,tablaPacientes,msg"
+                                             rendered="#{pacienteMB.renderBotonActualizar}"
+                                             oncomplete="if(args.estatusModal){ PF('modalPaciente').hide(); }"/>            
+                        </p:dialog>
+
+                        <p:dialog header="Registro de Emergencia de Paciente" 
+                                  widgetVar="modalPacienteEmergencia"
+                                  modal="true"
+                                  resizable="false"
+                                  closeOnEscape="true"
+                                  closable="true">
+                            <p:messages id="msgModalPacienteEmergencia" closable="true" showDetail="false"  >
+                                <p:autoUpdate />
+                            </p:messages>
+<!--                            <h3 style="margin: 5px;">REGISTRO DE INGRESO DEL PACIENTE AL SERVICIO</h3>-->
+                            <p:panelGrid columns="3" styleClass="ui-noborder" id="panelPacienteEmergencia">
+                                <p:outputLabel>
+                                    Número de Paciente *
+                                </p:outputLabel>
+                                <p:outputLabel>
+                                    Número de Seguro *
+                                </p:outputLabel>
+                                <p:outputLabel>
+                                    Tipo de Paciente *
+                                </p:outputLabel>
+
+                                <p:inputText style="width: 350px;" 
+                                             value="#{pacienteMB.pacienteNumeroGenerico}"
+                                             disabled="#{pacienteMB.habilitarCampoPacienteNumero}" maxlength="20" >
+                                </p:inputText>
+                                
+                                <p:inputText 
+                                    style="width: 350px;" 
+                                    value="#{pacienteMB.claveDerechohabienciaGenerico}"
+                                    disabled="#{pacienteMB.desabilitado}" maxlength="20" />
+                                
+                                <p:selectOneMenu id="tipoPaciente" 
+                                                 value="#{pacienteMB.idTipoPacienteGenerico}"
+                                                 autoWidth="false"
+                                                 style="width: 332px;"
+                                                 disabled="#{pacienteMB.desabilitado}">
+                                    <f:selectItems value="#{pacienteMB.listaTipoPacientes}"
+                                                   var="tipoPaciente"
+                                                   itemValue="#{tipoPaciente.idCatalogoGeneral}"
+                                                   itemLabel="#{tipoPaciente.nombreCatalogo}"/>
+<!--                                    <p:ajax process="@parent" 
+                                            listener="# {pacienteMB.desabilitarCamposPorTipoPaciente}" 
+                                            global="false"/>-->
+                                </p:selectOneMenu>
+
+                                <p:outputLabel>
+                                    Unidad Médica de Referencia *
+                                </p:outputLabel >
+                                <p:outputLabel>
+                                    Nombre(s) *
+                                </p:outputLabel>    
+                                <p:outputLabel>
+                                    Apellido Paterno *
+                                </p:outputLabel>    
+
+                                <p:selectOneMenu 
+                                    value="#{pacienteMB.idUnidadMedicaGenerico}"
+                                    autoWidth="false"
+                                    style="width: 332px;"
+                                    disabled="#{ppacienteMB.desabilitado}">
+                                    <f:selectItems value="#{pacienteMB.listaUnidadesMedicas}"
+                                                   var="unidadMedica"
+                                                   itemValue="#{unidadMedica.idCatalogoGeneral}"
+                                                   itemLabel="#{unidadMedica.nombreCatalogo}"/>
+                                </p:selectOneMenu>
+                                <p:inputText style="width: 350px;" 
+                                             value="#{pacienteMB.nombresGenerico}"
+                                             disabled="#{pacienteMB.desabilitado}" maxlength="45" />
+                                <p:inputText style="width: 350px;" 
+                                             value="#{pacienteMB.appPaternoGenerico}"
+                                             disabled="#{pacienteMB.desabilitado}" maxlength="45" />
+
+                                <p:outputLabel>
+                                    Apellido Materno 
+                                </p:outputLabel>    
+                                <p:outputLabel>
+                                    Sexo *
+                                </p:outputLabel>    
+                                <p:outputLabel>
+                                    Fecha de Nacimiento *
+                                </p:outputLabel>    
+
+                                <p:inputText style="width: 350px;" 
+                                             value="#{pacienteMB.appMaternoGenerico}"
+                                             disabled="#{pacienteMB.desabilitado}" maxlength="45" />
+                                <p:selectOneButton value="#{pacienteMB.sexoGenerico}">
+                                    <f:selectItem itemLabel="Masculino" itemValue="M" />
+                                    <f:selectItem itemLabel="Femenino" itemValue="F" />
+                                </p:selectOneButton>
+                                <p:calendar 
+                                    value="#{pacienteMB.fechaNacGenerico}"
+                                    size="39"
+                                    disabled="#{pacienteMB.desabilitado}"
+                                    navigator="true"
+                                    yearRange="c-100:c"
+                                    readonly="true"
+                                    pattern="dd/MM/yyyy"
+                                    locale="es"/>
+
+                                <p:outputLabel>
+                                    rfc 
+                                </p:outputLabel>    
+                                <p:outputLabel>
+                                    curp
+                                </p:outputLabel>    
+                                <p:outputLabel>
+                                    Ocupación *
+                                </p:outputLabel >
+
+                                <p:inputText style="width: 350px;" 
+                                             value="#{pacienteMB.rfcGenerico}"
+                                             disabled="#{pacienteMB.desabilitado}" maxlength="13" />
+                                <p:inputText style="width: 350px;" 
+                                             value="#{pacienteMB.curpGenerico}"
+                                             disabled="#{pacienteMB.desabilitado}" maxlength="18" />
+                                <p:selectOneMenu 
+                                    value="#{pacienteMB.idOcupacionGenerico}"
+                                    autoWidth="false"
+                                    style="width: 332px;"
+                                    disabled="#{pacienteMB.desabilitado}">
+                                    <f:selectItems value="#{pacienteMB.listaOcupacion}"
+                                                   var="ocupacion"
+                                                   itemValue="#{ocupacion.idCatalogoGeneral}"
+                                                   itemLabel="#{ocupacion.nombreCatalogo}"/>
+                                </p:selectOneMenu>
+
+
+                                <p:outputLabel>
+                                    Grupo Étnico *
+                                </p:outputLabel >
+                                <p:outputLabel>
+                                    Estado Civil *
+                                </p:outputLabel>
+                                <p:outputLabel>
+                                    Escolaridad *
+                                </p:outputLabel >
+
+
+                                <p:selectOneMenu 
+                                    value="#{pacienteMB.idGrupoEtnicoGenerico}"
+                                    autoWidth="false"
+                                    style="width: 332px;"
+                                    disabled="#{pacienteMB.desabilitado}">
+                                    <f:selectItems value="#{pacienteMB.listaGrupEtnico}"
+                                                   var="gpoEtnico"
+                                                   itemValue="#{gpoEtnico.idCatalogoGeneral}"
+                                                   itemLabel="#{gpoEtnico.nombreCatalogo}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu 
+                                    value="#{pacienteMB.idEstadoCivilGenerico}"
+                                    autoWidth="false"
+                                    style="width: 332px;"
+                                    disabled="#{pacienteMB.desabilitado}">
+                                    <f:selectItems value="#{pacienteMB.listaEstadoCivil}"
+                                                   var="estadoCivil"
+                                                   itemValue="#{estadoCivil.idCatalogoGeneral}"
+                                                   itemLabel="#{estadoCivil.nombreCatalogo}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu 
+                                    value="#{pacienteMB.idEscolaridadGenerico}"
+                                    autoWidth="false"
+                                    style="width: 332px;"
+                                    disabled="#{pacienteMB.desabilitado}">
+                                    <f:selectItems value="#{pacienteMB.listaEscolaridad}"
+                                                   var="escolaridad"
+                                                   itemValue="#{escolaridad.idCatalogoGeneral}"
+                                                   itemLabel="#{escolaridad.nombreCatalogo}"/>
+                                </p:selectOneMenu>
+
+                                <p:outputLabel>
+                                    Religión *
+                                </p:outputLabel >
+                                <p:outputLabel>
+                                    Grupo Sanguíneo *
+                                </p:outputLabel >
+                                <p:outputLabel>
+                                    Nivel Socioeconómico *
+                                </p:outputLabel >
+
+
+                                <p:selectOneMenu 
+                                    value="#{pacienteMB.idReligionGenerico}"
+                                    autoWidth="false"
+                                    style="width: 332px;"
+                                    disabled="#{pacienteMB.desabilitado}">
+                                    <f:selectItems value="#{pacienteMB.listaReligion}"
+                                                   var="religion"
+                                                   itemValue="#{religion.idCatalogoGeneral}"
+                                                   itemLabel="#{religion.nombreCatalogo}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu 
+                                    value="#{pacienteMB.idGpoSanguineoGenerico}"
+                                    autoWidth="false"
+                                    style="width: 332px;"
+                                    disabled="#{pacienteMB.desabilitado}">
+                                    <f:selectItems value="#{pacienteMB.listaGpoSanguineo}"
+                                                   var="gpoSanguineo"
+                                                   itemValue="#{gpoSanguineo.idCatalogoGeneral}"
+                                                   itemLabel="#{gpoSanguineo.nombreCatalogo}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu 
+                                    value="#{pacienteMB.idNivSocEconomGenerico}"
+                                    autoWidth="false"
+                                    style="width: 332px;"
+                                    disabled="#{pacienteMB.desabilitado}">
+                                    <f:selectItems value="#{pacienteMB.listaNivSocEconom}"
+                                                   var="nvelSocEconom"
+                                                   itemValue="#{nvelSocEconom.idCatalogoGeneral}"
+                                                   itemLabel="#{nvelSocEconom.nombreCatalogo}"/>
+                                </p:selectOneMenu>
+
+
+                                <p:outputLabel>
+                                    Tipo de vivienda *
+                                </p:outputLabel>
+                                <p:outputLabel>
+                                    Turno
+                                </p:outputLabel>
+                                <p:outputLabel />      
+
+                                <p:selectOneMenu 
+                                    value="#{pacienteMB.idTipoViviendaGenerico}"
+                                    autoWidth="false"
+                                    style="width: 332px;"
+                                    disabled="#{pacienteMB.desabilitado}">
+                                    <f:selectItems value="#{pacienteMB.listaTipoVivienda}"
+                                                   var="tipoVivienda"
+                                                   itemValue="#{tipoVivienda.idCatalogoGeneral}"
+                                                   itemLabel="#{tipoVivienda.nombreCatalogo}"/>
+                                </p:selectOneMenu>
+
+                                <p:selectCheckboxMenu id="turno"
+                                                      label="Turnos"
+                                                      value="#{pacienteMB.listaIdTurnosGenerico}" 
+                                                      style="width: 332px;"
+                                                      disabled="#{pacienteMB.desabilitado}">
+                                    <f:selectItems value="#{pacienteMB.listaTurnos}"
+                                                   var="turno"
+                                                   itemValue="#{turno.idTurno}"
+                                                   itemLabel="#{turno.nombre}"/>
+                                </p:selectCheckboxMenu>
+
+                            </p:panelGrid>
+                            <p:commandButton 
+                                value="Guardar" 
+                                style="float: right;margin: 10px;" class="btnNew" styleClass="btnMusAzul"
+                                action="#{pacienteMB.insertarPacienteGenerico}"
+                                oncomplete="if(args.estatusModal){ PF('modalPacienteEmergencia').hide();}"
+                                update="tablaPacientes,panelPacienteEmergencia,msg"
+                                />  
+                        </p:dialog>
+
+                    </h:form>
+
+                    <ui:remove>
+                        <p:dialog header="Ingreso/Egreso de Paciente" 
+                                  widgetVar="modalSalidaServ"
+                                  modal="true"
+                                  resizable="false"
+                                  closeOnEscape="true">
+
+                            <p:messages id="msgModalSalidServ" closable="true" showDetail="true" />
+                            <h3 style="margin: 5px;">SALIDA DE SERVICIO</h3>
+                            <p:panelGrid>
+                                <p:row>
+                                    <p:column>
+                                        Unidad Hospitalaria ><br/>
+                                        CIRUGIA CARDIO TORACICA ><br/>
+                                        Hospitalizacion ><br/>
+                                        Cuidados Coronarios - Cubículo 3 >
+                                    </p:column>
+                                    <p:column>Diagnostico</p:column>
+                                    <p:column>
+                                        <p:panel>
+                                            1 . Dolor facial atipico
+                                        </p:panel>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <i class="fa fa-bed"></i>
+                                        4316<br/>
+                                        Hector Mendoza Chavez<br/>
+                                        Clave de derechohabiencia<br/>
+                                        8754669853
+                                    </p:column>
+                                    <p:column  colspan="2">
+                                        Justificacion de la salida<br/>
+                                        <p:inputTextarea style="width: 100%"/>
+                                    </p:column>
+
+                                </p:row>
+                                <p:row>
+                                    <p:column></p:column>
+                                    <p:column colspan="2">
+                                        Motivo de la salida<br/>
+                                        <p:inputText style="width: 100%" />
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column></p:column>
+                                    <p:column colspan="2">
+                                        Medico que autoriza<br/>
+                                        <p:inputText style="width: 100%" />
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            <p:button value="Registrar salida" style="margin: 10px;float: right;"/>
+                        </p:dialog>
+                    </ui:remove>
+
+                </div>
+            </ui:define>
+
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

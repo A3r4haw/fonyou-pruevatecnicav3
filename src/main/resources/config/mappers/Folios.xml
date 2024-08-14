@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.FoliosMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Folios" parameterType="mx.mc.model.Folios" >
+        SELECT idFolio,prefijo,secuencia,longitud,idTipoDocumento,insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+        FROM folios
+        WHERE 1=1
+        <if test="idFolio != null"> 
+            AND idFolio=#{idFolio}
+        </if>
+        <if test="prefijo != null"> 
+            AND prefijo = #{prefijo}
+        </if>
+        <if test="secuencia != null"> 
+            AND secuencia=#{secuencia}
+        </if>
+        <if test="longitud != null"> 
+            AND longitud=#{longitud}
+        </if>
+        <if test="idTipoDocumento != null"> 
+            AND idTipoDocumento=#{idTipoDocumento}
+        </if>        
+    </select>
+    <select id="obtenerPrefixPorDocument" resultType="mx.mc.model.Folios" parameterType="Map">
+        SELECT idFolio,
+            prefijo,
+            secuencia,
+            longitud,
+            idTipoDocumento,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario
+        FROM folios
+        WHERE  idTipoDocumento = #{document};
+    </select>
+    
+    <update id="actualizaFolios" parameterType="mx.mc.model.Folios" >
+        UPDATE folios 
+         <set>
+            secuencia = #{secuencia},
+            updateFecha = #{updateFecha},
+            updateIdUsuario= #{updateIdUsuario}
+         </set>
+            
+            
+        WHERE idTipoDocumento=#{idTipoDocumento}
+    </update>
+</mapper>

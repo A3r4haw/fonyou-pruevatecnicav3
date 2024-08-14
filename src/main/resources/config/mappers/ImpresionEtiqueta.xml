@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ImpresionEtiquetaMapper" >
+        
+    <select id="obtener" parameterType="mx.mc.model.ImpresionEtiqueta" resultType="mx.mc.model.ImpresionEtiqueta">
+        SELECT * FROM impresionEtiqueta
+        WHERE 1=1
+        <if test=" idImpresionEtiqueta != null"> AND idImpresionEtiqueta = #{ idImpresionEtiqueta } </if>
+        <if test=" idSurtimiento != null"> AND idSurtimiento = #{ idSurtimiento } </if>
+        <if test=" folio != null"> AND folio = #{ folio } </if>
+        <if test=" idMotivoReimpresion != null"> AND idMotivoReimpresion = #{ idMotivoReimpresion } </if>
+        LIMIT 1;
+    </select>
+    
+    <select id="obtenerImpresiones" parameterType="mx.mc.model.ImpresionEtiqueta" resultType="mx.mc.model.ImpresionEtiqueta">
+        SELECT idImpresionEtiqueta, idSurtimiento, folio, numeroImpresiones
+        FROM impresionEtiqueta
+        WHERE 1=1
+        <if test=" idImpresionEtiqueta != null"> AND idImpresionEtiqueta = #{ idImpresionEtiqueta } </if>
+        <if test=" idSurtimiento != null"> AND idSurtimiento = #{ idSurtimiento } </if>
+        <if test=" folio != null"> AND folio = #{ folio } </if>
+        ;
+    </select>
+    
+    <select id="obtenerLista" parameterType="mx.mc.model.ImpresionEtiqueta" resultType="mx.mc.model.ImpresionEtiqueta">
+        SELECT * FROM impresionEtiqueta
+        WHERE 1=1
+        <if test=" idImpresionEtiqueta != null"> AND idImpresionEtiqueta = #{ idImpresionEtiqueta } </if>
+        <if test=" idSurtimiento != null"> AND idSurtimiento = #{ idSurtimiento } </if>
+        <if test=" folio != null"> AND folio = #{ folio } </if>
+        <if test=" idMotivoReimpresion != null"> AND idMotivoReimpresion = #{ idMotivoReimpresion } </if>
+        ;
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.ImpresionEtiqueta">
+        INSERT INTO impresionEtiqueta (
+            idImpresionEtiqueta
+            , idSurtimiento
+            , folio
+            <if test=" contenido != null "> , contenido </if>
+            , impresionExitosa
+            <if test=" numeroImpresiones != null "> , numeroImpresiones </if>
+            <if test=" reimpresion != null "> , reimpresion </if>
+            <if test=" idMotivoReimpresion != null "> , idMotivoReimpresion </if>
+            <if test=" notas != null "> , notas </if>
+            , insertFecha
+            , insertIdUsuario
+            <if test=" updateFecha != null "> , updateFecha </if>
+            <if test=" updateIdUsuario != null "> , updateIdUsuario </if>
+        ) VALUES (
+            #{ idImpresionEtiqueta }
+            , #{ idSurtimiento }
+            , #{ folio }
+            <if test=" contenido != null "> , #{ contenido } </if>
+            , #{ impresionExitosa }
+            <if test=" numeroImpresiones != null "> , #{ numeroImpresiones } </if>
+            <if test=" reimpresion != null "> , #{ reimpresion } </if>
+            <if test=" idMotivoReimpresion != null "> , #{ idMotivoReimpresion } </if>
+            <if test=" notas != null "> , #{ notas } </if>
+            , #{ insertFecha }
+            , #{ insertIdUsuario }
+            <if test=" updateFecha != null "> , #{ updateFecha } </if>
+            <if test=" updateIdUsuario != null "> , #{ updateIdUsuario } </if>
+        )
+    </insert>
+    
+    <update id="actualizar" parameterType="mx.mc.model.ImpresionEtiqueta"  >
+        UPDATE impresionEtiqueta SET
+            updateIdUsuario = #{ updateIdUsuario }
+            , updateFecha = #{ updateFecha }
+            , impresionExitosa = #{ impresionExitosa }
+            <if test=" idSurtimiento != null "> , idSurtimiento = #{ idSurtimiento } </if>
+            <if test=" folio != null "> , folio = #{ folio } </if>
+            <if test=" contenido != null "> , contenido = #{ contenido } </if>
+            <if test=" numeroImpresiones != null "> , numeroImpresiones = #{ numeroImpresiones } </if>
+            <if test=" reimpresion != null "> , reimpresion = #{ reimpresion } </if>
+            <if test=" idMotivoReimpresion != null "> , idMotivoReimpresion = #{ idMotivoReimpresion } </if>
+            <if test=" reimpresion != null "> , reimpresion = #{ reimpresion } </if>
+            <if test=" notas != null "> , notas = #{ notas } </if>
+        WHERE idImpresionEtiqueta = #{ idImpresionEtiqueta } ;
+    </update>
+    
+</mapper>

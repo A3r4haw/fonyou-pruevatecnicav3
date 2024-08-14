@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper..TransaccionAccionMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.TransaccionAccion" parameterType="mx.mc.model.TransaccionAccion" >
+        SELECT idRol , idTransaccion , idAccion , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario
+        FROM transaccionAcciones
+        WHERE 1=1
+        <if test=" idRol != null ">
+            AND idRol = #{ idRol , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTransaccion != null ">
+            AND idTransaccion = #{ idTransaccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idAccion != null ">
+            AND idAccion = #{ `idAccion` , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.TransaccionAccion" >
+        INSERT INTO transaccionAcciones (
+        <if test=" idRol != null ">
+            idRol
+        </if>
+        <if test=" idTransaccion != null ">
+            , idTransaccion
+        </if>
+        <if test=" idAccion != null ">
+            , idAccion
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , updateIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario
+        </if>
+        ) VALUES (
+        <if test=" idRol != null ">
+            #{ idRol , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTransaccion != null ">
+            , #{ idTransaccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idAccion != null ">
+            , #{ idAccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.TransaccionAccion"  >
+        DELETE FROM transaccionAcciones 
+        WHERE idRol = #{ idRol , jdbcType = VARCHAR }
+        and  idTransaccion = #{ idTransaccion , jdbcType = VARCHAR }
+        and  idAccion = #{ idAccion , jdbcType = VARCHAR }
+    </delete>
+    
+</mapper>

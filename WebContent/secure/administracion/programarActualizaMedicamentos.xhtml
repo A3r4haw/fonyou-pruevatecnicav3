@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    
+     <h:head>
+        <title>Programar Actualización de Medicamentos</title>
+    </h:head>
+    
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>                        
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="Programar Actualización de Medicamentos" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px; font-weight: bolder;" value="Fecha Programada" />
+                                            <br/>
+
+                                            <p:calendar id="txtFechaInicio" value="#{programarActualizaMedicamentosMB.fechaProgramada}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                                        mindate="#{programarActualizaMedicamentosMB.fechaProgramada}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>                                                                                                                                 
+
+                                        </div>                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-7">
+                                            <p:outputLabel style="margin-right: 30px; font-weight: bolder;" value="Nota" />
+                                            <br/>
+                                            <p:inputTextarea id="nota" value="#{programarActualizaMedicamentosMB.nota}" rows="2" cols="90" />
+                                        </div>
+
+                                         <div class="ui-g-12 ui-md-6 ui-lg-2" style="margin-top: 15px;">
+                                            <p:commandButton value="Agregar"
+                                                             actionListener="#{programarActualizaMedicamentosMB.agregarProgramacionAutomatica()}"
+                                                             update="mainForm,nota,msg" title="Agregar"                                                       
+                                                             icon="fa fa-check-circle"                                                               
+                                                             style="margin-left: 50px; margin-bottom: 5px"
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                            <br/>
+                                            <p:commandButton id="btnCancelar" update="mainForm" value="Cancelar" type="reset"
+                                                              process="@this"
+                                                             style="margin-left: 50px"
+                                                 title="Cancelar" icon="ui-icon-trash" 
+                                                 />
+                                        </div>
+                                    </div>                                    
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form>
+                    
+                    <h:form id="formMeses" >
+                        <p:dataTable var="programaAutomatico" 
+                                     id="tableFechasProgramadas"
+                                     emptyMessage="No se encontraron registros" 
+                                     widgetVar="tableDias" 
+                                     value="#{programarActualizaMedicamentosMB.listaFechasProgramadas}"
+                                     styleClass="cabecera" reflow="true"
+                                     style="margin-bottom:5px;"
+                                     scrollable="true"
+                                     scrollHeight="350" 
+                                     paginatorPosition="bottom"
+                                     rows="10"
+                                     paginator="true"
+                                     paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}">
+                                    <p:column headerText="Fecha">
+                                        <h:outputText value="#{programaAutomatico.fechaProgramada}">
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                        </h:outputText>                                        
+                                    </p:column>
+
+                                    <p:column headerText="Estatus">
+                                        <h:outputText value="#{programaAutomatico.estatus eq 1 ? 'Programada' : programaAutomatico.estatus eq 2 ? 
+                                                               'Procesando' :  programaAutomatico.estatus eq 3 ? 'Finalizada' : 'Cancelada'}" />
+                                    </p:column>
+
+                                    <p:column headerText="Nota">
+                                        <h:outputText value="#{programaAutomatico.nota}" />
+                                    </p:column>
+                                    
+                                    <p:column headerText="Acciones" style="width: 70px;" >
+                                        <!--p:commandLink title="Editar"  
+                                                       actionListener="#  {programarActualizaMedicamentosMB.mostrarProgramacion(programaAutomatico)}" 
+                                                       rendered="# {programarActualizaMedicamentosMB.permiso.puedeVer}"                                                                                                              
+                                                       oncomplete="PF('statusProcess').hide(); PF('carEdtitDay').show();" 
+                                                       onclick="PF('statusProcess').show();"
+                                                       update="formMeses:carDialogDia" >                                            
+                                            
+                                            <i class="fa fa-pencil iconMusAzul"/>
+                                        </p:commandLink--> &nbsp;
+                                        
+                                        <p:commandLink title="Cancelar"  actionListener="#{programarActualizaMedicamentosMB.cancelarFechaProgramada(programaAutomatico.idProgramarActualizaMedicamentos)}" 
+                                                       rendered="#{programarActualizaMedicamentosMB.permiso.puedeProcesar and programaAutomatico.estatus eq 1}"                                                       
+                                                       update="tableFechasProgramadas,mainForm:msg" >                                           
+                                                       <i class="fa fa-ban iconMusRojo"/>                                            
+                                                       
+                                        </p:commandLink>
+                                       
+                                    </p:column>                            
+                                    
+                                </p:dataTable>                                                
+                        
+                    </h:form>		
+
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

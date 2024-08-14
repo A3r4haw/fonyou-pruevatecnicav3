@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.FichaPrevencionAdjuntoMapper" >
+    
+    <insert id="insertarListaAdjuntos" parameterType="Map">
+        <foreach collection="fichaPrevencionAdjuntoLista" item="item" separator=";">
+            INSERT INTO fichaPrevencionAdjunto (
+                idFichaPrevencion
+                , idAdjunto
+            ) VALUES (
+                #{ item.idFichaPrevencion ,  jdbcType = VARCHAR }
+                , #{ item.idAdjunto , jdbcType = INTEGER }
+            )
+        </foreach>
+    </insert>
+    
+    <insert id="insertar" parameterType="FichaPrevencionAdjunto">
+            INSERT INTO fichaPrevencionAdjunto (
+                idFichaPrevencion
+                , idAdjunto
+            ) VALUES (
+                #{ idFichaPrevencion ,  jdbcType = VARCHAR }
+                , #{ idAdjunto , jdbcType = INTEGER }
+            )
+    </insert>
+    
+</mapper>    

@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+    <h:head>
+        <title>REPORTE HISTORIAL DE MEZCLAS DE PACIENTE</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="Historial de mezclas de paciente" class="fontCenter"   />
+                                <div class="ui-g-12" >	  
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Rango Fecha" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" value="#{repHistorialMezclasPacienteMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repHistorialMezclasPacienteMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/> &nbsp;&nbsp;                                           
+                                            <p:calendar id="txtFechaFin" value="#{repHistorialMezclasPacienteMB.paramBusquedaReporte.fechaFin}"                                                                                                                 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxHour="23" maxMinute="59"                                                        
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade">                                                
+                                                <p:ajax event="dateSelect" listener="#{repHistorialMezclasPacienteMB.obtenerFechaFinal()}" update="txtFechaFin"/>                                                
+                                            </p:calendar>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Area" />
+                                            <br/>
+                                            <p:outputLabel style="margin-right: 5px;"
+                                                           value="#{repHistorialMezclasPacienteMB.estructura.nombre}" 
+                                                           rendered="#{repHistorialMezclasPacienteMB.administrador and repHistorialMezclasPacienteMB.jefeArea}"/>
+                                            <p:selectOneMenu id="comboAlmacenSubAlmacen" 
+                                                             value="#{repHistorialMezclasPacienteMB.idEstructura}"
+                                                             style="vertical-align: middle; margin-right: 10px; width: 200px"
+                                                             rendered="#{repHistorialMezclasPacienteMB.administrador or repHistorialMezclasPacienteMB.jefeArea}"
+                                                             filter="true" filterMatchMode="contains" panelStyle="width:250px"> 
+                                                <c:if test="#{repHistorialMezclasPacienteMB.administrador}">
+                                                    <f:selectItem itemLabel="Todos" itemValue="" />
+                                                </c:if>                                                             
+                                                <f:selectItems value="#{repHistorialMezclasPacienteMB.listAlmacenesSubAlm}"
+                                                               var="almacen"
+                                                               itemValue="#{almacen.idEstructura}"
+                                                               itemLabel="#{almacen.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">&nbsp;&nbsp;
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Tipo" />
+                                            <br/>&nbsp;&nbsp;
+                                            <p:selectOneMenu id="comboTipoMezcla" 
+                                                             value="#{repHistorialMezclasPacienteMB.idTipoSolucion}"
+                                                             style="vertical-align: middle; margin-right: 10px; width: 100px"
+                                                             filter="true" filterMatchMode="contains" panelStyle="width:150px"> 
+                                                <f:selectItem itemLabel="Todos" itemValue="" />                                                            
+                                                <f:selectItems value="#{repHistorialMezclasPacienteMB.listTipoSolucion}"
+                                                               var="tipo"
+                                                               itemValue="#{tipo.idTipoSolucion}"
+                                                               itemLabel="#{tipo.clave}"/>
+                                            </p:selectOneMenu>
+                                        </div>    
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            <p:outputLabel value="Médico " style="margin-left: 10px; font-weight: bold; "/>
+                                            <br/>
+                                            <p:autoComplete id="txtMedico" 
+                                                            multiple="false"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{repHistorialMezclasPacienteMB.medicoSelected}"
+                                                            completeMethod="#{repHistorialMezclasPacienteMB.autoCompleteMedicos}"
+                                                            minQueryLength="3"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="medico" 
+                                                            placeholder="  Filtro Nombre Médico....." 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{medico.nombre} #{medico.apellidoPaterno}  #{medico.apellidoMaterno}" itemValue="#{medico}" 
+                                                            converter="musGenericConverter"                                                            
+                                                            scrollHeight = "350"
+                                                            >
+
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Cédula" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{medico.cedProfesional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{medico.nombre}  #{medico.apellidoPaterno}  #{medico.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>                                               
+
+                                            </p:autoComplete>
+                                        </div>
+                                    </div>     
+                                    <div class="ui-g-12 " style="padding: 0em !important;font-weight: bolder;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel value="Paciente *" style="font-weight: bolder;"/>
+                                            <br/>
+                                            <p:autoComplete id="txtPaciente"                                                                                                                        
+                                                            multiple="false"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{repHistorialMezclasPacienteMB.pacienteSelected}"
+                                                            completeMethod="#{repHistorialMezclasPacienteMB.autoCompletePacientes}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500"                                                             
+                                                            maxResults="50" 
+                                                            scrollHeight="300"
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="paciente" 
+                                                            placeholder="Filtro Pacientes" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" itemValue="#{paciente}" 
+                                                            converter="musGenericConverter"
+                                                            >
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Número de Paciente" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.pacienteNumero}" style=" font-size: small;" />
+                                                </p:column>                                                
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.nombreCompleto}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Apellido Paterno" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Apellido Materno" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2" 
+                                             style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            <p:outputLabel style="margin-right: 5px;" value="F. Prescripción:  " />
+                                            <br/>
+                                            <p:inputText value="#{repHistorialMezclasPacienteMB.paramBusquedaReporte.folio}" />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;" value="O. Preparación:   "  />
+                                            <br/>
+                                            <p:inputText value="#{repHistorialMezclasPacienteMB.paramBusquedaReporte.folioSurtimiento}" />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" align="center">
+                                            <p:commandButton value="Generar Reporte"
+                                                             rendered="#{repHistorialMezclasPacienteMB.permiso.puedeVer}"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{repHistorialMezclasPacienteMB.consultar}"
+                                                             update=":formTablaMezclas, :mainForm:msg, :formInfoPaciente, :formTablaHistoricoSoluciones, :tablas, :formInfoPaciente:panelInfoPaciente"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"  
+
+                                                             class="btnNew" styleClass="btnMusAzul"  />
+                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            <!-- p:menuButton value="Exportar Archivo"
+                                                          style="margin-top: 15px" 
+                                                          rendered="# {repHistorialMezclasPacienteMB.permiso.puedeVer}">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="# {repHistorialMezclasPacienteMB.imprimeReporteHistoricoSoluciones()}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();" 
+                                                            icon="fa fa-file-pdf-o" />
+                                                <p:menuitem value="Formato EXCEL"
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false"
+                                                            actionListener="# {repHistorialMezclasPacienteMB.imprimeExcelReporteHistoricoSoluciones()}" />
+                                            </p:menuButton -->
+                                        </div>    
+                                    </div>
+                                </div>    
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form>                    
+                    <p:outputLabel value="No tiene Permiso para esta Transacción"
+                                   rendered="#{!repHistorialMezclasPacienteMB.permiso.puedeVer}" style="color: red; font-weight: bolder;"  />
+                    <h:form id="formTablaMezclas" >
+                        <style type="text/css">
+                            .ui-datatable-header {
+                                height: 20px
+                            }
+                        </style>
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     value="#{repHistorialMezclasPacienteMB.repHistorialMezclasPacienteLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true" scrollWidth="100%" scrollHeight="330"
+                                     style="font-size: x-small !important; width: 100% !important;"
+                                     >
+                            <f:facet name="header" >
+                                <p:commandButton rendered="false" id="toggler" type="button" value="Columnas" style="float:right" icon="fa fa-columns" />
+                                <p:columnToggler datasource="resultadosDT" trigger="toggler" />
+                            </f:facet>
+
+                            <p:column class="" headerText="Fecha" style="width: 5%;">
+                                <h:outputText value="#{result.fechaProgramada}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="Folio" style="width: 5%; " >
+                                <h:outputText value="#{result.folioSurtimiento}"/>
+                            </p:column>
+                            <p:column class="" headerText="Tipo"  style="width: 5%;">
+                                <h:outputText value="#{result.tipoMezcla}"/>
+                            </p:column>
+                            <p:column class="" headerText="Servicio" style="width: 10%;">
+                                <h:outputText value="#{result.servicio}"/>
+                            </p:column>
+                            <p:column class="" headerText="Médico" style="width: 10%;">
+                                <h:outputText value="#{result.nombreMedico}"/>
+                            </p:column>                            
+                            <p:column class="" headerText="Paciente Solicitante" style="width: 10%;">
+                                <h:outputText value="#{result.nombrePaciente}"/>
+                            </p:column>                                                     
+                            <p:column class="" headerText="Mezcla" style="width: 30%;">
+                                <h:outputText value="#{result.nombreMedicamento}"/>
+                            </p:column>
+                            <p:column class="" headerText="Posología" style="width: 10%;">
+                                <h:outputText value="#{result.posologia}"/>
+                            </p:column>
+                            <p:column class="" headerText="Estatus" style="width: 5%;">
+                                <h:outputText value="#{result.estatus}"/>
+                            </p:column>
+                            <p:column headerText="Acciones" exportable="false" style="width: 5%;">
+                                <p:tooltip for="linkDetalle" value="Detalle" position="top"/>
+                                <p:commandLink id="linkDetalle"
+                                               actionListener="#{repHistorialMezclasPacienteMB.buscarDetalleOrden(result.folioSurtimiento, result.folioPrescripcion)}" 
+                                               style="margin: 5px;text-decoration: none;"
+                                               styleClass="iconMusAzul" onclick="PF('statusProcess').show();" 
+                                               update=":formInfoPaciente, :formTablaHistoricoSoluciones, :tblInsumos, :formTablaDiagnosticos, :tablas, :formInfoPaciente:panelInfoPaciente"
+                                               oncomplete="PF('statusProcess').hide(); PF('modalSolucion').show(); " >
+                                    <i class="fa fa-list" />
+                                </p:commandLink>
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                    <br />
+                    
+                    <p:dialog header="INFORMACIÓN DE LA MEZCLA"
+                              widgetVar="modalSolucion"
+                              closeOnEscape="true"
+                              closable="true"
+                              width="95%"
+                              height="700px" 
+                              position="30,10"
+                              modal="true" 
+                              resizable="truw"
+                              responsive="true" 
+                              style="font-size:xx-small !important; " >
+                        <h:form id="formInfoPaciente">
+                            <p:panelGrid id="panelInfoPaciente" rendered="#{repHistorialMezclasPacienteMB.verHistorialMezcla}">
+                                <div class="ui-g panelGris" >
+                                    <p:outputLabel value="Datos Paciente" class="fontCenter"   />
+                                    <div class="ui-g-12" >	                            		
+                                        <div class="ui-g-12 " style="padding: 0em !important;font-weight: bolder;">
+                                            <div class="ui-g-12 ui-md-6 ui-lg-4" align="center">                                                
+                                                <p:menuButton value="Exportar Archivo"
+                                                              style="margin-top: 15px" 
+                                                              rendered="#{repHistorialMezclasPacienteMB.permiso.puedeVer}">
+                                                    <p:menuitem value="Formato PDF"
+                                                                actionListener="#{repHistorialMezclasPacienteMB.imprimeReporteHistoricoPaciente()}" 
+                                                                update=":formPDF"
+                                                                onclick="PF('statusProcess').show();" 
+                                                                oncomplete="PF('statusProcess').hide();PF('mdlReport').show();" 
+                                                                icon="fa fa-file-pdf-o" />
+                                                    <p:menuitem value="Formato EXCEL"
+                                                                icon="fa fa-file-excel-o"
+                                                                ajax="false"
+                                                                rendered="false" 
+                                                                actionListener="#{repHistorialMezclasPacienteMB.imprimeExcelReporteHistoricoPaciente()}" />
+                                                </p:menuButton>
+                                            </div>    
+                                            <div class="ui-g-9 ui-md-6 ui-lg-3" >
+                                                <p:outputLabel style="margin-right: 5px;" value="Nombre: " />
+                                                <p:outputLabel class="textoNegrita" value="#{repHistorialMezclasPacienteMB.paciente.nombreCompleto}" />
+                                            </div>
+                                            <div class="ui-g-9 ui-md-6 ui-lg-2">
+                                                <p:outputLabel style="margin-right: 5px;" value="# Paciente  " />
+                                                <p:outputLabel class="textoNegrita" value="#{repHistorialMezclasPacienteMB.paciente.pacienteNumero}" />
+                                            </div>
+                                            <div class="ui-g-9 ui-md-6 ui-lg-2">
+                                                <p:outputLabel style="margin-right: 5px;" value="F. Nacimiento: " />
+                                                <p:outputLabel class="textoNegrita" value="#{repHistorialMezclasPacienteMB.paciente.fechaNacimiento}" >
+                                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                                </p:outputLabel>    
+                                            </div>
+                                            <ui:remove><div class="ui-g-9 ui-md-6 ui-lg-2" >
+                                                <p:outputLabel style="margin-right: 5px;" value="RFC: " />
+                                                <p:outputLabel class="textoNegrita" value="#{repHistorialMezclasPacienteMB.paciente.rfc}" />
+                                            </div>
+                                            <div class="ui-g-9 ui-md-4 ui-lg-2" >
+                                                <p:outputLabel style="margin-right: 5px;" value="CURP: " />
+                                                <p:outputLabel class="textoNegrita" value="#{repHistorialMezclasPacienteMB.paciente.curp}" />
+                                            </div></ui:remove>
+                                        </div>
+                                        <div class="ui-g-12 " style="padding: 0em !important;font-weight: bolder;">
+                                            <div class="ui-g-9 ui-md-4 ui-lg-1" >
+                                                <p:outputLabel style="margin-right: 5px;" value="Edad: " />
+                                                <p:outputLabel class="textoNegrita" value="#{repHistorialMezclasPacienteMB.paciente.edadPaciente}" />
+                                                <p:outputLabel value=" a" />
+                                            </div>
+                                            <div class="ui-g-9 ui-md-6 ui-lg-1">
+                                                <p:outputLabel style="margin-right: 5px;" value="Peso: " />
+                                                <p:outputLabel class="textoNegrita" value="#{repHistorialMezclasPacienteMB.solucion.pesoPaciente}" />
+                                                <p:outputLabel value=" kg" />
+                                            </div>
+                                            <div class="ui-g-9 ui-md-4 ui-lg-1" >
+                                                <p:outputLabel style="margin-right: 5px;" value="Estatura: " />
+                                                <p:outputLabel class="textoNegrita" value="#{repHistorialMezclasPacienteMB.solucion.tallaPaciente}" />
+                                                <p:outputLabel value=" m" />
+                                            </div>
+                                            <div class="ui-g-9 ui-md-4 ui-lg-2" >
+                                                <p:outputLabel style="margin-right: 5px;" value="Área Corp.: " />
+                                                <p:outputLabel class="textoNegrita" value="#{repHistorialMezclasPacienteMB.solucion.areaCorporal}" />
+                                                <p:outputLabel value=" m²" />
+                                            </div>
+                                            <div class="ui-g-9 ui-md-4 ui-lg-3">
+                                                <p:outputLabel style="margin-right: 5px;" value="Área/Servicio: " />
+                                                <p:outputLabel class="textoNegrita" value="#{repHistorialMezclasPacienteMB.paciente.nombreEstructura}" />
+                                            </div>
+                                            <div class="ui-g-9 ui-md-6 ui-lg-1" >
+                                                <p:outputLabel style="margin-right: 5px;" value="Cama: " />
+                                                <p:outputLabel class="textoNegrita" value="#{repHistorialMezclasPacienteMB.paciente.nombreCama}" />
+                                            </div>
+                                        </div>
+                                    </div>  
+
+                                    <p:outputLabel value="Datos de Mezcla" class="fontCenter"   />
+                                    <div class="ui-g-12" >	                            		
+                                        <div class="ui-g-12 " style="padding: 0em !important;font-weight: bolder;">
+                                            <div class="ui-g-9 ui-md-6 ui-lg-2" >
+                                                <p:outputLabel style="margin-right: 5px;" value="Tipo Sol.:  " />
+                                                <p:outputLabel value="#{repHistorialMezclasPacienteMB.solucion.tipoSolucion}" />
+                                            </div>
+                                            <div class="ui-g-9 ui-md-6 ui-lg-2" >
+                                                <p:outputLabel style="margin-right: 5px;" value="Perfusión Cont.: " />
+                                                <p:outputLabel value="#{repHistorialMezclasPacienteMB.solucion.infusion ? 'SI' : 'NO'}" />
+                                            </div>
+                                            <div class="ui-g-9 ui-md-6 ui-lg-2" >
+                                                <p:outputLabel style="margin-right: 5px;" value="Velocidad: " />
+                                                <p:outputLabel value="#{repHistorialMezclasPacienteMB.solucion.velocidad}" >
+                                                    <f:convertNumber pattern="#0.00" locale="MX_es" />
+                                                </p:outputLabel>
+                                                <p:outputLabel value=" ml/h" />
+                                            </div>
+                                            <ui:remove><div class="ui-g-9 ui-md-6 ui-lg-2" >
+                                                <p:outputLabel style="margin-right: 5px;" value="Ritmo:  " />
+                                                <p:outputLabel value="#{repHistorialMezclasPacienteMB.solucion.ritmo}" >
+                                                    <f:convertNumber pattern="#0.00" locale="MX_es" />
+                                                </p:outputLabel>
+                                                <p:outputLabel value=" cm³/min" />
+                                            </div></ui:remove>
+                                            <div class="ui-g-9 ui-md-6 ui-lg-2" >
+                                                <p:outputLabel style="margin-right: 5px;" value="Contenedor: " />
+                                                <p:outputLabel value="#{repHistorialMezclasPacienteMB.solucion.tipoEnvase}" />
+                                            </div>
+                                            <div class="ui-g-9 ui-md-6 ui-lg-2" >
+                                                <p:outputLabel style="margin-right: 5px;" value="Volumen: " />
+                                                <p:outputLabel value="#{repHistorialMezclasPacienteMB.solucion.volumen}" />
+                                                <p:outputLabel value=" cm³/min" />
+                                            </div>
+                                            
+                                            <ui:remove>
+                                                <div class="ui-g-9 ui-md-6 ui-lg-2" >
+                                                    <p:outputLabel style="margin-right: 5px;" value="Fecha Ministración:  " />
+                                                    <p:outputLabel value="#{repHistorialMezclasPacienteMB.solucion.fechaMinistracion}" />
+                                                </div>
+                                                <div class="ui-g-9 ui-md-6 ui-lg-4" >
+                                                    <p:outputLabel style="margin-right: 5px;" value="Ministro:  " /><br />
+                                                    <p:outputLabel value="#{repHistorialMezclasPacienteMB.solucion.ministro}" />
+                                                </div>
+                                                <div class="ui-g-9 ui-md-6 ui-lg-2" >
+                                                    <p:outputLabel style="margin-right: 5px;" value="Inicio: " />
+                                                    <p:outputLabel value="#{repHistorialMezclasPacienteMB.solucion.fechaProgramada}" >
+                                                        <f:convertDateTime dateStyle="full" pattern="h:mm a"/>
+                                                    </p:outputLabel>    
+                                                </div>
+                                                <div class="ui-g-9 ui-md-6 ui-lg-2" >
+                                                    <p:outputLabel style="margin-right: 5px;" value="Fin: " />
+                                                    <p:outputLabel value="#{repHistorialMezclasPacienteMB.solucion.fechaMinistracion}" >
+                                                        <f:convertDateTime dateStyle="full" pattern="h:mm a"/>
+                                                    </p:outputLabel>    
+                                                </div>
+                                                <div class="ui-g-9 ui-md-6 ui-lg-2" >
+                                                    <p:outputLabel style="margin-right: 5px;" value="Estabilidad: " />
+                                                    <p:outputLabel value="#{repHistorialMezclasPacienteMB.solucion.estabilidad}" />
+                                                    <p:outputLabel style="margin-right: 5px;" value="hrs" />
+                                                </div>
+                                            </ui:remove>
+                                        </div>
+                                    </div>    
+                                </div>
+                            </p:panelGrid>    
+                        </h:form>    
+                        <br/>
+                        <h:form id="formTablaHistoricoSoluciones" >
+                            <p:dataTable var="result"  value="#{repHistorialMezclasPacienteMB.listaHistoricoSoluciones}" paginator="false" rows="10"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                         currentPageReportTemplate=" "  id="resultadosHistoricoSoluciones" 
+                                         emptyMessage="" paginatorPosition="bottom" style="font-size: x-small !important;"
+                                         scrollable="true"  scrollHeight="390" disabledTextSelection="false" rendered="#{repHistorialMezclasPacienteMB.verHistorialMezcla}" >
+
+                                <f:facet name="header" >
+                                    Historial de la Mezcla
+                                </f:facet>
+                                <p:column class="columnLeft10" headerText="FASE" style="width: 15%;">
+                                    <h:outputText value="#{result.fase}"/>
+                                </p:column>                                                        
+
+                                <p:column class="columnLeft10" headerText="FECHA"  style="width: 10%;">
+                                    <h:outputText value="#{result.fecha}">
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm"/>
+                                    </h:outputText>    
+                                </p:column>   
+
+                                <p:column class="columnLeft30" headerText="FOLIO" style="width: 8%;">
+                                    <h:outputText value="#{result.folio}"/>
+                                </p:column>
+
+                                <p:column class="columnLeft10" headerText="ESTATUS" style="width: 15%" >
+                                    <h:outputText value="#{result.estatus}" />
+                                </p:column>
+
+                                <p:column class="columnLeft10" headerText="USUARIO" style="width: 17%;" >
+                                    <h:outputText value="#{result.usuario}"/>
+                                </p:column>
+
+                                <p:column class="columnLeft8" headerText="SERVICIO" style="width: 15%;">
+                                    <h:outputText value="#{result.servicio}"/>
+                                </p:column> 
+
+                                <p:column class="columnLeft10" headerText="NOTA" style="width: 20%;" >
+                                    <h:outputText  value="#{result.nota}"/>
+                                </p:column>
+
+                            </p:dataTable>
+                        </h:form>
+                        <br />
+                        <p:dataTable id="tblInsumos" 
+                                     widgetVar="tblInsumos" 
+                                     value="#{repHistorialMezclasPacienteMB.listaSurtimientoInsumos}" 
+                                     var="item" rowIndexVar="row" style="font-size: x-small !important;" styleClass="mystyle"  scrollable="true" scrollHeight="250" 
+                                     emptyMessage="No se encontraron Registros" 
+                                     paginatorTemplate="{Records} {CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "    paginator="false" rows="10"  paginatorPosition="bottom"  disabledSelection="true"  > 
+                            <f:facet name="header" >
+                                Insumos de la mezcla
+                            </f:facet>
+                            <p:column style="text-align: left; width: 12% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Clave" />
+                                </f:facet>
+                                <h:outputText value="#{item.claveInstitucional}" class="textoNegrita" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 53% ">
+                                <f:facet name="header" >
+                                    <h:outputText value="Descripción" />
+                                </f:facet>
+                                <h:outputText value="#{item.nombreCorto}" title="#{item.nombreCorto}" class="limitText" />
+                            </p:column>
+                            <ui:remove>
+                                <p:column style="text-align: left; width: 15% ">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Concentración" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.concentracion}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 7% " >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Cantidad" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.cantidadEnviada}" />
+                                </p:column>
+                            </ui:remove>
+                            <p:column style="text-align: left; width: 7% " >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Dosis" />
+                                    </f:facet>
+                                <h:outputText value="#{item.dosis}" />
+                                </p:column>
+                            
+                            <p:column style="text-align: left; width: 7% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Unidad" />
+                                </f:facet>
+                                <h:outputText value="#{item.unidadConcentracion}" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 15% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Fabricante" />
+                                </f:facet>
+                                <h:outputText value="#{item.nombreFabricante}" />
+                            </p:column>    
+                            <p:column style="text-align: left; width: 15% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Estabilidad" />
+                                </f:facet>
+                                <h:outputText value="#{item.noHorasestabilidad}" />
+                            </p:column> 
+                            <p:column style="text-align: left; width: 10% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Fecha máxima de uso: " />
+                                </f:facet>
+                                <h:outputText value="#{item.caducidad}" class="textoNegrita" > 
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column style="text-align: left; width: 10% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Lote" />
+                                </f:facet>
+                                <h:outputText value="#{item.lote}" class="textoNegrita" />
+                            </p:column>
+                            <p:column style="text-align: left; width: 15% ">
+                                <f:facet name="header" >
+                                    <h:outputText value="Surtió" />
+                                </f:facet>
+                                <h:outputText value="#{item.nombreSurtio}" />
+                            </p:column>  
+                            <p:column style="text-align: left; width: 10% " >
+                                <f:facet name="header" >
+                                    <h:outputText value="Servicio" />
+                                </f:facet>
+                                <h:outputText value="#{item.estructuraPrescripcion}" />
+                            </p:column>    
+                        </p:dataTable>
+                        <br />
+                        <h:form id="formTablaDiagnosticos" >
+                            <p:dataTable var="diagnos"  value="#{repHistorialMezclasPacienteMB.listaDiagnosticos}" paginator="false" rows="10"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                         currentPageReportTemplate=" "  id="listaDiagnosticos" 
+                                         emptyMessage="" paginatorPosition="bottom" style="font-size: x-small !important;"
+                                         scrollable="true"  scrollHeight="390" disabledTextSelection="false"  rendered="#{repHistorialMezclasPacienteMB.verTablaDiagnosticos}">
+                                <f:facet name="header">Diagnósticos</f:facet>
+                                <p:column class="columnLeft10" headerText="CLAVE" style="width: 25%;">
+                                    <h:outputText value="#{diagnos.clave}"/>
+                                </p:column>  
+
+                                <p:column class="columnLeft10" headerText="DESCRIPCIÓN" style="width: 75%;">
+                                    <h:outputText value="#{diagnos.nombre}"/>
+                                </p:column>      
+                            </p:dataTable>    
+                        </h:form>    
+
+                        <br />
+                        <p:outputLabel value="Protocolo" class="fontCenter"   rendered="#{repHistorialMezclasPacienteMB.verTablaProtocolo}"/>
+
+                        <h:form id="tablas" >
+                            <p:dataTable var="proto"  value="#{repHistorialMezclasPacienteMB.listaProtocolos}" paginator="true" rows="10"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                         currentPageReportTemplate=" "  id="listaProtocolos" 
+                                         emptyMessage="" paginatorPosition="bottom" style="font-size: x-small !important;"
+                                         scrollable="true"  scrollHeight="390" disabledTextSelection="false" rendered="#{repHistorialMezclasPacienteMB.verTablaProtocolo}"
+                                         >
+
+                                <p:column class="columnLeft10" headerText="CLAVE MEDICAMENTO" style="width: 10%;">
+                                    <h:outputText value="#{proto.claveMedicamento}" />
+                                </p:column>
+                                <p:column class="columnLeft10" headerText="NOMBRE MEDICAMENTO" style="width: 75%;">
+                                    <h:outputText value="#{proto.nombreMedicamento}"/>
+                                </p:column>
+                                <p:column class="columnLeft10" headerText="TIPO" style="width: 5%;">
+                                    <h:outputText value="#{proto.claveProtocolo}"/>
+                                </p:column>     
+
+                                <p:column class="columnLeft10" headerText="No CICLOS"    style="width: 5%;">
+                                    <h:outputText value="#{proto.ciclos}"/>
+                                </p:column>
+
+                                <p:column class="columnLeft10" headerText="No DIAS" style="width: 5%" >
+                                    <h:outputText value="#{proto.periodo}" />
+                                </p:column>
+                            </p:dataTable>  
+                            <br />
+
+                            <p:outputLabel value="Eventos Adversos" class="fontCenter"  rendered="#{repHistorialMezclasPacienteMB.verEventosAdversos}" />
+                            <p:dataTable var="evento"  value="#{repHistorialMezclasPacienteMB.listaAlertaFarmacovigilancia}" paginator="true" rows="10"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                         currentPageReportTemplate=" "  id="listaEventos" 
+                                         emptyMessage="" paginatorPosition="bottom" style="font-size: x-small !important;"
+                                         scrollable="true"  scrollHeight="390" disabledTextSelection="false" rendered="#{repHistorialMezclasPacienteMB.verEventosAdversos}"
+                                         >
+                                <p:column class="columnLeft10" headerText="FACTOR UNO" style="width: 38%;">
+                                    <h:outputText value="#{evento.factor1}"/>
+                                </p:column>  
+
+                                <p:column class="columnLeft10" headerText="FACTOR DOS" style="width: 38%;">
+                                    <h:outputText value="#{evento.factor2}"/>
+                                </p:column>  
+
+                                <p:column class="columnLeft10" headerText="TIPO" style="width: 12%;">
+                                    <h:outputText value="#{evento.tipo}"/>
+                                </p:column>  
+
+                                <p:column class="columnLeft10" headerText="CLASIFICACIÓN" style="width: 12%;">
+                                    <h:outputText value="#{evento.clasificacion}"/>
+                                </p:column>  
+                            </p:dataTable>    
+                        </h:form>
+                    </p:dialog>
+                    
+                    
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false"
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

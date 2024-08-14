@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.PacienteServicioMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.PacienteServicio" parameterType="mx.mc.model.PacienteServicio" >
+        SELECT idPacienteServicio , idVisita , idEstructura , fechaAsignacionInicio , idUsuarioAsignacionInicio , fechaAsignacionFin , idUsuarioAsignacionFin , idMotivoPacienteMovimiento , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario
+        FROM pacienteServicio
+        WHERE 1=1
+        <if test=" idPacienteServicio != null ">
+            AND idPacienteServicio = #{ idPacienteServicio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idVisita != null ">
+            AND idVisita = #{ idVisita , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaAsignacionInicio != null ">
+            AND fechaAsignacionInicio = #{ fechaAsignacionInicio , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idUsuarioAsignacionInicio != null ">
+            AND idUsuarioAsignacionInicio = #{ idUsuarioAsignacionInicio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idMotivoPacienteMovimiento != null ">
+            AND idMotivoPacienteMovimiento = #{ idMotivoPacienteMovimiento , jdbcType = INTEGER }
+        </if>
+        ORDER BY insertFecha DESC
+        LIMIT 0, 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.PacienteServicio" parameterType="mx.mc.model.PacienteServicio" >
+        SELECT idPacienteServicio , idVisita , idEstructura , fechaAsignacionInicio , idUsuarioAsignacionInicio , fechaAsignacionFin , idUsuarioAsignacionFin , idMotivoPacienteMovimiento , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario
+        FROM pacienteServicio
+        WHERE 1=1
+        <if test=" idPacienteServicio != null ">
+            AND idPacienteServicio = #{ idPacienteServicio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idVisita != null ">
+            AND idVisita = #{ idVisita , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaAsignacionInicio != null ">
+            AND fechaAsignacionInicio = #{ fechaAsignacionInicio , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idUsuarioAsignacionInicio != null ">
+            AND idUsuarioAsignacionInicio = #{ idUsuarioAsignacionInicio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idMotivoPacienteMovimiento != null ">
+            AND idMotivoPacienteMovimiento = #{ idMotivoPacienteMovimiento , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <select id="obtenerPacienteServicioAbierto" parameterType="mx.mc.model.PacienteServicio" resultType="mx.mc.model.PacienteServicio">
+        SELECT idPacienteServicio,idVisita,idEstructura,fechaAsignacionInicio,
+               idUsuarioAsignacionInicio,fechaAsignacionFin,idUsuarioAsignacionFin,
+               idMotivoPacienteMovimiento,insertFecha,insertIdUsuario,updateFecha,
+               updateIdUsuario
+        FROM pacienteServicio
+        WHERE fechaAsignacionFin IS NULL
+        <if test=" idPacienteServicio != null ">
+            AND idPacienteServicio = #{ idPacienteServicio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idVisita != null ">
+            AND idVisita = #{ idVisita , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        ORDER BY insertFecha DESC
+        LIMIT 1
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.PacienteServicio" >
+        INSERT INTO pacienteServicio
+        (
+        idPacienteServicio 
+        , idVisita 
+        , idEstructura 
+        , fechaAsignacionInicio 
+        , idUsuarioAsignacionInicio 
+        , fechaAsignacionFin 
+        , idUsuarioAsignacionFin 
+        , idMotivoPacienteMovimiento 
+        , idMedico
+        , insertFecha 
+        , insertIdUsuario 
+        , updateFecha 
+        , updateIdUsuario 
+        ) VALUES (
+        #{ idPacienteServicio  , jdbcType = VARCHAR }
+        , #{ idVisita  , jdbcType = VARCHAR }
+        , #{ idEstructura  , jdbcType = VARCHAR }
+        , #{ fechaAsignacionInicio  , jdbcType = TIMESTAMP }
+        , #{ idUsuarioAsignacionInicio  , jdbcType = VARCHAR }
+        , #{ fechaAsignacionFin  , jdbcType = TIMESTAMP }
+        , #{ idUsuarioAsignacionFin  , jdbcType = VARCHAR }
+        , #{ idMotivoPacienteMovimiento  , jdbcType = INTEGER }
+        , #{ idMedico  , jdbcType = VARCHAR }
+        , #{ insertFecha  , jdbcType = TIMESTAMP }
+        , #{ insertIdUsuario  , jdbcType = VARCHAR }
+        , #{ updateFecha  , jdbcType = TIMESTAMP }
+        , #{ updateIdUsuario  , jdbcType = VARCHAR }
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.PacienteServicio"  >
+        UPDATE pacienteServicio SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        , fechaAsignacionFin = #{ fechaAsignacionFin , jdbcType = TIMESTAMP }
+        , idUsuarioAsignacionFin = #{ idUsuarioAsignacionFin , jdbcType = VARCHAR }
+        , idMotivoPacienteMovimiento = #{ idMotivoPacienteMovimiento , jdbcType = INTEGER }
+        <if test="idMedico != null">
+           , idMedico = #{idMedico ,  jdbcType = VARCHAR}
+        </if>
+        <if test="justificacion != null">
+            ,justificacion = #{justificacion , jdbcType = VARCHAR}
+        </if>
+        WHERE idPacienteServicio = #{ idPacienteServicio , jdbcType = VARCHAR }
+    </update>
+    
+    <select id="obtenerPacienteServicioDia"  parameterType="Map" resultType="mx.mc.model.PacienteServicio" >
+        SELECT 
+            *
+        FROM
+            pacienteServicio
+        WHERE
+            idVisita = #{idVisita}
+        ORDER BY insertFecha DESC
+        LIMIT 1; 
+    </select>
+    
+    <update id="cerrarAsignacionesporIdVisita" parameterType="mx.mc.model.PacienteServicio"  >
+        UPDATE pacienteServicio SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        , fechaAsignacionFin = #{ fechaAsignacionFin , jdbcType = TIMESTAMP }
+        , idUsuarioAsignacionFin = #{ idUsuarioAsignacionFin , jdbcType = VARCHAR }
+        , idMotivoPacienteMovimiento = #{ idMotivoPacienteMovimiento , jdbcType = INTEGER }
+        <if test="justificacion != null">
+            ,justificacion = #{justificacion , jdbcType = VARCHAR}
+        </if>
+        WHERE idVisita = #{ idVisita , jdbcType = VARCHAR }
+        AND fechaAsignacionFin IS NULL
+    </update>
+    
+    <update id="cierraAsignacionesAbiertas" parameterType="Map"  >
+        UPDATE pacienteServicio 
+        JOIN visita ON pacienteServicio.idVisita = visita.idVisita 
+        SET 
+                pacienteServicio.fechaAsignacionFin = #{ fechaAsignacionFin }
+                , pacienteServicio.idMotivoPacienteMovimiento = #{ idMotivoPacienteMovimiento }
+                , pacienteServicio.idUsuarioAsignacionFin = #{ idUsuarioAsignacionFin }
+                , pacienteServicio.updateFecha = #{ updateFecha }
+                , pacienteServicio.updateIdUsuario = #{ updateIdUsuario }
+        WHERE visita.idPaciente = #{ idPaciente }
+        AND pacienteServicio.fechaAsignacionFin is null;
+    </update>
+    
+</mapper>

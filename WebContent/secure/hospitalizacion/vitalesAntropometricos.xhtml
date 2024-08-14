@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanelAmplio" >
+                    <h:form id="mainForm">
+                        <p:focus context="mainForm"/>
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value="Registro de Signos Vitales y Datos Antropométricos"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+
+                            <p:inputText id="busqueda" value="#{vitalesAntropometricoMB.textoBusqueda}" 
+                                         class="textSearch" style="width: 50% !important;" placeholder="Buscar..." />
+                            <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />
+                            <p:spacer width="12px" />
+
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); "
+                                             actionListener="#{vitalesAntropometricoMB.buscaPacientes}" update="@form"  />
+                        </div>
+
+                        <p:messages id="validaMsg" globalOnly="true" showSummary="true" closable="true" showDetail="false"  />
+
+                        <p:dataTable id="tablaPacientes" widgetVar="tablaPacientes" 
+                                     value="#{vitalesAntropometricoMB.pacientesLazy}" var="paciente" 
+                                     selection="#{vitalesAntropometricoMB.pacienteSelect}" rowKey="#{paciente.idPaciente}"
+                                     lazy="true" selectionMode="single" reflow="true" style="text-align: center;" 
+                                     scrollHeight="300" scrollable="true" scrollRows="10" 
+                                     emptyMessage="No se encontraron registros"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" " paginator="true" rows="10" paginatorPosition="bottom" >
+
+                            <p:ajax event="rowDblselect" onstart=PF('statusProcess').show();" oncomplete=" if(args.estatus) { PF('modalPaciente').show(); }"
+                                    listener="#{vitalesAntropometricoMB.mostrarDatosDePaciente(paciente.idPaciente)}" update="mainForm" />
+
+                            <p:column headerText="No de Paciente" style="text-align: left; width: 10%;" sortBy="#{paciente.pacienteNumero}" >
+                                <h:outputText value="#{paciente.pacienteNumero}" />
+                            </p:column>
+
+                            <p:column headerText="No de Seguro" style="text-align: left; width: 10%;" sortBy="#{paciente.claveDerechohabiencia}" >
+                                <h:outputText value="#{paciente.claveDerechohabiencia}" />
+                            </p:column>
+
+                            <p:column headerText="Nombre" style="text-align: left; width: 30%; " sortBy="#{paciente.nombreCompleto}" >
+                                <h:outputText value="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" />
+                            </p:column>
+
+                            <p:column headerText="Fecha Nacimiento" style="text-align: left; width: 10%;" sortBy="#{paciente.fechaNacimiento}" >
+                                <h:outputText value="#{paciente.fechaNacimiento}" ><f:convertDateTime pattern="yyyy-MM-dd"/></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Tipo Paciente" style="text-align: left; width: 15%;" sortBy="#{paciente.idTipoPaciente}" >
+                                <h:outputText value="#{paciente.tipoPaciente}" />
+                            </p:column>
+
+                            <p:column headerText="Servicio" style="text-align: left; width: 20%;" sortBy="#{paciente.nombreEstructura}" >
+                                <h:outputText value="#{paciente.claveEstructura} - #{paciente.nombreEstructura}" />
+                            </p:column>
+
+                            <p:column headerText="Periférico" style="text-align: left; width: 15%;" sortBy="#{paciente.nombreEstructura}" >
+                                <h:outputText value="#{paciente.nombreEstructuraPeriferico}" />
+                            </p:column>
+
+                            <p:column headerText="Fecha Registro" sortBy="#{paciente.insertFecha}" style="width: 10%;">
+                                <h:outputText value="#{paciente.insertFecha}" ><f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Estatus" sortBy="#{paciente.idEstatusPaciente}" style="width: 10%;">
+                                <h:outputText value="#{paciente.estatusPaciente}" />
+                            </p:column>
+
+                            <p:column headerText="Acciones" exportable="false" style="width: 5%;">
+                                <p:commandLink  id="linkEditar" style="margin: 5px;text-decoration: none;" styleClass="iconMusAzul"
+                                                onclick="PF('statusProcess').show();" oncomplete=" if(args.estatus) { PF('modalPaciente').show(); }"
+                                                actionListener="#{vitalesAntropometricoMB.mostrarDatosDePaciente(paciente.idPaciente)}" update=":mainForm"
+                                                rendered="#{vitalesAntropometricoMB.permiso.puedeEditar}" >
+                                    <i class="fa fa-pencil"/>
+                                </p:commandLink>
+
+                            </p:column>
+
+                        </p:dataTable>
+
+
+                        <p:dialog header="Información de Paciente" widgetVar="modalPaciente"
+                                  modal="true" resizable="false" closeOnEscape="true" closable="true" width="90%"  >
+
+                            <p:messages id="msgModalInsertar" closable="true" ><p:autoUpdate /> </p:messages>
+
+
+                            <p:tabView id="tabContainer" >
+                                <p:tab>
+                                    <f:facet name="title">
+                                        <h:outputText value="Datos Personales" style="margin-right: 5px;"/>
+                                    </f:facet>
+                                    <p:panelGrid columns="3" styleClass="ui-noborder">
+                                        <p:outputLabel value="Número de Paciente *"/>
+                                        <p:outputLabel value="Número de Seguro *"/>
+                                        <p:outputLabel value="Tipo de Paciente *"/>
+
+                                        <p:inputText style="width: 350px;" disabled="true" maxlength="20" value="#{vitalesAntropometricoMB.pacienteSelect.pacienteNumero}" />
+                                        <p:inputText id="polizaSeguro" style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteSelect.claveDerechohabiencia}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="20" />
+                                        <p:selectOneMenu id="tipoPaciente" value="#{vitalesAntropometricoMB.pacienteSelect.idTipoPaciente}" autoWidth="false" style="width: 332px;"
+                                                         filter="true" filterMatchMode="contains" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaTipoPacientes}" var="tipoPaciente"
+                                                           itemValue="#{tipoPaciente.idCatalogoGeneral}" itemLabel="#{tipoPaciente.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel value="Unidad Médica de Referencia *"/>
+                                        <p:outputLabel value="Nombre(s) *"/>
+                                        <p:outputLabel value="Apellido Paterno *"/>
+
+                                        <p:selectOneMenu id="unidadMedica"  autoWidth="false" style="width: 332px;" value="#{vitalesAntropometricoMB.pacienteSelect.idUnidadMedica}"
+                                                         filter="true" filterMatchMode="contains" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaUnidadesMedicas}" var="unidadMedica"
+                                                           itemValue="#{unidadMedica.idCatalogoGeneral}" itemLabel="#{unidadMedica.nombreCatalogo}" />
+                                        </p:selectOneMenu>
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteSelect.nombreCompleto}" disabled="#{vitalesAntropometricoMB.desabilitado}"  maxlength="45" /> 
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteSelect.apellidoPaterno}" disabled="#{vitalesAntropometricoMB.desabilitado}"  maxlength="45" />
+
+                                        <p:outputLabel value="Apellido Materno"/>
+                                        <p:outputLabel value="Sexo *"/>
+                                        <p:outputLabel value="Fecha de nacimiento *"/>
+
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteSelect.apellidoMaterno}" disabled="#{vitalesAntropometricoMB.desabilitado}"  maxlength="45" />
+                                        <p:selectOneButton value="#{vitalesAntropometricoMB.pacienteSelect.sexo}">
+                                            <f:selectItem itemLabel="Masculino" itemValue="M" />
+                                            <f:selectItem itemLabel="Femenino" itemValue="F" />
+                                        </p:selectOneButton>
+                                        <p:calendar value="#{vitalesAntropometricoMB.pacienteSelect.fechaNacimiento}" disabled="#{vitalesAntropometricoMB.desabilitado}"
+                                                    size="39" navigator="true" yearRange="c-100:c" pattern="dd/MM/yyyy" locale="es" maxdate="#{vitalesAntropometricoMB.fechaActual}"/>
+                                        <p:outputLabel value="RFC"/>
+                                        <p:outputLabel value="CURP"/>
+                                        <p:outputLabel value="Ocupación *" />
+
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteSelect.rfc}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="13" />
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteSelect.curp}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="18" />
+                                        <p:selectOneMenu id="ocupacion" value="#{vitalesAntropometricoMB.pacienteSelect.idOcupacion}" autoWidth="false" style="width: 332px;" 
+                                                         filter="true" filterMatchMode="contains" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaOcupacion}" var="ocupacion"
+                                                           itemValue="#{ocupacion.idCatalogoGeneral}" itemLabel="#{ocupacion.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel value="Grupo Étnico *"/>
+                                        <p:outputLabel value="Estado Civil *"/>
+                                        <p:outputLabel value="Escolaridad *"/>
+
+                                        <p:selectOneMenu id="gpoEtnico" value="#{vitalesAntropometricoMB.pacienteSelect.idGrupoEtnico}" autoWidth="false" style="width: 332px;"
+                                                         filter="true" filterMatchMode="contains" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaGrupEtnico}" var="gpoEtnico"
+                                                           itemValue="#{gpoEtnico.idCatalogoGeneral}" itemLabel="#{gpoEtnico.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu id="estadoCivil"  value="#{vitalesAntropometricoMB.pacienteSelect.idEstadoCivil}" autoWidth="false" style="width: 332px;" 
+                                                         filter="true" filterMatchMode="contains" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaEstadoCivil}" var="estadoCivil"
+                                                           itemValue="#{estadoCivil.idCatalogoGeneral}" itemLabel="#{estadoCivil.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu id="escolaridad" value="#{vitalesAntropometricoMB.pacienteSelect.idEscolaridad}" autoWidth="false" style="width: 332px;" 
+                                                         filter="true" filterMatchMode="contains" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaEscolaridad}" var="escolaridad"
+                                                           itemValue="#{escolaridad.idCatalogoGeneral}" itemLabel="#{escolaridad.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel value="Religión *"/>
+                                        <p:outputLabel value="Grupo Sanguíneo *"/>
+                                        <p:outputLabel value="Nivel Socioeconómico *"/>
+
+                                        <p:selectOneMenu id="religion" value="#{vitalesAntropometricoMB.pacienteSelect.idReligion}" autoWidth="false" style="width: 332px;" 
+                                                         filter="true" filterMatchMode="contains" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaReligion}" var="religion"
+                                                           itemValue="#{religion.idCatalogoGeneral}" itemLabel="#{religion.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu id="gpoSanguineo" value="#{vitalesAntropometricoMB.pacienteSelect.idGrupoSanguineo}" autoWidth="false" style="width: 332px;" 
+                                                         filter="true" filterMatchMode="contains" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaGpoSanguineo}" var="gpoSanguineo"
+                                                           itemValue="#{gpoSanguineo.idCatalogoGeneral}" itemLabel="#{gpoSanguineo.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu id="nvelSocEconom" value="#{vitalesAntropometricoMB.pacienteSelect.idNivelSocioEconomico}" autoWidth="false" style="width: 332px;" 
+                                                         filter="true" filterMatchMode="contains" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaNivSocEconom}" var="nvelSocEconom"
+                                                           itemValue="#{nvelSocEconom.idCatalogoGeneral}" itemLabel="#{nvelSocEconom.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+
+
+                                        <p:outputLabel value="Tipo de vivienda *"/>
+                                        <p:outputLabel value="Turno "/>
+                                        <p:outputLabel />      
+
+                                        <p:selectOneMenu id="tipoVivienda" value="#{vitalesAntropometricoMB.pacienteSelect.idTipoVivienda}" autoWidth="false" style="width: 332px;" 
+                                                         filter="true" filterMatchMode="contains" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaTipoVivienda}" var="tipoVivienda"
+                                                           itemValue="#{tipoVivienda.idCatalogoGeneral}" itemLabel="#{tipoVivienda.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+
+                                        <p:selectCheckboxMenu id="turnoGenerico" label="Turnos" value="#{vitalesAntropometricoMB.listaIdTurnos}" 
+                                                              style="width: 332px;" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaTurnos}" var="turno" itemValue="#{turno.idTurno}" itemLabel="#{turno.nombre}"/>
+                                        </p:selectCheckboxMenu>
+
+                                    </p:panelGrid>
+                                </p:tab>
+                                <p:tab id="tabDireccion">
+                                    <f:facet name="title">
+                                        <h:outputText value="Dirección" style="margin-right: 5px;"/>
+                                    </f:facet>
+                                    <p:panelGrid styleClass="ui-noborder" id="panelDireccion" columns="3">
+                                        <p:outputLabel value="Calle *" />
+                                        <p:outputLabel value="No. Ext. *"/>
+                                        <p:outputLabel value="No. Int. " />
+
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteDomicilio.calle}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="200" />
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteDomicilio.numeroExterior}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="45" />
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteDomicilio.numeroInterior}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="45" />
+
+                                        <p:outputLabel value="Teléfono Principal (10 Dígitos) *"/>
+                                        <p:outputLabel value="Teléfono Secundario (10 Dígitos) "/>
+                                        <p:outputLabel value="Extensión "/>
+
+                                        <p:inputText id="telPrincipal" style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteDomicilio.telefonoCasa}" disabled="#{vitalesAntropometricoMB.desabilitado}"
+                                                     validatorMessage="Solo se permiten numeros !!!" maxlength="10">
+                                            <p:keyFilter regEx="/[0-9]/i"/>
+                                        </p:inputText>
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteDomicilio.telefonoOficina}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="10">
+                                            <p:keyFilter regEx="/[0-9]/i"/>
+                                        </p:inputText>
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteDomicilio.extencion}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="10"/>
+
+                                        <p:outputLabel value="Teléfono Celular (10 Dígitos)"/>
+                                        <p:outputLabel value="Correo Electrónico "/>
+                                        <p:outputLabel value="Cuenta de Facebook "/>
+
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteDomicilio.telefonoCelular}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="10">
+                                            <p:keyFilter regEx="/[0-9]/i"/>
+                                        </p:inputText>
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteDomicilio.correoElectronico}" disabled="#{vitalesAntropometricoMB.desabilitado}"  maxlength="90" />
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteDomicilio.cuentaFacebook}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="45" />
+
+                                        <p:outputLabel value="País  *"/>
+                                        <p:outputLabel rendered="#{vitalesAntropometricoMB.mostrarDatosUbicacion}" value="Estado *"/>
+                                        <p:outputLabel rendered="#{vitalesAntropometricoMB.mostrarDatosUbicacion}" value="Municipio *"/>
+
+                                        <p:selectOneMenu id="pais" value="#{vitalesAntropometricoMB.pacienteDomicilio.idPais}" autoWidth="false" style="width: 332px;" 
+                                                         filter="true" filterMatchMode="contains" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <p:ajax listener="#{vitalesAntropometricoMB.evaluaMostrarUbicacion}" update="panelDireccion" process="@form"/>
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaPaises}" var="pais"
+                                                           itemValue="#{pais.idPais}" itemLabel="#{pais.nombrePais}"/>
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu id="estado" filter="true" filterMatchMode="contains" value="#{vitalesAntropometricoMB.idEstado}" autoWidth="false" style="width: 332px;"
+                                                         rendered="#{vitalesAntropometricoMB.mostrarDatosUbicacion}" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaEstados}" var="estados"
+                                                           itemValue="#{estados.cEstado}" itemLabel="#{estados.dEstado}"/>
+                                            <p:ajax update="municipio,colonia,codPostal" listener="#{vitalesAntropometricoMB.onChangeEstados}"/>
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu id="municipio" filter="true" filterMatchMode="contains" value="#{vitalesAntropometricoMB.idMunicipio}" autoWidth="false" style="width: 332px;"
+                                                         rendered="#{vitalesAntropometricoMB.mostrarDatosUbicacion}" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaMunicipios}" var="municipio"
+                                                           itemValue="#{municipio.cMnpio}" itemLabel="#{municipio.dMnpio}"/>
+                                            <p:ajax update="colonia,codPostal" listener="#{vitalesAntropometricoMB.onChangeMunicipios()}"/>
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel rendered="#{vitalesAntropometricoMB.mostrarDatosUbicacion}" value="Colonia *"/>
+                                        <p:outputLabel rendered="#{vitalesAntropometricoMB.mostrarDatosUbicacion}" value="Código Postal "/>
+                                        <p:selectOneMenu id="colonia" filter="true" filterMatchMode="contains" value="#{vitalesAntropometricoMB.idColonia}" autoWidth="false" style="width: 332px;"
+                                                         rendered="#{vitalesAntropometricoMB.mostrarDatosUbicacion}" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaColonias}" var="colonia"
+                                                           itemValue="#{colonia.idAsentaCpcons}" itemLabel="#{colonia.dAsenta}"/>
+                                            <p:ajax update="panelDireccion" process="panelDireccion" listener="#{vitalesAntropometricoMB.onChangeColonias}"/>
+                                        </p:selectOneMenu>
+                                        <p:autoComplete id="codPostal" style="width: 350px;" autoHighlight="false" minQueryLength="5" forceSelection="true"
+                                                        rendered="#{vitalesAntropometricoMB.mostrarDatosUbicacion}" value="#{vitalesAntropometricoMB.codigoPostalSepomex}" disabled="#{vitalesAntropometricoMB.desabilitado}" 
+                                                        completeMethod="#{vitalesAntropometricoMB.autoCompletarCodigoPostal}" var="item"  
+                                                        itemLabel="#{item.dAsenta}" itemValue="#{item}" maxlength="5" converter="sepomexConverter" >
+                                            <p:ajax event="itemSelect" listener="#{vitalesAntropometricoMB.onItemSelect}" update="panelDireccion" process="panelDireccion" />
+                                            <p:keyFilter for="codPostal" regEx="/[0-9]/i" />
+                                        </p:autoComplete>
+                                    </p:panelGrid>
+                                </p:tab>
+
+                                <p:tab>
+                                    <f:facet name="title">
+                                        <h:outputText value="Datos de Responsable Familiar" style="margin-right: 5px;"/>
+                                    </f:facet>
+                                    <p:panelGrid columns="3" styleClass="ui-noborder">
+                                        <p:outputLabel value="Nombre(s) "/>
+                                        <p:outputLabel value="Apellido Paterno "/>
+                                        <p:outputLabel value="Apellido Materno "/>
+
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteResponsable.nombreCompleto}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="45" />
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteResponsable.apellidoPaterno}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="45" />
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteResponsable.apellidoPaterno}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="45" />
+
+                                        <p:outputLabel value="Parentesco "/>
+                                        <p:outputLabel value="RFC "/>
+                                        <p:outputLabel value="CURP"/>
+                                        <p:selectOneMenu id="parentesco" value="#{vitalesAntropometricoMB.pacienteResponsable.idParentesco}" autoWidth="false" style="width: 332px;" 
+                                                         filter="true" filterMatchMode="contains" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true"  />
+                                            <f:selectItems value="#{vitalesAntropometricoMB.listaParentesco}" var="parentesco"
+                                                           itemValue="#{parentesco.idCatalogoGeneral}" itemLabel="#{parentesco.nombreCatalogo}"/>
+                                        </p:selectOneMenu>
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteResponsable.rfc}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="13" />
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteResponsable.curp}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="18" />
+
+                                        <p:outputLabel value="Teléfono Principal (10 Dígitos) "/>
+                                        <p:outputLabel value="Teléfono Secundario (10 Dígitos) "/>
+                                        <p:outputLabel value="Correo electrónico "/>
+
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteResponsable.telefonoCasa}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="10">
+                                            <p:keyFilter regEx="/[0-9]/i"/>
+                                        </p:inputText>
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteResponsable.telefonoCelular }" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="10">
+                                            <p:keyFilter regEx="/[0-9]/i"/>
+                                        </p:inputText>
+                                        <p:inputText style="width: 350px;" value="#{vitalesAntropometricoMB.pacienteResponsable.correoElectronico}" disabled="#{vitalesAntropometricoMB.desabilitado}" maxlength="45" />
+
+                                        <p:outputLabel value="Responsable Legal "/>
+                                        <p:outputLabel />
+                                        <p:outputLabel />
+
+                                        <p:selectOneButton value="#{vitalesAntropometricoMB.pacienteResponsable.responsableLegal}" disabled="#{vitalesAntropometricoMB.desabilitado}">
+                                            <f:selectItem itemLabel="SI" itemValue="1" />
+                                            <f:selectItem itemLabel="NO" itemValue="0" />
+                                        </p:selectOneButton>
+
+                                        <p:outputLabel />
+                                        <p:outputLabel />
+                                    </p:panelGrid>
+                                </p:tab>
+                            </p:tabView>
+                        </p:dialog>
+
+
+                    </h:form>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

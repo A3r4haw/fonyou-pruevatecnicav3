@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ProcedimientoMapper">
+    <select id="obtenerBusquedaProcedimiento" resultType="mx.mc.model.ProcedimientoExtended" parameterType="Map" >
+        SELECT p.idProcedimiento,
+            p.folio,
+            p.fechaRegistro,
+            ep.estatusProced,
+            p.idPaciente,
+            p.nombrePaciente,
+            p.fechaNacimiento,
+            p.numeroExpediente,
+            p.sexo,
+            p.derechohabiencia,
+            p.unidadMedicaSolicita,
+            p.servicioSolicita,
+            p.especialidadSolicita,
+            us.nombreUsuario as usuarioSolicita,
+            p.cedula,
+            p.cedulaEspecialidad,
+            p.idEstudio,
+            e.claveEstudio,
+            e.descripcion as descEstudio,
+            p.fechaSolicitada,
+            p.idTipoSolicitud,
+            ts.nombreTipoSolicitud as tipoSolicitud,
+            ts.prioridad,
+            p.procedimientoInvasivo,
+            p.idMedioContraste,
+            mc.nombreMedioContraste as medioContraste,
+            p.idSedante,
+            s.nombreSedante as sedante,
+            p.motivoSolicitud,
+            p.atencionEspecial,
+            p.notasSolicitud,
+            p.diagnosticoPresuntivo,
+            p.justificacionClinica,
+            p.idAreaRealiza,
+            p.idModalidad,
+            p.fechaProgramada,
+            up.nombreUsuario as usuarioPrograma,
+            p.observacionesProgramacion,
+            p.fechaArribo,
+            uc.nombreUsuario as usuarioConfirma,
+            p.notasArribo,
+            p.fechaAsignaMod,
+            ua.nombreUsuario as usuarioAsigna,
+            p.notasAsignaMod,
+            p.fechaRealiza,
+            ur.nombreUsuario as usuarioRealiza,
+            p.idModalidadRealiza,
+            p.notasRealiza,
+            p.posicion,
+            p.protocolo,
+            p.objetivo,
+            p.observacionesRealiza,
+            p.eventoAdverso,
+            p.cualEvento,
+            p.equipoMaterialEvenAdv,
+            p.estudioRealizado,
+            p.rutaEstudio,
+            p.reprogramado,
+            p.idMotivoReprogramacion,
+            p.fechaReprogramado,
+            p.notasReprogramado,
+            p.complicaciones,
+            p.cancelado,
+            p.tecnicaExploracion,
+            p.fechaHoraInterpreta,
+            ui.nombreUsuario as usuarioInterpreta,
+            p.informe,
+            p.impresionDiagnostica,
+            p.concluido
+        FROM procedimiento p INNER JOIN estatusprocedimiento ep ON p.idEstatusProced = ep.idEstatusProced
+             INNER JOIN usuarios us ON p.idUsuarioSolicita = us.idUsuario
+             INNER JOIN estudio e ON p.idEstudio = e.idEstudio
+             INNER JOIN tipoSolicitud ts ON p.idTipoSolicitud = ts.idTipoSolicitud
+             INNER JOIN medioContraste mc ON p.idMedioContraste = mc.idMedioContraste
+             INNER JOIN sedante s ON p.idSedante = s.idSedante
+             LEFT JOIN usuarios up ON p.idUsuarioPrograma = up.idUsuario
+             LEFT JOIN usuarios uc ON p.idUsuarioConfirmaArr = uc.idUsuario
+             LEFT JOIN usuarios ua ON p.idUsuarioAsignaMod = ua.idUsuario
+             LEFT JOIN usuarios ur ON p.idUsuarioRealiza = ur.idUsuario
+             LEFT JOIN usuarios ui ON p.idUsuarioInterpreta = ui.idUsuario
+        WHERE 1=1
+        <if test="tipoProcedimiento > 0 "> AND e.idTipoProcedimiento = #{tipoProcedimiento, jdbcType=INTEGER} </if>
+        <!--if test="paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (e.claveProcedimiento LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR e.descripcion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR t.descripcion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%')
+        </if-->        
+        <if test=" sortField == null" > 
+            ORDER BY p.folio asc
+        </if>
+        <!--if test="sortOrder != null" > 
+            <if test="sortField == 'claveProcedimiento'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY e.claveProcedimiento asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY e.claveProcedimiento desc
+                </if>
+            </if>
+            <if test="sortField == 'descripcion'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY e.descripcion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY e.descripcion desc
+                </if>
+            </if>
+            <if test="sortField == 'descTipoProcedimiento'" >
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY t.descripcion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY t.descripcion desc
+                </if>
+            </if>
+        </if-->
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}                
+    </select>
+    
+    <select id="obtenerTotalBusquedaProcedimiento" resultType="Long" parameterType="Map">
+        SELECT count(*)
+        FROM procedimiento
+        WHERE 1=1
+        <if test="tipoProcedimiento > 0 "> AND idTipoProcedimiento = #{tipoProcedimiento, jdbcType=INTEGER} </if>
+        <!--if test="paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (claveProcedimiento LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR descripcion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%')
+        </if-->
+    </select>
+</mapper>

@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.SurtimientoEnviadoMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.SurtimientoEnviado" parameterType="mx.mc.model.SurtimientoEnviado" >
+        SELECT idSurtimientoEnviado , idSurtimientoInsumo , idInventarioSurtido , cantidadEnviado , cantidadRecibido , idEstatusSurtimiento , presentacionComercial , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , existeSobrante , idTipoJustificante , cantidadExcedente 
+        , usoDeRemanente
+        FROM surtimientoEnviado
+        WHERE 1=1
+        <if test=" idSurtimientoEnviado != null ">
+            AND idSurtimientoEnviado =  #{ idSurtimientoEnviado , jdbcType = VARCHAR }
+        </if>
+        <if test=" idSurtimientoInsumo != null ">
+            and idSurtimientoInsumo =  #{ idSurtimientoInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInventarioSurtido != null ">
+            and idInventarioSurtido =  #{ idInventarioSurtido , jdbcType = VARCHAR }
+        </if>
+        <if test=" cantidadEnviado != null ">
+            and cantidadEnviado =  #{ cantidadEnviado , jdbcType = INTEGER }
+        </if>
+        LIMIT 1;
+    </select>
+
+        
+    <select id="obtenerLista" resultType="mx.mc.model.SurtimientoEnviado" parameterType="mx.mc.model.SurtimientoEnviado" >
+        SELECT idSurtimientoEnviado , idSurtimientoInsumo , idInventarioSurtido , cantidadEnviado , cantidadRecibido , idEstatusSurtimiento , presentacionComercial , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , existeSobrante , idTipoJustificante , cantidadExcedente 
+        , usoDeRemanente
+        FROM surtimientoEnviado
+        WHERE 1=1
+        <if test=" idSurtimientoEnviado != null ">
+            and idSurtimientoEnviado =  #{ idSurtimientoEnviado , jdbcType = VARCHAR }
+        </if>
+        <if test=" idSurtimientoInsumo != null ">
+            and idSurtimientoInsumo =  #{ idSurtimientoInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInventarioSurtido != null ">
+            and idInventarioSurtido =  #{ idInventarioSurtido , jdbcType = VARCHAR }
+        </if>
+        <if test=" cantidadEnviado != null ">
+            and cantidadEnviado =  #{ cantidadEnviado , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <select id="obtenerListaSurtimientoEnviadoPorIdSurtimiento" resultType="mx.mc.model.SurtimientoEnviado" parameterType="Map">
+        SELECT m.idMedicamento as idInsumo, m.claveInstitucional as clave, m.nombreCorto as medicamento, v.lote, v.fechaCaducidad as caducidad, n.fechaInicio, i.idSurtimiento, 
+        i.idPrescripcionInsumo, e.idSurtimientoEnviado, e.idSurtimientoInsumo, e.idInventarioSurtido, e.cantidadEnviado, e.cantidadRecibido, e.idEstatusSurtimiento, 
+        v.presentacionComercial, v.cantidadXCaja as cantidadRecibido
+        FROM surtimientoEnviado e
+        inner join surtimientoInsumo i on i.idSurtimientoInsumo= e.idSurtimientoInsumo
+        inner join prescripcionInsumo n on n.idPrescripcionInsumo = i.idPrescripcionInsumo
+        inner join prescripcion p on p.idPrescripcion = n.idPrescripcion
+        inner join inventario v on v.idInventario = e.idInventarioSurtido
+        inner join medicamento m on m.idMedicamento = v.idInsumo
+        where 
+        i.idSurtimiento = #{ idSurtimiento }  
+        and e.idEstatusSurtimiento = 2
+        ;
+    </select>
+    
+    <select id="detalleInsumoSurtimientoEnviadoPorIdSurtimientoInsumo" resultType="mx.mc.model.SurtimientoEnviado_Extend" parameterType="Map">
+        SELECT m.idMedicamento as idInsumo, m.claveInstitucional as clave, m.nombreCorto as medicamento, v.lote, v.fechaCaducidad as caducidad, n.fechaInicio, 
+        i.idSurtimiento, i.idPrescripcionInsumo, e.idSurtimientoEnviado, e.idSurtimientoInsumo, e.idInventarioSurtido, 
+        e.cantidadEnviado, e.idEstatusSurtimiento
+        FROM surtimientoEnviado e
+        inner join surtimientoInsumo i on i.idSurtimientoInsumo= e.idSurtimientoInsumo
+        inner join prescripcionInsumo n on n.idPrescripcionInsumo = i.idPrescripcionInsumo
+        inner join prescripcion p on p.idPrescripcion = n.idPrescripcion
+        inner join inventario v on v.idInventario = e.idInventarioSurtido
+        inner join medicamento m on m.idMedicamento = v.idInsumo
+        where e.idEstatusSurtimiento = 2
+            <if test="idSurtimientoInsumo != null"> and i.idSurtimientoInsumo = #{idSurtimientoInsumo}</if>
+        ;
+    </select>
+    
+    <select id="detalleInsumoSurtimientoDevolucion" resultType="mx.mc.model.SurtimientoEnviado" parameterType="Map">
+        SELECT m.idMedicamento as idInsumo,m.claveInstitucional as clave, m.nombreCorto as medicamento, v.lote, v.fechaCaducidad as caducidad, n.fechaInicio, 
+	i.idSurtimiento, i.idPrescripcionInsumo, e.idSurtimientoEnviado, e.idSurtimientoInsumo, e.idInventarioSurtido, 
+	if((e.cantidadEnviado - e.cantidadRecibido)>0, (e.cantidadEnviado - e.cantidadRecibido), 
+            (select count(*) from surtimientoMinistrado where idSurtimientoEnviado=e.idSurtimientoEnviado and (idEstatusSurtimiento=1 OR idEstatusSurtimiento=4))) as cantidadEnviado
+	, e.idEstatusSurtimiento
+	FROM surtimientoEnviado e
+        inner join surtimientoInsumo i on i.idSurtimientoInsumo= e.idSurtimientoInsumo
+        inner join prescripcionInsumo n on n.idPrescripcionInsumo = i.idPrescripcionInsumo
+        inner join prescripcion p on p.idPrescripcion = n.idPrescripcion
+        inner join inventario v on v.idInventario = e.idInventarioSurtido
+        inner join medicamento m on m.idMedicamento = v.idInsumo
+        where e.idEstatusSurtimiento = 4
+        <if test="idPrescripcion != null "> and p.idPrescripcion = #{idPrescripcion}</if>
+        ;
+    </select>
+
+    <select id="surtimientoEnviadoByPrecripcion" resultType="java.lang.String" parameterType="Map">
+        SELECT m.claveInstitucional   FROM prescripcion p 
+            inner join prescripcionInsumo pi on pi.idPrescripcion = p.idPrescripcion
+            inner join medicamento m on m.idMedicamento = pi.idInsumo
+        <if test="idPrescripcion != null "> where p.idPrescripcion = #{idPrescripcion}</if>
+        ;
+    </select>
+        
+     <select id="detalleInsumoSurtimientoDevolucionExtend" resultType="mx.mc.model.SurtimientoEnviado_Extend" parameterType="Map">
+        SELECT m.idMedicamento as idInsumo,m.claveInstitucional as clave, m.nombreCorto as medicamento, v.lote, v.fechaCaducidad as caducidad, n.fechaInicio, 
+	i.idSurtimiento, i.idPrescripcionInsumo, e.idSurtimientoEnviado, e.idSurtimientoInsumo, e.idInventarioSurtido, 
+	if((e.cantidadEnviado - e.cantidadRecibido)>0, (e.cantidadEnviado - e.cantidadRecibido), 
+            (select count(*) from surtimientoMinistrado where idSurtimientoEnviado=e.idSurtimientoEnviado and (idEstatusSurtimiento=1 OR idEstatusSurtimiento=4))) as cantidadEnviado
+	, e.idEstatusSurtimiento
+	FROM surtimientoEnviado e
+        inner join surtimientoInsumo i on i.idSurtimientoInsumo= e.idSurtimientoInsumo
+        inner join prescripcionInsumo n on n.idPrescripcionInsumo = i.idPrescripcionInsumo
+        inner join prescripcion p on p.idPrescripcion = n.idPrescripcion
+        inner join inventario v on v.idInventario = e.idInventarioSurtido
+        inner join medicamento m on m.idMedicamento = v.idInsumo
+        where e.idEstatusSurtimiento = 4
+        <if test="idPrescripcion != null "> and p.idPrescripcion = #{idPrescripcion}</if>
+        ;
+    </select>
+    
+    <select id="insumosEnMinistracion"  resultType="mx.mc.model.SurtimientoEnviado" parameterType="Map">
+        SELECT  
+            e.idSurtimientoEnviado
+           ,e.idInventarioSurtido
+           ,e.idSurtimientoInsumo
+           ,(select count(*) from surtimientoMinistrado where (idEstatusSurtimiento=1 OR idEstatusSurtimiento=4) and idSurtimientoEnviado=#{idSurtimientoEnviado}) as cantidadRecibido
+           ,s.orden
+           ,s.cantidad
+           ,s.idEstatusSurtimiento
+           ,i.idInsumo
+           ,m.claveInstitucional as clave
+           ,m.nombreCorto as medicamento
+           ,i.lote
+           ,i.fechaCaducidad as caducidad
+        FROM surtimientoEnviado e
+        inner join  surtimientoMinistrado s on s.idSurtimientoEnviado=e.idSurtimientoEnviado
+        inner join inventario i on i.idInventario = e.idInventarioSurtido
+        inner join medicamento m on m.idMedicamento = i.idInsumo
+        inner join surtimientoInsumo ii on ii.idSurtimientoInsumo= e.idSurtimientoInsumo
+        inner join prescripcionInsumo n on n.idPrescripcionInsumo = ii.idPrescripcionInsumo
+        inner join prescripcion p on p.idPrescripcion = n.idPrescripcion
+        where (s.idEstatusSurtimiento=1 OR s.idEstatusSurtimiento=4)
+        AND s.cantidad>0
+        AND p.folio= #{folio}
+        order by e.idSurtimientoEnviado,s.orden;
+    </select>
+    
+    <select id="insumosEnMinistracionExtend"  resultType="mx.mc.model.SurtimientoEnviado_Extend" parameterType="Map">
+        SELECT  
+            e.idSurtimientoEnviado
+           ,e.idInventarioSurtido
+           ,e.idSurtimientoInsumo
+           ,(select count(*) from surtimientoMinistrado where (idEstatusSurtimiento=1 OR idEstatusSurtimiento=4) and idSurtimientoEnviado=#{idSurtimientoEnviado}) as cantidadRecibido
+           ,s.orden
+           ,s.cantidad
+           ,s.idEstatusSurtimiento
+           ,i.idInsumo
+           ,m.claveInstitucional as clave
+           ,m.nombreCorto as medicamento
+           ,i.lote
+           ,i.fechaCaducidad as caducidad
+        FROM surtimientoEnviado e
+        inner join  surtimientoMinistrado s on s.idSurtimientoEnviado=e.idSurtimientoEnviado
+        inner join inventario i on i.idInventario = e.idInventarioSurtido
+        inner join medicamento m on m.idMedicamento = i.idInsumo
+        inner join surtimientoInsumo ii on ii.idSurtimientoInsumo= e.idSurtimientoInsumo
+        inner join prescripcionInsumo n on n.idPrescripcionInsumo = ii.idPrescripcionInsumo
+        inner join prescripcion p on p.idPrescripcion = n.idPrescripcion
+        where (s.idEstatusSurtimiento=1 OR s.idEstatusSurtimiento=4)
+        AND s.cantidad>0
+        AND p.folio= #{folio}
+        order by e.idSurtimientoEnviado,s.orden;
+    </select>
+    
+    <select id="obtenerByIdPrescripcion" resultType="mx.mc.model.SurtimientoEnviado" parameterType="Map" >
+        select idInventarioSurtido , cantidadEnviado
+        from surtimientoEnviado 
+        where idSurtimientoInsumo in (
+        select idSurtimientoInsumo 
+        from surtimientoInsumo 
+        where idSurtimiento in (
+        select idSurtimiento 
+        from surtimiento 
+        where idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR } )
+        )
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.SurtimientoEnviado" >
+        INSERT INTO surtimientoEnviado (
+        <if test=" idSurtimientoEnviado != null ">
+            idSurtimientoEnviado
+        </if>
+        <if test=" idSurtimientoInsumo != null ">
+            , idSurtimientoInsumo
+        </if>
+        <if test=" idInventarioSurtido != null ">
+            , idInventarioSurtido
+        </if>
+        <if test=" cantidadEnviado != null ">
+            , cantidadEnviado
+        </if>
+        <if test=" cantidadRecibido != null ">
+            , cantidadRecibido
+        </if>
+        <if test=" idEstatusSurtimiento != null ">
+            , idEstatusSurtimiento
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , updateIdUsuario
+        </if>
+        <if test=" existeSobrante != null ">	, existeSobrante	</if>
+        <if test=" idTipoJustificante != null "> , idTipoJustificante		</if>
+        <if test=" cantidadExcedente != null "> , cantidadExcedente		</if>
+        <if test=" usoDeRemanente != null "> , usoDeRemanente		</if>
+        
+        ) VALUES (
+        <if test=" idSurtimientoEnviado != null ">
+            #{ idSurtimientoEnviado , jdbcType = VARCHAR }
+        </if>
+        <if test=" idSurtimientoInsumo != null ">
+            , #{ idSurtimientoInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInventarioSurtido != null ">
+            , #{ idInventarioSurtido , jdbcType = VARCHAR }
+        </if>
+        <if test=" cantidadEnviado != null ">
+            , #{ cantidadEnviado , jdbcType = INTEGER }
+        </if>
+        <if test=" cantidadRecibido != null ">
+            , #{ cantidadRecibido , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstatusSurtimiento != null ">
+            , #{ idEstatusSurtimiento , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" existeSobrante != null ">	, #{ existeSobrante  , jdbcType = INTEGER } </if>
+        <if test=" idTipoJustificante != null "> , #{ idTipoJustificante  , jdbcType = INTEGER } </if>
+        <if test=" cantidadExcedente != null "> , #{ cantidadExcedente  , jdbcType = DECIMAL } </if>
+        <if test=" usoDeRemanente != null "> , #{ usoDeRemanente  , jdbcType = INTEGER } </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.SurtimientoEnviado" >
+        UPDATE surtimientoEnviado SET
+        updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        , updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        <if test=" idInventarioSurtido != null "> , idInventarioSurtido = #{ idInventarioSurtido , jdbcType = VARCHAR } </if>
+        <if test=" cantidadEnviado != null "> , cantidadEnviado = #{ cantidadEnviado , jdbcType = INTEGER } </if>
+        <if test=" idEstatusSurtimiento != null "> , idEstatusSurtimiento = #{ idEstatusSurtimiento , jdbcType = INTEGER } </if>
+        <if test=" existeSobrante != null "> , existeSobrante = #{ existeSobrante  , jdbcType = INTEGER } </if>
+        <if test=" idTipoJustificante != null "> , idTipoJustificante = #{ idTipoJustificante  , jdbcType = INTEGER } </if>
+        <if test=" cantidadExcedente != null "> , cantidadExcedente = #{ cantidadExcedente  , jdbcType = DECIMAL } </if>
+        <if test=" usoDeRemanente != null "> , usoDeRemanente = #{ usoDeRemanente  , jdbcType = INTEGER } </if>
+        WHERE idSurtimientoEnviado = #{ idSurtimientoEnviado , jdbcType = VARCHAR }
+    </update>
+    
+    <update id="actualizaCantidadRecibidaList" parameterType="java.util.List" useGeneratedKeys="false" >
+	<foreach collection="list" item="item"  index="index"  separator=";">
+		UPDATE surtimientoEnviado 
+		<set>
+			cantidadRecibido = #{ item.cantidadRecibido},
+                        idEstatusSurtimiento = #{item.idEstatusSurtimiento},
+			updateFecha = #{ item.updateFecha},
+			updateIdUsuario = #{ item.updateIdUsuario}
+		</set>
+                <if test=" item.existeSobrante != null "> , existeSobrante = #{ item.existeSobrante  , jdbcType = INTEGER } </if>
+                <if test=" item.idTipoJustificante != null "> , idTipoJustificante = #{ item.idTipoJustificante  , jdbcType = INTEGER } </if>
+                <if test=" item.cantidadExcedente != null "> , cantidadExcedente = #{ item.cantidadExcedente  , jdbcType = DECIMAL } </if>
+                <if test=" item.usoDeRemanente != null "> , usoDeRemanente = #{ item.usoDeRemanente  , jdbcType = INTEGER } </if>
+		WHERE idSurtimientoEnviado = #{ item.idSurtimientoEnviado}
+	</foreach>
+    </update>
+    
+    <insert id="registraSurtimientoEnviadoList" parameterType="java.util.List" >
+        INSERT INTO surtimientoEnviado (
+            idSurtimientoEnviado
+            , idSurtimientoInsumo
+            , idInventarioSurtido
+            , cantidadEnviado
+            , cantidadRecibido
+            , idEstatusSurtimiento
+            , insertFecha
+            , insertIdUsuario            
+            , existeSobrante 
+            , idTipoJustificante 
+            , cantidadExcedente 
+            , usoDeRemanente
+            )
+        VALUES
+        <foreach collection="list" item="item" separator="," index="index">  
+            (
+            #{ item.idSurtimientoEnviado , jdbcType = VARCHAR }
+            , #{ item.idSurtimientoInsumo , jdbcType = VARCHAR }
+            , #{ item.idInventarioSurtido , jdbcType = VARCHAR }
+            , #{ item.cantidadEnviado , jdbcType = INTEGER }
+            , #{ item.cantidadRecibido , jdbcType = INTEGER }
+            , #{ item.idEstatusSurtimiento , jdbcType = INTEGER }
+            , #{ item.insertFecha , jdbcType = TIMESTAMP }
+            , #{ item.insertIdUsuario , jdbcType = VARCHAR }            
+            , #{ item.existeSobrante  , jdbcType = INTEGER } 
+            , #{ item.idTipoJustificante  , jdbcType = INTEGER } 
+            , #{ item.cantidadExcedente  , jdbcType = DECIMAL } 
+            , #{ item.usoDeRemanente  , jdbcType = DECIMAL } 
+            )
+        </foreach>
+    </insert>
+    
+    <insert id="registraSurtimientoEnviadoExtendedList" parameterType="java.util.List" >
+        INSERT INTO surtimientoEnviado (
+            idSurtimientoEnviado
+            , idSurtimientoInsumo
+            , idInventarioSurtido
+            , cantidadEnviado
+            , cantidadRecibido
+            , idEstatusSurtimiento
+            , insertFecha
+            , insertIdUsuario
+            , existeSobrante 
+            , idTipoJustificante 
+            , cantidadExcedente 
+            )
+        VALUES
+        <foreach collection="list" item="item" separator="," index="index">  
+            (
+            #{ item.idSurtimientoEnviado , jdbcType = VARCHAR }
+            , #{ item.idSurtimientoInsumo , jdbcType = VARCHAR }
+            , #{ item.idInventarioSurtido , jdbcType = VARCHAR }
+            , #{ item.cantidadEnviado , jdbcType = INTEGER }
+            , #{ item.cantidadRecibido , jdbcType = INTEGER }
+            , #{ item.idEstatusSurtimiento , jdbcType = INTEGER }
+            , #{ item.insertFecha , jdbcType = TIMESTAMP }
+            , #{ item.insertIdUsuario , jdbcType = VARCHAR }
+            , #{ item.existeSobrante  , jdbcType = INTEGER } 
+            , #{ item.idTipoJustificante  , jdbcType = INTEGER } 
+            , #{ item.cantidadExcedente  , jdbcType = DECIMAL } 
+            )
+        </foreach>
+    </insert>
+    
+    <delete id="eliminarPorIdPrescripcion" parameterType="Map" >
+        DELETE FROM surtimientoInsumo
+        WHERE 
+        idSurtimiento in (select idSurtimiento from surtimiento  WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR } )
+    </delete>
+    
+    <delete id="revertirSurtimientoEnviado0"   parameterType="java.util.List" >
+        <foreach collection="listaDetalle" item="item"  index="index"  separator=";">                    
+            DELETE FROM surtimientoEnviado
+            WHERE 
+                idSurtimientoEnviado = #{ item.idSurtimientoEnviado , jdbcType = VARCHAR }
+        </foreach>
+    </delete>
+    <update id="revertirSurtimientoEnviado2"   parameterType="mx.mc.model.SurtimientoEnviado" useGeneratedKeys="false">
+        <foreach collection="listaDetalle" item="item"  index="index"  separator=";">                    
+            UPDATE  surtimientoEnviado
+            SET idEstatusSurtimiento=#{idEstatus , jdbcType = INTEGER }
+            ,updateFecha = now()
+            ,updateIdUsuario =#{idUsuario, jdbcType = VARCHAR }
+            WHERE 
+                idSurtimientoEnviado = #{ item.idSurtimientoEnviado , jdbcType = VARCHAR }
+        </foreach>
+    </update>
+    <select id="obtenerByIdSurtimientoInsumoRecepMedi"   resultType="mx.mc.model.SurtimientoEnviado_Extend" parameterType="Map">
+        SELECT 
+            i.idInsumo,
+            se.idSurtimientoEnviado,
+            se.idSurtimientoInsumo,        
+            se.cantidadEnviado,
+            se.cantidadRecibido,
+            ifnull(se.cantidadRecibido,0) as cantidadRecibido,
+            i.lote,
+            i.fechaCaducidad as caducidad,
+            i.idInventario as idInventarioSurtido,
+            i.activo
+        FROM
+            surtimientoEnviado se
+                INNER JOIN
+            inventario i ON i.idInventario = se.idInventarioSurtido
+        <if test="idSurtimientoInsumo != 'OFFLINE'">
+        WHERE
+            idSurtimientoInsumo = #{ idSurtimientoInsumo , jdbcType = VARCHAR };
+        </if>
+    </select>
+    
+    
+    <select id="obtenerByIdSurtimientoInsumoDevMedi"   resultType="mx.mc.model.SurtimientoEnviado_Extend" parameterType="Map">
+        SELECT		
+            i.idInsumo,
+            se.idSurtimientoEnviado,
+            se.idSurtimientoInsumo,
+            se.cantidadEnviado,
+            se.cantidadRecibido,
+            IF(dmd.cantidad  IS NULL, 0 , dmd.cantidad) AS cantidadDevolver,
+            i.lote,
+            i.fechaCaducidad AS caducidad,
+            dmd.conforme,
+            dmd.idMotivoDevolucion AS tipoDevolucion,
+            i.idInventario AS idInventarioSurtido,
+            i.activo
+        FROM    surtimiento su
+        INNER JOIN   surtimientoInsumo si ON su.idSurtimiento = si.idSurtimiento
+        INNER JOIN   surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo 
+        INNER JOIN   inventario i ON i.idInventario = se.idInventarioSurtido
+        LEFT JOIN    devolucionMinistracion dm ON su.idSurtimiento = dm.idSurtimiento
+        LEFT JOIN    devolucionMinistracionDetalle dmd  ON  dm.idDevolucionMinistracion = dmd.idDevolucionMinistracion AND dmd.idInventario = se.idInventarioSurtido
+        INNER JOIN   prescripcionInsumo pi ON  si.idPrescripcionInsumo = pi.idPrescripcionInsumo AND (dmd.idInsumo = pi.idInsumo  OR dmd.idInsumo IS NULL)
+        INNER JOIN    medicamento me ON me.idMedicamento = pi.idInsumo
+        AND su.idSurtimiento = si.idSurtimiento
+        AND su.idPrescripcion = pi.idPrescripcion
+        where su.idSurtimiento = #{idSurtimiento}
+    </select>
+    
+    <select id="obtenerDetalleInsumoDevMediByIdSurtimientoIdDevolucion"   resultType="mx.mc.model.SurtimientoEnviado_Extend" parameterType="Map">
+        SELECT		
+            i.idInsumo,
+            se.idSurtimientoEnviado,
+            se.idSurtimientoInsumo,
+            se.cantidadEnviado,
+            '0' as cantidadRecibida,
+            IF(dmd.cantidad  IS NULL, 0 , dmd.cantidad) AS cantidadDevolver,
+            i.lote,
+            i.fechaCaducidad AS caducidad,
+            dmd.conforme,
+            dmd.idMotivoDevolucion AS tipoDevolucion,
+            i.idInventario AS idInventarioSurtido,
+            i.activo
+        FROM    surtimiento su
+            INNER JOIN   surtimientoInsumo si ON su.idSurtimiento = si.idSurtimiento
+            INNER JOIN   surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo 
+            INNER JOIN   inventario i ON i.idInventario = se.idInventarioSurtido
+            INNER JOIN   devolucionMinistracion dm ON su.idSurtimiento = dm.idSurtimiento
+            INNER JOIN   devolucionMinistracionDetalle dmd  ON  dm.idDevolucionMinistracion = dmd.idDevolucionMinistracion AND dmd.idInventario = se.idInventarioSurtido
+            INNER JOIN   prescripcionInsumo pi ON  si.idPrescripcionInsumo = pi.idPrescripcionInsumo AND (dmd.idInsumo = pi.idInsumo  OR dmd.idInsumo IS NULL)
+            INNER JOIN   medicamento me ON me.idMedicamento = pi.idInsumo 
+        WHERE su.idSurtimiento = #{idSurtimiento}
+        AND dm.idDevolucionMinistracion =#{idDevolucionMinistracion}
+    </select>
+    
+    <select id="obtenerByIdSurtimientoEnviadoDevMedi"   resultType="mx.mc.model.SurtimientoEnviado_Extend" parameterType="Map">
+        SELECT		
+            i.idInsumo,
+            se.idSurtimientoEnviado,
+            se.idSurtimientoInsumo,
+            se.cantidadEnviado,
+            se.cantidadRecibido,
+            IF(dmd.cantidad  IS NULL, 0 , dmd.cantidad) AS cantidadDevolver,
+            i.lote,
+            i.fechaCaducidad AS caducidad,
+            dmd.conforme,
+            dmd.idMotivoDevolucion AS tipoDevolucion,
+            i.idInventario AS idInventarioSurtido,
+            me.claveInstitucional as clave,
+            me.claveInstitucional,
+            i.activo
+        FROM    surtimiento su
+        INNER JOIN   surtimientoInsumo si ON su.idSurtimiento = si.idSurtimiento
+        INNER JOIN   surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo 
+        INNER JOIN   inventario i ON i.idInventario = se.idInventarioSurtido
+        LEFT JOIN    devolucionMinistracion dm ON su.idSurtimiento = dm.idSurtimiento
+        LEFT JOIN    devolucionMinistracionDetalle dmd  ON  dm.idDevolucionMinistracion = dmd.idDevolucionMinistracion AND dmd.idInventario = se.idInventarioSurtido
+        INNER JOIN   prescripcionInsumo pi ON  si.idPrescripcionInsumo = pi.idPrescripcionInsumo AND (dmd.idInsumo = pi.idInsumo  OR dmd.idInsumo IS NULL)
+        INNER JOIN    medicamento me ON me.idMedicamento = pi.idInsumo
+        AND su.idSurtimiento = si.idSurtimiento
+        AND su.idPrescripcion = pi.idPrescripcion
+        where su.idSurtimiento = #{idSurtimiento}
+    </select>
+    
+    
+    
+     <select id="obtenerByIdSurtimientoEnviado" resultType="mx.mc.model.SurtimientoEnviado_Extend" parameterType="Map" >
+        SELECT * FROM surtimientoEnviado where idSurtimientoEnviado =  #{ idSurtimientoEnviado , jdbcType = VARCHAR } LIMIT 1;
+    </select>
+    
+    
+    <select id="obtenerSurtimientoEnviadoByIdSurtimientoInsumo" resultType="mx.mc.model.SurtimientoEnviado_Extend" parameterType="Map">
+        SELECT *
+        FROM surtimientoEnviado 
+        WHERE  idSurtimientoInsumo = #{ idSurtimientoInsumo , jdbcType = VARCHAR };
+    </select>
+    
+    <update id="updateAsignPrescripcionEnviado" parameterType="mx.mc.model.SurtimientoEnviado_Extend"  >
+        UPDATE surtimientoEnviado 
+        SET
+        idSurtimientoInsumo = #{ idSurtimientoInsumo , jdbcType = VARCHAR }
+        ,updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        ,updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        WHERE idSurtimientoEnviado = #{ idSurtimientoEnviado , jdbcType = VARCHAR }
+    </update>  
+    
+    <select id="detalleSurtimientoEnviadoXIdSurtimientoInsumo" resultType="mx.mc.model.SurtimientoEnviado_Extend" parameterType="Map">
+        SELECT m.idMedicamento as idInsumo, m.claveInstitucional as clave, m.nombreCorto as medicamento, v.lote, v.fechaCaducidad as caducidad, n.fechaInicio, 
+        i.idSurtimiento, i.idPrescripcionInsumo, e.idSurtimientoEnviado, e.idSurtimientoInsumo, e.idInventarioSurtido, 
+        e.cantidadEnviado, e.idEstatusSurtimiento, f.nombreFabricante
+        , e.cantidadExcedente , e.usoDeRemanente
+        FROM surtimientoEnviado e
+        inner join surtimientoInsumo i on i.idSurtimientoInsumo= e.idSurtimientoInsumo
+        inner join prescripcionInsumo n on n.idPrescripcionInsumo = i.idPrescripcionInsumo
+        inner join prescripcion p on p.idPrescripcion = n.idPrescripcion
+        inner join inventario v on v.idInventario = e.idInventarioSurtido
+        inner join medicamento m on m.idMedicamento = v.idInsumo
+        LEFT JOIN fabricante f ON v.idFabricante = f.idFabricante
+        where i.idSurtimientoInsumo = #{idSurtimientoInsumo}
+        <if test = " mayorCero == true ">
+            AND e.cantidadEnviado &gt; 0
+        </if> 
+        ;
+    </select>    
+    
+    <select id="detalleSurtimientoEnviadoByIdSurtimiento" resultType="mx.mc.model.SurtimientoEnviado" parameterType="Map">
+        SELECT 
+            se.*,
+            m.claveInstitucional as clave,
+            i.lote,
+            i.fechaCaducidad as caducidad,
+            m.nombreCorto as medicamento,
+            i.idInsumo
+        FROM    surtimientoEnviado se
+                INNER JOIN  surtimientoInsumo si ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+                INNER JOIN  surtimiento s ON s.idSurtimiento = si.idSurtimiento
+            INNER JOIN 	inventario i  ON i.idInventario = se.idInventarioSurtido
+            INNER JOIN medicamento m ON m.idMedicamento = i.idInsumo 
+        WHERE
+            s.idSurtimiento =#{idSurtimiento}
+        AND i.idEstructura not in ( '475c1ce7-b86a-455f-925f-f6033dd0be28', '475c1ce7-b86a-455f-925f-f6033dd0be28', '22d73e40-c32d-4d39-9ddd-932ac645e11d' )
+    </select>
+    
+    <update id="actualizaSurtimientoEnviadoList"   parameterType="mx.mc.model.SurtimientoEnviado" useGeneratedKeys="false">
+        <foreach collection="listaDetalle" item="item"  index="index"  separator=";">                    
+            UPDATE  surtimientoEnviado
+            SET idEstatusSurtimiento=#{item.idEstatusSurtimiento}
+            ,updateFecha = now()
+            ,updateIdUsuario =#{item.updateIdUsuario}
+            <if test=" cantidadEnviado != null "> , cantidadEnviado = #{ cantidadEnviado , jdbcType = INTEGER } </if>
+            WHERE 
+                idSurtimientoEnviado = #{ item.idSurtimientoEnviado , jdbcType = VARCHAR }
+        </foreach>
+    </update>
+    
+    <select id="obtenerSurtimientoEnviadoPorIdEstructuraIdInsumoIdInventario" resultType="mx.mc.model.SurtimientoEnviado_Extend" parameterType="Map">
+        SELECT
+                se.idSurtimientoEnviado 
+                , se.idSurtimientoInsumo 
+                , se.idInventarioSurtido 
+                , se.cantidadEnviado 
+                , se.cantidadRecibido 
+                , se.idEstatusSurtimiento 
+                , se.presentacionComercial 
+                , se.insertFecha 
+                , se.insertIdUsuario 
+                , se.updateFecha 
+                , se.updateIdUsuario
+                , i.lote 
+                , i.fechaCaducidad 
+                , IFNULL(CONCAT(p2.nombreCompleto, ' ' , p2.apellidoPaterno, ' ', p2.apellidoMaterno), '') AS nombrePaciente
+                , IFNULL(CONCAT(u1.nombre , ' ' , u1.apellidoPaterno , ' ', u1.apellidoMaterno), '') AS nombreMédico 
+                , IFNULL(CONCAT(u2.nombre , ' ' , u2.apellidoPaterno , ' ', u2.apellidoMaterno), '') AS nombreUsuarioSurte 
+                , IFNULL(CONCAT(u3.nombre , ' ' , u3.apellidoPaterno , ' ', u3.apellidoMaterno), '') AS nombreUsuarioPrepara 
+                , p.folio AS folioPrescripcion
+                , s.folio AS folioSurtimiento
+                , mi.fecha  AS fechaMovimiento
+        FROM prescripcion p
+        JOIN prescripcionInsumo pi2 on	p.idPrescripcion = pi2.idPrescripcion
+        JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        JOIN surtimientoInsumo si ON (pi2.idPrescripcionInsumo = si.idPrescripcionInsumo AND s.idSurtimiento = si.idSurtimiento)
+        JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        JOIN inventario i ON se.idInventarioSurtido = i.idInventario 
+        LEFT JOIN movimientoInventario mi ON s.folio = mi.folioDocumento 
+        LEFT JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio 
+        LEFT JOIN visita v ON ps.idVisita = v.idVisita 
+        LEFT JOIN paciente p2 ON v.idPaciente = p2.idPaciente
+        LEFT JOIN usuarios u1 ON p.idMedico = u1.idUsuario 
+        LEFT JOIN usuarios u2 ON se.insertFecha = u2.idUsuario
+        LEFT JOIN solucion so ON s.idSurtimiento = so.idSurtimiento 
+        LEFT JOIN usuarios u3 ON so.idUsuarioPrepara = u3.idUsuario
+        WHERE 1 = 1
+            AND mi.idTipoMotivo in (20, 27, 33, 34)
+        <if test= " idEstructura != null " >
+            AND s.idEstructuraAlmacen = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test= " idInsumo != null " >
+            AND i.idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test= " idInventario != null " >
+            AND i.idInventario = #{ idInventario , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <delete id="eliminarPorIdSurtimientoInsumo" parameterType="Map" >
+        DELETE FROM surtimientoEnviado
+        WHERE idSurtimientoInsumo = #{ idSurtimientoInsumo , jdbcType = VARCHAR }
+    </delete>
+    
+</mapper>

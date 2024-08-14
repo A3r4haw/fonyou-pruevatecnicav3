@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.VisitaMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Visita" parameterType="mx.mc.model.Visita" >
+        SELECT idVisita , idPaciente , fechaIngreso , idUsuarioIngresa , fechaEgreso , idUsuarioCierra , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , idMotivoPacienteMovimiento
+        FROM visita
+        WHERE 1=1
+        <if test=" idVisita != null ">
+            AND idVisita = #{ idVisita , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPaciente != null ">
+            AND idPaciente = #{ idPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaIngreso != null ">
+            AND fechaIngreso = #{ fechaIngreso , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idUsuarioIngresa != null ">
+            AND idUsuarioIngresa = #{ idUsuarioIngresa , jdbcType = VARCHAR }
+        </if>
+        <if test=" idMotivoPacienteMovimiento != null ">
+            AND idMotivoPacienteMovimiento = #{ idMotivoPacienteMovimiento , jdbcType = INTEGER }
+        </if>
+        LIMIT 0, 1
+    </select>
+    
+    <select id="obtenerVisitaAbierta" parameterType="mx.mc.model.Visita" resultType="mx.mc.model.Visita">
+        SELECT idVisita,idPaciente,fechaIngreso,idUsuarioIngresa,idMotivoPacienteMovimiento,fechaEgreso,idUsuarioCierra
+               motivoConsulta,tipoVisita,numVisita,insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+        FROM visita
+        WHERE idPaciente = #{idPaciente , jdbcType = VARCHAR}
+        AND fechaEgreso IS NULL
+        ORDER BY insertFecha DESC
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Visita" parameterType="mx.mc.model.Visita" >
+        SELECT idVisita , idPaciente , fechaIngreso , idUsuarioIngresa , fechaEgreso , idUsuarioCierra , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , idMotivoPacienteMovimiento
+        FROM visita
+        WHERE 1=1
+        <if test=" idVisita != null ">
+            AND idVisita = #{ idVisita , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPaciente != null ">
+            AND idPaciente = #{ idPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaIngreso != null ">
+            AND fechaIngreso = #{ fechaIngreso , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idUsuarioIngresa != null ">
+            AND idUsuarioIngresa = #{ idUsuarioIngresa , jdbcType = VARCHAR }
+        </if>
+        <if test=" idMotivoPacienteMovimiento != null ">
+            AND idMotivoPacienteMovimiento = #{ idMotivoPacienteMovimiento , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Visita" >
+        INSERT INTO visita
+        (
+        idVisita
+        ,idPaciente
+        ,fechaIngreso
+        ,idUsuarioIngresa
+        ,idMotivoPacienteMovimiento
+        ,fechaEgreso
+        ,idUsuarioCierra
+        ,motivoConsulta
+        ,insertFecha
+        ,insertIdUsuario
+        ,updateFecha
+        ,updateIdUsuario
+        ) VALUES (
+        #{ idVisita  , jdbcType = VARCHAR }
+        , #{ idPaciente  , jdbcType = VARCHAR }
+        , #{ fechaIngreso  , jdbcType = TIMESTAMP }
+        , #{ idUsuarioIngresa  , jdbcType = VARCHAR }
+        , #{ idMotivoPacienteMovimiento  , jdbcType = INTEGER }
+        , #{ fechaEgreso  , jdbcType = TIMESTAMP }
+        , #{ idUsuarioCierra  , jdbcType = VARCHAR }
+        , #{ motivoConsulta  , jdbcType = VARCHAR }
+        , #{ insertFecha  , jdbcType = TIMESTAMP }
+        , #{ insertIdUsuario  , jdbcType = VARCHAR }
+        , #{ updateFecha  , jdbcType = TIMESTAMP }
+        , #{ updateIdUsuario  , jdbcType = VARCHAR }
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.Visita"  >
+        UPDATE visita SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        , fechaEgreso = #{ fechaEgreso , jdbcType = TIMESTAMP }
+        , idUsuarioCierra = #{ idUsuarioCierra , jdbcType = VARCHAR }
+        , idMotivoPacienteMovimiento = #{ idMotivoPacienteMovimiento , jdbcType = INTEGER }
+        <if test= "numVisita != null">
+            , numVisita = #{numVisita, jdbcType = VARCHAR }
+        </if>
+        WHERE idVisita = #{ idVisita , jdbcType = VARCHAR }
+    </update>
+    
+    <select id="obtenerVisitaPorNumero" parameterType="Map" resultType="mx.mc.model.Visita">
+        SELECT idVisita,idPaciente,fechaIngreso,idUsuarioIngresa,idMotivoPacienteMovimiento
+               ,fechaEgreso,idUsuarioCierra,insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+        FROM visita
+        WHERE numVisita = #{numVisita , jdbcType = VARCHAR}
+        AND fechaEgreso IS NULL
+        ORDER BY insertFecha DESC
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerVisitaDelDia" parameterType="Map" resultType="mx.mc.model.Visita">
+        SELECT 
+            v.idVisita,
+            v.idPaciente,
+            v.fechaIngreso,
+            v.idUsuarioIngresa,
+            v.idMotivoPacienteMovimiento,
+            v.fechaEgreso,
+            v.idUsuarioCierra,
+            v.motivoConsulta,
+            v.tipoVisita,
+            v.numVisita,
+            v.insertFecha,
+            v.insertIdUsuario,
+            v.updateFecha,
+            v.updateIdUsuario
+        FROM  visita v
+            INNER JOIN  paciente p ON p.idPaciente = v.idPaciente
+        WHERE    p.claveDerechohabiencia = #{claveDerechoHabiencia}
+                AND DATE_FORMAT(fechaIngreso, '%Y-%m-%d') = DATE_FORMAT(now(), '%Y-%m-%d')
+        ORDER BY v.insertFecha DESC;
+         ;
+    </select>
+</mapper>

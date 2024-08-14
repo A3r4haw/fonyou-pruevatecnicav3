@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.CamaMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Cama" parameterType="mx.mc.model.Cama" >
+        SELECT idCama , nombreCama , ubicacion , idTipoCama , idEstatusCama , idEstructura, insertIdUsuario, insertFecha,
+        		updateIdUsuario, updateFecha
+        FROM cama
+        WHERE 1=1
+        <if test=" idCama != null ">
+            AND idCama = #{ idCama , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombreCama != null ">
+            AND nombreCama = #{ nombreCama , jdbcType = VARCHAR }
+        </if>
+        <if test=" ubicacion != null ">
+            AND ubicacion = #{ ubicacion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoCama != null ">
+            AND idTipoCama = #{ idTipoCama , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstatusCama != null ">
+            AND idEstatusCama = #{ idEstatusCama , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            AND insertIdUsuario = #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertFecha != null ">
+            AND insertFecha = #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+        	AND updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+        	AND updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        
+    </select>
+    
+    <select id="obtenerCamaByEstructuraAndEstatus" parameterType="Map" resultType="mx.mc.model.CamaExtended">
+        SELECT idCama,nombreCama,ubicacion,c.idTipoCama,c.idEstatusCama,idEstructura,tc.nombreTipoCama,ec.nombreEstatusCama
+        FROM cama c
+        LEFT JOIN tipoCama tc ON tc.idTipoCama = c.idTipoCama
+        LEFT JOIN estatusCama ec ON ec.idEstatusCama = c.idEstatusCama
+        WHERE 1 = 1
+        <if test="idEstructura != null">
+            AND idEstructura = #{idEstructura , jdbcType = VARCHAR}
+        </if>
+        <if test=" listEstatusCama != null ">
+            AND c.idEstatusCama IN
+            <foreach item="item" index="index" collection="listEstatusCama" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY nombreCama ASC
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Cama" >
+        INSERT INTO cama (
+        <if test=" idCama != null ">
+            idCama
+        </if>
+        <if test=" nombreCama != null ">
+            , nombreCama
+        </if>
+        <if test=" ubicacion != null ">
+            , ubicacion
+        </if>
+        <if test=" idTipoCama != null ">
+            , idTipoCama
+        </if>
+        <if test=" idEstatusCama != null ">
+            , idEstatusCama
+        </if>
+        <if test=" idEstructura != null ">
+            , idEstructura
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+        	, updateIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+        	, updateFecha
+        </if>
+        ) VALUES (
+        <if test=" idCama != null ">
+            #{ idCama , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombreCama != null ">
+            , #{ nombreCama , jdbcType = VARCHAR }
+        </if>
+        <if test=" ubicacion != null ">
+            , #{ ubicacion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoCama != null ">
+            , #{ idTipoCama , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstatusCama != null ">
+            , #{ idEstatusCama , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstructura != null ">
+            , #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+        	, #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+        	, #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.Cama" >
+        UPDATE cama SET
+        updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        , updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        <if test=" nombreCama != null ">
+            , nombreCama = #{ nombreCama , jdbcType = VARCHAR }
+        </if>
+        <if test=" ubicacion != null ">
+            , ubicacion = #{ ubicacion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoCama != null ">
+            , idTipoCama = #{ idTipoCama , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstatusCama != null ">
+            , idEstatusCama = #{ idEstatusCama , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstructura != null ">
+            , idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario = #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha = #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        WHERE idCama = #{ idCama , jdbcType = VARCHAR }
+    </update>
+    
+    <update id="actualizarCamaLiberada" parameterType="Map">
+        UPDATE cama  
+        <set>
+            idEstatusCama = #{idEstatusCama , jdbcType = INTEGER }
+        </set>           
+        WHERE idCama IN (
+            SELECT idCama 
+            FROM pacienteUbicacion 
+            WHERE idPacienteServicio = #{idPacienteServicio , jdbcType = VARCHAR } 
+            AND fechaUbicaFin IS NULL
+        )
+    </update>
+
+    <delete id="eliminar" parameterType="mx.mc.model.Cama"  >
+        DELETE FROM cama 
+        WHERE idCama = #{ idCama , jdbcType = VARCHAR }
+    </delete>
+    
+    <select id="obtenerCamasByServicio" resultType="mx.mc.model.CamaExtended" parameterType="String">
+    	select c.idCama , c.nombreCama , c.ubicacion , c.idTipoCama , c.idEstatusCama , c.idEstructura , c.insertIdUsuario , c.insertFecha
+    	, c.updateIdUsuario , c.updateFecha , nombreTipoCama , nombreEstatusCama
+    	FROM cama c 
+    	INNER JOIN tipoCama tc on c.idTipoCama = tc.idTipoCama
+    	INNER JOIN estatusCama ec on c.idEstatusCama = ec.idEstatusCama    	 
+    	where 1 = 1
+    	<if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+    	</if>
+        ORDER BY c.nombreCama ASC
+    </select>
+    
+    <select id="obtenerCama" resultType="mx.mc.model.Cama" parameterType="String">
+    	SELECT idCama , nombreCama , ubicacion , idTipoCama , idEstatusCama , idEstructura, insertIdUsuario, insertFecha
+    	 , updateIdUsuario , updateFecha
+    	FROM cama
+    	WHERE 1 = 1
+    	<if test=" idCama != null">
+    		AND idCama = #{ idCama , jdbcType = VARCHAR}
+    	</if>
+    </select>
+    <select id="obtenerCamaPorNombre" resultType="mx.mc.model.Cama" parameterType="mx.mc.model.Cama">
+    	SELECT idCama , nombreCama , ubicacion , idTipoCama , idEstatusCama , idEstructura, insertIdUsuario, insertFecha
+    	 , updateIdUsuario , updateFecha
+    	FROM cama
+    	WHERE 
+            nombreCama = #{ nombreCama , jdbcType = VARCHAR }       
+        <if test=" ubicacion != null ">
+            AND ubicacion = #{ ubicacion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoCama != null ">
+            AND idTipoCama = #{ idTipoCama , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstatusCama != null ">
+            AND idEstatusCama = #{ idEstatusCama , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <select id="obtenerCamaNombreEstructura" resultType="mx.mc.model.CamaExtended" parameterType="String">
+        select c.ubicacion,c.idEstatusCama, c.nombreCama, p.nombreCompleto as paciente 
+        from visita v
+        inner join pacienteServicio ps on v.idVisita = ps.idVisita
+        inner join pacienteUbicacion pu on ps.idPacienteServicio = pu.idPacienteServicio
+        inner join cama c on pu.idCama = c.idCama
+        inner join estructura e on e.idEstructura = c.idEstructura
+        inner join paciente p on p.idPaciente = v.idPaciente
+        WHERE v.idPaciente = #{ idPaciente , jdbcType = VARCHAR }
+        ORDER BY v.insertFecha DESC, pu.insertFecha DESC
+        LIMIT 1;
+    </select>
+    
+    <select id="obterCamaPorNombreYEstructura" resultType="mx.mc.model.Cama" parameterType="Map">
+        SELECT idCama , nombreCama , ubicacion , idTipoCama , idEstatusCama , idEstructura, insertIdUsuario, insertFecha
+    	 , updateIdUsuario , updateFecha
+    	FROM cama
+    	WHERE 
+            nombreCama = #{ nombreCama , jdbcType = VARCHAR } 
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+    </select>
+    
+    <select id="obtenerServicioCamas"  resultType="mx.mc.model.CamaExtended" parameterType="Map">
+        SELECT 
+            e.nombre AS servicio,
+            c.nombreCama,
+            t.nombreTipoCama as tipoCama,
+            ec.nombreEstatusCama as estatus,
+            c.idCama,
+            c.idEstructura
+        FROM   estructura e 
+            INNER JOIN    cama c ON c.idEstructura = e.idEstructura
+            INNER JOIN    tipoCama t ON t.idTipoCama = c.idTipoCama
+            INNER JOIN    estatusCama ec ON ec.idEstatusCama = c.idEstatusCama
+        WHERE 1 = 1
+        <if test="idEntidadHosp != null">
+            AND e.idEntidadHospitalaria = #{idEntidadHosp}
+        </if>
+        <if test="valueServ != null">
+            AND e.nombre LIKE '%${valueServ}%'
+        </if>
+        <if test = "valueRoom != null">
+            AND c.nombreCama LIKE '%${valueRoom}%'
+        </if>
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'servicio'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY e.nombre asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY e.nombre desc
+                </if>            
+            </if>
+            <if test="sortField == 'nombreCama'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY c.nombreCama asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY c.nombreCama desc
+                </if>
+            </if>
+            <if test="sortField == 'tipoCama'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY t.nombreTipoCama asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY t.nombreTipoCama desc
+                </if>            
+            </if>
+        </if>               
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}	
+    </select>
+    
+    <select id="obtenerTotalServicioCamas"  resultType="Long" parameterType="Map">
+        SELECT 
+            count(*)
+        FROM    cama c
+            INNER JOIN    estructura e ON e.idEstructura = c.idEstructura
+            INNER JOIN    tipoCama t ON t.idTipoCama = c.idTipoCama
+            INNER JOIN    estatusCama ec ON ec.idEstatusCama = c.idEstatusCama
+        WHERE 1 = 1
+        <if test="valueServ != null">
+            AND e.nombre LIKE '%${valueServ}%'
+        </if>
+        <if test = "valueRoom != null">
+            AND c.nombreCama LIKE '%${valueRoom}%'
+        </if>;        	
+    </select>
+</mapper>

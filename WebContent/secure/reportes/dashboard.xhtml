@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>DASHBOARD</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content" class="ui-g-12"> 
+                <h1>Dashboard</h1>
+                <div class="container" style="height:500px;   overflow-x:auto; overflow-y: auto;">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>                                                                     
+                        <div class="ui-g panelGris">
+                            <div style="width: 50%; height: 200px; float: left;" >
+                                <h:outputLabel value="Ahorro con sistema Unidosis" />
+                                <hr />
+                                <div style="width: calc( 33.33333333%  -  2em ); margin-left: 1em; margin-right: 1em;">
+                                    <div>Costo Presentación Comercial (MXN)</div>
+                                    <div>Costo Dósis Unitaria (MXN)</div>
+                                    <div>Ahorro (MXN)</div>
+                                </div>
+                            </div>
+                            <div style="width: 10%; float: right;" ></div>
+                            <div style="width: 40%; height: 200px; float: right;" >
+                                <h3>Indicadores Generales</h3>
+                                <p:panelGrid style="width:100%">
+                                    <p:row>
+                                        <p:column>
+                                            <p:outputLabel value="UNIDOSIS MINISTRADAS" />
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{dashboardMB.unidoMinistradas}" />
+                                        </p:column>	        									
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <p:outputLabel value="UNIDOSIS SURTIDAS" />
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{dashboardMB.unidoSurtidas}" />
+                                        </p:column>	        									
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <p:outputLabel value="PACIENTES REGISTRADOS" />
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{dashboardMB.pacientesRegistrados}" />
+                                        </p:column>	        									
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <p:outputLabel value="DEFUNCIONES" />
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{dashboardMB.defunciones}" />
+                                        </p:column>	        									
+                                    </p:row>
+                                    <p:row>
+                                        <p:column>
+                                            <p:outputLabel value="ALTAS" />
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{dashboardMB.altas}" />
+                                        </p:column>	        									
+                                    </p:row>
+                                </p:panelGrid>
+                            </div>
+                        </div>                                	
+                    </h:form><br />                    
+
+                    <h:panelGrid  columns="2" columnClasses="left,right" style="width:100%;">
+                        <p:chart id="grafPrescripcion" type="pie" model="#{dashboardMB.livePieModel}" style="width:600px;height:300px;" />
+                        <p:dataTable style="width: 100%; overflow-x: hidden; margin-top: 30px;"
+                                     var="item" 
+                                     value="#{dashboardMB.listPrescripciones}"
+                                     emptyMessage="No se encontraron registros" >
+                            <p:column headerText="Estatus">
+                                <h:outputText value="#{item.estatus}" />
+                            </p:column>
+                            <p:column headerText="Cantidad">
+                                <h:outputText value="#{item.cantidad}" />
+                            </p:column>
+                        </p:dataTable>     
+
+                        <p:chart type="bar" model="#{viewTopMB.topMedicamento}" style="width: 500px; height: 250px;"  />                        
+                        <p:dataTable class="card orders-table" style="width: 100%; height: 250px; float: bottom"
+                                     var="item"
+                                     value="#{dashboardMB.listMedicamentos}"
+                                     emptyMessage="No se encontraron registros" scrollable="true" scrollHeight="230">
+                            <p:column headerText="Clave del medicamento">
+                                <h:outputText value="#{item.claveMedicamento}" />
+                            </p:column>
+                            <p:column headerText="Nombre del medicamento">
+                                <h:outputText value="#{item.nombreCorto}" />
+                            </p:column>
+                            <p:column headerText="Unidosis Surtidas">
+                                <h:outputText value="#{item.cantidad}" />
+                            </p:column>
+                        </p:dataTable>                 
+
+                        <p:chart type="bar" model="#{viewTopMB.topMedico}" style="width: 500px; height: 250px; float: bottom" />                       
+                        <p:dataTable  style="width: 100%; height: 250px; margin-top: 30px"
+                                      var="item"
+                                      value="#{dashboardMB.listMedicos}" scrollable="true" scrollHeight="250"
+                                      emptyMessage="No se encontraron registros" >
+                            <p:column headerText="Clave Médico">
+                                <h:outputText value="#{item.clave}" />
+                            </p:column>
+                            <p:column headerText="Nombre del Médico">
+                                <h:outputText value="#{item.nombre}" />
+                            </p:column>
+                            <p:column headerText="Cantidad">
+                                <h:outputText value="#{item.cantidad}" />
+                            </p:column>
+                        </p:dataTable>                        
+
+                        <p:chart type="bar" model="#{viewTopMB.topPaciente}" style="width: 600px; height: 250px; float: bottom" />                        
+                        <p:dataTable  style="width: 100%; height: 250px; margin-top: 20px"
+                                      var="item"
+                                      value="#{dashboardMB.listPacientes}" scrollable="true" scrollHeight="230"
+                                      emptyMessage="No se encontraron registros" >
+                            <p:column headerText="Clave del paciente">
+                                <h:outputText value="#{item.clave}" />
+                            </p:column>
+                            <p:column headerText="Nombre del paciente">
+                                <h:outputText value="#{item.nombre}" />
+                            </p:column>
+                            <p:column headerText="Cantidad">
+                                <h:outputText value="#{item.cantidad}" />
+                            </p:column>
+                        </p:dataTable> 
+
+                        <p:chart type="bar" model="#{viewTopMB.topServicio}" style="width: 600px; height: 250px; float: bottom" />                         
+                        <p:dataTable  style="width: 100%; height: 270px; margin-top: 25px"
+                                      var="item" scrollable="true" scrollHeight="250"
+                                      value="#{dashboardMB.listServicios}"
+                                      emptyMessage="No se encontraron registros" >
+                            <p:column headerText="Clave del servicio">
+                                <h:outputText value="#{item.clave}" />
+                            </p:column>
+                            <p:column headerText="Nombre del Servicio">
+                                <h:outputText value="#{item.nombre}" />
+                            </p:column>
+                            <p:column headerText="Cantidad">
+                                <h:outputText value="#{item.cantidad}" />
+                            </p:column>
+                        </p:dataTable>                         
+
+                        <p:chart type="bar" model="#{viewTopMB.topNivel}" style="width: 600px; height: 250px; margin-top: 25px" />
+                        <p:dataTable  style="width: 100%; height: 250px; margin-top: 30px;"
+                                      var="item"  scrollable="true" scrollHeight="250"
+                                      value="#{dashboardMB.listNivel}"
+                                      emptyMessage="No se encontraron registros" >
+                            <p:column headerText="Nivel">
+                                <h:outputText value="#{item.clave}" />
+                            </p:column>
+                            <p:column headerText="Nombre del Nivel">
+                                <h:outputText value="#{item.nombre}" />
+                            </p:column>
+                            <p:column headerText="Cantidad">
+                                <h:outputText value="#{item.cantidad}" />
+                            </p:column>
+                        </p:dataTable> 
+
+                    </h:panelGrid>                    
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

@@ -1,0 +1,24 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui">
+
+    <p:idleMonitor timeout="#{20 * 1000}" onidle="timeoutDialog.show()" />
+    <div id="customContent">
+        <p:dialog id="timeoutId" widgetVar="timeoutDialog"
+                  modal="true" resizable="false" closable="false" width="300" >
+            <center>
+                <br/>
+                <h:outputText value="Su sesión ha caducado."/>
+                <br/> <br/>
+                <div id="boton">
+                    <input type="button" value="Aceptar" onclick="location = '#{request.contextPath}/index.xhtml'" />
+                </div>
+                <br/>
+            </center>
+        </p:dialog>
+    </div>
+
+
+</ui:composition>

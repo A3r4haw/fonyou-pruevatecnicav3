@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.VistaRecepcionMedicamentoMapper" >
+
+    <select  id="obtener" resultType="mx.mc.model.VistaRecepcionMedicamento" parameterType="mx.mc.model.VistaRecepcionMedicamento">
+        SELECT *
+        FROM viewRecepcionMedicamento
+        WHERE idEstatusSurtimiento = 2
+        <if test="idSurtimiento != null"> AND idSurtimiento = #{idSurtimiento}</if>
+        <if test="idPrescripcion != null"> AND idPrescripcion #{idPrescripcion}</if>
+        <if test="folioSurtimiento != null"> AND folioSurtimiento =#{folioSurtimiento}</if>
+        <if test="fechaProgramada != null"> AND fechaProgramada =#{fechaProgramada}</if>
+        <if test="idEstatusSurtimiento != null"> AND idEstatusSurtimiento =#{idEstatusSurtimiento}</if>
+        <if test="estatusPrescripcion != null"> AND estatusPrescripcion =#{estatusPrescripcion}</if>
+        <if test="estatusSurtimiento != null"> AND estatusSurtimiento =#{estatusSurtimiento}</if>
+        <if test="nombrePaciente != null"> AND nombrePaciente =#{nombrePaciente}</if>
+        <if test="pacienteNumero != null"> AND pacienteNumero =#{pacienteNumero}</if>
+        <if test="claveDerechohabiencia != null"> AND claveDerechohabiencia =#{claveDerechohabiencia}</if>
+        <if test="nombreEstructura != null"> AND nombreEstructura =#{nombreEstructura}</if>
+        <if test="nombreCama != null"> AND nombreCama =#{nombreCama}</if>
+        <if test="nombreMedico != null"> AND nombreMedico=#{nombreMedico}</if>
+        <if test="folioPrescripcion != null"> AND folioPrescripcion =#{folioPrescripcion}</if>
+        <if test="tipoPrescripcion != null"> AND tipoPrescripcion=#{folioPrescripcion}</if>
+        <if test="idSurtimientoEnviado != null"> AND idSurtimientoEnviado=#{idSurtimientoEnviado}</if>
+        <if test="idSurtimientoInsumo != null"> AND idSurtimientoInsumo =#{idSurtimientoInsumo}</if>
+        <if test="fechaPrescripcion!=null"> AND fechaPrescripcion=#{fechaPrescripcion}</if> 
+         group by folioPrescripcion;       
+    </select>
+    <select  id="obtenerByFolioPrescripcion" resultType="mx.mc.model.VistaRecepcionMedicamento" parameterType="Map">
+        SELECT *
+        FROM viewRecepcionMedicamento
+        WHERE  folioPrescripcion =#{folioPrescripcion}
+    </select>
+    <select id="obtenerPrescripcionForDev"  resultType="mx.mc.model.VistaRecepcionMedicamento" parameterType="Map">
+        SELECT v.idSurtimiento, v.nombreAlmacen, v.idPrescripcion, v.folioSurtimiento, v.fechaProgramada, v.idEstatusSurtimiento, v.estatusPrescripcion, v.estatusSurtimiento, v.nombrePaciente, v.pacienteNumero, v.claveDerechohabiencia, v.nombreEstructura, v.nombreCama, v.nombreMedico, v.folioPrescripcion, v.tipoPrescripcion, v.idSurtimientoEnviado, v.idSurtimientoInsumo, v.fechaPrescripcion, v.idEstructuraAlmacen, v.idEstructuraAlmacenPadre, v.idTipoAlmacen, v.idTipoAreaEstructura
+        FROM viewRecepcionMedicamento v
+        inner join surtimientoMinistrado s on s.idSurtimientoEnviado=v.idSurtimientoEnviado
+        where s.idEstatusSurtimiento=1  
+        and v.idEstatusSurtimiento= 4
+        and v.folioPrescripcion =#{folioPrescripcion} 
+        limit 1;  
+    </select>
+    <select  id="obtenerLista" resultType="mx.mc.model.VistaRecepcionMedicamento" parameterType="mx.mc.model.VistaRecepcionMedicamento">
+        SELECT *
+        FROM viewRecepcionMedicamento
+        WHERE idEstatusSurtimiento = 2
+        
+    </select>
+    
+    <select  id="obtenerSurtimientosPorRecibir" resultType="mx.mc.model.VistaRecepcionMedicamento" parameterType="mx.mc.model.VistaRecepcionMedicamento">
+        SELECT DISTINCT
+        s.idSurtimiento AS idSurtimiento,
+        a.nombre AS nombreAlmacen,
+        s.idPrescripcion AS idPrescripcion,
+        s.folio AS folioSurtimiento,
+        DATE_FORMAT(s.fechaProgramada,"%d/%m/%Y %H:%i") AS fechaProgramada,
+        s.idEstatusSurtimiento AS idEstatusSurtimiento,
+        es.estatus AS estatusPrescripcion,
+        es.estatus AS estatusSurtimiento,
+        CONCAT(pa.apellidoPaterno, ' ', pa.apellidoMaterno, ' ', pa.nombreCompleto) AS nombrePaciente,
+        pa.pacienteNumero AS pacienteNumero,
+        pa.claveDerechohabiencia AS claveDerechohabiencia,
+        pa.idEstatusPaciente AS idEstatusPaciente,
+        e.nombre AS nombreEstructura,
+        c.nombreCama AS nombreCama,
+        CONCAT(u.apellidoPaterno,' ',u.apellidoMaterno,' ',u.nombre) AS nombreMedico,
+        p.folio AS folioPrescripcion,
+        p.tipoPrescripcion AS tipoPrescripcion,
+        DATE_FORMAT(p.fechaPrescripcion,"%d/%m/%Y %H:%i") AS fechaPrescripcion,
+        e.idEstructura AS idEstructuraAlmacen,
+        a.idEstructura AS idEstructuraAlmacenPadre,
+        a.idTipoAlmacen AS idTipoAlmacen,
+        a.idTipoAreaEstructura AS idTipoAreaEstructura
+    FROM
+        surtimiento s
+        JOIN surtimientoInsumo si ON si.idSurtimiento = s.idSurtimiento
+        JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        JOIN estructura e ON p.idEstructura = e.idEstructura
+        JOIN estructura a ON s.idEstructuraAlmacen = a.idEstructura
+        JOIN usuarios u ON p.idMedico = u.idUsuario
+        JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        JOIN visita v ON ps.idVisita = v.idVisita
+        JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio AND pu.fechaUbicaFin IS NULL
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+    WHERE
+        p.idEstatusPrescripcion in ( 2 , 3 )
+        AND s.idEstatusSurtimiento in ( 2 )
+        AND p.tipoConsulta = 'I'
+        <if test=" idsEstructura != null ">
+            AND p.idEstructura IN 
+            <foreach item="item" index="index" collection="idsEstructura" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        
+    </select>
+    
+    <select  id="obtenerSurtimientosRecibidos" resultType="mx.mc.model.VistaRecepcionMedicamento" parameterType="mx.mc.model.VistaRecepcionMedicamento">
+        SELECT DISTINCT
+        s.idSurtimiento AS idSurtimiento,
+        a.nombre AS nombreAlmacen,
+        s.idPrescripcion AS idPrescripcion,
+        s.folio AS folioSurtimiento,
+        DATE_FORMAT(s.fechaProgramada,"%d/%m/%Y %H:%i") AS fechaProgramada,
+        s.idEstatusSurtimiento AS idEstatusSurtimiento,
+        es.estatus AS estatusPrescripcion,
+        es.estatus AS estatusSurtimiento,
+        CONCAT(pa.apellidoPaterno, ' ', pa.apellidoMaterno, ' ', pa.nombreCompleto) AS nombrePaciente,
+        pa.pacienteNumero AS pacienteNumero,
+        pa.claveDerechohabiencia AS claveDerechohabiencia,
+        pa.idEstatusPaciente AS idEstatusPaciente,
+        e.nombre AS nombreEstructura,
+        c.nombreCama AS nombreCama,
+        CONCAT(u.apellidoPaterno,' ',u.apellidoMaterno,' ',u.nombre) AS nombreMedico,
+        p.folio AS folioPrescripcion,
+        p.tipoPrescripcion AS tipoPrescripcion,
+        DATE_FORMAT(p.fechaPrescripcion,"%d/%m/%Y %H:%i") AS fechaPrescripcion,
+        e.idEstructura AS idEstructuraAlmacen,
+        a.idEstructura AS idEstructuraAlmacenPadre,
+        a.idTipoAlmacen AS idTipoAlmacen,
+        a.idTipoAreaEstructura AS idTipoAreaEstructura
+    FROM
+        surtimiento s
+        JOIN surtimientoInsumo si ON si.idSurtimiento = s.idSurtimiento
+        JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        JOIN estructura e ON p.idEstructura = e.idEstructura
+        JOIN estructura a ON s.idEstructuraAlmacen = a.idEstructura
+        JOIN usuarios u ON p.idMedico = u.idUsuario
+        JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        JOIN visita v ON ps.idVisita = v.idVisita
+        JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio AND pu.fechaUbicaFin IS NULL
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+    WHERE
+        p.idEstatusPrescripcion in ( 2 , 3 )
+        AND s.idEstatusSurtimiento in ( 4 )
+        AND p.tipoConsulta = 'I'
+        <if test=" idsEstructura != null ">
+            AND p.idEstructura IN 
+            <foreach item="item" index="index" collection="idsEstructura" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        
+    </select>
+    
+    <select  id="obtenerSurtimientosCancelados" resultType="mx.mc.model.VistaRecepcionMedicamento" parameterType="mx.mc.model.VistaRecepcionMedicamento">
+        SELECT DISTINCT
+        s.idSurtimiento AS idSurtimiento,
+        a.nombre AS nombreAlmacen,
+        s.idPrescripcion AS idPrescripcion,
+        s.folio AS folioSurtimiento,
+        DATE_FORMAT(s.fechaProgramada,"%d/%m/%Y %H:%i") AS fechaProgramada,
+        s.idEstatusSurtimiento AS idEstatusSurtimiento,
+        es.estatus AS estatusPrescripcion,
+        es.estatus AS estatusSurtimiento,
+        CONCAT(pa.apellidoPaterno, ' ', pa.apellidoMaterno, ' ', pa.nombreCompleto) AS nombrePaciente,
+        pa.pacienteNumero AS pacienteNumero,
+        pa.claveDerechohabiencia AS claveDerechohabiencia,
+        pa.idEstatusPaciente AS idEstatusPaciente,
+        e.nombre AS nombreEstructura,
+        c.nombreCama AS nombreCama,
+        CONCAT(u.apellidoPaterno,' ',u.apellidoMaterno,' ',u.nombre) AS nombreMedico,
+        p.folio AS folioPrescripcion,
+        p.tipoPrescripcion AS tipoPrescripcion,
+        DATE_FORMAT(p.fechaPrescripcion,"%d/%m/%Y %H:%i") AS fechaPrescripcion,
+        e.idEstructura AS idEstructuraAlmacen,
+        a.idEstructura AS idEstructuraAlmacenPadre,
+        a.idTipoAlmacen AS idTipoAlmacen,
+        a.idTipoAreaEstructura AS idTipoAreaEstructura
+    FROM
+        surtimiento s
+        JOIN surtimientoInsumo si ON si.idSurtimiento = s.idSurtimiento
+        JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        JOIN estructura e ON p.idEstructura = e.idEstructura
+        JOIN estructura a ON s.idEstructuraAlmacen = a.idEstructura
+        JOIN usuarios u ON p.idMedico = u.idUsuario
+        JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        JOIN visita v ON ps.idVisita = v.idVisita
+        JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio AND pu.fechaUbicaFin IS NULL
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+    WHERE
+        p.idEstatusPrescripcion in ( 2 , 3 )
+        AND s.idEstatusSurtimiento in ( 5 )
+        AND p.tipoConsulta = 'I'
+        <if test=" idsEstructura != null ">
+            AND p.idEstructura IN 
+            <foreach item="item" index="index" collection="idsEstructura" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        
+    </select>
+    
+    <select id="obtenerBusqueda" resultType="mx.mc.model.VistaRecepcionMedicamento"  parameterType="Map" >
+        SELECT *
+        FROM viewRecepcionMedicamento
+        WHERE idEstatusSurtimiento = 2
+        <if test="cadena != null ">
+            AND folioSurtimiento LIKE '%${cadena}%'
+            OR fechaProgramada LIKE '%${cadena}%'
+            OR idEstatusSurtimiento LIKE '%${cadena}%'
+            OR estatusPrescripcion LIKE '%${cadena}%'
+            OR estatusSurtimiento LIKE '%${cadena}%'
+            OR nombrePaciente LIKE '%${cadena}%'
+            OR pacienteNumero LIKE '%${cadena}%'
+            OR claveDerechohabiencia LIKE '%${cadena}%'
+            OR nombreEstructura LIKE '%${cadena}%'
+            OR nombreCama LIKE '%${cadena}%'
+            OR nombreMedico LIKE '%${cadena}%'
+            OR folioPrescripcion LIKE '%${cadena}%'
+            OR tipoPrescripcion LIKE '%${cadena}%'
+                   
+        </if>
+    </select>    
+    <select  id="obtenerSurtimientosPorRecibirV2" resultType="mx.mc.model.VistaRecepcionMedicamento" parameterType="mx.mc.model.VistaRecepcionMedicamento">
+        SELECT DISTINCT
+        s.idSurtimiento AS idSurtimiento,
+        a.nombre AS nombreAlmacen,
+        s.idPrescripcion AS idPrescripcion,
+        s.folio AS folioSurtimiento,
+        DATE_FORMAT(s.fechaProgramada,"%d/%m/%Y %H:%i") AS fechaProgramada,
+        s.idEstatusSurtimiento AS idEstatusSurtimiento,
+        es.estatus AS estatusPrescripcion,
+        es.estatus AS estatusSurtimiento,
+        CONCAT(pa.apellidoPaterno, ' ', pa.apellidoMaterno, ' ', pa.nombreCompleto) AS nombrePaciente,
+        pa.pacienteNumero AS pacienteNumero,
+        pa.claveDerechohabiencia AS claveDerechohabiencia,
+        pa.idEstatusPaciente AS idEstatusPaciente,
+        e.nombre AS nombreEstructura,
+        c.nombreCama AS nombreCama,
+        CONCAT(u.apellidoPaterno,' ',u.apellidoMaterno,' ',u.nombre) AS nombreMedico,
+        p.folio AS folioPrescripcion,
+        p.tipoPrescripcion AS tipoPrescripcion,
+        DATE_FORMAT(p.fechaPrescripcion,"%d/%m/%Y %H:%i") AS fechaPrescripcion,
+        e.idEstructura AS idEstructuraAlmacen,
+        a.idEstructura AS idEstructuraAlmacenPadre,
+        a.idTipoAlmacen AS idTipoAlmacen,
+        a.idTipoAreaEstructura AS idTipoAreaEstructura
+    FROM
+        surtimiento s
+        INNER JOIN surtimientoInsumo si ON si.idSurtimiento = s.idSurtimiento
+        INNER JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN estructura e ON p.idEstructura = e.idEstructura
+        INNER JOIN estructura a ON s.idEstructuraAlmacen = a.idEstructura
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio AND pu.fechaUbicaFin IS NULL
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+    WHERE
+        p.idEstatusPrescripcion in ( 2 , 3 )
+        AND s.idEstatusSurtimiento in ( 2 )
+        AND p.tipoConsulta = 'I'
+        <if test="lista.size() > 0 "> 
+            AND  p.idEstructura IN 
+            <foreach item="item" index="index" collection="lista" open="(" separator="," close=")">
+                    #{item.idEstructura}
+            </foreach>
+        </if>
+        
+        
+    </select>
+    
+    <select id="obtenerSurtimientosGabinetes" resultType="mx.mc.model.VistaRecepcionMedicamento" parameterType="mx.mc.model.VistaRecepcionMedicamento">
+        SELECT DISTINCT s.idSurtimiento AS idSurtimiento, s.idPrescripcion AS idPrescripcion, s.folio AS folioSurtimiento,
+        DATE_FORMAT(s.fechaProgramada,"%d/%m/%Y %H:%i") AS fechaProgramada, s.idEstatusSurtimiento AS idEstatusSurtimiento, es.estatus AS estatusPrescripcion,
+        es.estatus AS estatusSurtimiento, CONCAT(pa.apellidoPaterno, ' ', pa.apellidoMaterno, ' ', pa.nombreCompleto) AS nombrePaciente,
+        pa.pacienteNumero AS pacienteNumero, pa.claveDerechohabiencia AS claveDerechohabiencia, pa.idEstatusPaciente AS idEstatusPaciente, e.nombre AS nombreEstructura,
+        c.nombreCama AS nombreCama, CONCAT(u.apellidoPaterno,' ',u.apellidoMaterno,' ',u.nombre) AS nombreMedico, p.folio AS folioPrescripcion, p.tipoPrescripcion AS tipoPrescripcion,
+        DATE_FORMAT(p.fechaPrescripcion,"%d/%m/%Y %H:%i") AS fechaPrescripcion, e.idEstructura AS idEstructuraAlmacen
+    FROM surtimiento s
+        INNER JOIN surtimientoInsumo si ON si.idSurtimiento = s.idSurtimiento
+        INNER JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN surtimientoMinistrado sm ON se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+        INNER JOIN estructura e ON p.idEstructura = e.idEstructura
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT  JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio
+        LEFT  JOIN cama c ON pu.idCama = c.idCama
+    WHERE
+         si.idEstatusSurtimiento = 8 AND se.idEstatusSurtimiento = 8 AND sm.idEstatusMinistracion = 2
+         AND sm.ministracionConfirmada = 1 AND sm.enviadoHIS = 0  
+        <if test="lista.size() > 0 "> 
+            AND  p.idEstructura IN 
+            <foreach item="item" index="index" collection="lista" open="(" separator="," close=")">
+                    #{item.idEstructura}
+            </foreach>
+        </if>
+        order by s.fechaProgramada desc
+    </select>
+</mapper>

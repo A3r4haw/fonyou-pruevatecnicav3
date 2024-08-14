@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.MedControlSurYReabMapper" >
+    <select id="obtenerReporteMedicamentosControlados1" resultType="mx.mc.model.ReporteLibroControlados" parameterType="Map" >
+         SELECT a.lote, a.fechaCaducidad, a.fechaAno, a.procedencia, a.nombreMedico, a.cedula, 
+		a.numFactura, a.numReceta, a.cantidadAdquirida, a.cantidadVendida 
+            , (SELECT Sum(ifnull(b.cantidadAdquirida,0) - ifnull(b.cantidadVendida,0)) 
+               from MedControlSurYReab as b
+               WHERE b.insertFecha <![CDATA[ <= ]]> a.insertFecha
+        <if test=" parametrosBusqueda.idEstructura != null ">
+           AND b.idEstructura = #{ parametrosBusqueda.idEstructura , jdbcType = VARCHAR }
+        </if>              
+        <if test=" parametrosBusqueda.idInventario != null ">
+            AND b.idInventario = #{ parametrosBusqueda.idInventario , jdbcType = VARCHAR }
+        </if>      
+        <if test=" parametrosBusqueda.idMedicamento != null ">
+            AND b.idMedicamento = #{parametrosBusqueda.idMedicamento , jdbcType = VARCHAR}  )as saldo,a.firma, a.observaciones
+        </if>    
+         
+        from MedControlSurYReab as a
+        WHERE 1 = 1 
+        AND a.idSubcategoria IN
+        <foreach item="item" index="index" collection="parametrosBusqueda.listaSubCategorias" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        
+        AND a.insertFecha BETWEEN #{parametrosBusqueda.fechaInicio, jdbcType = TIMESTAMP } AND #{parametrosBusqueda.fechaFin, jdbcType = TIMESTAMP }
+        <if test=" parametrosBusqueda.idEstructura != null ">
+           AND a.idEstructura = #{ parametrosBusqueda.idEstructura , jdbcType = VARCHAR }
+        </if>      
+        
+        <if test=" parametrosBusqueda.idInventario != null ">
+            AND a.idInventario = #{ parametrosBusqueda.idInventario , jdbcType = VARCHAR }
+        </if>      
+        
+        <if test=" parametrosBusqueda.idMedicamento != null ">
+            AND a.idMedicamento = #{parametrosBusqueda.idMedicamento , jdbcType = VARCHAR}  
+        </if>    
+        order by a.insertFecha asc;
+        
+    </select>    
+
+
+    <select id="obtenerReporteMedicamentosControlados" resultType="mx.mc.model.ReporteLibroControlados" parameterType="Map" >
+        SELECT 
+        insertFecha , idInventario , nombreCorto , idSurtimientoInsumo , idReabastoInsumo , lote , fechaCaducidad , fechaAno , idTipoOrigen , procedencia
+        , nombreMedico , cedula , numFactura , numReceta , cantidadAdquirida , cantidadVendida , saldo , observaciones , firma , idSubcategoria , idEstructura , idMedicamento 
+        FROM (
+        SELECT * 
+        , @acumulado := IF(@insertFechaMovAnt  <![CDATA[ <= ]]>   insertFecha, @acumulado + (cantidadAdquirida-cantidadVendida), (cantidadAdquirida-cantidadVendida) ) AS saldo
+        , @insertFechaMovAnt := insertFecha AS insertFechaAnterior
+        from viewLibretaControlados , (SELECT @insertFechaMovAnt := 0, @acumulado := 0) AS temp
+        WHERE idSubcategoria IN ('23' , '24' , '25')
+        order by insertFecha ASC
+        ) as s2
+        where 1 = 1
+        
+        AND insertFecha BETWEEN #{parametrosBusqueda.fechaInicio, jdbcType = TIMESTAMP } AND #{parametrosBusqueda.fechaFin, jdbcType = TIMESTAMP }
+        
+        <if test=" parametrosBusqueda.idMedicamento != null ">
+          AND idMedicamento = #{parametrosBusqueda.idMedicamento , jdbcType = VARCHAR}  
+        </if>    
+        
+        <if test=" parametrosBusqueda.idEstructura != null ">
+           AND idEstructura = #{ parametrosBusqueda.idEstructura , jdbcType = VARCHAR }
+        </if>                
+        
+    </select>
+
+</mapper>

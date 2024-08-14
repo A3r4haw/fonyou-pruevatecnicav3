@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.CostoHospitalMapper" >
+    
+    <select id="obtenerPrimerReporte"  resultType="mx.mc.model.ReporteCostosHospital" parameterType="Map" >    
+        select e.idEstructura ,e.nombre ,i.idInventario ,left(se.insertFecha,4) as periodo
+        ,left(se.insertFecha,7) as mes
+        ,i.costoUnidosis
+        ,se.cantidadEnviado
+        ,sum(se.cantidadEnviado*i.costoUnidosis) as montoporservicio
+        from prescripcion p
+        inner join prescripcionInsumo pi on pi.idPrescripcion = p.idPrescripcion
+        inner join estructura e 		 on p.idEstructura = e.idEstructura
+        inner join surtimiento s		 on s.idPrescripcion = p.idPrescripcion
+        inner join surtimientoInsumo si	 on si.idSurtimiento = s.idSurtimiento
+        inner join surtimientoEnviado se on se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        inner join inventario i			 on i.idInventario = se.idInventarioSurtido
+        where se.insertFecha between #{fechaInicio} and #{fechaFin}
+        and se.idEstatusSurtimiento='2'
+        group by mes;   
+    </select>    
+    
+</mapper>

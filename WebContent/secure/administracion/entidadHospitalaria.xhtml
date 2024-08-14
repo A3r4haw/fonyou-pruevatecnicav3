@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Entidad Hospitalaria</title>
+    </h:head>
+
+    <h:body>
+
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">
+                        
+                        <div id="busqueda">
+                            <p:outputLabel value="Entidad Hospitalaria" style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;" />
+                            <p:inputText id="busqueda" 
+                                         value="#{entidadHospitalariaMB.cadenaBusqueda}" 
+                                         style="width: 50% !important;" 
+                                         class="textSearch"
+                                         placeholder="Buscar..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona enter para buscar" alt="15" style=""/>
+                            </i>
+                            <p:spacer width="10px" />
+
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); "
+                                             actionListener="#{entidadHospitalariaMB.buscarEntidad}"
+                                             update="@form"  />
+                        </div>
+
+                        <p:commandButton class="btnNew" value="Agregar" icon="fa fa-plus"
+                                         actionListener="#{entidadHospitalariaMB.limpiarDialogo()}"
+                                         onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                                         oncomplete="PF('statusProcess').hide(); PF('modalRegistro').show();"
+                                         update="formModal"  style=" margin: 5px 0; " resetValues="true"
+                                         rendered="#{entidadHospitalariaMB.permiso.puedeCrear}" /> 
+                        <br/>
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        
+                        <p:outputLabel value="No tiene permiso de visualización de esta transacción." 
+                               style="font-size: 18px !important; font-weight: bold; color: red;"
+                               rendered="#{!entidadHospitalariaMB.permiso.puedeVer}" />
+                        
+                        <p:dataTable  id="tblEntidad"  
+                                      styleClass="cabecera" 
+                                      var="item" reflow="false"   
+                                      value="#{entidadHospitalariaMB.entidadHospList}"                                          
+                                      style="margin-bottom:5px;"
+                                      scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="300"
+                                      emptyMessage="No se encontraron registros"
+                                      rendered="#{entidadHospitalariaMB.permiso.puedeVer}"
+                                      >
+                            
+                            <p:ajax event="rowDblselect" oncomplete="PF('modalIngresarOrden').show();" 
+                                    update=":formModal" 
+                                    listener="#{entidadHospitalariaMB.obtenerDetalleInsumos}"/>
+                            
+                            <p:column headerText="Clave Entidad" style="width: 10%;" sortBy="#{item.claveEntidad}">
+                                <h:outputText value="#{item.claveEntidad}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Código Entidad" style="width: 10%;" sortBy="#{item.codigoUmf}">
+                                <h:outputText value="#{item.claveEntidad}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Nombre" style="width: 20%;" sortBy="#{item.nombre}">
+                                <h:outputText value="#{item.nombre}" class="altoColumn" />
+                            </p:column>          
+                            <p:column headerText="Domicilio" style="width: 30%;">                                
+                                <h:outputText value="#{item.domicilio}" class="altoColumn" />
+                            </p:column>                            
+                            <p:column headerText="Fecha Registro" style="width: 10%;">
+                                <h:outputText value="#{item.insertFecha}" title="" class="altoColumn" >
+                                    <f:convertDateTime pattern="MM/dd/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Estatus" style="width: 10%;">
+                                <h:outputText value="#{item.estatus ? 'Activo' : 'Descativado'}" title="" class="altoColumn" />
+                            </p:column>
+
+
+                            <p:column id="acciones"   headerText="Acciones" style="width: 10%;" >
+                                <p:commandLink id="chekstat" 
+                                               title="#{item.estatus ? 'Desactivar' : 'Activar'}" 
+                                               actionListener="#{entidadHospitalariaMB.statusEntidad(item.idEntidadHospitalaria,item.estatus)}" 
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide();" 
+                                               update="tblEntidad">
+                                    <i class="#{item.estatus ? 'fa fa-toggle-on' : 'fa fa-toggle-off'}  iconMusAzul" />
+                                </p:commandLink>
+
+                                <p:tooltip for="linkEliminar" value="Eliminar" position="top"/>
+                                <p:commandLink id="linkEliminar"                                               
+                                               style="margin: 5px;text-decoration: none;"
+                                               actionListener="#{entidadHospitalariaMB.eliminarEntidad(item.idEntidadHospitalaria,item.domicilio)}"
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide();" 
+                                               update="tblEntidad" 
+                                               rendered="#{entidadHospitalariaMB.permiso.puedeEliminar}">
+                                    <i class="fa fa-trash-o"/>
+
+                                </p:commandLink> 
+                                <p:tooltip for="linkEditar" value="Editar" position="top"/>
+                                <p:commandLink id="linkEditar"                                               
+                                               style="margin: 5px;text-decoration: none;"
+                                               actionListener="#{entidadHospitalariaMB.obtenerEntidad(item.idEntidadHospitalaria)}"
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide(); PF('modalRegistro').show();" 
+                                               update="formModal" 
+                                               rendered="#{entidadHospitalariaMB.permiso.puedeEditar}">
+                                    <i class="fa fa-edit iconMusAzul"/>
+
+                                </p:commandLink> 
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>                                                                        
+
+                    <p:dialog header="INFORMACIÓN DE ENTIDAD HOSPITALARIA"
+                              widgetVar="modalRegistro"
+                              closeOnEscape="true"
+                              closable="true"  
+                              modal="true" 
+                              resizable="false" 
+                              >               
+                        <p:focus context="formModal"/>
+
+                        <p:messages id="msgValidaRegistro" globalOnly="false" showDetail="false" closable="true" showSummary="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <h:form id="formModal" style="padding: 0px;">   
+
+                            <p:panelGrid id="panelEntidad" columns="2" styleClass="ui-noborder" >  
+
+                                <p:outputLabel value="Nombre *" class="plabel" />
+                                <p:inputText id="nombreId"  class="ptxt1"  tabindex="1"  
+                                             value="#{entidadHospitalariaMB.entidadSelected.nombre}"
+                                             maxlength="45" >
+                                </p:inputText>
+
+                                <p:outputLabel value="Estatus *"  class="plabel" />
+                                <p:selectBooleanButton id="txtActivo" onLabel="Si" offLabel="No"    
+                                                       onIcon="ui-icon-check" offIcon="ui-icon-close" 
+                                                       value="#{entidadHospitalariaMB.entidadSelected.estatus}" 
+                                                       tabindex="2" />
+
+                                <p:outputLabel value="Domicilio *" class="plabel" />
+                                <p:inputTextarea rows="3" cols="50" counter="domicilio" maxlength="120" 
+                                                 counterTemplate="{0} Caracteres restantes." autoResize="false"
+                                                 value="#{entidadHospitalariaMB.entidadSelected.domicilio}" tabindex="3" />
+
+                                <p:outputLabel value=""/>
+                                <h:outputText id="domicilio" class="p-d-block" />                               
+
+                                <p:outputLabel value="Clave Entidad" class="plabel" />
+                                <p:inputText id="claventidad" label="Domicilio"  class="ptxt1" 
+                                             value="#{entidadHospitalariaMB.entidadSelected.claveEntidad}"
+                                             maxlength="45" tabindex="4" >
+                                </p:inputText>
+
+                                <p:outputLabel value="Código Entidad" class="plabel" />
+                                <p:inputText id="codigoEntidad" class="ptxt1" 
+                                             value="#{entidadHospitalariaMB.entidadSelected.codigoUmf}"
+                                             maxlength="45" tabindex="5" >
+                                </p:inputText>
+
+                                <p:commandButton id="btnCancel" class="btnItem" value="Cancelar" 
+                                                 onclick="PF('modalRegistro').hide();"  validateClient="false" tabindex="6" />
+
+                                <p:commandButton value="Guardar"
+                                                 widgetVar="btnSave"
+                                                 actionListener="#{entidadHospitalariaMB.ingresarEntidadHosp()}"
+                                                 style="float:right;"
+                                                 class="btnNew" styleClass="btnMusAzul" 
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('modalRegistro').hide(); }" 
+                                                 update="mainForm:tblEntidad"
+                                                 ajax="true" tabindex="7" >
+                                </p:commandButton>
+
+                            </p:panelGrid>
+                        </h:form>                                     
+                    </p:dialog>                                                   
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

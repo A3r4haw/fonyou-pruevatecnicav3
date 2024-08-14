@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="REPORTE DE CONSUMOS" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" >
+                                            <p:outputLabel value="Fecha Inicio: " style="font-weight: bolder;"  />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:calendar id="txtFechaInicio" 
+                                                        value="#{reporteConsumoMB.paramBusquedaReporte.fechaInicio}" 
+                                                        mindate="" 
+                                                        maxdate="#{reporteConsumoMB.fechaActual}"
+                                                        showOn="button" showButtonPanel="true" 
+                                                        locale="es_MX" navigator="true" pattern="dd/MMM/yyyy HH:mm"
+                                                        pages="1" mask="true" effect="fade"
+                                                        styleClass="calendarAcho1" >
+                                                <p:ajax event="dateSelect"  update="txtFechaInicio2" />
+                                            </p:calendar>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" >
+                                            <p:outputLabel value="Fecha Fin: " style="font-weight: bolder;"  />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:calendar id="txtFechaInicio2" 
+                                                        value="#{reporteConsumoMB.paramBusquedaReporte.fechaFin}" 
+                                                        
+                                                        showOn="button" showButtonPanel="true" 
+                                                        locale="es_MX" navigator="true" pattern="dd/MMM/yyyy HH:mm"
+                                                        pages="1" mask="true" effect="fade"
+                                                        styleClass="calendarAcho1" >
+                                            </p:calendar>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" >
+                                            <p:outputLabel  value="Tipo Insumo: " style="font-weight: bolder;"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:selectOneMenu id="cmbTipoInsumo" value="#{reporteConsumoMB.tipoInsumo}"
+                                                             style="vertical-align: middle; margin-right: 10px; width: 150px" 
+                                                             filter="true" filterMatchMode="contains" 
+                                                             panelStyle="width:150px">
+                                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                                <f:selectItem itemLabel="Medicamento" itemValue="#{reporteConsumoMB.insumoMedicamento}" />
+                                                <f:selectItem itemLabel="Material" itemValue="#{reporteConsumoMB.insumoMaterial}" />    
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" >
+                                            <p:outputLabel value="Servicio/Área: " style="font-weight: bolder;"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:selectOneMenu id="cmbServicios" 
+                                                             value="#{reporteConsumoMB.paramBusquedaReporte.idEstructura}" 
+                                                             style="vertical-align: middle; margin-right: 10px; width: 180px" 
+                                                             filter="true" filterMatchMode="contains" 
+                                                             panelStyle="width:180px"> 
+                                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                                <f:selectItems value="#{reporteConsumoMB.listaEstructuras}"
+                                                               var="ser"
+                                                               itemValue="#{ser.idEstructura}"
+                                                               itemLabel="#{ser.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:outputLabel value="Paciente: " style="font-weight: bolder;"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:autoComplete id="txtPaciente" styleClass="autoCompleteAncho400" 
+                                                            value="#{reporteConsumoMB.paramBusquedaReporte.pacienteList}"
+                                                            completeMethod="#{reporteConsumoMB.autocompletePacientes}"
+                                                            minQueryLength="4" queryDelay="500"                     
+                                                            maxResults="50" scrollHeight="300"
+                                                            forceSelection="true" cacheTimeout="0" cache="false"
+                                                            var="paciente" multiple="true"
+                                                            placeholder=" Filtro pacientes ..." 
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" 
+                                                            itemValue="#{paciente}" 
+                                                            converter="musGenericConverter" >
+                                                <p:column style="width: 50px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="No. Paciente" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.pacienteNumero}" style=" font-size: small;" />
+                                                </p:column>                                                
+                                                <p:column style="width: 150px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:outputLabel style="font-weight: bolder;"  value="Insumos: " />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:autoComplete id="txtInsumos" styleClass="autoCompleteAncho400" 
+                                                            value="#{reporteConsumoMB.paramBusquedaReporte.listInsumos}" 
+                                                            completeMethod="#{reporteConsumoMB.autocompleteInsumo}" 
+                                                            minQueryLength="4" queryDelay="500" 
+                                                            maxResults="50" scrollHeight = "350" 
+                                                            forceSelection="true" cacheTimeout="0" cache="false" 
+                                                            var="insum" multiple="true" 
+                                                            placeholder=" Filtro insumos ... " 
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{insum.nombreCorto}"
+                                                            itemValue="#{insum}" 
+                                                            converter="musGenericConverter" >
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                            <p:commandButton value="Consultar" style="margin-left: 3px; margin-top: 3px" 
+                                                             onclick="PF('statusProcess').show();" 
+                                                             actionListener="#{reporteConsumoMB.consultar()}" 
+                                                             update="formTablaEstatusInsumos, :mainForm:msg" 
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle" 
+                                                             styleClass="btnMusAzul" /> 
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:outputLabel style="font-weight: bolder;"  value="Médico: " />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:autoComplete id="txtMedico" styleClass="autoCompleteAncho400" 
+                                                            value="#{reporteConsumoMB.paramBusquedaReporte.listMedicos}"
+                                                            completeMethod="#{reporteConsumoMB.autocompleteUsuarios}"
+                                                            minQueryLength="3" queryDelay="500" 
+                                                            maxResults="50" scrollHeight = "350"
+                                                            forceSelection="true" cacheTimeout="0" cache="false"
+                                                            var="medico" multiple="true"
+                                                            placeholder="  Filtro médicos ..." 
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{medico.nombre} #{medico.apellidoPaterno} #{medico.apellidoMaterno}" 
+                                                            itemValue="#{medico}" 
+                                                            converter="musGenericConverter" >
+                                                <p:column style="width: 50px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Cédula" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{medico.cedProfesional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 150px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{medico.nombre}  #{medico.apellidoPaterno}  #{medico.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>                                               
+                                            </p:autoComplete>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:outputLabel style="font-weight: bolder;"  value="Dispensa: " />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:autoComplete id="txtUsuario" styleClass="autoCompleteAncho400" 
+                                                            value="#{reporteConsumoMB.paramBusquedaReporte.listUsuarios}"
+                                                            completeMethod="#{reporteConsumoMB.autocompleteUsuarios}"
+                                                            minQueryLength="4" queryDelay="500" 
+                                                            maxResults="50" scrollHeight = "350" 
+                                                            forceSelection="true" cacheTimeout="0" cache="false" 
+                                                            var="usr" multiple="true"
+                                                            placeholder=" Filtro usuarios ..." 
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{usr.nombre} #{usr.apellidoPaterno} #{usr.apellidoMaterno}"
+                                                            itemValue="#{usr}" 
+                                                            converter="musGenericConverter" 
+                                                             >
+                                                <p:column style="width: 50px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre de Usuario" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.nombreUsuario}" style=" font-size: small;" />
+                                                </p:column>
+                                                <br/>
+                                                <p:column style="width: 150px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre Completo" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.nombre}  #{usr.apellidoPaterno}   #{usr.apellidoMaterno}" style=" font-size: small;" />
+                                                </p:column>                                                
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                            <p:menuButton value="Exportar" style="margin-top: 3px; margin-left: 3px; ">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{reporteConsumoMB.generaPDF}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm" />
+                                                <p:menuitem value="Formato EXCEL"
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false"
+                                                            actionListener="#{reporteConsumoMB.generaExcel}" />
+                                            </p:menuButton>
+                                        </div>
+                                    </div>
+                                    <ui:remove>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:outputLabel style="font-weight: bolder;"  value="Diagnóstico: " />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:autoComplete id="txtDiagostico" styleClass="autoCompleteAncho400" 
+                                                            value="#{reporteConsumoMB.paramBusquedaReporte.listDiagosticos}"
+                                                            completeMethod="#{reporteConsumoMB.autocompleteDiagnostico}"
+                                                            minQueryLength="3" queryDelay="500" 
+                                                            maxResults="50" scrollHeight = "350"
+                                                            forceSelection="true" cacheTimeout="0" cache="false"
+                                                            var="diag" multiple="true"
+                                                            placeholder="  Filtro diagnósticos ..." 
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{diag.clave} - #{diag.nombre}" 
+                                                            itemValue="#{diag}" 
+                                                            converter="musGenericConverter" >
+                                                <p:column style="width: 30px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{diag.clave}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 250px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{diag.nombre}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>                                               
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                        </div>
+                                    </div>
+                                    </ui:remove>
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form>
+                    
+                    <h:form id="formTablaEstatusInsumos" >
+                        <p:dataTable id="resultadosDT"
+                                     value="#{reporteConsumoMB.consumosLazy}"
+                                     var="result" 
+                                     lazy="true" scrollable="true" 
+                                     paginator="true" paginatorPosition="bottom"
+                                     scrollWidth="100%" scrollHeight="350" rows="20"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     emptyMessage="No se encontraron datos"
+                                     style="font-size: x-small !important; width: 100% !important;" >
+                            <f:facet name="header">
+                                <h:outputText value="Reporte de Consumos"/>
+                            </f:facet>
+
+                            <p:column headerText="Almacén" style="width: 5%;">
+                                <h:outputText value="#{result.nombreAlmacen}"/>
+                            </p:column>
+
+                            <p:column headerText="Clave" style="width: 5%;">
+                                <h:outputText value="#{result.claveInstitucional}"/>
+                            </p:column>
+
+                            <p:column headerText="Descripción" style="width: 10%;">
+                                <h:outputText value="#{result.nombreCorto}"/>
+                            </p:column>                            
+
+                            <p:column headerText="Servicio" style="width: 8%;">
+                                <h:outputText value="#{result.nombreServicio}"/>
+                            </p:column>
+
+<!--                            <p:column headerText="Cama" style="width: 5%;">
+                                <h:outputText value="# {result.esp}"/>
+                            </p:column>-->
+                            
+                            <p:column headerText="Paciente" style="width: 10%;">
+                                <h:outputText value="#{result.nombrePaciente}"/>
+                            </p:column>
+
+                            <p:column headerText="Médico" style="width: 8%;">
+                                <h:outputText value="#{result.nombreMedico}"/>
+                            </p:column>
+
+                            <p:column headerText="Prescripción" style="width: 5%;">
+                                <h:outputText value="#{result.folioPrescripcion}"/>
+                            </p:column>
+
+                            <p:column headerText="Surtimiento"  style="width: 5%;">
+                                <h:outputText value="#{result.folioSurtimiento}"/>
+                            </p:column>
+
+                            <p:column headerText="Posología" style="width: 5%;">
+                                <h:outputText value="#{result.dosis} #{result.nombreUnidadConcentracion} | #{result.frecuencia} h 1 #{result.duracion} d"/>
+                            </p:column>
+
+                            <p:column headerText="Fecha Dispensa" style="width: 5%;">
+                                <h:outputText value="#{result.fechaProgramada}"/>
+                            </p:column>
+                            
+                            <p:column headerText="Usuario Dispensa" style="width: 5%;">
+                                <h:outputText value="#{result.usuarioDispensa}"/>
+                            </p:column>
+                            
+                            <p:column headerText="Cant Dispensada" style="width: 5%;">
+                                <h:outputText value="#{result.cantidadEnviado}"/>
+                            </p:column>
+                            
+                        </p:dataTable>
+                    </h:form>	
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

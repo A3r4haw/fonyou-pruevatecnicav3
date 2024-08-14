@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <head>
+        <title>Usuarios</title>                
+    </head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content" >
+
+                <div class="mainPanel">
+
+                    <h:form id="mainForm" role="medi"  > 
+
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                                <p:outputLabel value="Usuario"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+
+                            <p:inputText id="textSearch" onkeypress="if (event.keyCode == 13) {}"
+                                         style="width: 50%!important;border-radius:10px!important;" 
+                                         value="#{usuariosMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar..."
+                                         tabindex="1"/>
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>
+                            </i>
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{usuariosMB.obtenerListaUsuarios}"
+                                             update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();" style=" margin-left: 15px; margin-bottom: 8px;" 
+                                             tabindex="2" />
+                        </div>
+                        <p:commandButton class="btnNew" value="Agregar" disabled="#{usuariosMB.btnNew}" icon="fa fa-plus" rendered="#{usuariosMB.permiso.puedeCrear}"
+                                         styleClass="btnMusAzul"
+                                         actionListener="#{usuariosMB.crearUsuario}" onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide(); PF('modalUsuario').show();"
+                                         ajax="true" update=":formUsuario"  style=" margin: 5px 0; "
+                                         tabindex="3"/>&nbsp;&nbsp;
+                        <p:commandButton class="btnNew" value="Agregar Layout" icon="fa fa-plus" rendered="#{usuariosMB.permiso.puedeProcesar}"
+                                         actionListener="#{usuariosMB.crearUsuario}" onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide(); PF('modalLayout').show();"
+                                         ajax="true" update=":frmLayout"  style=" margin: 5px 0; "
+                                         tabindex="4"/> 
+                        <br/>
+                        <p:messages id="validaMsg" globalOnly="true" closable="true" showDetail="false" redisplay="false" rendered="#{usuariosMB.message}" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <p:outputLabel value="No tiene permiso de visualización de esta transacción." 
+                               style="font-size: 18px !important; font-weight: bold; color: red;"
+                               rendered="#{!usuariosMB.permiso.puedeVer}" />
+                        
+                        <p:dataTable id="tblUsuarios" 
+                                     widgetVar="tblUsuarios" 
+                                     lazy="true"
+                                     value="#{usuariosMB.usuariosLazy}"
+                                     var="item" 
+                                     styleClass="cabecera" reflow="true"
+                                     style="margin-bottom:5px;"
+                                     scrollable="true"
+                                     scrollHeight="350" 
+                                     paginatorPosition="bottom"
+                                     rows="10"
+                                     paginator="true"
+                                     paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     rendered="#{usuariosMB.permiso.puedeVer}" >
+
+                            <p:column style="text-align: left; width: 12%;"
+                                      headerText="Nombre" sortBy="#{item.nombre}"  >
+                                <h:outputText value="#{item.nombre} " class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left; width: 12%;"
+                                      sortBy="#{item.apellidoPaterno}" headerText="Apellido Paterno" >
+                                <h:outputText value="#{item.apellidoPaterno}  " class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left !important;  width: 12%;"
+                                      sortBy="#{item.apellidoMaterno}" headerText="Apellido Materno" >
+                                <h:outputText value="#{item.apellidoMaterno} "   class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left; width: 10%;"
+                                      headerText="Usuario" sortBy="#{item.nombreUsuario}" >
+                                <h:outputText value="#{item.nombreUsuario}"  class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left; width: 20%;"
+                                      headerText="Unidad Jerárquica" sortBy="#{item.estructura}" >
+                                <h:outputText value="#{item.estructura}" title="#{item.pathEstructura}"  class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left; width: 14%;"
+                                      headerText="Nombre del Rol" sortBy="#{item.nombreRol}">
+                                <h:outputText value="#{item.nombreRol}"  class="altoColumn"/>
+                            </p:column>
+
+                            <p:column style="text-align: left;width: 5%;" headerText="Activo" sortBy="#{item.activo}" >
+                                <h:outputText value="#{item.activo ? 'Si' : 'No' }" class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left;width: 10%;" headerText="Acciones" >
+                                <p:commandLink title="Editar"  actionListener="#{usuariosMB.obtenerUsuario(item.idUsuario)}" rendered="#{usuariosMB.permiso.puedeEditar}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('modalUsuario').show();" update=":formUsuario" >
+                                    <i class="fa fa-edit iconMusAzul" />
+                                </p:commandLink> &nbsp;
+                                <p:commandLink title="#{item.activo ? 'Desactivar' : 'Activar'}" actionListener="#{usuariosMB.statusUsuario(item.idUsuario,item.activo)}" rendered="#{usuariosMB.permiso.puedeEditar}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":mainForm:tblUsuarios " >
+                                    <i class="#{item.activo ? 'fa fa-toggle-on' : 'fa fa-toggle-off'} iconMusAzul" />
+                                    <p:confirm header="Confirmación" message="¿Realmente desea #{item.activo ? 'Desactivar':'Activar'} al usuario?" icon="ui-icon-alert"  />
+                                </p:commandLink> &nbsp;
+                                <p:commandLink title="Cambiar Contraseña" actionListener="#{usuariosMB.obtenerUsuario(item.idUsuario)}" resetValues="true" rendered="#{usuariosMB.permiso.puedeEditar}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();PF('modalPassUsuario').show();" update=":frmPass"  >
+                                    <i class="fa fa-key iconMusAzul" />
+                                </p:commandLink> &nbsp;
+                                <p:commandLink title="Asignar Area" actionListener="#{usuariosMB.obtenerUsuario(item.idUsuario)}" rendered="#{usuariosMB.permiso.puedeEditar}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();PF('modalEstructuraUsuario').show();" update=":frmEstructura"  >
+                                    <i class="fa fa-sitemap iconMusAzul" />
+                                </p:commandLink>
+                            </p:column>
+                            
+                        </p:dataTable>
+                    </h:form>
+
+                    <p:dialog header="Información de Usuario"
+                              widgetVar="modalUsuario"
+                              closeOnEscape="true" modal="true"  
+                              resizable="false"
+                              responsive="true"  
+                              style="font-size:xx-small !important; " width="40%" height="auto" >
+
+                        <h:form id="formUsuario" >                        
+                            <div align="center">
+                                <p:messages id="validaMsg1" globalOnly="false" closable="true" showDetail="false" >
+                                    <p:autoUpdate />
+                                </p:messages>
+                                <p:tabView style=" font-size:small !important;" id="tbView"   >
+                                    <p:tab title="Básica">
+                                        <p:panelGrid columns="2">
+                                            <p:outputLabel value="Nombre"  />
+                                            <p:inputText id="txtNombre" style="width: 280px !important;" required="true" 
+                                                         label="Nombre" 
+                                                         validatorMessage="El nombre no es valido"   maxlength="20"
+                                                         value="#{usuariosMB.usuarioSelect.nombre}" 
+                                                         requiredMessage="Nombre requerido"
+                                                         tabindex="14" >
+                                            <p:keyFilter regEx="#{usuariosMB.regexNomAp}"  />
+                                            </p:inputText>
+
+                                            <p:outputLabel value="Apellido Paterno"  />
+                                            <p:inputText id="txtNombrePaterno" style="width: 280px !important;" 
+                                                         required="true"  maxlength="20"
+                                                         label="Apellido Paterno" validatorMessage="Apellido Paterno no es valido" 
+                                                         value="#{usuariosMB.usuarioSelect.apellidoPaterno}" 
+                                                         requiredMessage="Apellido Paterno requerido"
+                                                         tabindex="15">
+                                            <p:keyFilter regEx="#{usuariosMB.regexNomAp}"   />    
+                                            </p:inputText>
+
+                                            <p:outputLabel value="Apellido Materno" />
+                                            <p:inputText id="txtApellidoMaterno" style="width: 280px !important;" 
+                                                         label="Apellido Materno" maxlength="20"
+                                                         value="#{usuariosMB.usuarioSelect.apellidoMaterno}" 
+                                                         validatorMessage="Apellido Materno no es valido" 
+                                                         tabindex="16" >
+                                            <p:keyFilter regEx="#{usuariosMB.regexNomAp}"  />    
+                                            </p:inputText>
+
+                                            <p:outputLabel value="Nombre de Usuario" />
+                                            <p:inputText id="txtNombreUsuario"  style="width: 150px !important;" 
+                                                         required="true" label="Nombre Usuario"
+                                                         value="#{usuariosMB.usuarioSelect.nombreUsuario}" maxlength="15"  
+                                                         requiredMessage="Nombre de Usuario Requerido" 
+                                                         tabindex="17" >
+                                                <p:keyFilter regEx="#{usuariosMB.regexUser}"  />
+                                                <p:ajax event="blur"  listener="#{usuariosMB.validaUser()}"  />
+                                            </p:inputText>
+
+                                            <p:outputLabel value="Matrícula de Personal" />
+                                            <p:inputText id="matriPerson" style="width: 150px !important;" 
+                                                         value="#{usuariosMB.usuarioSelect.matriculaPersonal}"
+                                                         maxlength="20" 
+                                                         tabindex="18"/>
+                                            
+                                            <p:outputLabel value="Correo Electrónico" />
+                                            <p:inputText id="txtCorreoElectronico" style="width: 200px !important;"  
+                                                         required="true" label="Correo electrónico" 
+                                                         maxlength="90" 
+                                                         value="#{usuariosMB.usuarioSelect.correoElectronico}" 
+                                                         requiredMessage="Correo electrónico requerido" 
+                                                         validatorMessage="Escriba un correo valido" 
+                                                         tabindex="19"> 
+                                                <f:validateRegex pattern="#{usuariosMB.regexMail}"  />
+                                                <p:ajax process="@this"  update="txtCorreoElectronico" />
+                                                <p:ajax event="blur"  listener="#{usuariosMB.validaMail()}"  />
+                                            </p:inputText> 
+
+                                            <p:outputLabel value="Clave de Acceso" rendered="#{usuariosMB.rndEdit}" />
+                                            <h:panelGrid columns="2" id="txtClaveAcceso" cellpadding="5"  
+                                                         rendered="#{usuariosMB.rndEdit}">
+                                                <h:outputLabel for="txtPassword1" value="Clave: *" />
+                                                <p:password id="txtPass1" value="#{usuariosMB.usuarioSelect.claveAcceso}" 
+                                                            label="Password 1"
+                                                            autocomplete="new-password"
+                                                            feedback="true"  required="true" requiredMessage="Clave de acceso requerida"
+                                                            promptLabel="Ingrese Clave" weakLabel="Débil"
+                                                            goodLabel="Clave Segura" strongLabel="Muy Segura"
+                                                            tabindex="20" style="width: 140px !important;" />
+
+                                                <h:outputLabel for="txtPassword2" value="Confirmación: *" />
+                                                <p:password id="txtPass2" value="#{usuariosMB.confirmacion}" 
+                                                            label="Password 2"
+                                                            required="true" requiredMessage="Confirmación requerida" 
+                                                            tabindex="21" style="width: 140px !important;"  />
+                                            </h:panelGrid>
+
+                                            <p:outputLabel value="Usuario Activo"  />
+                                            <p:selectBooleanButton id="txtActivo" onLabel="Si" offLabel="No" 
+                                                                   onIcon="ui-icon-check" offIcon="ui-icon-close" 
+                                                                   value="#{usuariosMB.usuarioSelect.activo}" 
+                                                                   tabindex="22" />
+
+                                            <p:outputLabel value="Usuario Bloqueado" rendered="#{usuariosMB.mostrarBloqueoUsuario}" />
+                                            <p:selectBooleanButton id="txtBloqueado" onLabel="Si" offLabel="No" 
+                                                                   onIcon="ui-icon-check" offIcon="ui-icon-close" 
+                                                                   value="#{usuariosMB.usuarioSelect.usuarioBloqueado}"
+                                                                   tabindex="23"
+                                                                   rendered="#{usuariosMB.mostrarBloqueoUsuario}" />
+
+                                            <p:outputLabel value="Fecha de Vigencia"  />
+                                            <p:calendar id="txtFechaVigencia" value="#{usuariosMB.usuarioSelect.fechaVigencia}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                                        validatorMessage="La Fecha Vigencia debe ser mayor" mindate="#{usuariosMB.fechaActual}"
+                                                        pages="1" mask="true"
+                                                        tabindex="24" />
+
+                                        </p:panelGrid>
+                                    </p:tab>
+
+                                    <p:tab title="Perfil">                                        
+                                        <p:panelGrid columns="2">
+                                            <p:outputLabel value="Rol de usuario:" />
+                                            <p:selectOneMenu  class="sOneMenu"  required="true" 
+                                                              requiredMessage="Rol de usuario requerido" 
+                                                              value="#{usuariosMB.usuarioRolSelect.idRol}"
+                                                              filter="true"
+                                                              filterMatchMode="contains"
+                                                              tabindex="25" >
+                                                <f:selectItem itemLabel="Seleccione una opción" itemValue="" 
+                                                              noSelectionOption="true" />
+                                                <f:selectItems value="#{usuariosMB.rolList}" var="categ" itemLabel="#{categ.nombre}"
+                                                               itemValue="#{categ.idRol}" />                                            
+                                            </p:selectOneMenu>
+
+                                            <p:outputLabel value="Tipo de Usuario:" />
+                                            <p:selectOneMenu  id="comboTipoUsuario"
+                                                              class="sOneMenu"  
+                                                              required="true" 
+                                                              requiredMessage="Tipo de usuario requerido" 
+                                                              value="#{usuariosMB.usuarioSelect.idTipoUsuario}" 
+                                                              tabindex="26" >
+                                                <f:selectItem itemLabel="Seleccione una opción" itemValue="" 
+                                                              noSelectionOption="true" />
+                                                <f:selectItems value="#{usuariosMB.tipoUserList}" var="user" 
+                                                               itemLabel="#{user.descripcion}" itemValue="#{user.idTipoUsuario}" />
+                                            </p:selectOneMenu>
+
+                                            <p:outputLabel value="Cédula Profesional:" />
+                                            <p:inputText id="cedProf" style="width: 200px !important;" 
+                                                         value="#{usuariosMB.usuarioSelect.cedProfesional}"
+                                                         maxlength="10"
+                                                         tabindex="27" />
+
+                                            <p:outputLabel value="Cédula Especialidad:" />
+                                            <p:inputText id="cedEsp"  style="width: 200px !important;"
+                                                         maxlength="10"
+                                                         value="#{usuariosMB.usuarioSelect.cedEspecialidad}"
+                                                         tabindex="28" />
+
+                                            <p:outputLabel value="Turnos:" />
+                                            <p:selectCheckboxMenu id="turno"
+                                                                  label="Turnos"
+                                                                  class="sOneMenu"
+                                                                  value="#{usuariosMB.listaIdTurnos}" 
+                                                                  tabindex="29" >
+                                                <f:selectItems value="#{usuariosMB.listaTurnos}"
+                                                               var="turno"
+                                                               itemValue="#{turno.idTurno.toString()}"
+                                                               itemLabel="#{turno.nombre}"/>
+                                            </p:selectCheckboxMenu>
+                                            
+                                            <p:outputLabel value="Tipo Perfil:" />
+                                            <p:selectCheckboxMenu id="perfil"
+                                                                  label="Perfiles"
+                                                                  class="sOneMenu"
+                                                                  value="#{usuariosMB.listaIdPerfiles}" 
+                                                                  tabindex="30" >
+                                                <f:selectItems value="#{usuariosMB.listaPerfiles}"
+                                                               var="perfil"
+                                                               itemValue="#{perfil.idTipoPerfilUsuario.toString()}"
+                                                               itemLabel="#{perfil.nombrePerfil}"/>
+                                            </p:selectCheckboxMenu>
+                                            
+                                            <p:outputLabel value="Prescripción Tipo Solución:" />
+                                            <p:selectCheckboxMenu  
+                                                                label="Tipos de Soluciones"
+                                                                class="sOneMenu"  
+                                                              value="#{usuariosMB.listaIdTipoSolucionSelect}"                                                              
+                                                              tabindex="31" >                                                
+                                                <f:selectItems value="#{usuariosMB.tipoSolucionList}" var="tipoSol" itemLabel="#{tipoSol.descripcion}"
+                                                               itemValue="#{tipoSol.idTipoSolucion}" />                                            
+                                            </p:selectCheckboxMenu>
+
+                                            <p:outputLabel id="labelPrescContr"
+                                                           value="Puede gestionar insumos controlados" />
+                                            
+                                            <p:selectBooleanCheckbox id="prescContr"
+                                                                     value="#{usuariosMB.prescribeControlados}" 
+                                                                     tabindex="32" />
+                                        </p:panelGrid>
+                                    </p:tab>
+                                    
+                                    <p:tab title="Estructura" id="tabEstructura">                                        
+                                        <h:outputLabel value="Estructura Hospitalaria" />
+                                        <table class="tableMus">
+                                            <tr>
+                                                <td>
+                                                    <p:tree value="#{usuariosMB.root}" var="node"
+                                                            selectionMode="single" animate="true" 
+                                                            style="width:250px; height: 250px; overflow: auto; display: block;"
+                                                            selection="#{usuariosMB.selectNode}"
+                                                            tabindex="33"
+                                                            filterBy="#{node}"
+                                                            filterMatchMode="contains">
+                                                        <p:ajax event="select" 
+                                                                update=":formUsuario:tbView:txtEstructura, :formUsuario:tbView:txtPathEstructura" 
+                                                                listener="#{usuariosMB.onNodeSelect}" />
+                                                        <p:treeNode>                                                        
+                                                            <h:outputText value="#{node}" />                                                        
+                                                        </p:treeNode>
+                                                    </p:tree>
+                                                </td>
+                                                <td>
+                                                    <p:outputLabel value="Nombre Unidad:" /><br />
+                                                    <p:inputText id="txtEstructura" style="width:300px;" value="#{usuariosMB.nameUnidad}" 
+                                                                 disabled="true" tabindex="34" />
+                                                    <br /><br />                                                    
+                                                    <p:outputLabel value="Ruta Completa:"/><br /> 
+                                                    <p:inputText id="txtPathEstructura" style="width:300px;" 
+                                                                 value="#{usuariosMB.usuarioSelect.pathEstructura}"
+                                                                 maxlength="199"
+                                                                 disabled="true" tabindex="35" />
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                    </p:tab>
+                                    
+                                    <p:tab title="Impresoras">                                        
+                                        <p:panelGrid columns="2">
+                                            <p:outputLabel value="Seleccione impresora(s) para el usuario:" />
+                                            <p:selectCheckboxMenu id="impresora"
+                                                                  label="Impresoras"
+                                                                  class="sOneMenu"
+                                                                  value="#{usuariosMB.listaIdImpresoras}" 
+                                                                  tabindex="36" >
+                                                <f:selectItems value="#{usuariosMB.listaImpresoras}"
+                                                               var="impresora"
+                                                               itemValue="#{impresora.idImpresora}"
+                                                               itemLabel="#{impresora.descripcion}"
+                                                               itemDescription="" />
+                                            </p:selectCheckboxMenu>
+                                            <p:spacer width="10" />
+                                            <p:outputLabel value="No hay Impresoras registradas." rendered="#{usuariosMB.checkBoxImpresora}" />
+                                        </p:panelGrid>
+                                        
+                                    </p:tab>
+                                </p:tabView>
+                                <br/>                                                         
+                                <p:panel class="pnlActions">                                    
+                                    <p:commandButton id="btnSave1"
+                                                     widgetVar="btnSave1" 
+                                                     style="margin:0;float: right;margin: 10px;" class="btnNew" styleClass="btnMusAzul"
+                                                     update=":mainForm:tblUsuarios"                                    
+                                                     value="Guardar"
+                                                     actionListener="#{usuariosMB.saveUsuario()}"
+                                                     onclick="PF('statusProcess').show();"
+                                                     oncomplete=" if ( args.estatus1 ){  PF('modalUsuario').hide();  } PF('statusProcess').hide();"
+                                                     tabindex="37" >
+                                        <p:confirm header="Confirmación" message="Desea Guardar los cambios ?" icon="ui-icon-alert"  />
+                                    </p:commandButton>
+                                </p:panel> 
+                            </div>
+                        </h:form>
+                    </p:dialog>
+
+                    <p:dialog header="Asignación de Contraseña"
+                              widgetVar="modalPassUsuario"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important; ">
+                        <h:form id="frmPass">
+                            <h:panelGrid columns="2" id="txtClaveAcceso" cellpadding="5">                   
+                                <h:outputLabel for="txtPassword1" value="Clave: *" />
+                                <p:password id="txtPassword1" value="#{usuariosMB.usuarioSelect.claveAcceso}" match="txtPassword2" label="Clave" 
+                                            requiredMessage="La clave es requerida"
+                                            feedback="true" required="true"
+                                            promptLabel="Ingrese Clave" weakLabel="Débil"
+                                            goodLabel="Clave Segura" strongLabel="Muy Segura" />
+
+                                <h:outputLabel for="txtPassword2" value="Confirmación: *" />
+                                <p:password id="txtPassword2" value="#{usuariosMB.usuarioSelect.claveAcceso}" label="Confirmación"
+                                            required="true" requiredMessage="La confirmación es requerido" />
+                            </h:panelGrid>
+                            <p:messages id="msgValidaPass" globalOnly="false"  closable="true" showDetail="false" redisplay="false"/>
+                            <p:panel class="pnlActions" styleClass="panelMus" >
+                                <p:commandButton id="btnSave2"
+                                                 widgetVar="btnSave2"
+                                                 value="Guardar" style="margin:0"
+                                                 styleClass="btnMusAzul"
+                                                 actionListener="#{usuariosMB.changePasswordUsuario}"
+                                                 onclick="PF('statusProcess').show();"
+                                                 update=":frmPass"
+                                                 oncomplete=" if ( args.estatus2 ) {  PF('modalPassUsuario').hide();  } PF('statusProcess').hide();"
+                                                 >
+                                    <p:confirm header="Confirmación" message="Desea Guardar los cambios" icon="ui-icon-alert"  />
+                                </p:commandButton>                                                                       
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+                    <p:dialog header="Asignación de Estructura"
+                              widgetVar="modalEstructuraUsuario"
+                              closeOnEscape="true" modal="true"
+                              style="font-size:xx-small !important; ">
+                        <h:form id="frmEstructura">                        
+                            <h:outputLabel value="Estructura Hospitalaria" />
+                            <table class="tableMus">
+                                <tr>
+                                    <td>
+                                        <p:tree value="#{usuariosMB.root}" var="node" required="true" requiredMessage="La estructura es requerida" 
+                                                selectionMode="single"  animate="true" style="width:250px; height: 300px; overflow: auto; display: block;"
+                                                selection="#{usuariosMB.selectNode}">
+                                            <p:ajax event="select" update=":frmEstructura:txtEstruct, :frmEstructura:txtPathEstruct" listener="#{usuariosMB.onNodeSelect}" />
+                                            <p:treeNode>
+                                                <h:outputText value="#{node}" />
+                                            </p:treeNode>
+                                        </p:tree>
+                                    </td>
+                                    <td>
+                                        <p:outputLabel value="Nombre Unidad:" /><br />
+                                        <p:inputText id="txtEstruct" style="width:300px;" value="#{usuariosMB.nameUnidad}" disabled="true"  />
+                                        <br /><br />                                                    
+                                        <p:outputLabel value="Ruta Completa:"/><br /> 
+                                        <p:inputText id="txtPathEstruct" style="width:300px;" value="#{usuariosMB.usuarioSelect.pathEstructura}" disabled="true" />
+                                    </td>
+                                </tr>
+                            </table>
+                            <p:messages id="msgValidaEstructura" globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:panel class="pnlActions">
+                                <p:commandButton id="btnSave3"
+                                                 widgetVar="btnSave3"
+                                                 update=":mainForm:tblUsuarios"    
+                                                 value="Guardar" style="margin:0"
+                                                 styleClass="btnMusAzul"
+                                                 actionListener="#{usuariosMB.assignAreaUsuario}" 
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete=" if ( args.estatus3 ) {  PF('modalEstructuraUsuario').hide();  } PF('statusProcess').hide();"
+                                                 >
+                                    <p:confirm header="Confirmación" message="Desea Guardar los cambios" icon="ui-icon-alert"  />
+                                </p:commandButton>
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+                    <p:dialog header="Carga de datos de forma masiva"
+                              widgetVar="modalLayout"
+                              closeOnEscape="true" modal="true"
+                              style="font-size:xx-small !important; ">
+                        <h:form id="frmLayout" style="padding: 0px;">                         
+                            <p:messages id="msjLayout" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:fileUpload  dragDropSupport="false" uploadLabel="Subir Archivo" cancelLabel="Cancelar" label="Seleccionar Archivo" 
+                                           allowTypes="/(\.|\/)(xlsx|xls)$/" invalidFileMessage="Tipo de archivo invalido"
+                                           fileUploadListener="#{usuariosMB.layoutFileUpload}"  mode="advanced" update="frmLayout"  />
+                            <p:outputPanel rendered="#{usuariosMB.noProcess}" >
+                                <p:dataTable  id="tblNoProcessEstructura"
+                                              var="item" editable="true"  
+                                              value="#{usuariosMB.usuarioLayout}"
+                                              styleClass="styleEventosPlanPrestacion" reflow="true"
+                                              style="margin-bottom:5px;" 
+                                              scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" > 
+
+                                    <f:facet name="header" ><h:outputText style="color: #000;" value="Datos NO procesados" /></f:facet>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.nombreUsuario}" headerText="Usuario" >
+                                        <h:outputText value="#{item.nombreUsuario}" title="#{item.nombreUsuario}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.nombre}" headerText="Nombre" >
+                                        <h:outputText value="#{item.nombre}" title="#{item.nombre}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.apellidoPaterno}" headerText="Apellido Paterno" >
+                                        <h:outputText value="#{item.apellidoPaterno}" title="#{item.apellidoPaterno}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.apellidoMaterno}" headerText="Apellido Materno" >
+                                        <h:outputText value="#{item.apellidoMaterno}" title="#{item.apellidoMaterno}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.correoElectronico}" headerText="Correo" >
+                                        <h:outputText value="#{item.correoElectronico}" title="#{item.correoElectronico}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.updateIdUsuario}" headerText="Motivo" >
+                                        <h:outputText value="#{item.updateIdUsuario}" title="#{item.updateIdUsuario}" class="altoColumn" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:outputPanel>
+                            <p:panel class="pnlActions">
+                                <p:commandButton class="btnNew" value="Aceptar"
+                                                 actionListener="#{usuariosMB.actualizaTablaUser}" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalLayout').hide();"
+                                                 ajax="true" update=":mainForm:tblUsuarios"  style=" margin: 5px 0; "  />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+                </div>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+
+</html>

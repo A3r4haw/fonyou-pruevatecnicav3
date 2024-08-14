@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.CitaMapper" >
+ 
+    <select id="obtenerById" resultType="mx.mc.model.Cita" parameterType="mx.mc.model.Cita" >
+        SELECT idCita,
+            idEstructura,
+            idAgenda,
+            idPaciente,
+            idMedico,
+            idTurno,
+            titulo,
+            fechaInicio,
+            fechaFin,
+            comentarios,
+            estatus,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario
+        FROM cita
+        WHERE 1 = 1        
+            <if test=" idCita != null"> AND idCita = #{ idCita , jdbcType = VARCHAR } </if>
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Cita" parameterType="mx.mc.model.Cita" >
+        SELECT idCita , idEstructura , idAgenda , idPaciente , idMedico , idTurno ,
+        titulo , fechaInicio , fechaFin , comentarios , estatus , insertFecha , insertIdUsuario ,
+        updateFecha , updateIdUsuario
+        FROM cita
+        WHERE 1 = 1
+        <if test=" idCita != null">
+            AND idCita = #{ idCita , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructura != null">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idAgenda != null ">
+            AND idAgenda = #{ idAgenda , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPaciente != null">
+            AND idPaciente = #{ idPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" idMedico != null">
+            AND idMedico = #{ idMedico , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTurno != null">
+            AND idTurno  = #{ idTurno , jdbcType = INTEGER }
+        </if>
+    </select>
+    <select id="existeCita" resultType="mx.mc.model.Cita" parameterType="mx.mc.model.Cita" >
+        SELECT idCita,
+            idEstructura,
+            idAgenda,
+            idPaciente,
+            idMedico,
+            idTurno,
+            titulo,
+            fechaInicio,
+            fechaFin,
+            comentarios,
+            estatus,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario
+        FROM cita
+        WHERE 1 = 1
+        <if test="fechaInicio!=null"> AND fechaInicio = #{fechaInicio,jdbcType = TIMESTAMP }</if>
+        <if test="fechaFin!=null"> AND fechaFin = #{fechaFin,jdbcType = TIMESTAMP }</if>
+        <if test="idEstructura!=null"> AND idEstructura = #{idEstructura,jdbcType = VARCHAR }</if>
+        <if test="idMedico!=null"> AND idMedico = #{idMedico,jdbcType = VARCHAR }</if>
+    </select>
+    <insert id="insertar" parameterType="mx.mc.model.Cita">
+        INSERT INTO cita ( 
+        <if test=" idCita != null " >
+            idCita 
+        </if>
+        <if test=" idEstructura != null " >
+            ,idEstructura
+        </if>
+        <if test=" idAgenda != null " >
+            ,idAgenda
+        </if>
+        <if test=" idPaciente != null " >
+            ,idPaciente
+        </if>
+        <if test=" idMedico != null " >
+            ,idMedico
+        </if>
+        <if test=" idTurno != null " >
+            ,idTurno
+        </if>
+        <if test=" titulo != null " >
+            ,titulo
+        </if>
+        <if test=" fechaInicio != null " >
+            ,fechaInicio
+        </if>
+        <if test=" fechaFin != null " >
+            ,fechaFin
+        </if>
+        <if test=" comentarios != null " >
+            ,comentarios
+        </if>
+        <if test=" estatus != null " >
+            ,estatus
+        </if>
+        <if test=" insertFecha != null " >
+            ,insertFecha
+        </if>
+        <if test=" insertIdUsuario != null " >
+            ,insertIdUsuario
+        </if>
+        <if test=" updateFecha != null " >
+            ,updateFecha
+        </if>
+        <if test=" updateIdUsuario != null " >
+            ,updateIdUsuario
+        </if>
+        )
+        VALUES (
+            <if test=" idCita != null " >
+             #{ idCita , jdbcType = VARCHAR } 
+        </if>
+        <if test=" idEstructura != null " >
+            , #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idAgenda != null " >
+            , #{ idAgenda , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPaciente != null " >
+            , #{ idPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" idMedico != null " >
+            , #{ idMedico , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTurno != null " >
+            , #{ idTurno , jdbcType = INTEGER }
+        </if>
+        <if test=" titulo != null " >
+            , #{ titulo , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaInicio != null " >
+            , #{ fechaInicio , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" fechaFin != null " >
+            , #{ fechaFin , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" comentarios != null " >
+            , #{ comentarios , jdbcType = VARCHAR }
+        </if>
+        <if test=" estatus != null " >
+            , #{ estatus , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null " >
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null " >
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null " >
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null " >
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+    
+    <update id="actualizar" parameterType="mx.mc.model.Cita">
+        UPDATE cita
+        <set> 
+            updateFecha = #{updateFecha, jdbcType = TIMESTAMP }
+            ,updateIdUsuario = #{updateIdUsuario, jdbcType = TIMESTAMP }
+            <if test="idEstructura != null"> ,idEstructura = #{idEstructura, jdbcType = VARCHAR }</if>
+            <if test="idAgenda != null">,idAgenda = #{idAgenda, jdbcType = VARCHAR }</if>
+            <if test="idPaciente != null">,idPaciente = #{idPaciente, jdbcType = VARCHAR }</if>
+            <if test="idMedico != null">,idMedico = #{idMedico, jdbcType = VARCHAR }</if>
+            <if test="idTurno != null">,idTurno = #{idTurno , jdbcType = INTEGER }</if>
+            <if test="titulo != null">,titulo = #{titulo, jdbcType = VARCHAR}</if>
+            <if test="fechaInicio != null">,fechaInicio = #{fechaInicio, jdbcType = TIMESTAMP}</if>
+            <if test="fechaFin != null">,fechaFin = #{fechaFin, jdbcType = TIMESTAMP}</if>
+            <if test="comentarios != null">,comentarios = #{comentarios, jdbcType = VARCHAR}</if>
+            <if test="estatus != null">,estatus = #{estatus , jdbcType = INTEGER }</if>                        
+        </set>
+        WHERE idCita = #{idCita, jdbcType = VARCHAR}
+    </update>
+    
+    <delete  id="cancelCitaById" parameterType="mx.mc.model.Cita">
+       DELETE FROM cita
+       WHERE idCita = #{idCita, jdbcType = VARCHAR}
+    </delete>
+    
+    <update id="actualizarEstatusCita"   parameterType="mx.mc.model.Cita" >
+        UPDATE cita
+        <set>
+            estatus = 3
+        </set>
+        where idCita = #{idCita, jdbcType = VARCHAR}
+    </update>
+    
+    <update id="actualizarEstatusCitas"   parameterType="mx.mc.model.Cita" >
+        UPDATE cita
+        <set> 
+            estatus = #{estatus, jdbcType = TIMESTAMP }            
+                         
+        </set>
+        WHERE idCita = #{idCita, jdbcType = VARCHAR}
+    </update>
+    
+</mapper>

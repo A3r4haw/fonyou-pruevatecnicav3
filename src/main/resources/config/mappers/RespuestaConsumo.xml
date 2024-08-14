@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.RespuestaConsumoMapper" >
+    <insert id="insertar" parameterType="mx.mc.model.RespuestaConsumo" >
+        INSERT INTO respuestaConsumo (
+        <if test=" idRespuestaConsumo != null ">idRespuestaConsumo</if>
+        <if test=" codigo != null ">, codigo</if>
+        <if test=" mensaje != null ">, mensaje</if>
+        <if test=" estatus != null ">, estatus</if> 
+        ) VALUES (
+        <if test=" idRespuestaConsumo != null ">#{ idRespuestaConsumo , jdbcType = VARCHAR }</if>
+        <if test=" codigo != null ">, #{ codigo , jdbcType = INTEGER }</if>
+        <if test=" mensaje != null ">, #{ mensaje , jdbcType = VARCHAR }</if>
+        <if test=" estatus != null ">, #{ estatus , jdbcType = INTEGER }</if>
+        )
+    </insert>
+</mapper>    

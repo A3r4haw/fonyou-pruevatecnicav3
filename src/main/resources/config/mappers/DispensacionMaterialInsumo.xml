@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DispensacionMaterialInsumoMapper" >
+    <insert id="insertarDispensacionInsumoList" parameterType="java.util.List" >
+        INSERT INTO dispensacionInsumo (
+            idDispensacionInsumo
+            , idDispensacion
+            , idInventario
+            , cantidad
+            , notas
+            , insertFecha
+            , insertIdUsuario
+        ) VALUES
+        <foreach collection="list" item="item" separator="," index="index">
+        (
+            #{ item.idDispensacionInsumo , jdbcType = VARCHAR }
+            , #{ item.idDispensacion , jdbcType = VARCHAR }
+            , #{ item.idInventario , jdbcType = VARCHAR }
+            , #{ item.cantidad , jdbcType = INTEGER }
+            , #{ item.notas , jdbcType = VARCHAR }
+            , #{ item.insertFecha , jdbcType = TIMESTAMP }
+            , #{ item.insertIdUsuario , jdbcType = VARCHAR }
+        )
+        </foreach>
+    </insert>   
+    
+    <select id="obtenerInsumosDispensacion" resultType="mx.mc.model.DispensacionMaterialInsumoExtended" parameterType="Map">
+        SELECT m.claveInstitucional, m.nombreCorto, i.lote, i.fechaCaducidad, 1 as cantidad, i.idInventario
+            FROM medicamento m
+            left join inventario i on m.idMedicamento = i.idInsumo
+            left join claveProveedorBarras cb on (i.claveProveedor = cb.claveProveedor and m.claveInstitucional = cb.claveInstitucional)
+            inner join estructuraAlmacenServicio eas on i.idEstructura = eas.idEstructuraAlmacen
+        WHERE 1=1 AND i.activo = 1
+        <if test=" cadenaBusqueda != null ">
+            AND (
+                m.nombreCorto LIKE '%${cadenaBusqueda}%'
+                OR m.nombreLargo LIKE '%${cadenaBusqueda}%'
+                OR m.claveInstitucional LIKE '%${cadenaBusqueda}%'
+                OR cb.codigoBarras LIKE '%${cadenaBusqueda}%'
+            )
+        </if>
+        <if test=" idEstructura != null "> AND eas.idEstructuraServicio = #{idEstructura, jdbcType=VARCHAR}</if>
+        <if test=" tipo != null "> AND m.tipo = #{tipo, jdbcType=INTEGER} </if>
+        ORDER BY i.fechaCaducidad ASC;
+    </select>
+    
+    <select id="obtenerInsumoPorQR" resultType="mx.mc.model.DispensacionMaterialInsumoExtended" parameterType="Map">
+        SELECT m.claveInstitucional, m.nombreCorto, i.lote, i.fechaCaducidad, 1 as cantidad, i.idInventario
+            FROM medicamento m
+            left join inventario i on m.idMedicamento = i.idInsumo
+            left join claveProveedorBarras cb on (i.claveProveedor = cb.claveProveedor and m.claveInstitucional = cb.claveInstitucional)
+            inner join estructuraAlmacenServicio eas on i.idEstructura = eas.idEstructuraAlmacen
+        WHERE 1=1 AND i.activo = 1
+        AND m.claveInstitucional = #{claveInstitucional, jdbcType=VARCHAR}
+        AND i.lote = #{lote, jdbcType=VARCHAR}
+        AND i.fechaCaducidad = #{fechaCaducidad , jdbcType = TIMESTAMP}
+        <if test=" idEstructura != null "> AND eas.idEstructuraServicio = #{idEstructura, jdbcType=VARCHAR}</if>
+        AND m.tipo = #{tipo, jdbcType=INTEGER}
+    </select>
+    
+    <select id="obtenerInsumosPorIdDispensacion" resultType="mx.mc.model.DispensacionMaterialInsumoExtended" parameterType="Map">
+        SELECT m.claveInstitucional, m.nombreCorto, i.lote, i.fechaCaducidad, di.cantidad, di.idInventario, di.notas, di.insertFecha
+            FROM dispensacionInsumo di
+            left join inventario i on i.idInventario = di.idInventario
+            left join medicamento m on m.idMedicamento = i.idInsumo
+        WHERE 1=1
+        <if test=" idDispensacion != null "> AND di.idDispensacion = #{idDispensacion, jdbcType=VARCHAR}</if>
+        ORDER BY di.insertFecha ASC;
+    </select>
+</mapper>

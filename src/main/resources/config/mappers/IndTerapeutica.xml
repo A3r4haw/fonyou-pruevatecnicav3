@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.IndTerapeuticaMapper" >
+    
+    <select id="obtenerIndicacionesTerapeuticas" resultType="mx.mc.model.IndTerapeuticaExtended" parameterType="Map">
+        SELECT it.idIndTerapeutica, m.claveInstitucional, m.nombreCorto as nombreMedicamento, d.nombre as nombreDiagnostico, 
+                it.dosisMax, it.frecuenciaSuperior, te.descripcion as tipoPaciente, it.idEstatus, it.riesgo, va.nombreViaAdministracion  
+        FROM indTerapeutica it 
+        INNER JOIN tipoEdadPaciente te ON it.idTipoEdadPaciente = te.idTipoEdadPaciente
+        INNER JOIN diagnostico d ON it.idDiagnostico = d.idDiagnostico
+        INNER JOIN medicamento m ON it.idInsumo = m.idMedicamento
+        INNER JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        LEFT JOIN sustanciaActiva sa ON m.sustanciaActiva = sa.idSustanciaActiva
+        INNER JOIN emisor e ON it.restrictiva = e.idEmisor
+        INNER JOIN viaAdministracion va ON it.idViaAdministracion = va.idViaAdministracion
+        WHERE 1 = 1
+        
+        <if test="cadena != null ">
+            AND m.claveInstitucional LIKE '%${cadena}%'
+            OR m.nombreCorto LIKE '%${cadena}%'
+            OR d.nombre LIKE '%${cadena}%'
+            OR te.descripcion LIKE '%${cadena}%'
+        </if>
+        <if test="sortField == null" > ORDER BY m.claveInstitucional desc </if>
+        <if test="sortOrder != null" >
+            <if test="sortField == 'clave'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY m.claveInstitucional asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY m.claveInstitucional desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'nombreMedicamento'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreMedicamento asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreMedicamento desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'nombreDiagnostico'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY nombreDiagnostico asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY nombreDiagnostico desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'dosisMax'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY dosisMax asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY dosisMax desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'frecuenciaSuperior'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY frecuenciaSuperior asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY frecuenciaSuperior desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'tipoPaciente'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY tipoPaciente asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY tipoPaciente desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'idEstatus'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY idEstatus asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY idEstatus desc
+                </if>                                    
+            </if>
+        </if>
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}                ;
+    </select>
+    
+    <select id="obtenerTotalIndicacionesTerapeuticas" resultType="Long" parameterType="Map">
+        SELECT COUNT(*) 
+        FROM indTerapeutica it 
+        INNER JOIN tipoEdadPaciente te ON it.idTipoEdadPaciente = te.idTipoEdadPaciente
+        INNER JOIN diagnostico d ON it.idDiagnostico = d.idDiagnostico
+        INNER JOIN medicamento m ON it.idInsumo = m.idMedicamento
+        INNER JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        LEFT JOIN sustanciaActiva sa ON m.sustanciaActiva = sa.idSustanciaActiva
+        INNER JOIN emisor e ON it.restrictiva = e.idEmisor
+        INNER JOIN viaAdministracion va ON it.idViaAdministracion = va.idViaAdministracion
+        WHERE 1 = 1
+        <if test="cadena != null ">
+            AND m.claveInstitucional LIKE '%${cadena}%'
+            OR m.nombreCorto LIKE '%${cadena}%'
+            OR d.nombre LIKE '%${cadena}%'
+            OR te.descripcion LIKE '%${cadena}%'
+        </if>
+        ;
+    </select>
+    
+    <insert id="insertarIndicTerapeutica" parameterType="mx.mc.model.IndTerapeuticaExtended">
+        INSERT INTO indTerapeutica(
+        <if test="idIndTerapeutica != null">idIndTerapeutica, </if>
+        <if test="idInsumo != null">idInsumo, </if>
+        <if test="idDiagnostico != null">idDiagnostico, </if>
+        <if test="idTipoEdadPaciente != null">idTipoEdadPaciente, </if>
+        <if test="dosisMin != null">dosisMin, </if>
+        <if test="dosisMax != null">dosisMax, </if>
+        <if test="idUnidad != null">idUnidad, </if>
+        <if test="frecuenciaInferior != null">frecuenciaInferior, </if>
+        <if test="frecuenciaSuperior != null">frecuenciaSuperior, </if>
+        <if test="duracionMinima != null">duracionMinima, </if>
+        <if test="duracionMaxima != null">duracionMaxima, </if>
+        <if test="idViaAdministracion != null">idViaAdministracion,</if>
+        <if test="descripcion != null">descripcion, </if>
+        <if test="restrictiva != null">restrictiva, </if>
+        <if test="idEstatus != null">idEstatus, </if>
+        <if test="riesgo != null">riesgo,</if>
+        <if test="insertFecha != null">insertFecha,</if>
+        <if test="insertIdUsuario != null">insertIdUsuario</if>
+        ) VALUES(
+        <if test="idIndTerapeutica != null">#{idIndTerapeutica, jdbcType = VARCHAR},</if>
+        <if test="idInsumo != null">#{idInsumo, jdbcType = VARCHAR},</if>
+        <if test="idDiagnostico != null">#{idDiagnostico, jdbcType = VARCHAR},</if>
+        <if test="idTipoEdadPaciente != null">#{idTipoEdadPaciente, jdbcType = INTEGER},</if>
+        <if test="dosisMin != null">#{dosisMin, jdbcType = DECIMAL},</if>
+        <if test="dosisMax != null">#{dosisMax, jdbcType = DECIMAL},</if>
+        <if test="idUnidad != null">#{idUnidad, jdbcType = INTEGER},</if>
+        <if test="frecuenciaInferior != null">#{frecuenciaInferior, jdbcType = INTEGER},</if>
+        <if test="frecuenciaSuperior != null">#{frecuenciaSuperior, jdbcType = INTEGER},</if>
+        <if test="duracionMinima != null">#{duracionMinima, jdbcType = INTEGER},</if>
+        <if test="duracionMaxima != null">#{duracionMaxima, jdbcType = INTEGER},</if>
+        <if test="idViaAdministracion != null">#{idViaAdministracion, jdbcType = INTEGER},</if>
+        <if test="descripcion != null">#{descripcion, jdbcType = VARCHAR},</if>
+        <if test="restrictiva != null">#{restrictiva, jdbcType = INTEGER},</if>
+        <if test="idEstatus != null">#{idEstatus, jdbcType = INTEGER},</if>
+        <if test="riesgo != null">#{riesgo, jdbcType = VARCHAR},</if>
+        <if test="insertFecha != null">#{insertFecha, jdbcType = TIMESTAMP},</if>
+        <if test="insertIdUsuario != null">#{insertIdUsuario, jdbcType = VARCHAR}</if>
+        );
+    </insert>
+    
+    <select id="obtenerIndicacionPoId" resultType="mx.mc.model.IndTerapeuticaExtended" parameterType="Map">
+        SELECT it.idIndTerapeutica, it.idInsumo, it.idDiagnostico, it.idTipoEdadPaciente, it.dosisMin, it.dosisMax, it.idUnidad,
+		it.frecuenciaInferior, it.frecuenciaSuperior, it.duracionMinima, it.duracionMaxima, it.idViaAdministracion, it.descripcion, it.restrictiva, it.idEstatus, it.riesgo 
+        FROM indTerapeutica it 
+        INNER JOIN tipoEdadPaciente te ON it.idTipoEdadPaciente = te.idTipoEdadPaciente
+        INNER JOIN diagnostico d ON it.idDiagnostico = d.idDiagnostico
+        INNER JOIN medicamento m ON it.idInsumo = m.idMedicamento
+        INNER JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        LEFT JOIN sustanciaActiva sa ON m.sustanciaActiva = sa.idSustanciaActiva
+        INNER JOIN emisor e ON it.restrictiva = e.idEmisor
+        WHERE idIndTerapeutica = #{idIndTerapeutica, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="buscarExistencia" resultType="mx.mc.model.IndTerapeuticaExtended" parameterType="Map">
+        SELECT it.idIndTerapeutica, m.claveInstitucional, m.nombreCorto as nombreMedicamento, d.nombre as nombreDiagnostico, 
+                it.dosisMax, it.frecuenciaSuperior, te.descripcion as tipoPaciente, it.idEstatus, it.riesgo  
+        FROM indTerapeutica it 
+        INNER JOIN tipoEdadPaciente te ON it.idTipoEdadPaciente = te.idTipoEdadPaciente
+        INNER JOIN diagnostico d ON it.idDiagnostico = d.idDiagnostico
+        INNER JOIN medicamento m ON it.idInsumo = m.idMedicamento
+        WHERE 1 = 1
+        <if test="idIndTerapeutica != null">
+            AND it.idIndTerapeutica != #{idIndTerapeutica, jdbcType = VARCHAR}
+        </if>
+        AND it.idDiagnostico = #{idDiagnostico, jdbcType = VARCHAR} 
+        AND it.idInsumo = #{idInsumo, jdbcType = VARCHAR}
+        AND te.idTipoEdadPaciente = #{idTipoEdadPaciente, jdbcType = INTEGER};
+    </select>
+    
+    <update id="actualizarIndicacionTerap" parameterType="mx.mc.model.InteraccionExtended">
+        UPDATE indTerapeutica
+        <set>
+             updateFecha = #{updateFecha,jdbcType=DATE}
+            ,updateIdUsuario = #{updateIdUsuario,jdbcType=VARCHAR}
+            <if test="idInsumo != null">, idInsumo = #{idInsumo, jdbcType = VARCHAR}</if>
+            <if test="idDiagnostico != null">, idDiagnostico = #{idDiagnostico, jdbcType = VARCHAR}</if>
+            <if test="idTipoEdadPaciente != null">, idTipoEdadPaciente = #{idTipoEdadPaciente, jdbcType = INTEGER}</if>
+            <if test="dosisMin != null">, dosisMin = #{dosisMin, jdbcType = DECIMAL}</if>
+            <if test="dosisMax != null">, dosisMax = #{dosisMax, jdbcType = DECIMAL}</if>
+            <if test="idUnidad != null">, idUnidad = #{idUnidad, jdbcType = INTEGER}</if>
+            <if test="frecuenciaInferior != null">, frecuenciaInferior = #{frecuenciaInferior, jdbcType = INTEGER}</if>
+            <if test="frecuenciaSuperior != null">, frecuenciaSuperior = #{frecuenciaSuperior, jdbcType = INTEGER}</if>
+            <if test="duracionMinima != null">, duracionMinima = #{duracionMinima, jdbcType = INTEGER}</if>
+            <if test="duracionMaxima != null">, duracionMaxima = #{duracionMaxima, jdbcType = INTEGER}</if>
+            <if test="idViaAdministracion != null">, idViaAdministracion = #{idViaAdministracion, jdbcType = INTEGER}</if>
+            <if test="descripcion != null">, descripcion = #{descripcion, jdbcType = VARCHAR}</if>
+            <if test="restrictiva != null">, restrictiva = #{restrictiva, jdbcType = INTEGER}</if>
+            <if test="idEstatus != null">, idEstatus = #{idEstatus, jdbcType = INTEGER}</if>
+            <if test="riesgo != null">, riesgo = #{riesgo, jdbcType = VARCHAR}</if>
+        </set>
+        WHERE idIndTerapeutica = #{idIndTerapeutica, jdbcType = VARCHAR}
+    </update>
+    
+    <delete id="eliminarIndicacionTeraPorId" parameterType="Map">
+        DELETE FROM indTerapeutica WHERE idIndTerapeutica = #{idIndTerapeutica, jdbcType = INTEGER};
+    </delete>
+    
+    <select id="buscarDiagnosYMedicamento" parameterType="Map" resultType="mx.mc.model.IndTerapeuticaExtended">
+        SELECT m.nombreCorto as nombreMedicamento, d.nombre as nombreDiagnostico, te.descripcion as
+                tipoPaciente, e.nombreEmisor as origen, it.idViaAdministracion, it.dosisMax, it.frecuenciaSuperior, it.duracionMinima, it.riesgo 
+        FROM indTerapeutica it
+        INNER JOIN medicamento m ON it.idInsumo = m.idMedicamento
+        INNER JOIN diagnostico d ON it.idDiagnostico = d.idDiagnostico
+        INNER JOIN tipoEdadPaciente te ON it.idTipoEdadPaciente = te.idTipoEdadPaciente
+        INNER JOIN emisor e ON it.restrictiva = e.idEmisor
+        where 1 = 1
+        AND m.claveInstitucional = #{claveMedicamento, jdbcType = VARCHAR}
+        AND d.clave = #{claveDiagnostico, jdbcType = VARCHAR}
+    </select>
+        
+</mapper>    

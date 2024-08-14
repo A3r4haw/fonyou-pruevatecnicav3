@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http, jdbcType = VARCHAR//mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.RepExistenciasConsolidadasMapper"> 
+
+    <select id="obtenerReporteExist_Consolidadas" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT s1.nombreAlmacen , s1.idEstructura , s1.partida, s1.idMedicamento , s1.claveInstitucional, s1.nombreCorto, s1.tipoInsumo
+        , s1.cantidadActual , s1.cantidadReservada , s1.cantidadAutorizada, s1.precio
+        , ifnull(s1.cantidadActual,0) - ifnull(s1.cantidadReservada,0) AS cantidadDisponible
+        , s1.cantidadActual * s1.precio AS importe
+        FROM viewExistenciaConsolidada AS s1
+        WHERE 1=1
+        AND s1.cantidadActual &gt; 0
+        <if test=" medicamento_Extended.listInsumos != null ">
+            AND s1.claveInstitucional IN 
+            <foreach item="item" index="index" collection="medicamento_Extended.listInsumos" open="(" separator="," close=")">
+                #{item.claveInstitucional}
+            </foreach>
+        </if>
+        <if test=" medicamento_Extended.idEstructura != null ">
+            AND s1.idEstructura = #{ medicamento_Extended.idEstructura , jdbcType = VARCHAR}                 
+        </if>    
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        
+        </select> 
+        
+        <select id="obtenerTotalReporteExist_Consolidadas" resultType="Long" parameterType="Map">        
+        SELECT COUNT(*)                
+        FROM viewExistenciaConsolidada         
+        WHERE
+        1 = 1 
+        <if test=" medicamento_Extended.listInsumos != null ">
+            AND claveInstitucional IN 
+            <foreach item="item" index="index" collection="medicamento_Extended.listInsumos" open="(" separator="," close=")">
+                #{item.claveInstitucional}
+            </foreach>
+        </if>
+        <if test=" medicamento_Extended.idEstructura != null ">
+            AND idEstructura = #{ medicamento_Extended.idEstructura , jdbcType = VARCHAR}                 
+        </if>    
+                    
+    </select>
+    
+    <select id="obtenerReporteEntregaExist_Consolidadas" resultType="mx.mc.model.Medicamento_Extended" parameterType="Map">
+        SELECT s1.nombreAlmacen , s1.idEstructura , s1.partida, s1.idMedicamento , s1.claveInstitucional, s1.nombreCorto, s1.tipoInsumo
+        , s1.cantidadActual , s1.cantidadReservada , s1.cantidadAutorizada, s1.precio
+        , ifnull(s1.cantidadActual,0) - ifnull(s1.cantidadReservada,0) AS cantidadDisponible
+        , s1.cantidadActual * s1.precio AS importe
+        FROM vwEntregaExistenciasConsolidadas AS s1
+        WHERE s1.cantidadActual &gt; 0
+        <if test=" medicamento_Extended.listInsumos != null ">
+            AND s1.claveInstitucional IN 
+            <foreach item="item" index="index" collection="medicamento_Extended.listInsumos" open="(" separator="," close=")">
+                #{item.claveInstitucional}
+            </foreach>
+        </if>
+        <if test=" medicamento_Extended.idEstructura != null ">
+            AND s1.idEstructura = #{ medicamento_Extended.idEstructura , jdbcType = VARCHAR}                 
+        </if>
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        
+        </select> 
+        
+        <select id="obtenerTotalReporteEntregaExist_Consolidadas" resultType="Long" parameterType="Map">        
+        SELECT COUNT(*)                
+        FROM vwEntregaExistenciasConsolidadas AS s1         
+        WHERE s1.cantidadActual &gt; 0
+        <if test=" medicamento_Extended.listInsumos != null ">
+            AND claveInstitucional IN 
+            <foreach item="item" index="index" collection="medicamento_Extended.listInsumos" open="(" separator="," close=")">
+                #{item.claveInstitucional}
+            </foreach>
+        </if>
+        <if test=" medicamento_Extended.idEstructura != null ">
+            AND idEstructura = #{ medicamento_Extended.idEstructura , jdbcType = VARCHAR}                 
+        </if>
+                    
+    </select>
+    
+</mapper>

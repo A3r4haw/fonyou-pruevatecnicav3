@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+      
+    <h:head>
+        <title>Catálogo de Estudios</title>
+    </h:head>
+
+    <h:body>
+
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">
+
+                <div class="mainPanel">
+
+                    <h:form id="mainForm">
+
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            
+                            <p:outputLabel value="Estudios" style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>                            
+                            <p:selectOneMenu value="#{estudioMB.tipoEstudio}" >
+                                <f:selectItem itemLabel="TODOS" itemValue="#{null}" />
+                                <f:selectItems value="#{estudioMB.tipoEstudioList}" var="tipo" itemLabel="#{tipo.descripcion}" itemValue="#{tipo.idTipoEstudio}" />
+                                <p:ajax update="tblEstudios" listener="#{estudioMB.buscarEstudios}" />
+                            </p:selectOneMenu>
+                            <p:spacer width="10"/>
+                                <p:inputText id="textSearch" style="width: 50%!important;border-radius:10px!important;" 
+                                             value="#{estudioMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar..." />
+                                <i class="iconSearch">
+                                    <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>
+                                </i>
+                                <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{estudioMB.buscarEstudios}"
+                                                 update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide();" style=" margin-left: 15px; margin-bottom: 8px;" />
+                                <ui:remove>
+                                <p:menuButton value="Exportar" 
+                                              style="margin-left: 15px">
+                                    <p:menuitem value="Excel"  
+                                                icon="fa fa-file-excel-o"
+                                                ajax="false">
+                                        <p:dataExporter type="xls" target="tblEstudios" fileName="Catalogo" />
+                                    </p:menuitem>
+                                    <p:menuitem value="Pdf" 
+                                                icon="fa fa-file-pdf-o" 
+                                                ajax="false"> 
+                                        <p:dataExporter type="pdf" target="tblEstudios" fileName="Catalogo" />
+                                    </p:menuitem>
+                                </p:menuButton>  
+                                </ui:remove>
+                            
+                            
+                        </div>
+                        <p:messages id="messages" showDetail="false" globalOnly="true" closable="true"  rendered="#{estudioMB.message}" >
+                            <p:autoUpdate />
+                        </p:messages>
+                            
+                        <p:commandButton class="btnNew" value="Agregar" icon="fa fa-plus" rendered="#{estudioMB.permiso.puedeCrear}"
+                                         actionListener="#{estudioMB.crearEstudio}" onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                                         oncomplete="PF('statusProcess').hide(); PF('modalEstudio').show();"
+                                         ajax="true" update=":formModal"  style=" margin: 5px 10px 5px 0; " resetValues="true" />
+
+                        <p:commandButton class="btnNew" value="Agregar Layout" icon="fa fa-plus" rendered="#{estudioMB.permiso.puedeProcesar}"
+                                         onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('mdlLayout').show();"
+                                         ajax="true" update=":formLayout" style=" margin: 5px 0 5px 10px; "  />
+                        <br/>
+
+                        <p:dataTable  id="tblEstudios" styleClass="cabecera" 
+                                      var="item" reflow="true"   
+                                      lazy="true"
+                                      value="#{estudioMB.estudiosLazy}"                                          
+                                      style="margin-bottom:5px;"                                      
+                                      scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" 
+                                     paginatorPosition="bottom"
+                                     rows="10"
+                                     paginator="true"
+                                     paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                      >
+                            <p:column headerText="Tipo Estudio" style="width: 120px;" sortBy="#{item.descTipoEstudio}" >
+                                <h:outputText value="#{item.descTipoEstudio}" class="altoColumn" />
+                            </p:column>
+                            <p:column headerText="Clave" style="width: 230px;" sortBy="#{item.claveEstudio}">
+                                <h:outputText value="#{item.claveEstudio}" title="#{item.claveEstudio}" class="altoColumn" />
+                            </p:column>
+                            <p:column headerText="Descripción" style="width: 230px;" sortBy="#{item.descripcion}">
+                                <h:outputText value="#{item.descripcion}" title="#{item.descripcion}" class="altoColumn" />
+                            </p:column>
+                            <p:column headerText="Activo" style="width: 40px;">
+                                <h:outputText value="#{item.activo > 0 ? 'Si' : 'No' }" class="altoColumn" />
+                            </p:column>
+                            <p:column headerText="Acciones" style="width: 70px;" >
+                                <p:commandLink title="Ver" actionListener="#{estudioMB.obtenerEstudio(item.idEstudio)}" rendered="#{estudioMB.permiso.puedeVer}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('modalEstudio').show();" update=":formModal" >
+                                    <i class="fa fa-eye  iconMusAzul" />
+                                </p:commandLink>
+                                <p:commandLink title="#{item.activo > 0 ? 'Desactivar' : 'Activar'}" actionListener="#{estudioMB.statusEstudio(item.idEstudio, item.activo)}" 
+                                               rendered="#{estudioMB.permiso.puedeEditar}" style="margin-left: 10px;"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":mainForm:tblEstudios " >
+                                    <i class="#{item.activo > 0 ? 'fa fa-toggle-on' : 'fa fa-toggle-off'} iconMusAzul" />
+                                </p:commandLink>
+                            </p:column>                            
+                        </p:dataTable>
+                    </h:form>
+
+                    <p:dialog header="INFORMACIÓN DEL ESTUDIO"
+                              widgetVar="modalEstudio"
+                              closeOnEscape="true"
+                              closable="true" styleClass="autoWidthDialog"
+                              modal="true" responsive="true">
+                        <h:form id="formModal" style="padding: 0px;">
+                            <p:messages id="messages2" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:panel>
+                                <p:panelGrid columns="2">
+                                    <p:outputLabel value="Tipo de Estudio" class="plabel" for="tipo"/>
+                                    <p:selectOneMenu id="tipo" value="#{estudioMB.estudioSelect.idTipoEstudio}" disabled="#{!(estudioMB.permiso.puedeCrear || estudioMB.permiso.puedeEditar)}"
+                                                     filter="true" filterMatchMode="contains" required="true">
+                                        <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                        <f:selectItems value="#{estudioMB.tipoEstudioList}" var="tipo" itemLabel="#{tipo.descripcion}" itemValue="#{tipo.idTipoEstudio}"/>
+                                    </p:selectOneMenu>
+                                </p:panelGrid>
+                                <p:panelGrid columns="4">
+                                    <p:outputLabel value="Clave" class="plabel" for="clave"/>
+                                    <p:inputText id="clave" label="Clave del Estudio" maxlength="5" value="#{estudioMB.estudioSelect.claveEstudio}" 
+                                                 disabled="#{!(estudioMB.permiso.puedeCrear || estudioMB.permiso.puedeEditar)}" required="true"/>
+                                    <p:outputLabel value="Descripción" class="plabel" for="descripcion"/>
+                                    <p:inputText id="descripcion" label="Descripción del Estudio" value="#{estudioMB.estudioSelect.descripcion}"
+                                                 disabled="#{!(estudioMB.permiso.puedeCrear || estudioMB.permiso.puedeEditar)}" size="75" maxlength="150" required="true" />
+                                </p:panelGrid>
+                            </p:panel>
+                            <p:panel class="pnlActions">
+                                <p:commandButton id="btnSave" class="btnItem" value="Guardar" actionListener="#{estudioMB.saveEstudio}"
+                                                 styleClass="btnMusAzul"
+                                                 update=":formModal, :mainForm:tblEstudios" ajax="true" rendered="#{estudioMB.permiso.puedeCrear || estudioMB.permiso.puedeEditar}" onclick="PF('statusProcess').show();" 
+                                                 oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('modalEstudio').hide(); }" validateClient="true"/>
+                                <p:commandButton id="btnClose" class="btnItem" value="Cerrar" styleClass="btnMusAzul"
+                                                 rendered="#{!(estudioMB.permiso.puedeCrear || estudioMB.permiso.puedeEditar)}"
+                                                 oncomplete="PF('modalEstudio').hide();"/>
+                            </p:panel>
+                        </h:form>                                     
+                    </p:dialog>                                                   
+
+                    <p:dialog header="AGREGAR ESTUDIOS DESDE ARCHIVO EXCEL"
+                              widgetVar="mdlLayout"
+                              closeOnEscape="true"
+                              closable="true" styleClass="autoWidthDialog"                     
+                              modal="true" responsive="true"  >                             
+                        <h:form id="formLayout" style="padding: 0px;">
+                            <p:messages id="msjLayout" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:fileUpload  dragDropSupport="false" uploadLabel="Subir Archivo" cancelLabel="Cancelar" label="Seleccionar Archivo" 
+                                           allowTypes="/(\.|\/)(xlsx|xls)$/" invalidFileMessage="Tipo de archivo invalido" oncomplete="PF('mdlLayout').initPosition()"
+                                           fileUploadListener="#{estudioMB.layoutFileUpload}" mode="advanced" update="formLayout"/>
+                            <p:outputPanel rendered="#{estudioMB.noProcess}" >
+                                <p:dataTable  id="tblCargaMasiva"
+                                              var="item" editable="true"
+                                              emptyMessage="Sin registros"
+                                              value="#{estudioMB.estudioLayout}"
+                                              styleClass="styleEventosPlanPrestacion" reflow="true"
+                                              style="margin-bottom:5px;" 
+                                              scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" > 
+                                    <f:facet name="header" ><h:outputText style="color: #000;" value="Datos procesados" /></f:facet>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.claveEstudio}" headerText="Clave del Estudio" >
+                                        <h:outputText value="#{item.claveEstudio}" title="#{item.claveEstudio}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.descripcion}" headerText="Descripción del Estudio" >
+                                        <h:outputText value="#{item.descripcion}" title="#{item.descripcion}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.descTipoEstudio}" headerText="Tipo de Estudio" >
+                                        <h:outputText value="#{item.descTipoEstudio}" title="#{item.descTipoEstudio}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.motivo}" headerText="Resultado" >
+                                        <h:outputText value="#{item.motivo}" title="#{item.motivo}" class="altoColumn" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:outputPanel>
+                            <p:panel class="pnlActions">
+                                <p:commandButton class="btnNew" value="Aceptar"
+                                                 actionListener="#{estudioMB.buscarEstudios}" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('mdlLayout').hide();"
+                                                 ajax="true" update="mainForm:tblEstudios"  style=" margin: 5px 0; "  />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

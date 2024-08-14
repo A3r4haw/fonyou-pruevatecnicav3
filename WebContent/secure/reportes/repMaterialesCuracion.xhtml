@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>REPORTE DE MATERIAL DE CURACIÓN DISPENSADO</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="movGralesId" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="REPORTE DE MATERIAL DE CURACIÓN DISPENSADO" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important; margin: 10px">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="display: table; padding: 0px 5px 0px 0px; ">
+                                            <p:outputLabel style=" font-weight: bolder; vertical-align: middle; margin: auto 5px auto" value="Fecha Inicio: " />
+                                            
+                                            <p:calendar style="width: 70%; vertical-align: middle;" id="txtFechaInicio" value="#{repDispensacionMaterialesMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repDispensacionMaterialesMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="display: table; padding: 0px 5px 0px 0px; ">
+                                            <p:outputLabel style=" font-weight: bolder; vertical-align: middle; margin: auto 5px auto" value="Fecha Fin: " />
+                                            <p:calendar style="width: 70%; vertical-align: middle;" id="txtFechaFin" value="#{repDispensacionMaterialesMB.paramBusquedaReporte.fechaFin}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repDispensacionMaterialesMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade">
+                                                <p:ajax event="dateSelect" listener="#{repDispensacionMaterialesMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                            </p:calendar>
+                                            
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="display: table; padding: 0px 5px 0px 0px;  ">
+                                            <p:commandButton 
+                                                value="Generar Reporte" 
+                                                style="  margin: 3px; padding: 5px"
+                                                onclick="PF('statusProcess').show();"
+                                                actionListener="#{repDispensacionMaterialesMB.generateReportDispensacionConsult}"
+                                                update=":formTablaDispencaciones, :mainForm:msg"
+                                                oncomplete="PF('statusProcess').hide();" 
+                                                icon="fa fa-check-circle"                                                               
+                                                styleClass="btnMusAzul"/>
+                                            <br/>
+                                            
+                                        </div>
+                                            
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important; margin: 10px">
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="display: table; padding: 0px 5px 0px 0px;">
+
+                                            <p:outputLabel style="font-weight: bolder; vertical-align: middle;  margin: auto 5px auto; margin-right: 30px;" value="Servicio: " />
+                                            
+                                            <p:selectOneMenu id="comboAlmacenSubAlmacen" 
+                                                             value="#{repDispensacionMaterialesMB.idEstructura}"                                                             
+                                                             style="vertical-align: middle;  width: 200px;"                                                             
+                                                             filter="true" 
+                                                             filterMatchMode="contains" 
+                                                             panelStyle="width:250px"> 
+
+                                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                                <f:selectItems value="#{repDispensacionMaterialesMB.listServices}"
+                                                               var="servicio"
+                                                               itemValue="#{servicio.idEstructura}"
+                                                               itemLabel="#{servicio.nombre}"/>
+                                                <p:ajax event="change" update="coboCamas"
+                                                        listener="#{repDispensacionMaterialesMB.getCamas()}" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="display: table; padding: 0px 5px 0px 0px;">
+
+                                            <p:outputLabel style="font-weight: bolder; vertical-align: middle;  margin: auto 5px auto; margin-right: 27px;" value="Camas:" />
+
+                                            <p:selectOneMenu id="coboCamas" 
+                                                             value="#{repDispensacionMaterialesMB.idCama}"                                                             
+                                                             style="vertical-align: middle;  width: 200px;"                                                             
+                                                             filter="true" 
+                                                             filterMatchMode="contains" 
+                                                             panelStyle="width:250px"> 
+
+                                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                                <f:selectItems value="#{repDispensacionMaterialesMB.listaCamas}"
+                                                               var="cama"
+                                                               itemValue="#{cama.idCama}"
+                                                               itemLabel="#{cama.nombreCama}"/>
+                                            </p:selectOneMenu>
+
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="display: table; padding: 0px 5px 0px 0px; ">
+                                            
+                                        <p:menuButton value="Exportar Archivo">
+                                            <p:menuitem value="Formato PDF"
+                                                        actionListener="#{repDispensacionMaterialesMB.imprimeReporteMaterialesCuracion}" 
+                                                        onclick="PF('statusProcess').show();" 
+                                                        update=":formPDF"
+                                                        oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                        icon="fa fa-file-pdf-o"
+                                                        process=":mainForm"
+                                                        />
+
+                                            <p:menuitem value="Formato EXCEL"
+                                                        icon="fa fa-file-excel-o"
+                                                        ajax="false"
+                                                        actionListener="#{repDispensacionMaterialesMB.imprimeExcelMaterialesCuracion}"
+                                                        />
+                                        </p:menuButton>
+                                        </div>
+                                    </div>
+                                    <br/>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4" style="margin: 10px 0px 0px 10px">
+                                        <p:outputLabel value="Paciente: " style="font-weight: bolder;"/>
+                                        <br/>
+                                        <p:autoComplete id="txtPaciente"
+                                                        multiple="true"
+                                                        class="autoComplete-Sum" 
+                                                        styleClass="none" 
+                                                        panelStyle="autoComplete-Sum" 
+                                                        inputStyleClass="autoComplete-Sum" 
+                                                        value="#{repDispensacionMaterialesMB.paramBusquedaReporte.pacienteList}"
+                                                        completeMethod="#{repDispensacionMaterialesMB.autoCompletePacientes}"
+                                                        minQueryLength="4"
+                                                        queryDelay="500"                                                             
+                                                        maxResults="50" 
+                                                        scrollHeight="300"
+                                                        forceSelection="true" 
+                                                        cacheTimeout="0"
+                                                        var="paciente" 
+                                                        placeholder="Filtro Pacientes" 
+                                                        cache="false"
+                                                        emptyMessage="No se encontraron registros"
+                                                        itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" itemValue="#{paciente}" 
+                                                        converter="musGenericConverter"
+                                                        >
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Número de Paciente" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.pacienteNumero}" style=" font-size: small;" />
+                                            </p:column>                                                
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Nombre" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.nombreCompleto}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Paterno" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Materno" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </div>
+
+                                    <div class="ui-g-12 ui-md-6 ui-lg-12" style="margin: 10px">
+                                            <p:outputLabel style=" font-weight: bolder;" value="Usuario: " />
+                                            <p:outputLabel style="font-weight: bold;"
+                                                           value="#{repDispensacionMaterialesMB.usuarioSession.nombre} #{repDispensacionMaterialesMB.usuarioSession.apellidoPaterno} #{repDispensacionMaterialesMB.usuarioSession.apellidoMaterno}"/>
+                                            <br/>
+                                            <p:autoComplete id="txtUsuario" 
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="none" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{repDispensacionMaterialesMB.paramBusquedaReporte.listUsuarios}"
+                                                            completeMethod="#{repDispensacionMaterialesMB.autocompleteUsuario}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="usr" 
+                                                            placeholder="Filtro Usuarios" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{usr.nombreUsuario}" itemValue="#{usr}" 
+                                                            converter="musGenericConverter"                                                            
+                                                            rendered="#{repSurtMinistradoMB.administrador}"
+                                                            scrollHeight = "350" >
+                                                <p:column style="width: 80px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Usuario" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.nombreUsuario}" style=" font-size: small;" />
+                                                </p:column>
+                                                <br/>
+                                                <p:column style="width: 80px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.nombre}  #{usr.apellidoPaterno}   #{usr.apellidoMaterno}" style=" font-size: small;" />
+                                                </p:column>                                                
+                                            </p:autoComplete>
+                                        </div>
+                                        
+                                    <div class="row">
+                                        
+                                    <div class="ui-g-12 ui-md-8 ui-lg-6" style="margin: 10px">
+                                            
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;"  value="Insumos: " />
+                                            <br/>
+
+                                            <p:autoComplete id="txtInsumos"
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            size="30" 
+                                                            value="#{repDispensacionMaterialesMB.paramBusquedaReporte.listInsumos}"
+                                                            completeMethod="#{repDispensacionMaterialesMB.autocompleteInsumo}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="insum" 
+                                                            styleClass="none"
+                                                            placeholder="Filtro Insumos" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{insum.nombreCorto}" itemValue="#{insum}" 
+                                                            converter="musGenericConverter"
+                                                            scrollHeight = "350" >
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </p:panelGrid>	                                	
+                    </h:form><br />
+                    <h:form id="formTablaDispencaciones" >
+                        <style type="text/css">
+                            .ui-datatable-header {
+                                height: 20px
+                            }
+                        </style>
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     value="#{repDispensacionMaterialesMB.listDispensacionMaterialExtended}" 
+                                     var="item" 
+                                     lazy="true" 
+                                     id="resultadosDT" 
+                                     scrollable="true" 
+                                     scrollWidth="100%" 
+                                     scrollHeight="350"
+                                     style="font-size: x-small !important; width: 120% !important;"
+                                     >
+                            <f:facet name="header">
+                                <p:commandButton id="toggler" type="button" value="Columnas" style="float:right" icon="fa fa-columns" />
+                                <p:columnToggler datasource="resultadosDT" trigger="toggler" />
+                            </f:facet>
+
+                            <p:column class="" headerText="FOLIO" style="width: 12%; " >
+                                <h:outputText value="#{item.folio}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="FECHA" style="width: 8%;">
+                                <h:outputText value="#{item.fechaDispensacion}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:MM:SS" />
+                                </h:outputText>
+                            </p:column>                            
+
+                            <p:column class="" headerText="SERVICIO" style="width: 15%; " >
+                                <h:outputText value="#{item.servicio}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="CAMA"  style="width: 10%;">
+                                <h:outputText value="#{item.cama}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="PACIENTE"  style="width: 15%;">
+                                <h:outputText value="#{item.paciente}"/>
+                            </p:column>
+                            <p:column class="" headerText="USUARIO" style="width: 15%;">
+                                <h:outputText value="#{item.usuario}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="CLAVE" style="width: 10%;">
+                                <h:outputText value="#{item.clave}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="DESCRIPCIÓN" style="width: 20%;">
+                                <h:outputText value="#{item.nombreCorto}" />
+                            </p:column>
+
+                            <p:column class="" headerText="CANTIDAD" style="width: 6%;">
+                                <h:outputText value="#{item.cantidad}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="NOTAS" style="width: 10%;">
+                                <h:outputText value="#{item.notas}" />
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

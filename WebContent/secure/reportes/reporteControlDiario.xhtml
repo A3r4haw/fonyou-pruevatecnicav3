@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>REPORTE DE CONTROL DIARIO</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="estatusId" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="REPORTE CONTROL DIARIO" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Inicio" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" value="#{reporteControlDiarioMB.paramLibMedControlados.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate=""
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Fin" />
+                                            <br/>
+                                            <p:calendar id="txtFechaFin" value="#{reporteControlDiarioMB.paramLibMedControlados.fechaFin}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate=""
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel  value="TIPO REPORTE" style="font-weight: bolder;"/>
+                                            <br/>
+                                            <p:selectOneMenu id="comboTipoMedicamento" value="#{reporteControlDiarioMB.tipoMedicamento}" effect="fold" 
+                                                             style="vertical-align: middle; margin-right: 10px; width: 200px" 
+                                                             filter="true" filterMatchMode="contains" panelStyle="width:250px">
+                                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                                <f:selectItems value="#{reporteControlDiarioMB.tiposMedicamento}" />
+                                            </p:selectOneMenu>                                            
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="margin-top: 0px">                                            
+                                            <p:commandButton value="Generar Reporte" style="margin-left: 25%; margin-top: 15px"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{reporteControlDiarioMB.consultar}"
+                                                             update="formTablaEstatusInsumos, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"                                                               
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;"  value="Insumos" />
+                                            <br/>
+                                            
+                                            <p:autoComplete id="txtInsumos"                                                             
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{reporteControlDiarioMB.paramLibMedControlados.listInsumos}"
+                                                            completeMethod="#{reporteControlDiarioMB.autocompleteInsumo}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="insum" 
+                                                            placeholder="Filtro Insumos" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{insum.nombreCorto}" itemValue="#{insum}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="false"
+                                                            style="width: 90% !important"
+                                                            scrollHeight = "350" >
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>                                        
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;" value="Almacén / Sub-Almacén" />
+                                            <br/>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{reporteControlDiarioMB.estructuraUsuario.nombre}" 
+                                                           rendered="#{!reporteControlDiarioMB.mostrarCombo}"/>
+                                            
+                                            <p:selectOneMenu id="comboAlmacenSubAlmacen" 
+                                                             value="#{reporteControlDiarioMB.idEstructura}"
+                                                             disabled=""
+                                                             style="vertical-align: middle; margin-right: 10px; width: 200px"
+                                                             rendered="#{reporteControlDiarioMB.mostrarCombo}"
+                                                             filter="true" filterMatchMode="contains" panelStyle="width:250px"> 
+                                                             
+                                                <f:selectItem itemLabel="Todos..."  value="#{null}"/>
+                                                <f:selectItems value="#{reporteControlDiarioMB.listaAuxiliar}"
+                                                               var="almacen"
+                                                               itemValue="#{almacen.idEstructura}"
+                                                               itemLabel="#{almacen.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+
+                                            <p:menuButton value="Exportar Archivo" style="margin-top: 15px; width: 200px; margin-left: 8px">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{reporteControlDiarioMB.generarFolioReporteControlado()}" 
+                                                            update=":frmFolioReporteDiario"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlFolioReporteDiario').show();"                                                             
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"
+                                                            />
+
+                                                
+                                            </p:menuButton>
+
+                                        </div>
+                                        
+                                        
+                                        
+                                    </div>
+
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form>
+                    <h:form id="formTablaEstatusInsumos" >
+<style type="text/css">
+    .ui-datatable-header {
+        height: 20px
+    }
+</style>
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     value="#{reporteControlDiarioMB.reporteControlDiarioLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true"  scrollHeight="330"
+                                     style="font-size: x-small !important;"
+                                     >
+                            <f:facet name="header">
+                                <p:commandButton id="toggler" type="button" value="Columnas" style="float:right" icon="fa fa-columns" />
+                                <p:columnToggler datasource="resultadosDT" trigger="toggler" />
+                            </f:facet>
+
+                            
+                            <p:column class="" headerText="ALMACEN" style="width: 4%; " >
+                                <h:outputText value="#{result.nombreAlmacen}"/>
+                            </p:column>
+                            <p:column class="" headerText="CLAVE" style="width: 6%; " >
+                                <h:outputText value="#{result.claveInstitucional}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="DESCRIPCIÓN" style="width: 10%; " >
+                                <h:outputText value="#{result.nombreCorto}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="FECHA" style="width: 4%;">
+                                <h:outputText value="#{result.fecha}">
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>    
+                            </p:column>
+                            
+                            <p:column class="" headerText="ENTREGA" style="width: 4%; " >
+                                <h:outputText value=""/>
+                            </p:column>                             
+                            
+                            <p:column class="" headerText="RECIBE" style="width: 4%; " >
+                                <h:outputText value="#{result.nombreUsuario}"/>
+                            </p:column>  
+
+                            <p:column class="" headerText="EXISTENCIA ANTERIOR"  style="width: 4%;">
+                                <h:outputText value="#{result.existenciaAnterior}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="ENTRA POR SURTIMIENTO"  style="width: 4%;">
+                                <h:outputText value="#{result.entradaPorSurtimiento}"/>
+                            </p:column>
+                        
+                            <p:column class="" headerText="SALIDA POR RECETA"  style="width: 3%;">
+                                <h:outputText value="#{result.salidaPorReceta}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="EXISTENCIA ACTUAL"  style="width: 3%;">
+                                <h:outputText value="#{result.existenciaActual}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="MOTIVO"  style="width: 6%;">
+                                <h:outputText value="#{result.motivo}"/>
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:form>	
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes" 
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                    
+                    <p:dialog header="Folio Reporte Diario Generado"
+                              widgetVar="mdlFolioReporteDiario"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important; " >
+                        <h:form id="frmFolioReporteDiario">
+                            <p:messages id="validaMsg1" globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:panel style="border:#0081c2 solid 1px; padding:0px!important;">
+                                <table  style="width:100%!important; margin: 0px!important; " class="ui-grid-col-2,ui-grid-col-10">
+                                    <tr>
+                                        <td>
+                                            <p:outputLabel value="Folio Generado:" /> 
+                                        </td>
+                                        <td>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{reporteControlDiarioMB.confirmacionReporteFoliado.folio}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <p:outputLabel value="Usuario:" />
+                                        </td>
+                                        <td>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{reporteControlDiarioMB.usuarioSession.nombreUsuario}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <p:outputLabel value="Tipo:" />
+                                        </td>
+                                        <td>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{reporteControlDiarioMB.confirmacionReporteFoliado.tipo}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <p:outputLabel value="Turno:" />
+                                        </td>
+                                        <td>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="Matutino" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <p:outputLabel value="Servicio:" />
+                                        </td>
+                                        <td>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{reporteControlDiarioMB.nombreServicio}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <p:commandButton id="btnTipCancel" class="btnItem" value="Cancelar"  style="width: 100px;"
+                                                 ajax="true" onclick="PF('mdlFolioReporteDiario').hide();"  validateClient="false" />
+                                        </td>
+                                        <td>
+                                            <p:commandButton id="btnTipNew" class="btnItem"
+                                                 value="Aceptar" style="margin:0; width: 100px; "
+                                                 actionListener="#{reporteControlDiarioMB.registrarFolioReporteControlDiario()}" 
+                                                 update=":formPDF"
+                                                 onclick="PF('statusProcess').show();" 
+                                                 oncomplete="PF('statusProcess').hide();PF('mdlFolioReporteDiario').hide();PF('mdlReport').show();" 
+                                                 />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </p:panel>                                                      
+                        </h:form>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

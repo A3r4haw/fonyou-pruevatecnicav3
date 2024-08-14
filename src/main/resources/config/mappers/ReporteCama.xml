@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.RepCamaMapper" >
+    
+    <select id="obtenerDatosReporte"  resultType="mx.mc.model.RepCama" parameterType="Map" >
+        SELECT c.idCama,c.nombreCama as cama,c.ubicacion,c.idTipoCama,e.nombreEstatusCama as estatus,c.idEstatusCama, c.idEstructura, es.nombre,p.nombreCompleto as paciente,p.claveDerechohabiencia as clave
+        FROM cama c
+        inner join estatusCama e on e.idEstatusCama = c.idEstatusCama
+        left join  pacienteUbicacion pu on pu.idCama= c.idCama
+        left join pacienteServicio ps on ps.idPacienteServicio = pu.idPacienteServicio
+        left join visita v on v.idVisita=ps.idVisita
+        left join paciente p on p.idPaciente=v.idPaciente and p.idEstatusPaciente=4
+        inner join estructura es on es.idEstructura=c.idEstructura
+        where c.idEstatusCama=#{idEstatusCama} and c.idEstructura=#{idEstructura}
+        ;
+    </select>
+    
+    <select id="consultarDisponibilidadCamas" resultType="mx.mc.model.DataResultReport" parameterType="Map">
+        SELECT 
+            c.idCama,
+            c.nombreCama AS cama,
+            c.ubicacion,
+            c.idTipoCama,
+            e.nombreEstatusCama AS estatus,
+            c.idEstatusCama,
+            c.idEstructura,
+            es.nombre,       
+        CONCAT(ifnull(p.nombreCompleto,''),
+        ifnull(es.nombre,''),
+        ifnull(c.nombreCama,'')) AS nombres, 
+            if(c.idEstatusCama=4,concat(p.nombreCompleto, "  ", p.apellidoPaterno, "  ",apellidoMaterno ),null) AS paciente,
+            if(c.idEstatusCama=4,p.claveDerechohabiencia,null) AS clave
+        FROM cama c
+        inner join estatusCama e on e.idEstatusCama = c.idEstatusCama
+        left join  pacienteUbicacion pu on pu.idCama= c.idCama
+        left join pacienteServicio ps on ps.idPacienteServicio = pu.idPacienteServicio
+        left join visita v on v.idVisita=ps.idVisita
+        left join paciente p on p.idPaciente=v.idPaciente and p.idEstatusPaciente=4
+        inner join estructura es on es.idEstructura=c.idEstructura
+        WHERE 1 = 1	                        
+        <if test=" listaEstructuras != null ">
+                    AND es.idEstructura IN 
+                    <foreach item="item" index="index" collection="listaEstructuras" open="(" separator="," close=")">
+                        #{ item }
+                    </foreach>
+        </if>
+        
+        <if test=" paramReporte.idTipoMovimientos.size() > 0 "> 
+            AND c.idEstatusCama IN 
+            <foreach item="item" index="index" collection="paramReporte.idTipoMovimientos" open="(" separator="," close=")">
+                    #{item}
+            </foreach>
+        </if>
+        group by c.idCama
+        <if test=" paramReporte.cadenaBusqueda != null">
+            having nombres like '%${paramReporte.cadenaBusqueda}%'
+        </if>
+        
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'cama'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY c.nombreCama asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY c.nombreCama desc
+                </if>            
+            </if>
+            <if test="sortField == 'ubicacion'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY c.ubicacion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY c.ubicacion desc
+                </if>
+            </if>
+            <if test="sortField == 'estatus'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY e.nombreEstatusCama asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY e.nombreEstatusCama desc
+                </if>            
+            </if>
+            <if test="sortField == 'clave'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY clave asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY clave desc
+                </if>            
+            </if>
+            <if test="sortField == 'paciente'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY paciente asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY paciente desc
+                </if>            
+            </if>
+        </if>               
+        
+            LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}	
+    </select>
+    
+    <select id="obtenerTotalRegistrosCamas" resultType="Long" parameterType="Map">		
+        select count(*) as total from
+        (SELECT 
+        c.idCama, c.nombreCama AS cama, c.ubicacion, c.idTipoCama, e.nombreEstatusCama AS estatus, c.idEstatusCama, c.idEstructura, 
+        es.nombre,CONCAT(ifnull(p.nombreCompleto,''),
+        ifnull(es.nombre,''),
+        ifnull(c.nombreCama,'')) AS nombres, if(c.idEstatusCama=4,p.nombreCompleto,null) AS paciente, if(c.idEstatusCama=4,p.claveDerechohabiencia,null) AS clave
+        FROM cama c inner join estatusCama e on e.idEstatusCama = c.idEstatusCama left join pacienteUbicacion pu on pu.idCama= c.idCama 
+        left join pacienteServicio ps on ps.idPacienteServicio = pu.idPacienteServicio left join visita v on v.idVisita=ps.idVisita 
+        left join paciente p on p.idPaciente=v.idPaciente and p.idEstatusPaciente=4 inner join estructura es on es.idEstructura=c.idEstructura 
+        WHERE 1 = 1        
+        <if test="paramReporte.idTipoMovimientos.size() > 0 "> 
+                AND c.idEstatusCama IN 
+                <foreach item="item" index="index" collection="paramReporte.idTipoMovimientos" open="(" separator="," close=")">
+                        #{item}
+                </foreach>
+        </if>
+        <if test=" listaEstructuras != null ">
+                    AND es.idEstructura IN 
+                    <foreach item="item" index="index" collection="listaEstructuras" open="(" separator="," close=")">
+                        #{ item }
+                    </foreach>
+        </if>
+        
+        group by c.idCama	
+        <if test=" paramReporte.cadenaBusqueda != null">
+            having nombres like '%${paramReporte.cadenaBusqueda}%'
+        </if>
+        ) as t
+    </select>
+    
+</mapper>

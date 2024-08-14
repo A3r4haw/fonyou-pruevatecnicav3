@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DispensacionMaterialMapper" >
+    
+    <select id="obtenerDispensacionesLazzy" parameterType="Map" resultType="mx.mc.model.DispensacionMaterialExtended">
+        select d.*, e.nombre as servicio, concat(pa.nombreCompleto,' ', pa.apellidoPaterno,' ', pa.apellidoMaterno) AS paciente,
+                concat(me.nombre,' ', me.apellidoPaterno,' ', me.apellidoMaterno) AS medico,
+                concat(us.nombre,' ', us.apellidoPaterno,' ', us.apellidoMaterno) AS usuario,
+                c.nombreCama as cama
+            from dispensacion d
+                inner join paciente pa on d.idPaciente = pa.idPaciente
+                inner join estructura e on d.idEstructura = e.idEstructura
+                inner join usuarios us on d.idUsuarioDispensa = us.idUsuario
+                left join usuarios me on d.idMedico = me.idUsuario 
+                left join cama c on d.idCama = c.idCama
+            where 1 = 1
+        <if test=" idEstructura != null">
+            AND d.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" cadenaBusqueda != null">
+            AND (
+                pa.nombreCompleto LIKE '%${ cadenaBusqueda }%'
+                OR pa.apellidoPaterno LIKE '%${ cadenaBusqueda }%'
+                OR pa.apellidoMaterno LIKE '%${ cadenaBusqueda }%'
+                OR pa.claveDerechohabiencia LIKE '%${ cadenaBusqueda }%'
+                OR pa.pacienteNumero LIKE '%${ cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${cadenaBusqueda}%'
+                OR d.folio LIKE '%${cadenaBusqueda}%'
+                OR DATE_FORMAT(d.fechaDispensacion, "%d/%m/%Y") LIKE '%${cadenaBusqueda}%'
+            )
+        </if>
+        
+        <if test=" sortBy == null">
+            order by d.fechaDispensacion desc 
+        </if>
+        <if test=" sortBy != null">
+            <choose>
+                <when test="sortBy == 'folio'">
+                    order by d.folio ${sortOrder}
+                </when>
+                <when test="sortBy == 'servicio'">
+                    order by servicio ${sortOrder}
+                </when>
+                <when test="sortBy == 'cama'">
+                    order by cama ${sortOrder}
+                </when>
+                <when test="sortBy == 'paciente'">
+                    order by paciente ${sortOrder}
+                </when>
+                <when test="sortBy == 'usuario'">
+                    order by usuario ${sortOrder}
+                </when>
+                <otherwise>
+                    order by d.fechaDispensacion ${sortOrder}
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT #{startingAt}, #{maxPerPage}
+    </select>
+    
+    
+    <select id="obtenerDispensacionesReporte" parameterType="Map" resultType="mx.mc.model.DispensacionMaterialExtended">
+        select  d.folio, d.fechaDispensacion, e.nombre as servicio, c.nombreCama as cama, 
+            concat(pa.nombreCompleto,' ', pa.apellidoPaterno,' ', pa.apellidoMaterno) AS paciente,
+            concat(us.nombre,' ', us.apellidoPaterno,' ', us.apellidoMaterno) AS usuario,
+            m.claveInstitucional as clave, m.nombreCorto, di.cantidad, di.notas 
+        from dispensacion d
+            inner join dispensacionInsumo di on di.idDispensacion = d.idDispensacion
+            inner join inventario i on i.idInventario = di.idInventario
+            inner join medicamento m on m.idMedicamento = i.idInsumo
+            left join paciente pa on d.idPaciente = pa.idPaciente
+            inner join estructura e on d.idEstructura = e.idEstructura
+            inner join usuarios us on d.idUsuarioDispensa = us.idUsuario
+            left join cama c on d.idCama = c.idCama AND e.idEstructura = c.idEstructura
+        where 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            and d.fechaDispensacion between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND m.idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND us.idUsuario IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+        
+        <if test=" paramBusquedaReporte.pacienteList != null ">
+            AND pa.idPaciente IN
+            <foreach item="item" index="index" collection="paramBusquedaReporte.pacienteList" open="(" separator="," close=")">
+                #{item.idPaciente}
+            </foreach>
+        </if>      
+                
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND e.idEstructura =  #{ paramBusquedaReporte.idEstructura }
+        </if>
+        
+        <if test=" paramBusquedaReporte.cama != null ">
+            AND c.idCama =  #{ paramBusquedaReporte.cama }
+        </if>
+        
+    </select>
+    
+    <select id="obtenerTotalDispensacionesLazzy" parameterType="Map" resultType="Long">
+        select COUNT(*) AS total
+            from dispensacion d
+                inner join paciente pa on d.idPaciente = pa.idPaciente
+                inner join estructura e on d.idEstructura = e.idEstructura
+                inner join usuarios us on d.idUsuarioDispensa = us.idUsuario
+                left join usuarios me on d.idMedico = me.idUsuario 
+                left join cama c on d.idCama = c.idCama
+            where 1 = 1
+        <if test=" idEstructura != null">
+            AND d.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" cadenaBusqueda != null">
+            AND (
+                pa.nombreCompleto LIKE '%${ cadenaBusqueda }%'
+                OR pa.apellidoPaterno LIKE '%${ cadenaBusqueda }%'
+                OR pa.apellidoMaterno LIKE '%${ cadenaBusqueda }%'
+                OR pa.claveDerechohabiencia LIKE '%${ cadenaBusqueda }%'
+                OR pa.pacienteNumero LIKE '%${ cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${cadenaBusqueda}%'
+                OR d.folio LIKE '%${cadenaBusqueda}%'
+                OR DATE_FORMAT(d.fechaDispensacion, "%d/%m/%Y") LIKE '%${cadenaBusqueda}%'
+            )
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.DispensacionMaterial" >
+        INSERT INTO dispensacion (
+        <if test=" idDispensacion != null ">
+            idDispensacion
+        </if>
+        <if test=" folio != null ">
+            , folio
+        </if>
+        <if test=" fechaDispensacion != null ">
+            , fechaDispensacion
+        </if>
+        <if test=" idEstructura != null ">
+            , idEstructura
+        </if>
+        <if test=" idCama != null ">
+            , idCama
+        </if>
+        <if test=" idPaciente != null ">
+            , idPaciente
+        </if>
+        <if test=" idVisita != null ">
+            , idVisita
+        </if>    
+        <if test=" idMedico != null ">
+            , idMedico
+        </if>
+        <if test=" idUsuarioDispensa != null ">
+            , idUsuarioDispensa
+        </if>
+        <if test=" estatus != null ">
+            , estatus
+        </if>    
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        ) VALUES (
+        <if test=" idDispensacion != null ">
+            #{ idDispensacion , jdbcType = VARCHAR }
+        </if>
+        <if test=" folio != null ">
+            , #{ folio , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaDispensacion != null ">
+            , #{ fechaDispensacion , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idEstructura != null ">
+            , #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idCama != null ">
+            , #{ idCama , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPaciente != null ">
+            , #{ idPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" idVisita != null ">
+            , #{ idVisita , jdbcType = VARCHAR }
+        </if>
+        <if test=" idMedico != null ">
+            , #{ idMedico , jdbcType = VARCHAR }
+        </if>
+        <if test=" idUsuarioDispensa != null ">
+            , #{ idUsuarioDispensa , jdbcType = VARCHAR }
+        </if>
+        <if test=" estatus != null ">
+            , #{ estatus , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>    
+</mapper>

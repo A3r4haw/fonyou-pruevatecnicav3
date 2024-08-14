@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Prevención de contaminación</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanelAmplio" style="border: none;">
+                    <h:form id="mainForm">
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value="Prevención de Contaminación" style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;" />
+                            <p:inputText id="busqueda" class="textSearch" style="width: 50% !important;" 
+                                         value="#{fichaPrevencionMB.cadenaBusqueda}" placeholder="Buscar..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona enter para buscar" alt="15" style=""/>
+                            </i>
+                            <p:spacer width="10px" />
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); "
+                                             actionListener="#{fichaPrevencionMB.obtenerFichasDePrevencion}"
+                                             update="@form"  />
+                        </div>
+
+                        <p:commandButton id="btnCrear" value="Agregar" title="Agregar Nuevo Registro" icon="fa fa-plus" 
+                                         actionListener="#{fichaPrevencionMB.preparaInsertar()}"
+                                         onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                                         oncomplete="PF('statusProcess').hide(); PF('dlgMainForm').show();"
+                                         update="frmDocumento"  style=" margin: 5px 0; " resetValues="true" /> 
+                        <br/>
+
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-flat"/>
+                            <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" />
+                        </p:confirmDialog>
+
+                        <p:dataTable  id="tblMain" widgetVar="tblMain" reflow="true" 
+                                      value="#{fichaPrevencionMB.fichaPrevencionLista}" selection="#{fichaPrevencionMB.fichaPrevencionSeleccionado}"
+                                      var="item" rowKey="#{item.idPrevencion}" 
+                                      lazy="true" selectionMode="single" 
+                                      scrollHeight="350" scrollable="true" scrollRows="10" rows="10" 
+                                      emptyMessage="No se encontraron registros" 
+                                      paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                      currentPageReportTemplate=" " paginator="true" paginatorPosition="bottom" >
+
+                            <p:column headerText="Folio" style="width: 10%;"  sortBy="#{item.folio}">
+                                <h:outputText value="#{item.folio}" title="" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Fecha Desinfección" style="width: 10%;"  sortBy="#{item.insertFecha}">
+                                <h:outputText value="#{item.fechaRelizaLimpieza}" title="" class="altoColumn" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Responsable" style="width: 20%;" sortBy="#{item.nombreUsuarioRegistra}">
+                                <h:outputText value="#{item.nombreUsuarioRealizaLimpieza}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Area" style="width: 20%;" sortBy="#{item.nombreEstructura}">
+                                <h:outputText value="#{item.nombreEstructura}" class="altoColumn" />
+                            </p:column>
+
+<!--                            <p:column headerText="Responsable" style="width: 20%;" sortBy="#{item.nombreUsuarioRealizaLimpieza}">
+                                <h:outputText value="#{item.nombreUsuarioRealizaLimpieza}" class="altoColumn" />
+                            </p:column>-->
+
+                            <p:column headerText="Ubicación" style="width: 10%;" sortBy="#{item.nombreTurno}">
+                                <h:outputText value="#{item.area}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Turno" style="width: 10%;" sortBy="#{item.nombreTurno}">
+                                <h:outputText value="#{item.nombreTurno}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Estatus" style="width: 10%;" sortBy="#{item.estatusPrevencion}">
+                                    <h:outputLabel value="#{item.estatusPrevencion}" styleClass="#{(item.idEstatusPrevencion eq 5 ) ? 'stsgreen' : (item.idEstatusPrevencion eq 6 ) ? 'stsred' : 'stsblue' }"  />
+                            </p:column>
+
+                            <p:column id="acciones"   headerText="Acciones" style="width: 10%;" >
+                                <p:commandLink title="Imprimir" 
+                                               style="margin: 5px;text-decoration: none;"
+                                               actionListener="#{fichaPrevencionMB.imprimir(item.idPrevencion)}"
+                                               update=":formPDF"
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide(); if (args.estatus ) { PF('mdlReport').show(); }" 
+                                               rendered="#{fichaPrevencionMB.permiso.puedeVer}" >
+                                    <p:fileDownload value="#{fichaPrevencionMB.adjuntoDescarga}" />
+                                    <i class="fa fa-file-pdf-o" />
+                                </p:commandLink>
+                                
+                                <p:commandLink id="linkEditar"                                               
+                                               style="margin: 5px;text-decoration: none;"
+                                               actionListener="#{fichaPrevencionMB.preparaActualizar(item.idPrevencion)}"
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide(); PF('dlgMainForm').show();" 
+                                               update="frmDocumento" 
+                                               rendered="#{fichaPrevencionMB.permiso.puedeEditar}">
+                                    <i class="fa fa-edit iconMusAzul"/>
+                                </p:commandLink>
+                                                                
+                                <p:commandLink id="chekstat" 
+                                               title="#{(item.idEstatusPrevencion eq 5) ? 'Aprobado' : 'Aprobar'}" 
+                                               actionListener="#{fichaPrevencionMB.preparaAprobar(item.idPrevencion)}" 
+                                               rendered="#{fichaPrevencionMB.permiso.puedeAutorizar and item.idEstatusPrevencion ne 5 and item.idEstatusPrevencion ne 6}" 
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('dlgAprobacion').show(); } " 
+                                               update="frmAprobacion">
+                                    <i class="#{(item.idEstatusPrevencion eq 5) ? 'fa fa-toggle-on' : 'fa fa-toggle-off'}  iconMusAzul" />
+                                </p:commandLink>
+                                
+                                
+                                <p:commandLink id="linkEliminar"                                               
+                                               style="margin: 5px;text-decoration: none;"
+                                               actionListener="#{fichaPrevencionMB.eliminarFichaPrevencion(item.idPrevencion)}"
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide();" 
+                                               update="mainForm" 
+                                               rendered="#{fichaPrevencionMB.permiso.puedeEliminar and item.idEstatusPrevencion eq 1}">
+                                    <i class="fa fa-trash-o"/>
+                                        <p:confirm header="Confirmación de eliminación de Ficha" message="Desea eliminar la Ficha de Prevención ?" icon="ui-icon-alert"  />
+                                </p:commandLink>
+
+                            </p:column>
+                        </p:dataTable>
+
+
+                    </h:form>
+
+                    <p:dialog widgetVar="dlgMainForm" header="Ficha de Prevención de Contaminación"
+                              closeOnEscape="true" closable="true" modal="true" resizable="false" 
+                              focus="" style="font-size:xx-small !important;" width="90%" >               
+                        <p:focus context="frmDocumento"/>
+
+                        <h:form id="frmDocumento" style="padding: 0px;">
+                            <p:messages id="msgValidaRegistro" globalOnly="false" showDetail="false" closable="true" showSummary="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+
+                            <div class="ui-fluid">
+                                <p:panelGrid columns="1"  layout="grid" styleClass="ui-fluid" columnClasses="ui-g-12" >
+
+                                    <p:panelGrid columns="6" layout="grid" styleClass="ui-fluid" columnClasses="ui-md-1 , ui-md-2 , ui-md-1, ui-md-2 , ui-md-1 , ui-md-2"  >  
+
+                                        <p:outputLabel value="Fecha *" class="plabel" />
+                                         <p:outputLabel id="txtFechaReg" class="plabel" tabindex="1" style="width: 250px !important;"
+                                                     value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.insertFecha}" >
+                                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                                        </p:outputLabel>
+
+                                        <p:outputLabel value="Registró *" class="plabel" />
+                                        <p:outputLabel id="txtUsuarioRegistra"  class="ptxt1"  tabindex="2" 
+                                                     value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.nombreUsuarioRegistra}" />
+
+                                        <p:outputLabel value="Estatus *" class="plabel" />
+                                        <p:selectOneMenu  class="cmbTipoArchivo" value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.idEstatusPrevencion}" 
+                                                          filter="true" filterMatchMode="contains" tabindex="3" >
+                                            <f:selectItems class="sOneMenu" value="#{fichaPrevencionMB.estatusFichaPrevencionLista}"
+                                                           var="estat" itemLabel="#{estat.descripcion}"
+                                                           itemValue="#{estat.idEstatusPrevencion}" />
+                                        </p:selectOneMenu>
+                                        
+                                        <p:outputLabel value="Folio *" class="plabel" />
+                                        <p:outputLabel id="txtFolio" class="plabel" tabindex="4" style="width: 250px !important;"
+                                                       value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.folio}" />
+
+                                        <p:outputLabel value="Área *" class="plabel" />
+                                        <p:selectOneMenu  class="cmbTipoArchivo" value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.idEstructura}" 
+                                                          filter="true" filterMatchMode="contains" tabindex="5" >
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true" />
+                                            <f:selectItems class="sOneMenu" value="#{fichaPrevencionMB.estructuraLista}"
+                                                           var="estruct" itemLabel="#{estruct.nombre}"
+                                                           itemValue="#{estruct.idEstructura}" />
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel value="Turno *" class="plabel" />
+                                        <p:selectOneMenu  class="cmbTipoArchivo" value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.idTurno}" 
+                                                          filter="true" filterMatchMode="contains" tabindex="6" >
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true" />
+                                            <f:selectItems class="sOneMenu" value="#{fichaPrevencionMB.turnoLista}"
+                                                           var="turno" itemLabel="#{turno.nombre}"
+                                                           itemValue="#{turno.idTurno}" />
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel value="Ubicación *" class="plabel" />
+                                        <p:inputText id="txtubicacion"  class="ptxt1"  tabindex="7" maxlength="45"  
+                                                     value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.area}" />
+
+                                        <p:outputLabel value="Sanitizante *" class="plabel" />
+                                        <p:inputText id="txtSanitizante"  class="ptxt1"  tabindex="8" maxlength="45"  
+                                                     value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.sanitizante}" />
+
+                                        <p:outputLabel value="Detergente *" class="plabel" />
+                                        <p:inputText id="txtDetergente"  class="ptxt1"  tabindex="9" maxlength="45"  
+                                                     value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.detergente}" />
+
+                                        <p:outputLabel value="Desinfección" class="plabel" />
+
+
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.interiorEquipo}"
+                                                                 itemLabel="Interior de Equipos" tabindex="10" />
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.exteriorEquipo}"
+                                                                 itemLabel="Exterior de Equipos" tabindex="11" />
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.pasilloIngreso}"
+                                                                 itemLabel="Pasillo ingreso de insumos" tabindex="12" />
+
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.mobiliario}"
+                                                                 itemLabel="Mobiliario" tabindex="13" />
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.paredes}"
+                                                                 itemLabel="Paredes" tabindex="14" />
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.herramientas}"
+                                                                 itemLabel="Herramientas" tabindex="15" />
+
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.transfer}"
+                                                                 itemLabel="Transfer" tabindex="16" />
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.puertas}"
+                                                                 itemLabel="Puertas" tabindex="17" />
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.manijas}"
+                                                                 itemLabel="Manijas" tabindex="18" />
+
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.ventanas}"
+                                                                 itemLabel="Ventanas" tabindex="19" />
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.pisos}"
+                                                                 itemLabel="Pisos" tabindex="20" />
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.vestidor}"
+                                                                 itemLabel="Vestidor"  tabindex="21"/>
+
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.areaLavado}"
+                                                                 itemLabel="Área de lavado" tabindex="22" />
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.areaDesinfeccion}"
+                                                                 itemLabel="Área de desinfección" tabindex="23" />
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.areaInspeccion}"
+                                                                 itemLabel="Área de inspección" tabindex="24" />
+
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.areaDesinfeccion}"
+                                                                 itemLabel="Área de Almacenado" tabindex="25" />
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.areaPreparado}"
+                                                                 itemLabel="Área de Preparado" tabindex="26" />
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:selectBooleanCheckbox value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.areaAcondicionado}"
+                                                                 itemLabel="Área de Acondicionado" tabindex="27" />
+                                    </p:panelGrid>
+
+                                    <p:panelGrid columns="3"  layout="grid" styleClass="ui-fluid" columnClasses="ui-md-1 , ui-md-9 , ui-md-1 "  > 
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:fileUpload id="uplArchivo" dragDropSupport="true" auto="true" label="Adjuntar" value="#{fichaPrevencionMB.file}"
+                                                      mode="advanced" multiple="true" fileLimit="20" fileLimitMessage="Sólo se permite adjuntar 20 archivos " 
+                                                      style="width: 200px !important;" update=":frmDocumento:tablaArchivo"
+                                                      sizeLimit="3000000" invalidSizeMessage="Este archivo supero el tamaño de 3MB"
+                                                      allowTypes="/(\.|\/)(xls|xlsx|xml|txt|pdf|docx|doc|jpeg|png|jpg|tiff|gif)$/"
+                                                      invalidFileMessage="Tipo de archivo inválido"
+                                                      rendered="#{fichaPrevencionMB.permiso.puedeCrear }"
+                                                      disabled="#{fichaPrevencionMB.fichaPrevencionSeleccionado.idEstatusPrevencion ne 1 and fichaPrevencionMB.fichaPrevencionSeleccionado.idEstatusPrevencion ne 4}" 
+                                                      fileUploadListener="#{fichaPrevencionMB.subirAdjunto}"
+                                                      onstart="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" />
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:spacer width="10" > </p:spacer>
+                                        <p:dataTable id="tablaArchivo" value="#{fichaPrevencionMB.adjuntoLista}"
+                                                     var="adj" scrollable="true" scrollHeight="100"
+                                                     reflow="true" style="margin-top:5px"
+                                                     selection="#{fichaPrevencionMB.adjuntoSelecionado}"
+                                                     rowKey="#{adj.idAdjunto}" rowIndexVar="row" tabindex="29"
+                                                     emptyMessage=" " >
+
+                                            <p:column headerText="No" width="5%">
+                                                #{row + 1}
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Fecha" width="20%">
+                                                <h:outputText value="#{adj.insertFecha}" >
+                                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                                </h:outputText>    
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Archivo" width="65%">
+                                                <h:outputText value="#{adj.nombreAdjunto}" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left;" headerText=""  width="10%">
+                                                <p:commandLink title="Descargar" ajax="false"
+                                                               actionListener="#{fichaPrevencionMB.descargarArchivo(adj.idAdjunto)}"
+                                                               rendered="#{fichaPrevencionMB.permiso.puedeVer}"  >
+                                                    <p:fileDownload value="#{fichaPrevencionMB.adjuntoDescarga}" />
+                                                    <i class="fa fa-download" />
+                                                </p:commandLink>&nbsp;&nbsp;
+                                                <p:commandLink title="Eliminar" 
+                                                               actionListener="#{fichaPrevencionMB.eliminarAdjunto(adj.idAdjunto , adj.nombreAdjunto)}"
+                                                               onclick="PF('statusProcess').show();" 
+                                                               oncomplete="PF('statusProcess').hide();" update="tablaArchivo" 
+                                                               rendered="#{fichaPrevencionMB.permiso.puedeEliminar}"
+                                                               disabled="#{fichaPrevencionMB.fichaPrevencionSeleccionado.idEstatusPrevencion ne 1 and fichaPrevencionMB.fichaPrevencionSeleccionado.idEstatusPrevencion ne 4}"
+                                                               >
+                                                    <i class="fa fa-trash-o iconMusAzul" />
+                                                    <p:confirm header="Eliminación de archivo adjunto" message="Desea eliminar el archivo adjunto ?" icon="ui-icon-alert"  />
+                                                </p:commandLink>&nbsp;
+                                            </p:column>    
+                                        </p:dataTable>
+                                        <p:spacer width="10" > </p:spacer>
+                                    
+                                    </p:panelGrid>
+
+                                    <p:panelGrid columns="7"  layout="grid" styleClass="ui-fluid" columnClasses="ui-md-1 , ui-md-1 , ui-md-2 , ui-md-1 , ui-md-2  , ui-md-1 , ui-md-2 "  > 
+                                        <p:outputLabel value="Ejecuta " class="plabel" />
+                                        <p:outputLabel value="Usuario " class="plabel" />
+                                        
+                                        <p:autoComplete id="txtRealiza" placeholder="buscar usuario" tabindex="31" 
+                                                            minQueryLength="4" queryDelay="500" maxResults="10" scrollHeight = "150"
+                                                            forceSelection="true" cache="false" cacheTimeout="0" 
+                                                            value="#{fichaPrevencionMB.usuarioRegistraPreseleccionado}"
+                                                            completeMethod="#{fichaPrevencionMB.obtieneListaUsuarioRegistra}"
+                                                            var="usua" itemValue="#{usua.idUsuario}" 
+                                                            itemLabel="#{(usua.nombre eq null) ? '' : usua.nombre.concat(' ').concat(usua.apellidoPaterno).concat(' ').concat(usua.apellidoMaterno) }" 
+                                                            converter="medicoConverter" >
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Matrícula de Personal" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usua.matriculaPersonal}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="250px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Usuario" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usua.nombre} #{usua.apellidoPaterno} #{usua.apellidoMaterno}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                            
+                                        <p:outputLabel value="Fecha " class="plabel" />
+                                        <p:calendar id="txtFechaRealiza" mask="true" pattern="dd/MM/yyyy HH:mm" tabindex="32" 
+                                                    value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.fechaRelizaLimpieza}" 
+                                                    maxdate="#{fichaPrevencionMB.fechaActual}"
+                                                    locale="es_MX" navigator="true" pages="1" showButtonPanel="true" effect="fade" defaultSecond="59" />
+                                        
+                                        <p:outputLabel value="Comentarios *" class="plabel" />
+                                        <p:inputText id="txtComentariosRealiza"  class="ptxt1" size="50" tabindex="33" maxlength="45"
+                                                     value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.comentariosRealizaLimpieza}" />
+                                        
+                                        <p:outputLabel value="Supervición " class="plabel" />
+                                        <p:outputLabel value="Usuario " class="plabel" />
+                                        <p:outputLabel id="txtSupervición"  class="ptxt1" value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.nombreUsuarioSupervisa}" />
+                                        <p:outputLabel value="Fecha " class="plabel" />
+                                        <p:outputLabel id="txtFechaSupervision"  class="ptxt1" value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.fechaSupervisa}" />
+                                        <p:outputLabel value="Comentarios *" class="plabel" />
+                                        <p:outputLabel id="txtComentariosSupervisa"  class="ptxt1" value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.comentariosSupervisa}" />
+
+                                        <p:outputLabel value="Aprobación " class="plabel" />
+                                        <p:outputLabel value="Usuario " class="plabel" />
+                                        <p:outputLabel id="txtAprobación"  class="ptxt1" value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.nombreUsuarioAprueba}" />
+                                        <p:outputLabel value="Fecha " class="plabel" />
+                                        <p:outputLabel id="txtFechaAprobacion"  class="ptxt1" value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.fechaAprueba}" />
+                                        <p:outputLabel value="Comentarios *" class="plabel" />
+                                        <p:outputLabel id="txtComentariosAprueba"  class="ptxt1" value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.comentariosAprueba}" />
+
+                                    </p:panelGrid>
+                                </p:panelGrid>
+                            </div>
+                            <div style="float: left;">
+                                    <p:commandButton id="btnCrear" value="Guardar" title="Gurdar registro" icon="fa fa-plus"  
+                                                     actionListener="#{fichaPrevencionMB.validar()}"
+                                                     rendered="#{fichaPrevencionMB.fichaPrevencionSeleccionado.idEstatusPrevencion eq 1 or fichaPrevencionMB.fichaPrevencionSeleccionado.idEstatusPrevencion eq 4}" 
+                                                     onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                                                     oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('dlgMainForm').hide(); }"
+                                                     update=":mainForm: , :mainForm:tblMain , frmDocumento"  style=" margin: 5px 0; " resetValues="true" tabindex="34" /> 
+                                </div>
+
+                        </h:form>
+                    </p:dialog>
+                
+                
+                    <p:dialog widgetVar="dlgAprobacion" header="Aprobación de Ficha de Prevención de Contaminación"
+                              closeOnEscape="true" closable="true" modal="true" resizable="false" 
+                              focus="" style="font-size:xx-small !important;" width="40%" > 
+                        <p:focus context="frmAprobacion"/>
+
+                        <h:form id="frmAprobacion" style="padding: 0px;">
+                            <p:messages id="msgValidaRegistro" globalOnly="false" showDetail="false" closable="true" showSummary="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            
+                            <div class="ui-fluid">
+                                <p:panelGrid columns="4"  layout="grid" styleClass="ui-fluid" columnClasses="ui-md-1 , ui-md-2 , ui-md-3 , ui-md-1 " >
+
+                                    <p:spacer width="5" />
+                                    <p:outputLabel value="Fecha " class="plabel" />
+                                    <p:outputLabel id="txtFechaApro" class="plabel" tabindex="1" style="width: 250px !important;"
+                                                   value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.fechaAprueba}" >
+                                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                                    </p:outputLabel>
+                                    <p:spacer width="5" />
+
+                                    <p:spacer width="5" />
+                                    <p:outputLabel value="Aprueba " class="plabel" />
+                                    <p:outputLabel id="txtUsuarioAprobo"  class="ptxt1"  tabindex="2" 
+                                                   value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.nombreUsuarioRegistra}" />
+                                    <p:spacer width="5" />
+                                    
+                                    <p:spacer width="5" />
+                                    <p:outputLabel value="Estatus " class="plabel" />
+                                    <p:selectOneMenu  class="cmbTipoAprobo" value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.idEstatusPrevencion}" 
+                                                      filter="true" filterMatchMode="contains" tabindex="3" >
+                                        <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" noSelectionOption="true" />
+                                        <f:selectItems class="sOneMenu" value="#{fichaPrevencionMB.estatusFichaPrevencionLista}"
+                                                       var="estat" itemLabel="#{estat.descripcion}"
+                                                       itemValue="#{estat.idEstatusPrevencion}" />
+                                    </p:selectOneMenu>
+                                    <p:spacer width="5" />
+
+                                    <p:spacer width="5" />
+                                    <p:outputLabel value="Comentarios *" class="plabel" />
+                                    <p:inputText id="txtComentariosAprueba"  class="ptxt1" size="50" tabindex="33" maxlength="45"
+                                                 value="#{fichaPrevencionMB.fichaPrevencionSeleccionado.comentariosAprueba}" />
+                                    <p:spacer width="5" />
+                                    
+                                    
+                                </p:panelGrid>
+                            </div>
+                            <div style="float: left;">
+                                    <p:commandButton id="btnAprobar" value="Guardar" title="Aprobar registro" icon="fa fa-plus"  
+                                                     actionListener="#{fichaPrevencionMB.aprobar(fichaPrevencionMB.fichaPrevencionSeleccionado.idPrevencion)}"
+                                                     onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                                                     oncomplete="PF('statusProcess').hide(); if(args.estatus) { PF('dlgAprobacion').hide(); }"
+                                                     update=":mainForm , :mainForm:tblMain , frmDocumento"  style=" margin: 5px 0; " resetValues="true" tabindex="34" /> 
+                                </div>
+
+                        </h:form>
+                    </p:dialog>
+                    
+                    
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false"
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+
+    <ui:define name="footer" >
+    </ui:define>
+
+</html>

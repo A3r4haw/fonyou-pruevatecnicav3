@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" > 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="padding: 10px;">
+                    <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+                    <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                        <p:graphicImage name="/img/cargando.gif" />
+                    </p:dialog>
+                    <h:form id="formOrdenesReabasto">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="true"/>
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                            <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+
+                        <div style="background: #808080;padding: 10px;">
+                            <p:outputLabel value="Recepción Manual" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+                            <p:outputLabel value="Almacén" 
+                                           style="margin-right: 10px;margin-left: 10px;color: #FFF;font-size: 14px;font-weight: bold;"/>
+                            <p:outputLabel value="#{recepcionManualMB.listaEstructuras.get(0).nombre}"
+                                           style="margin-right: 10px;color: #FFF;font-size: 16px  !important;font-weight: bold;"
+                                           rendered="#{!recepcionManualMB.administrador}"/>
+                            <p:selectOneMenu id="comboAlmacen" 
+                                             value="#{recepcionManualMB.idEstructura}"
+                                             disabled="#{!recepcionManualMB.permiso.puedeVer}"
+                                             style="vertical-align: middle;"
+                                             autoWidth="true" 
+                                             rendered="#{recepcionManualMB.administrador}"
+                                             filter="true"
+                                             filterMatchMode="contains" >
+                                <p:ajax listener="#{recepcionManualMB.obtenerOrdenesReabasto}" 
+                                        update="tablaOrdenReabasto" />
+                                <f:selectItem itemLabel="Seleccione una opción" itemValue="#{0}" noSelectionOption="true" />
+                                <f:selectItems value="#{recepcionManualMB.listaEstructuras}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+                            <p:inputText id="busqueda" 
+                                         value="#{recepcionManualMB.textoBusqueda}" 
+                                         style="width: 30%!important;border-radius:10px!important;margin-left: 30px;" 
+                                         placeholder="Buscar por folio, Nombre del solicitante..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15" style=""/>
+                            </i>
+                            <p:commandButton value="Buscar" 
+                                             actionListener="#{recepcionManualMB.buscarRegistros}"
+                                             update="tablaOrdenReabasto formDetalleSurtimiento"
+                                             icon="fa fa-search" 
+                                             style="margin-left: 20px;"
+                                             oncomplete="if(args.estatusModal){ PF('modalSurtimineto').show(); }">
+                            </p:commandButton>
+                        </div>
+
+                        <p:dataTable id="tablaOrdenReabasto"
+                                     var="ordenReabasto"
+                                     value="#{recepcionManualMB.listaReabasto}"
+                                     style="text-align: center;"
+                                     emptyMessage="No existen registros para mostrar."
+                                     selectionMode="single"
+                                     scrollable="true" 
+                                     scrollHeight="350"
+                                     selection="#{recepcionManualMB.reabastoSelect}"
+                                     rowKey="#{ordenReabasto.idReabasto}">
+                            <p:ajax event="rowDblselect" oncomplete="PF('modalSurtimineto').show();" 
+                                    update="formDetalleSurtimiento" 
+                                    listener="#{recepcionManualMB.mostrarModalSurtimiento}"/>
+
+                            <p:column headerText="Folio">
+                                <h:outputText value="#{ordenReabasto.folio}" />
+                            </p:column>
+                            <p:column headerText="Fecha" sortBy="#{ordenReabasto.fechaSolicitud}">
+                                <h:outputLabel value="#{ordenReabasto.fechaSolicitud}">
+                                    <f:convertDateTime type="date" pattern="dd/MM/yy HH:mm" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Almacén Solicitante" sortBy="#{ordenReabasto.nombreEstructura}">
+                                <h:outputText value="#{ordenReabasto.nombreEstructura}" />
+                            </p:column>
+                            <p:column headerText="Tipo Reabasto">
+                                <p:outputLabel value="#{ordenReabasto.nombreTipoOrden}" />
+                            </p:column>
+                            <p:column headerText="Estatus">
+                                <p:outputLabel value="#{ordenReabasto.nombreEstatus}" />
+                            </p:column>
+                            <p:column headerText="Solicitante">
+                                <p:outputLabel value="#{ordenReabasto.nombreUsrSolicitane}" />
+                            </p:column>
+                            <p:column style="width: 5%">
+                                <p:tooltip for="linkCancelar" value="Cancelar" position="top"/>
+                                <p:commandLink id="linkCancelar"
+                                               actionListener="#{recepcionManualMB.cancelarOrdenReabasto(ordenReabasto.idReabasto)}"
+                                               update="tablaOrdenReabasto,formOrdenesReabasto:msg"
+                                               style="margin: 5px;text-decoration: none;"
+                                               styleClass="iconMusAzul"
+                                               disabled="#{!recepcionManualMB.permiso.puedeEliminar}">
+                                    <p:confirm header="Confirmación" message="Desea cancelar la Orden ?" icon="ui-icon-alert" />
+                                    <i class="fa fa-ban" />
+                                </p:commandLink>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:outputLabel> </p:outputLabel>
+                            </f:facet>
+                        </p:dataTable>
+                    </h:form>
+
+                    <p:dialog header="Recepción de Insumos" 
+                              widgetVar="modalSurtimineto"
+                              modal="true"
+                              closeOnEscape="true"
+                              closable="true"
+                              resizable="false"
+                              width="98%">
+                        <h:form id="formDetalleSurtimiento">
+                            <p:messages id="msgModal" closable="true" showDetail="false" showSummary="true" />
+                            <p:outputLabel style="margin-right: 10px;">Folio</p:outputLabel>
+                            <p:inputText value="#{recepcionManualMB.reabastoSelect.folio}" 
+                                         disabled="true"  tabindex="1"
+                                         size="5" 
+                                         style="margin-right: 10px;">
+                            </p:inputText>
+                            <p:outputLabel style="margin-right: 10px;">Fecha</p:outputLabel>
+                            <p:inputText value="#{recepcionManualMB.reabastoSelect.fechaSolicitud}"
+                                         disabled="true"  tabindex="2"
+                                         size="6"
+                                         style="margin-right: 10px;">
+                                <f:convertDateTime type="date" pattern="dd/MM/yy HH:mm" />
+                            </p:inputText>
+
+                            <p:outputLabel style="margin-right: 10px;margin-left: 10px;">Borrar</p:outputLabel>
+                            <p:selectBooleanCheckbox value="#{recepcionManualMB.eliminarCodigo}" id="checkEliminar"  tabindex="3"/>
+
+                            <p:outputLabel style="margin-left: 10px;margin-right: 10px;">Cantidad</p:outputLabel>
+                            <p:inputText id="xcantidad" 
+                                         value="#{recepcionManualMB.xcantidad}" 
+                                         size="2"
+                                         maxlength="5" tabindex="4"
+                                         style="margin-right: 10px;">
+                                <p:keyFilter regEx="/[0-9]/i"/>
+                            </p:inputText>
+
+                            <p:outputLabel style="margin-right: 10px;" value="Lote: "
+                                           rendered="#{recepcionManualMB.capturaLoteCaducidadManual}" />
+                            <p:inputText id="txtLote" 
+                                         value="#{recepcionManualMB.loteRecibido}" 
+                                         size="7"
+                                         maxlength="14"
+                                         tabindex="5"
+                                         style="margin-right: 10px;"
+                                         onkeyup="this.value = this.value.toUpperCase();"
+                                         rendered="#{recepcionManualMB.capturaLoteCaducidadManual}" >
+                                <p:ajax event="blur" listener="#{recepcionManualMB.estableceLoteRecibido}" />
+                            </p:inputText>
+
+                            <p:outputLabel style="margin-right: 10px;" value="Caducidad: " 
+                                           rendered="#{recepcionManualMB.capturaLoteCaducidadManual}" />
+                            <p:calendar id="txtCaducidad"
+                                        value="#{recepcionManualMB.caducidadRecibida}"
+                                        mindate="#{recepcionManualMB.fechaActual}"
+                                        mask="true"  pattern="dd/MM/yyyy" 
+                                        yearRange="c-100:c" locale="es" 
+                                        selectOtherMonths="true" 
+                                        showOtherMonths="true" size="4" 
+                                        showButtonPanel="true" 
+                                        tabindex="6" 
+                                        onkeyup="this.value = this.value.toUpperCase();"
+                                        requiredMessage="Fecha de caducidad requerida" 
+                                        validatorMessage="Fecha de caducidad incorrecta"
+                                        converterMessage="Formato de fecha de caducidad incorrecta" 
+                                        rendered="#{recepcionManualMB.capturaLoteCaducidadManual}" >
+                                <!--<f:validateRegex pattern="^([0-2][0-9]|3[0-1])(\/|-)(0[1-9]|1[0-2])\2(\d{4})$"/>-->
+                                <p:ajax event="blur" listener="#{recepcionManualMB.estableceCaducidadRecibido}"
+                                        oncomplete="PrimeFaces.focus('formDetalleSurtimiento:autoCMedicamento');" /> 
+                                <p:ajax event="dateSelect" listener="#{recepcionManualMB.estableceCaducidadRecibido}"
+                                        oncomplete="PrimeFaces.focus('formDetalleSurtimiento:autoCMedicamento');" /> 
+                            </p:calendar>
+
+                            <p:outputLabel style="margin-right: 10px;">Código</p:outputLabel>                                      
+
+                            <p:autoComplete id="autoCMedicamento"
+                                            value="#{recepcionManualMB.skuSap}"                                             
+                                            autocomplete="on"
+                                            completeMethod="#{recepcionManualMB.autocompleteInsumo}" 
+                                            minQueryLength="4" 
+                                            forceSelection="true"
+                                            size="45"
+                                            var="skuSap"
+                                            itemValue="#{skuSap.claveInstitucional}" 
+                                            itemLabel="#{skuSap.nombreCorto}"
+                                            converter="reabastoInsumoExtendedConverter"
+                                            tabindex="7"                 
+                                            placeholder="Buscar Insumo"
+                                            emptyMessage="Insumo desconocido." 
+                                            style="margin-right: 10px;"
+                                            scrollHeight="250" >
+                                <p:ajax event="itemSelect" update="checkEliminar,autoCMedicamento,tablaDetalleSurt,msgModal,xcantidad , txtLote , txtCaducidad "
+                                        global="false" process="checkEliminar @this xcantidad"
+                                        listener="#{recepcionManualMB.handleSelectMedicamento}" 
+                                        oncomplete="PrimeFaces.focus('formDetalleSurtimiento:xcantidad');"
+                                        ></p:ajax>
+
+                                <p:column style="width: 20px; font-size: small !important;" width="20px">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Clave"  />
+                                    </f:facet>
+                                    <h:outputText value="#{skuSap.claveInstitucional}" style=" font-size: small; font-weight: bolder;" />
+                                </p:column>
+                                <p:column style="width: 350px; font-size: small !important;" width="350px">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Descripción" />
+                                    </f:facet>
+                                    <h:outputText value="#{skuSap.nombreCorto}" style=" font-size: x-small;" />
+                                </p:column>
+                            </p:autoComplete>
+                            <br/> <br/>
+                            <p:dataTable id="tablaDetalleSurt"
+                                         var="insumo"
+                                         value="#{recepcionManualMB.listaReabastoInsumo}"
+                                         style=""
+                                         scrollable="true" 
+                                         scrollHeight="450"
+                                         rowIndexVar="index"
+                                         expandedRow="#{false}" 
+                                         emptyMessage="No se encontraron Registros"
+                                         rowStyleClass="#{insumo.cantidadSurtida gt 0 ? 'filaProcesada' : null} " >
+
+                                <p:ajax event="rowToggle" global="false"  />
+                                <p:column style="width: 2%;" >
+                                    <f:facet name="header" >
+                                        <i class="fa fa-toggle-right" id="btnCollapse" style="font-size: medium ; font-weight: bold;" title="Expandir todas las filas" />
+                                        <i class="fa fa-toggle-down"  id="btnExpand"   style="font-size: medium ; font-weight: bold;" title="Contraer todas las filas" />
+                                        <script>
+                                            jQuery('#btnCollapse').hide();
+                                            $("#btnCollapse").click(function (ev) {
+                                                jQuery('.ui-row-toggler').click();
+                                                jQuery('#btnExpand').show();
+                                                jQuery('#btnCollapse').hide();
+                                            })
+                                            $("#btnExpand").click(function (ev) {
+                                                jQuery('.ui-row-toggler').click();
+                                                jQuery('#btnExpand').hide();
+                                                jQuery('#btnCollapse').show();
+                                            })
+                                        </script>
+                                    </f:facet>
+                                    <p:rowToggler  tabindex="6"  />
+                                </p:column>
+                                <p:column headerText="Clave" style="width:8%"
+                                          sortBy="#{insumo.claveInstitucional}" >
+                                    <h:outputText value="#{insumo.claveInstitucional}"
+                                                  style="#{insumo.cantidadSurtida gt 0 ? 'font-weight:bold;color:#0000FF;' : 'font-weight:normal;color:#000000;'}"/>
+                                </p:column>
+                                <p:column headerText="Medicamento" style="width:30%"
+                                          sortBy="#{insumo.nombreCorto}" >
+                                    <h:outputLabel value="#{insumo.nombreCorto}" />
+                                </p:column>
+                                <p:column headerText="Presentación" style="width: 6%;">
+                                    <h:outputText value="#{insumo.nombrePresentacion}" />
+                                </p:column>
+                                <p:column headerText="Piezas x caja" style="width: 4%;">
+                                    <p:outputLabel value="#{insumo.factorTransformacion}" />
+                                </p:column>
+                                <p:column headerText="Cant. Solicitada" style="width: 6%;">
+                                    <p:outputLabel value="#{insumo.cantidadSolicitada}" />
+                                </p:column>
+                                <ui:remove >
+                                    <p:column headerText="Cant. Comprometida" style="width: 6%;">
+                                        <p:outputLabel value="#{insumo.cantidadComprometida}" />
+                                    </p:column>
+                                </ui:remove>    
+                                <p:column headerText="Cant. Recibida" style="width: 6%;">
+                                    <div class="ui-fluid">
+                                        <p:spinner value="#{insumo.cantidadSurtida}"
+                                                   min="0" 
+                                                   max="#{insumo.cantidadSolicitada}" 
+                                                   readonly="true"
+                                                   disabled="true" 
+                                                   />
+                                    </div>
+                                </p:column>
+
+                                <p:column headerText="Notas" style="width: 10%;">
+                                    <p:inputText    value="#{insumo.observaciones}" style="width: 90%" />
+                                </p:column>
+                                <p:column headerText="Activo" style="width: 4%;" rendered="false" >
+                                    <p:outputLabel value="#{insumo.activo eq 0 ? 'No' : 'Si'}" 
+                                                   style="#{insumo.activo eq 0 ? 'font-weight:bold;color:#DB2828;' : 'font-weight:normal;color:#00CB00;'}"/>
+                                </p:column>
+                                
+                                <p:column headerText="Capturado" style="width: 4%;">
+                                    <p:outputLabel value="#{insumo.cantidadSurtida gt 0 ? 'SI' : ''}" 
+                                                   style="#{insumo.cantidadSolicitada eq insumo.cantidadSurtida ? 'font-weight:bold;color:#0000FF;' : 'font-weight:normal;color:#000000'}"/>
+                                </p:column>
+
+                                <p:rowExpansion >
+
+                                    <p:dataTable var="insumoDetalle" value="#{insumo.listaDetalleReabIns}"
+                                                 rowIndexVar="index2" 
+                                                 scrollable="true" scrollHeight="100" 
+                                                 emptyMessage="No se encontraron Registros" >
+
+                                        <p:column headerText="Proveedor" style="width: 10%;">
+                                            <h:selectOneMenu value="#{insumoDetalle.idProveedor}" style="width:100%">
+                                                <f:selectItems value="#{recepcionManualMB.listaProveedor}" var="provee"
+                                                               itemLabel="#{provee.nombreProveedor}" itemValue="#{provee.idProveedor}"/>
+                                                <p:ajax  event="change" process="@this" />
+                                            </h:selectOneMenu>
+                                            <!--<f:selectItem itemValue="#{null}" itemLabel="Ninguno" />-->
+                                        </p:column>
+
+                                        <p:column headerText="Fabricante #{index2}" style="width: 10%;">
+                                            <h:selectOneMenu value="#{insumoDetalle.idFabricante}" style="width:100%">
+                                                <!-- <f:selectItem itemValue="# { null}" itemLabel="Seleccione una opción" />-->
+                                                <f:selectItems value="#{recepcionManualMB.listaFabricante}" var="fabric"
+                                                               itemLabel="#{fabric.nombreFabricante}" itemValue="#{fabric.idFabricante}"/>
+                                                <f:selectItem itemValue="#{null}" itemLabel="Ninguno" />
+                                                <p:ajax  event="change" process="@this" />
+                                            </h:selectOneMenu>
+                                        </p:column>
+
+                                        <p:column headerText="Clave Proveedor #{insumoDetalle.idProveedor}" style="width: 10%;">
+                                            <p:inputText value="#{insumoDetalle.claveProveedor}" size="4" >
+                                                <p:ajax  event="change" process="@this" />
+                                            </p:inputText>
+                                        </p:column>
+
+                                        <p:column headerText="Estabilidad (hrs)" style="width: 8%;">
+                                            <p:inputText value="#{insumoDetalle.noHorasEstabilidad}" size="4" >
+                                                <p:ajax  event="change" process="@this" />
+                                            </p:inputText>
+                                        </p:column>
+
+                                        <p:column headerText="Osmolaridad (mOsm/L)" style="width: 8%;">
+                                            <p:inputText value="#{insumoDetalle.osmolaridad}" size="4" >
+                                                <p:ajax  event="change" process="@this" />
+                                            </p:inputText>
+                                        </p:column>
+
+                                        <p:column headerText="Densidad" style="width: 8%;">
+                                            <p:inputText value="#{insumoDetalle.densidad}" size="4" >
+                                                <p:ajax  event="change" process="@this" />
+                                            </p:inputText>
+                                        </p:column>
+
+                                        <p:column headerText="Calorias" style="width: 8%;">
+                                            <p:inputText value="#{insumoDetalle.calorias}" size="4" >
+                                                <p:ajax  event="change" process="@this" />
+                                            </p:inputText>
+                                        </p:column>
+
+                                        <p:column headerText="Lote" style="width: 8%;">
+                                            <p:inputText value="#{insumoDetalle.lote}" size="6" maxlength="10"
+                                                         onkeyup="this.value = this.value.toUpperCase();" >
+                                                <p:ajax  event="change" process="@this" />
+                                            </p:inputText>
+                                        </p:column>
+
+                                        <p:column headerText="Fecha Caducidad" style="width: 8%;">
+                                            <p:calendar value="#{insumoDetalle.fechaCaducidad}"
+                                                        mindate="#{recepcionManualMB.fechaActual}"
+                                                        mask="true"  pattern="dd/MM/yyyy" yearRange="c-100:c" locale="es" 
+                                                        selectOtherMonths="true" showButtonPanel="true" showOtherMonths="true" size="6" 
+                                                        required="true"
+                                                        requiredMessage="Fecha de caducidad requerida" 
+                                                        validatorMessage="Fecha de caducidad incorrecta"
+                                                        converterMessage="Formato de fecha de caducidad incorrecta" >
+                                                <!--<f:validateRegex pattern="^([0-2][0-9]|3[0-1])(\/|-)(0[1-9]|1[0-2])\2(\d{4})$"/>-->
+                                                <p:ajax  event="change" process="@this" />
+                                            </p:calendar>
+                                        </p:column>
+
+                                        <p:column headerText="Cantidad" style="width: 8%;">
+                                            <p:inputText value="#{insumoDetalle.cantidadEnviado}" size="4" >
+                                                <p:ajax  event="change" process="@this" />
+                                            </p:inputText>
+                                        </p:column>
+
+                                        <!--                                        <p:column style="text-align: left; width: 2%">
+                                                                                    <p:commandLink title="Eliminar" onclick="PF('statusProcess').show()"
+                                                                                                   oncomplete="PF('statusProcess').hide();"
+                                                                                                   actionListener="# {recepcionManualMB.eliminaInsumoDeLista(insumo, insumoDetalle)}"
+                                                                                                   update="tablaDetalleSurt  ">
+                                                                                        <i class="fa fa-trash iconMusRojo" />
+                                                                                    </p:commandLink>
+                                                                                </p:column>-->
+
+                                    </p:dataTable>
+                                </p:rowExpansion>
+                                <f:facet name="footer">
+                                    <p:outputLabel> </p:outputLabel>
+                                </f:facet>
+                            </p:dataTable>
+                            <br/>
+                            <p:commandButton value="Recibir" 
+                                             actionListener="#{recepcionManualMB.surtirReabastoInsumo}"
+                                             update="formOrdenesReabasto,msgModal,formImpresion"
+                                             oncomplete="if (args.errorSurtir) {PF('modalSurtimineto').hide();PF('modalImpresion').show();}"
+                                             icon="fa fa-check-circle"  tabindex="10"
+                                             styleClass="btnMusAzul"
+                                             style="margin-right: 10px;float: right;"
+                                             disabled="#{!recepcionManualMB.permiso.puedeProcesar}"
+                                             ajax="false" validateClient="true"
+                                             rendered="#{!recepcionManualMB.surtirProveedor}"> 
+                                <p:confirm header="Confirmación" message="Desea Recibir la Orden ?" icon="ui-icon-alert" />
+                            </p:commandButton>
+
+                            <p:commandButton value="Recibir" 
+                                             actionListener="#{recepcionManualMB.validarRecepcion}"
+                                             update="formOrdenesReabasto , frmCofirmaConfirmRegistro , frmCofirmaConfirmRegistro "
+                                             oncomplete=" PF('dlgCofirmaConfirmRegistro').show(); "
+                                             icon="fa fa-check-circle"  tabindex="9"
+                                             styleClass="btnMusAzul"
+                                             style="margin-right: 10px;float: right;"
+                                             disabled="#{!recepcionManualMB.permiso.puedeProcesar}"
+                                             rendered="#{recepcionManualMB.surtirProveedor}"> 
+                            </p:commandButton>
+
+                            <p:commandButton value="Imprimir"
+                                             update=":formOrdenesReabasto, :formPDF"
+                                             onclick="PF('statusProcess').show()"
+                                             oncomplete="PF('statusProcess').hide(); PF('mdlReport').show(); "
+                                             actionListener="#{recepcionManualMB.imprimir}"
+                                             icon="fa fa-print"  tabindex="7"
+                                             style="margin-right: 10px;float: right;"
+                                             disabled="#{!recepcionManualMB.permiso.puedeEditar}" />
+                            <p:commandButton value="Cancelar" 
+                                             icon="fa fa-times-circle"  tabindex="11"
+                                             style="margin-right: 10px;float: right;"
+                                             oncomplete="PF('modalSurtimineto').hide();" />
+                            <ui:remove>
+                                <p:commandButton value="Guardar"  tabindex="8"
+                                                 accesskey="" icon="fa fa-floppy-o" 
+                                                 style="margin-right: 10px;float: right;"
+                                                 actionListener="#{recepcionManualMB.guardarRegistros}"
+                                                 update="msgModal" />
+                            </ui:remove>
+                        </h:form>
+                    </p:dialog>
+
+
+                    <p:dialog header="CONFIRMACIÓN"
+                              widgetVar="dlgCofirmaConfirmRegistro"
+                              closeOnEscape="true"
+                              closable="true"
+                              modal="true" 
+                              resizable="false"
+                              responsive="true"
+                              width="50%" 
+                              style="font-size:xx-small !important; " >
+                        <h:form id="frmCofirmaConfirmRegistro" >
+                            <p:messages id="msgCofirmaConfirmRegistro" globalOnly="false" showDetail="false" closable="true" />
+                            <br/>
+                            <p:dataTable id="tblValidaciones"
+                                     var="valida"
+                                     value="#{recepcionManualMB.listaValidacion}"
+                                     style="text-align: center;"
+                                     scrollable="true" 
+                                     scrollHeight="150"
+                                     rendered="#{recepcionManualMB.listaValidacion.size() gt 0}">
+                                <p:column headerText="Clave" style="width: 100px; text-align: left; " >
+                                    <h:outputText value="#{valida.codigo}" />
+                                </p:column>
+                                <p:column headerText="Descripción" style="width: 200px; text-align: left; ">
+                                    <h:outputText value="#{valida.descripcion}" />
+                                </p:column>
+                                <p:column headerText="Requerida" style="width: 50px; text-align: left; ">
+                                    <h:outputText value="#{valida.mandatoria}" />
+                                </p:column>
+                            </p:dataTable>
+                            <br/>
+                            <br/>
+                            <p:outputLabel value="Desea registrar la recepción manual de insumos ?"
+                                           style="font-weight: bold;"/>
+                            <br/>
+                            <br/>
+                            <p:commandButton id="btnConfirmRegistra" value="Si" styleClass="btnMusAzul" 
+                                             style="margin-right: 1px; float: right;"
+                                             onclick="PF('statusProcess').show();"
+                                             actionListener="#{recepcionManualMB.surtirReabastoProveedor}" 
+                                             oncomplete="PF('statusProcess').hide(); if (args.errorSurtir) { PF('dlgCofirmaConfirmRegistro').hide(); PF('modalSurtimineto').hide(); PF('modalImpresion').show(); } "
+                                             update=":formOrdenesReabasto , :formDetalleSurtimiento :frmCofirmaConfirmRegistro " >
+                                <p:confirm header="Confirmación" message="Desea Recibir la Orden ?" icon="ui-icon-alert" />
+                            </p:commandButton>
+
+                            <p:commandButton title="No" value="No" styleClass="btnMusBoolGris" 
+                                             style="margin-right: 1px; float: right;"
+                                             update=":frmCofirmaConfirmRegistro"
+                                             oncomplete="PF('dlgCofirmaConfirmRegistro').hide();" />
+                        </h:form>
+                    </p:dialog>
+
+                    <p:dialog header="Impresión de Orden"
+                              widgetVar="modalImpresion"
+                              closeOnEscape="false" modal="true"
+                              style="font-size:xx-small !important;" width="40%">
+                        <h:form id="formImpresion">
+                            <p:outputLabel value="¿Desea imprimir la orden de surtimiento?"/>
+                            <p:commandButton value="Si"
+                                             update=":formOrdenesReabasto, :formPDF"
+                                             onclick="PF('statusProcess').show()"
+                                             oncomplete="PF('statusProcess').hide(); PF('modalImpresion').hide(); PF('mdlReport').show(); "
+                                             actionListener="#{recepcionManualMB.imprimir}"
+                                             icon="fa fa-print"
+                                             style="margin-right: 10px;float: right;"
+                                             disabled="#{!recepcionManualMB.permiso.puedeEditar}"
+                                             />
+                            <p:commandButton value="No" 
+                                             icon="fa fa-times-circle" 
+                                             style="margin-right: 10px;float: right;"
+                                             oncomplete="PF('modalImpresion').hide();"
+                                             />   				 
+
+                        </h:form>                
+                    </p:dialog>
+
+                    <p:dialog widgetVar="mdlReport" width="820px" height="600px"
+                              closeOnEscape="false" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">
+                            <p:media value="/Reportes" player="pdf" width="800px" height="600px" cache="false" />
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>
+
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

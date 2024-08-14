@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.seidor.ulises.mapper.ExpLineasExpedicionesMapper" >
+    <select id="obtener" resultType="com.seidor.ulises.model.ExpLineasExpediciones" parameterType="com.seidor.ulises.model.ExpLineasExpediciones" >
+        SELECT id,
+            expedicion,
+            linea,
+            articulo,
+            lote,
+            formato,
+            cantidadOriginal,
+            cantidadConfirmada,
+            datoExtra1,
+            datoExtra2,
+            datoExtra3,
+            tratado,
+            error,
+            fechaTratado,
+            version,
+            idExped,
+            planta,
+            seccion,
+            habitacion,
+            cama,
+            paciente,
+            histPaciente,
+            medico,
+            precio,
+            tipoStock,
+            clasificaciones,
+            valorClasificaciones,
+            eanValidado,
+            tipoKit
+        FROM expLineasExpediciones
+        WHERE 1=1
+        <if test=" expedicion != null ">
+            AND expedicion = #{ expedicion , jdbcType = VARCHAR }
+        </if>
+        <if test=" linea != null ">
+            AND linea = #{ linea , jdbcType = VARCHAR }
+        </if>
+        <if test=" articulo != null ">
+            AND articulo = #{ articulo , jdbcType = VARCHAR }
+        </if>
+        <if test=" lote != null ">
+            AND lote = #{ lote , jdbcType = VARCHAR }
+        </if>
+        <if test=" formato != null ">
+            AND formato = #{ formato , jdbcType = VARCHAR }
+        </if>
+        <if test=" cantidadOriginal != null ">
+            AND cantidadOriginal = #{ cantidadOriginal , jdbcType = DOUBLE }
+        </if>
+        <if test=" cantidadConfirmada != null ">
+            AND cantidadConfirmada = #{ cantidadConfirmada , jdbcType = DOUBLE }
+        </if>
+        <if test=" datoExtra1 != null ">
+            AND datoExtra1 = #{ datoExtra1 , jdbcType = VARCHAR }
+        </if>
+        <if test=" datoExtra2 != null ">
+            AND datoExtra2 = #{ datoExtra2 , jdbcType = VARCHAR }
+        </if>
+        <if test=" datoExtra3 != null ">
+            AND datoExtra3 = #{ datoExtra3 , jdbcType = VARCHAR }
+        </if>
+        <if test=" tratado != null ">
+            AND tratado = #{ tratado , jdbcType = VARCHAR }
+        </if>
+        <if test=" error != null ">
+            AND error = #{ error , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaTratado != null ">
+            AND fechaTratado = #{ fechaTratado , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" version != null ">
+            AND version = #{ version , jdbcType = INTEGER }
+        </if>
+        <if test=" idExped != null ">
+            AND idExped = #{ idExped , jdbcType = INTEGER }
+        </if>
+        <if test=" planta != null ">
+            AND planta = #{ planta , jdbcType = VARCHAR }
+        </if>
+        <if test=" seccion != null ">
+            AND seccion = #{ seccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" habitacion != null ">
+            AND habitacion = #{ habitacion , jdbcType = VARCHAR }
+        </if>
+        <if test=" cama != null ">
+            AND cama = #{ cama , jdbcType = VARCHAR }
+        </if>
+        <if test=" paciente != null ">
+            AND paciente = #{ paciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" histPaciente != null ">
+            AND histPaciente = #{ histPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" medico != null ">
+            AND medico = #{ medico , jdbcType = VARCHAR }
+        </if>
+        <if test=" precio != null ">
+            AND precio = #{ precio , jdbcType = DOUBLE }
+        </if>
+        <if test=" tipoStock != null ">
+            AND tipoStock = #{ tipoStock , jdbcType = VARCHAR }
+        </if>
+        <if test=" clasificaciones != null ">
+            AND clasificaciones = #{ clasificaciones , jdbcType = VARCHAR }
+        </if>
+        <if test=" valorClasificaciones != null ">
+            AND valorClasificaciones = #{ valorClasificaciones , jdbcType = VARCHAR }
+        </if>
+        <if test=" eanValidado != null ">
+            AND eanValidado = #{ eanValidado , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipoKit != null ">
+            AND tipoKit = #{ tipoKit , jdbcType = VARCHAR }
+        </if>
+        LIMIT 0, 1
+    </select>
+
+    <select id="obtenerLista" resultType="com.seidor.ulises.model.ExpLineasExpediciones" parameterType="com.seidor.ulises.model.ExpLineasExpediciones" >
+        SELECT l.id,
+            l.expedicion,
+            l.linea,
+            l.articulo,
+            p.lote,
+            l.formato,
+            l.cantidadOriginal,
+            l.cantidadConfirmada,
+            l.datoExtra1,
+            l.datoExtra2,
+            l.datoExtra3,
+            l.tratado,
+            l.error,
+            l.fechaTratado,
+            l.version,
+            l.idExped,
+            l.planta,
+            l.seccion,
+            l.habitacion,
+            l.cama,
+            l.paciente,
+            l.histPaciente,
+            l.medico,
+            l.precio,
+            l.tipoStock,
+            l.clasificaciones,
+            l.valorClasificaciones,
+            l.eanValidado,
+            l.tipoKit
+        FROM expLineasExpediciones l INNER JOIN expPacking p ON l.idExped = p.idExped AND l.articulo = p.articulo AND l.linea = p.linea
+        WHERE 1=1
+        <if test=" expedicion != null ">
+            AND l.expedicion = #{ expedicion , jdbcType = VARCHAR }
+        </if>
+        <if test=" linea != null ">
+            AND l.linea = #{ linea , jdbcType = VARCHAR }
+        </if>
+        <if test=" articulo != null ">
+            AND l.articulo = #{ articulo , jdbcType = VARCHAR }
+        </if>
+        <if test=" lote != null ">
+            AND l.lote = #{ lote , jdbcType = VARCHAR }
+        </if>
+        <if test=" formato != null ">
+            AND l.formato = #{ formato , jdbcType = VARCHAR }
+        </if>
+        <if test=" cantidadOriginal != null ">
+            AND l.cantidadOriginal = #{ cantidadOriginal , jdbcType = DOUBLE }
+        </if>
+        <if test=" cantidadConfirmada != null ">
+            AND l.cantidadConfirmada = #{ cantidadConfirmada , jdbcType = DOUBLE }
+        </if>
+        <if test=" datoExtra1 != null ">
+            AND l.datoExtra1 = #{ datoExtra1 , jdbcType = VARCHAR }
+        </if>
+        <if test=" datoExtra2 != null ">
+            AND l.datoExtra2 = #{ datoExtra2 , jdbcType = VARCHAR }
+        </if>
+        <if test=" datoExtra3 != null ">
+            AND l.datoExtra3 = #{ datoExtra3 , jdbcType = VARCHAR }
+        </if>
+        <if test=" tratado != null ">
+            AND l.tratado = #{ tratado , jdbcType = VARCHAR }
+        </if>
+        <if test=" error != null ">
+            AND l.error = #{ error , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaTratado != null ">
+            AND l.fechaTratado = #{ fechaTratado , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" version != null ">
+            AND l.version = #{ version , jdbcType = INTEGER }
+        </if>
+        <if test=" idExped > 0 ">
+            AND l.idExped = #{ idExped , jdbcType = INTEGER }
+        </if>
+        <if test=" planta != null ">
+            AND l.planta = #{ planta , jdbcType = VARCHAR }
+        </if>
+        <if test=" seccion != null ">
+            AND l.seccion = #{ seccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" habitacion != null ">
+            AND l.habitacion = #{ habitacion , jdbcType = VARCHAR }
+        </if>
+        <if test=" cama != null ">
+            AND l.cama = #{ cama , jdbcType = VARCHAR }
+        </if>
+        <if test=" paciente != null ">
+            AND l.paciente = #{ paciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" histPaciente != null ">
+            AND l.histPaciente = #{ histPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" medico != null ">
+            AND l.medico = #{ medico , jdbcType = VARCHAR }
+        </if>
+        <if test=" precio != null ">
+            AND l.precio = #{ precio , jdbcType = DOUBLE }
+        </if>
+        <if test=" tipoStock != null ">
+            AND l.tipoStock = #{ tipoStock , jdbcType = VARCHAR }
+        </if>
+        <if test=" clasificaciones != null ">
+            AND l.clasificaciones = #{ clasificaciones , jdbcType = VARCHAR }
+        </if>
+        <if test=" valorClasificaciones != null ">
+            AND l.valorClasificaciones = #{ valorClasificaciones , jdbcType = VARCHAR }
+        </if>
+        <if test=" eanValidado != null ">
+            AND l.eanValidado = #{ eanValidado , jdbcType = VARCHAR }
+        </if>
+    </select>
+        
+    <update id="actualizar" parameterType="com.seidor.ulises.model.ExpLineasExpediciones" >
+        UPDATE expLineasExpediciones SET
+            tratado = #{ expLineasExpediciones.tratado , jdbcType = VARCHAR }
+            , fechaTratado = #{ expLineasExpediciones.fechaTratado , jdbcType = TIMESTAMP }
+        WHERE id = #{ expLineasExpediciones.id , jdbcType = INTEGER }
+    </update>
+
+    <update id="actualizarLista" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="listExpLineasExpediciones" item="item"  index="index"  separator=";">
+            UPDATE expLineasExpediciones 
+            <set>
+                tratado = #{ item.tratado , jdbcType = VARCHAR }
+                , fechaTratado = #{ item.fechaTratado , jdbcType = TIMESTAMP }
+            </set>
+            WHERE id = #{ item.id , jdbcType = INTEGER }
+        </foreach>
+    </update>
+    
+    <select id="obtenerExpLineasExpedicion" resultType="com.seidor.ulises.model.ExpLineasExpediciones" parameterType="com.seidor.ulises.model.ExpLineasExpediciones" >
+            SELECT id,
+            expedicion,
+            linea,
+            articulo,
+            formato,
+            cantidadOriginal,
+            cantidadConfirmada,
+            datoExtra1,
+            datoExtra2,
+            datoExtra3,
+            tratado,
+            error,
+            fechaTratado,
+            version,
+            idExped,
+            planta,
+            seccion,
+            habitacion,
+            cama,
+            paciente,
+            histPaciente,
+            medico,
+            precio,
+            tipoStock,
+            clasificaciones,
+            valorClasificaciones,
+            eanValidado,
+            tipoKit
+        FROM expLineasExpediciones 
+        WHERE 1=1
+        <if test=" expedicion != null ">
+            AND expedicion = #{ expedicion , jdbcType = VARCHAR }
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+    <h:head>
+        <title>REPORTE MOVIMIENTOS GENERALES</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="movGralesId" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="Reporte de Movimientos Generales" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Inicio" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" value="#{repMovimientosGralesMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repMovimientosGralesMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Fin" />
+                                            <br/>
+                                            <!-- Modificar con la priopiedad onblur 
+                                            el cual siempre que se seleccione una fecha lo inicie con el fin de dia
+                                            -->
+                                            <p:calendar id="txtFechaFin" value="#{repMovimientosGralesMB.paramBusquedaReporte.fechaFin}"                                                                                                                 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxHour="23" maxMinute="59"                                                        
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade">                                                
+                                                <p:ajax event="dateSelect" listener="#{repMovimientosGralesMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                                
+                                            </p:calendar>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder; margin-top: 0px;" value="Tipo  de Movimiento" />
+                                            <br/>
+                                            <p:selectCheckboxMenu id="comboTipoMovimiento" label="Tipos de Movimiento"
+                                                                  value="#{repMovimientosGralesMB.tipoMovimientoSelects}"
+                                                                  disabled="#{!repMovimientosGralesMB.permiso.puedeVer}"
+                                                                  filter="true" filterMatchMode="contains" panelStyle="width:250px"> 
+                                                <f:selectItems value="#{repMovimientosGralesMB.listTipoMovimiento}"
+                                                               var="tipoMovimiento"
+                                                               itemValue="#{tipoMovimiento.idTipoMovimiento}"
+                                                               itemLabel="#{tipoMovimiento.descripcion}"/>
+                                            </p:selectCheckboxMenu>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="margin-top: 0px">                                            
+                                            <p:commandButton value="Generar Reporte"
+                                                             rendered="#{repMovimientosGralesMB.permiso.puedeVer}"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{repMovimientosGralesMB.consultar}"
+                                                             update=":formTablaMovimientos, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"  
+                                                             
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Insumos" />
+                                            <br/>
+                                            <p:autoComplete id="txtInsumo" 
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{repMovimientosGralesMB.paramBusquedaReporte.listInsumos}"
+                                                            completeMethod="#{repMovimientosGralesMB.autocompleteInsumo}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="insum" 
+                                                            placeholder="Filtro Insumos" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{insum.nombreCorto}" itemValue="#{insum}" 
+                                                            converter="musGenericConverter"
+                                                            scrollHeight = "350" >
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                            
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Usuario" />
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;"
+                                                           value="#{repMovimientosGralesMB.usuarioSession.nombre} #{repMovimientosGralesMB.usuarioSession.apellidoPaterno} #{repMovimientosGralesMB.usuarioSession.apellidoMaterno}" 
+                                                           rendered="#{!repMovimientosGralesMB.administrador}"/>
+                                            <br/>
+                                            <p:autoComplete id="txtUsuario" 
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{repMovimientosGralesMB.paramBusquedaReporte.listUsuarios}"
+                                                            completeMethod="#{repMovimientosGralesMB.autocompleteUsuario}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="usr" 
+                                                            placeholder="Filtro Usuarios" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{usr.nombreUsuario}" itemValue="#{usr}" 
+                                                            converter="musGenericConverter"
+                                                            rendered="#{repMovimientosGralesMB.administrador}"
+                                                            scrollHeight = "350" >
+                                                <p:column style="width: 80px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.nombreUsuario}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 80px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.nombre}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width:80px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Apellido Paterno" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.apellidoPaterno}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 80px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Apellido Materno" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.apellidoMaterno}" style=" font-size: small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;" value="Almacén / Sub-Almacén" />
+                                            <br/>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{repMovimientosGralesMB.estructuraUsuario.nombre}" 
+                                                           rendered="#{!repMovimientosGralesMB.administrador and !repMovimientosGralesMB.jefeArea}"/>
+                                            <p:selectOneMenu id="comboAlmacenSubAlmacen" 
+                                                             value="#{repMovimientosGralesMB.idEstructura}"
+                                                             style="vertical-align: middle; margin-right: 10px; width: 200px"
+                                                             rendered="#{repMovimientosGralesMB.administrador or repMovimientosGralesMB.jefeArea}"
+                                                             filter="true" filterMatchMode="contains" panelStyle="width:250px"> 
+                                                <c:if test="#{repMovimientosGralesMB.administrador}">
+                                                    <f:selectItem itemLabel="Todos" itemValue="" />
+                                                </c:if>             
+                                                
+                                                <f:selectItems value="#{repMovimientosGralesMB.listAlmacenesSubAlm}"
+                                                               var="almacen"
+                                                               itemValue="#{almacen.idEstructura}"
+                                                               itemLabel="#{almacen.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+
+                                            <p:menuButton value="Exportar Archivo" style="margin-top: 15px; width: 200px; margin-left: 8px"
+                                                          rendered="#{repMovimientosGralesMB.permiso.puedeVer}">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{repMovimientosGralesMB.imprimeReporteMovGenerales}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"
+                                                            />
+
+                                                <p:menuitem value="Formato EXCEL"
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false"
+                                                            actionListener="#{repMovimientosGralesMB.generaExcelGeneral}"
+                                                            />
+                                            </p:menuButton>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form>
+                    <h:form id="formTablaMovimientos" >
+<style type="text/css">
+    .ui-datatable-header {
+        height: 20px
+    }
+</style>
+                        <p:outputLabel value="No tiene Permiso para esta Transacción"
+                                       rendered="#{!repMovimientosGralesMB.permiso.puedeVer}" style="color: red; font-weight: bolder;"  />
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     value="#{repMovimientosGralesMB.reporteMovimientosLazy}" 
+                                     var="result" id="resultadosDT" 
+                                     lazy="true"  scrollable="true"
+                                     scrollWidth="100%" scrollHeight="350"
+                                     style="font-size: x-small !important; width: 100% !important;" >
+                            <f:facet name="header" >
+                                <p:commandButton id="toggler" type="button" value="Columnas" style="float:right" icon="fa fa-columns" />
+                                <p:columnToggler datasource="resultadosDT" trigger="toggler" />
+                            </f:facet>
+
+                            <p:column class="" headerText="CLAVE" style="width: 5%; " >
+                                <h:outputText value="#{result.claveMedicamento}"/>
+                            </p:column>
+                            <p:column class="" headerText="NOMBRE INSUMO"  style="width: 10%;">
+                                <h:outputText value="#{result.nombreMedicamento}"/>
+                            </p:column>
+                            <p:column class="" headerText="TIPO MOVIMIENTO" style="width: 8%;">
+                                <h:outputText value="#{result.tipoMovimiento}"/>
+                            </p:column>
+                            <p:column class="" headerText="LOTE" style="width: 5%;">
+                                <h:outputText value="#{result.lote}"/>
+                            </p:column>
+                            <p:column class="" headerText="CADUCIDAD" style="width: 5%;">
+                                <h:outputText value="#{result.fechaCaducidad}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            <!-- 
+                            <p:column class="" headerText="DOSIS" style="width: 3%;">
+                                <h:outputText value="#{result.cantidad}"/>
+                            </p:column>
+                            -->
+                            <p:column class="" headerText="CANTNTIDAD" style="width: 3%;">
+                                <h:outputText value="#{result.cantidad}"/>
+                            </p:column>
+                            <p:column class="" headerText="CANT CAJA" style="width: 5%;" rendered="false" >
+                                <h:outputText value="#{result.cantidad / result.cantidadXCaja}">
+                                    <f:convertNumber pattern="#0.0" locale="MX_es" />
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column class="" headerText="FOLIO" rendered="false" style="width: 5%;">
+                                <h:outputText value="#{result.folioReceta}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="ALMACÉN" style="width: 5%;">
+                                <h:outputText value="#{result.nombreAlmacen}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="FOLIO" style="width: 5%;">
+                                <h:outputText value="#{result.folio}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="USUARIO" style="width: 5%;">
+                                <h:outputText value="#{result.nombreUsuario}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="FECHA" style="width: 5%;">
+                                <h:outputText value="#{result.fechaMovimiento}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </p:column>        
+                            <!-- 
+                             <p:column class="" headerText="MÉDICO" rendered="#{repMovimientosGralesMB.activaCamposReporteMovimientosGenerales}" style="width: 5%;">
+                                <h:outputText value="#{result.medico}"/>
+                            </p:column>
+                            <p:column class="" headerText="PACIENTE" rendered="#{repMovimientosGralesMB.activaCamposReporteMovimientosGenerales}" style="width: 5%;">
+                                <h:outputText value="#{result.paciente}"/>
+                            </p:column>
+                            -->
+                     <p:column class="" headerText="USUARIO" rendered="#{repMovimientosGralesMB.mostrarOrigenInsumos}" style="width: 5%;">
+                                <h:outputText value="#{result.idTipoOrigen eq 1 ? 'Administración' : 'Compra Directa'}"/>  
+                            </p:column>
+                            <p:column class="" headerText="JUSTIF." rendered="#{repMovimientosGralesMB.activaCamposReporteMovimientosGenerales}" style="width: 8%;">
+                                <h:outputText value="#{result.justificacion}"/>  
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:form>	
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

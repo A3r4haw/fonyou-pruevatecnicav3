@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Reporte Envio Neumatico </title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="RepEnvioNeumatico" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="Reporte Envio Neumatico por Capsula" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Inicial" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" value="#{envioNeumaticoMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" mask="true" showButtonPanel="true" effect="fade" maxdate="#{envioNeumaticoMB.fechaActual}"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Final" />
+                                            <br/>
+                                            <p:calendar id="txtFechaFin" value="#{envioNeumaticoMB.paramBusquedaReporte.fechaFin}"
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" mask="true" showButtonPanel="true" effect="fade" >
+                                                <p:ajax event="dateSelect" listener="#{envioNeumaticoMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                            </p:calendar>
+                                            
+                                        </div>
+
+                                        <div class="ui-g-6 ui-md-6 ui-lg-3" style="margin-top: 14px;">                                            
+                                            <p:commandButton value="Generar Reporte"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{envioNeumaticoMB.consultar}"
+                                                             update=":formTablaCapsulas, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle" 
+                                                             style="margin-left: 50px"
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+
+                                            <p:menuButton value="Exportar Archivo" style="margin-top: 15px; width: 200px; margin-left: 8px">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{envioNeumaticoMB.imprimeReporteEnvioNeumatico}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"
+                                                            />
+
+                                            </p:menuButton>
+
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-20 " style="padding: 0em !important;">
+
+                                        <div class="ui-g-9 ui-md-6 ui-lg-5" style="height: 60px; float: left; margin-right: 30px; overflow-x:auto; overflow-y: auto;">
+                                           <p:outputLabel style="margin-right: 0px;font-weight: bolder;" value="Codigo Capsula" />
+                                            <br/>
+                                           <p:autoComplete id="txtCapsula" 
+                                                            multiple="true"
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{envioNeumaticoMB.paramBusquedaReporte.listaCapsulas}"
+                                                            completeMethod="#{envioNeumaticoMB.autocompleteCapsula}"
+                                                            minQueryLength="2"
+                                                            queryDelay="500" 
+                                                            maxResults="10" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="cap" 
+                                                            placeholder="Ingresar Codigo.." 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{cap.idCapsula}" 
+                                                            itemValue="#{cap}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="#{!envioNeumaticoMB.permiso.puedeEditar}" 
+                                                            scrollHeight = "350" >
+                                        </p:autoComplete>
+                                        </div>
+                                        </div>  
+
+                                    </div>
+                                </div>
+                            </p:panelGrid>	                                	
+                    </h:form><br />
+                    <h:form id="formTablaCapsulas" >
+                        <style type="text/css">
+                            .ui-datatable-header {
+                                height: 20px
+                            }
+                        </style>
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     value="#{envioNeumaticoMB.envioNeumaticoLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="font-size: x-small !important; width: 120% !important;"
+                                     >
+                           
+                            <p:column class="" headerText="ID Envío Neumático"  style="width: 2%;">
+                                <h:outputText value="#{result.idenvioNeumatico}"/>
+                            </p:column>
+                            <p:column class="" headerText="ID Cápsula" style="width: 3%;">
+                                <h:outputText value="#{result.idCapsula}" >
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="Folio Surtimiento" style="width: 3%;">
+                                <h:outputText value="#{result.folioSurtimiento}" >
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="Folio Prescirpción" style="width: 3%;">
+                                <h:outputText value="#{result.folioPrescripcion}" >
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="Nombre Cápsula" style="width: 3%;">
+                                <h:outputText value="#{result.nombreCap}" >
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="Usuario" style="width: 2%;">
+                                <h:outputText value="#{result.usuario}"/>
+                            </p:column>
+                            <p:column class="" headerText="Fecha y Hora De Salida" style="width: 4%;">
+                                <h:outputText value="#{result.fechaHoraSalida}">
+                                    <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="Estación De Salida" style="width: 4%;" >
+                                <h:outputText value="#{result.estacionSalida}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="Fecha y Hora De Llegada" style="width: 5%;">
+                                <h:outputText value="#{result.fechaHoraLlegada}">
+                                    <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="Estación De Llegada" style="width: 5%;">
+                                <h:outputText value="#{result.estacionLlegada}"/>
+                            </p:column>
+                        </p:dataTable>
+
+                    </h:form>	
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+
+
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

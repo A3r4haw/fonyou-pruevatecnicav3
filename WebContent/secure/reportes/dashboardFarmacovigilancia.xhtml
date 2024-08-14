@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>DASHBOARD</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content" class="ui-g-12"> 
+                <div >
+                    <p:outputLabel value="Dashboard De Farmacovigilancia" style="width: 100%!important;font-size: large!important;font-weight: bold!important;justify-content: center!important;margin-top: 15px!important;display: flex!important;" />                    
+                </div> 
+                <div class="ui-g panelGris" >
+                    <br/>
+                </div>
+                <div class="container" style="height:500px;   overflow-x:auto; overflow-y: auto;">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <div class="ui-g panelGris" >                            
+                            <h:panelGrid  columns="3" columnClasses="left,right" style="width:100%;">             
+                                <p:panel style="border: black solid 1px !important;border-width: 2px!important;border-color: transparent!important">
+                                    <p:donutChart model="#{dashBoardFarmacovigilanciaMB.donutTopFarmacosMayorReaccion}" style="width:400px;height:400px;" />
+                                </p:panel> 
+                                <p:panel style="border: black solid 1px !important;border-width: 2px!important;border-color: transparent!important">
+                                    <p:barChart model="#{dashBoardFarmacovigilanciaMB.barChartModel}" style="width:500px;height:400px;"/>
+                                </p:panel>
+                                <p:panel style="border: black solid 1px !important;border-width: 2px!important;border-color: transparent!important">
+                                    <p:polarAreaChart model="#{dashBoardFarmacovigilanciaMB.polarAreaModel}" style="width:400px;height:400px;" />
+                                </p:panel>
+                                <br/>
+                            </h:panelGrid>                            
+                            <h:panelGrid  columns="2" columnClasses="left,right" style="width:100%;">  
+                                <p:panel style="border: black solid 1px !important;border-width: 2px!important;border-color: transparent!important">
+                                    <p:barChart model="#{dashBoardFarmacovigilanciaMB.barChartModelPaciente}" style="width:900px;height:400px;"/>
+                                </p:panel>
+                                 <p:panel  style="border: black solid 1px !important;border-width: 2px!important;border-color: transparent!important;">
+                                     <p:donutChart model="#{dashBoardFarmacovigilanciaMB.donutTopUsuariosReaccion}" style="width:400px;height:415px;" />
+                                </p:panel>                                     
+                                <br/>
+                            </h:panelGrid>
+                        </div>
+                        <div style="background: #808080;padding: 10px;">
+                            <p:outputLabel value="Línea De Tiempo De Reacciones" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+                            <p:outputLabel value="Paciente" 
+                                           style="margin-right: 5px;margin-left: 10px;color: #FFFFFF;font-size: 17px!important;font-weight: bold;"/>
+                            <p:inputText id="textSearch" 
+                                         value="#{dashBoardFarmacovigilanciaMB.cadena}"                                         
+                                         style="width: 35%!important;border-radius:10px!important;margin-left: 5px;" 
+                                         placeholder="Buscar por nombre ó número de paciente..."
+                                         />                                   
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>
+                            </i>  
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{dashBoardFarmacovigilanciaMB.createFirstTimeline()}"
+                                             update=":mainForm:timelineFirst" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"                                             
+                                             oncomplete="PF('statusProcess').hide();"
+                                             style=" margin-left: 15px; margin-bottom: 8px;" />
+                            <br/>
+                        </div>                        
+                            <h:panelGrid columns="1" style="border: black solid 1px !important;border-width: 2px!important;border-color: transparent!important;align-content: center!important;"><br/>   
+                                    <p:timeline id="timelineFirst" value="#{dashBoardFarmacovigilanciaMB.modelFirst}" style="width:1412px;height:400px;"  var="task"
+                                            widgetVar="timelineFirstWdgt">
+                                    </p:timeline>                                                          
+                            </h:panelGrid>    
+                    </h:form>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

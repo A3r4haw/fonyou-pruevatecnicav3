@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TransaccionMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Transaccion" parameterType="mx.mc.model.Transaccion" >
+        SELECT idTransaccion , nombre , descripcion , url , codigo ,  activo , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , idModulo 
+        FROM transacciones
+        WHERE 1=1
+        <if test=" idTransaccion != null ">
+            AND idTransaccion = #{ idTransaccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        <if test=" url != null ">
+            AND url = #{ url , jdbcType = INTEGER }
+        </if>
+        <if test=" codigo != null ">
+            AND codigo = #{ codigo , jdbcType = INTEGER }
+        </if>
+        LIMIT 0, 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Transaccion" parameterType="mx.mc.model.Transaccion" >
+        SELECT idTransaccion , nombre , descripcion , url , codigo ,  activo , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , idModulo 
+        FROM transacciones
+        WHERE 1=1
+        <if test=" idTransaccion != null ">
+            AND idTransaccion = #{ idTransaccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        <if test=" url != null ">
+            AND url = #{ url , jdbcType = VARCHAR }
+        </if>
+        <if test=" codigo != null ">
+            AND codigo = #{ codigo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idModulo != null ">
+            AND idModulo = #{ idModulo , jdbcType = VARCHAR }
+        </if>
+        ORDER BY orden asc
+    </select>
+    
+    <select id="obtenerPorIdUsuario" resultType="mx.mc.model.Transaccion" parameterType="Map" >
+        SELECT DISTINCT t.nombre , t.descripcion , t.url , t.codigo , t.activo
+        FROM transacciones t
+        INNER JOIN transaccionAcciones ta ON t.idTransaccion = ta.idTransaccion
+        INNER JOIN usuariosRoles ur ON ta.idRol = ur.idRol
+        INNER JOIN usuarios u ON ur.idUsuario = u.idUsuario
+        WHERE
+            u.idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Transaccion" >
+        INSERT INTO transacciones (
+        <if test=" idTransaccion != null ">
+            idTransaccion
+        </if>
+        <if test=" nombre != null ">
+            , nombre
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion
+        </if>
+        <if test=" activo != null ">
+            , activo
+        </if>
+        <if test=" url != null ">
+            , url
+        </if>
+        <if test=" codigo != null ">
+            , codigo
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario
+        </if>
+        ) VALUES (
+        <if test=" idTransaccion != null ">
+            #{ idTransaccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            , #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" url != null ">
+            , #{ url , jdbcType = VARCHAR }
+        </if>
+        <if test=" codigo != null ">
+            , #{ codigo , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , #{ activo , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.Transaccion" >
+        UPDATE transacciones SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" nombre != null ">
+            , nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        <if test=" url != null ">
+            , url = #{ url , jdbcType = INTEGER }
+        </if>
+        <if test=" codigo != null ">
+            , codigo = #{ codigo , jdbcType = INTEGER }
+        </if>
+        WHERE idTransaccion = #{ idTransaccion , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.Transaccion" >
+        DELETE FROM transacciones 
+        WHERE idTransaccion = #{ idTransaccion , jdbcType = VARCHAR }
+    </delete>
+    
+    
+    <select id="obtenerPermisosPorIdUsuario" resultType="mx.mc.model.TransaccionPermisos" parameterType="Map" >
+        SELECT DISTINCT u.nombreUsuario, r.nombre AS rol, r.activo as rolActivo
+            , m.modulo, m.activo AS moduloActivo
+            , t.idtransaccion , t.nombre, t.descripcion , t.url, t.codigo, t.activo AS transaccionActivo
+            , a.nombre AS accion, t.icon AS iconTransaccion, m.icon AS iconModulo
+        FROM modulos m
+        INNER JOIN transacciones t ON m.idModulo = t.idModulo
+        INNER JOIN transaccionAcciones ta ON t.idTransaccion = ta.idTransaccion
+        INNER JOIN roles r ON ta.idRol = r.idRol
+        INNER JOIN acciones a ON ta.idAccion = a.idAccion
+        INNER JOIN usuariosRoles ur ON r.idRol = ur.idRol
+        INNER JOIN usuarios u ON ur.idUsuario = u.idUsuario
+        WHERE
+            t.activo = 1
+            AND u.idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+            AND IF(r.nombre != 'Total',t.codigo != 'CONFIG',true)
+        ORDER BY m.orden ASC , t.orden ASC
+    </select>
+    
+    <select id="obtenerPermisosDisponibles" resultType="mx.mc.model.TransaccionPermisos" parameterType="Map" >
+           SELECT DISTINCT m.idModulo, m.modulo, m.activo AS moduloActivo , t.idTransaccion , t.nombre, t.descripcion , t.url, t.codigo
+            , t.activo , a.idAccion, a.nombre AS accion, 0 as permitido 
+            FROM modulos m 
+            INNER JOIN transacciones t ON m.idModulo = t.idModulo 
+            CROSS JOIN acciones a 
+            LEFT JOIN transaccionAcciones ta ON t.idTransaccion = ta.idTransaccion 
+            LEFT JOIN roles r ON ta.idRol = r.idRol 
+            LEFT JOIN usuariosRoles ur ON r.idRol = ur.idRol 
+            LEFT JOIN usuarios u ON ur.idUsuario = u.idUsuario 
+            WHERE 1=1
+            AND t.activo = 1
+            AND m.activo = 1
+            <if test="idUsuario">
+                and u.idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+            </if>
+            <if test="idRol">
+                and r.idRol = #{ idRol , jdbcType = VARCHAR }
+            </if>
+        ORDER BY m.orden ASC , m.idModulo ASC , t.idtransaccion ASC , a.nombre ASC
+            
+   </select>
+    
+    
+    <select id="obtenerPermisosAsignadosyDisponibles" resultType="mx.mc.model.TransaccionPermisos" parameterType="Map" >
+        SELECT CASE WHEN s2.idModulo is not null then s2.idModulo else s1.idModulo end as idModulo
+            , CASE WHEN s2.idModulo is not null then s2.modulo else s1.modulo end as modulo
+            , CASE WHEN s2.idModulo is not null then s2.moduloActivo else s1.moduloActivo end as moduloActivo
+            , CASE WHEN s2.idModulo is not null then s2.idTransaccion else s1.idTransaccion end as idTransaccion
+            , CASE WHEN s2.idModulo is not null then s2.nombre else s1.nombre end as nombre
+            , CASE WHEN s2.idModulo is not null then s2.descripcion else s1.descripcion end as descripcion
+            , CASE WHEN s2.idModulo is not null then s2.url else s1.url end as url
+            , CASE WHEN s2.idModulo is not null then s2.codigo else s1.codigo end as codigo
+            , CASE WHEN s2.idModulo is not null then s2.activo else s1.activo end as activo
+            , CASE WHEN s2.idModulo is not null then s2.idAccion else s1.idAccion end as idAccion
+            , CASE WHEN s2.idModulo is not null then s2.accion else s1.accion end as accion
+            , CASE WHEN s2.idModulo is not null then s2.permitido else s1.permitido end as permitido
+            FROM ( SELECT DISTINCT m.idModulo, m.modulo, m.activo AS moduloActivo, m.orden AS ordenModulo
+				, t.idTransaccion , t.nombre, t.descripcion , t.url, t.codigo, t.activo, t.orden as ordenTransaccion
+                                , a.idAccion, a.nombre AS accion
+                                , 0 as permitido
+                FROM modulos m
+                INNER JOIN transacciones t on m.idModulo = t.idModulo
+                CROSS JOIN acciones a
+                WHERE t.activo = 1
+                AND m.activo = 1
+                ORDER BY t.orden ASC, a.nombre ASC
+            ) s1
+            LEFT JOIN ( SELECT DISTINCT m.idModulo, m.modulo, m.activo AS moduloActivo, t.idTransaccion , t.nombre, t.descripcion , t.url, t.codigo, t.activo, a.idAccion, a.nombre AS accion
+                        , 1 as permitido, m.orden AS ordenModulo , t.orden as ordenTransaccion
+                    FROM modulos m
+                    INNER JOIN transacciones t ON m.idModulo = t.idModulo
+                    INNER JOIN transaccionAcciones ta ON t.idTransaccion = ta.idTransaccion
+                    INNER JOIN roles r ON ta.idRol = r.idRol
+                    INNER JOIN acciones a ON ta.idAccion = a.idAccion
+                    
+                    <if test="idUsuario">
+                        INNER JOIN usuariosRoles ur ON r.idRol = ur.idRol
+                        INNER JOIN usuarios u ON ur.idUsuario = u.idUsuario
+                    </if>
+                    
+                    WHERE 1=1 
+                    AND t.activo = 1
+                    AND m.activo = 1
+                    
+                    <if test="idUsuario">
+                        AND u.idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+                    </if>
+                    <if test="idRol">
+                        AND r.idRol = #{ idRol , jdbcType = VARCHAR }
+                    </if>
+            ) s2 
+            ON ( s1.idTransaccion = s2.idTransaccion and s1.idAccion = s2.idAccion)
+
+        ORDER BY s1.ordenModulo ASC , s1.ordenTransaccion ASC , s1.accion ASC 
+   </select>
+    
+    <select id="obtenerTraccionesAll" resultType="mx.mc.model.TransaccionPermisos">
+        SELECT 
+            m.idModulo,
+            m.modulo,
+            m.icon as iconModulo,
+            t.idTransaccion,
+            t.nombre as NombreTransaccion,
+            t.descripcion as descripcionTrans,
+            t.icon as iconTransaccion
+        FROM
+            transacciones t
+                INNER JOIN
+            modulos m ON m.idModulo = t.idModulo
+        WHERE
+            t.activo = 1 AND m.activo = 1
+        ORDER BY m.orden,t.orden ASC; 
+   </select>
+   
+   <select id="obtenerPermisosAsignadosyDisponiblesRol" resultType="mx.mc.model.TransaccionPermisos" parameterType="Map" >
+        SELECT 
+            r.idRol,
+            r.nombre AS rol,
+            m.idModulo,
+            m.modulo,
+            t.idTransaccion,
+            t.nombre AS nombreTransaccion,
+            a.idAccion,
+            a.nombre AS accion,
+            m.orden,
+            t.orden
+        FROM
+            transaccionAcciones ta
+            INNER JOIN    roles r ON r.idRol = ta.idRol
+            INNER JOIN    transacciones t ON t.idTransaccion = ta.idTransaccion
+            INNER JOIN    modulos m ON m.idModulo = t.idModulo
+            INNER JOIN    acciones a ON a.idAccion = ta.idAccion
+        WHERE	
+            r.idRol = #{idRol}
+        ORDER BY m.orden , t.orden ASC
+        ;
+   </select>
+      
+    <select id="permisosUsuarioTransaccion" resultType="mx.mc.model.TransaccionPermisos" parameterType="Map" >
+        SELECT  r.idRol,t.idTransaccion,a.idAccion, t.codigo, t.nombre, a.nombre AS accion
+        FROM    usuarios u
+            INNER JOIN    usuariosRoles ur ON ur.idUsuario = u.idUsuario
+            INNER JOIN    roles r ON r.idRol = ur.idRol
+            INNER JOIN    transaccionAcciones ta ON ta.idRol = r.idRol
+            INNER JOIN    transacciones t ON t.idTransaccion = ta.idTransaccion
+            INNER JOIN    acciones a ON a.idAccion = ta.idAccion
+        WHERE 	
+            u.idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+            AND t.codigo = #{ codeTrans , jdbcType = VARCHAR }
+    </select> 
+    
+    <select id="buscarTotal" resultType="java.lang.String" parameterType="Map" >
+        SELECT r.idRol
+        FROM   usuarios u
+            INNER JOIN    usuariosRoles ur ON ur.idUsuario = u.idUsuario
+            INNER JOIN    roles r ON r.idRol = ur.idRol
+            INNER JOIN    transaccionAcciones ta ON ta.idRol = r.idRol
+        WHERE
+            u.idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+            AND r.nombre = #{ nombreRol , jdbcType = VARCHAR }
+        LIMIT 1;	
+    </select>  
+</mapper> 

@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.SurtimientoMinistradoMapper" >
+ 
+    <insert id="insertarSurtimientoMinistradoList" parameterType="java.util.List" >
+        INSERT INTO surtimientoMinistrado (
+            idMinistrado,
+            idSurtimientoEnviado,
+            orden,
+            fechaProgramado,
+            fechaMinistrado,
+            idUsuario,
+            cantidad,
+            dosis,
+            idTipoReaccion,
+            alergia,
+            comentarios,
+            idEstatusSurtimiento,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario
+            )
+        VALUES
+        <foreach collection="list" item="item" separator="," index="index">  
+            (
+            #{ item.idMinistrado }
+            , #{ item.idSurtimientoEnviado }
+            , #{ item.orden }
+            , #{ item.fechaProgramado }
+            , #{ item.fechaMinistrado }
+            , #{ item.idUsuario }
+            , #{ item.cantidad }
+            , #{ item.dosis }
+            , #{ item.idTipoReaccion }
+            , #{ item.alergia }
+            , #{ item.comentarios }
+            , #{ item.idEstatusSurtimiento }            
+            , #{ item.insertFecha }
+            , #{ item.insertIdUsuario }
+            , #{ item.updateFecha }
+            , #{ item.updateIdUsuario }
+            )
+        </foreach>    
+    </insert>
+    
+    <insert id="insertListSurtimientosMinistrados" parameterType="java.util.List">
+    	<foreach collection="surtMinistradoList" item="item" separator=";">
+            INSERT INTO surtimientoMinistrado(
+                <if test="item.idMinistrado != null">idMinistrado</if>
+                <if test="item.idSurtimientoEnviado != null">, idSurtimientoEnviado</if>
+                <if test="item.orden != null">, orden</if>
+                <if test="item.fechaProgramado != null">, fechaProgramado</if>
+                <if test="item.fechaMinistrado != null">, fechaMinistrado</if>
+                <if test="item.idUsuario != null">, idUsuario</if>
+                <if test="item.cantidad != null">, cantidad</if>
+                <if test="item.dosis != null">, dosis</if>
+                <if test="item.idTipoReaccion != null">, idTipoReaccion</if>
+                <if test="item.alergia != null">, alergia</if>
+                <if test="item.comentarios != null">, comentarios</if>
+                <if test="item.idEstatusSurtimiento != null">, idEstatusSurtimiento</if>
+                <if test="item.idEstatusMinistracion != null">, idEstatusMinistracion</if>                               
+                <if test="item.insertFecha != null">, insertFecha</if>
+                <if test="item.insertIdUsuario != null">, insertIdUsuario</if>                
+                <if test="item.cantidadMinistrada != null">, cantidadMinistrada</if>                
+            )
+            VALUES (
+                <if test="item.idMinistrado != null"> #{ item.idMinistrado ,jdbcType = VARCHAR}</if>
+                <if test="item.idSurtimientoEnviado != null"> ,#{ item.idSurtimientoEnviado ,jdbcType = VARCHAR}</if>
+                <if test="item.orden != null"> ,#{ item.orden ,jdbcType = INTEGER}</if>
+                <if test="item.fechaProgramado != null"> ,#{ item.fechaProgramado ,jdbcType = TIMESTAMP}</if>
+                <if test="item.fechaMinistrado != null"> ,#{ item.fechaMinistrado ,jdbcType = TIMESTAMP}</if>
+                <if test="item.idUsuario != null"> ,#{ item.idUsuario ,jdbcType = VARCHAR}</if>
+                <if test="item.cantidad != null"> ,#{ item.cantidad ,jdbcType = INTEGER}</if>
+                <if test="item.dosis != null"> ,#{ item.dosis ,jdbcType = INTEGER}</if>
+                <if test="item.idTipoReaccion != null"> ,#{ item.idTipoReaccion ,jdbcType = INTEGER}</if>
+                <if test="item.alergia != null"> ,#{ item.alergia ,jdbcType = INTEGER}</if>
+                <if test="item.comentarios != null"> ,#{ item.comentarios ,jdbcType = VARCHAR}</if>
+                <if test="item.idEstatusSurtimiento != null"> ,#{ item.idEstatusSurtimiento ,jdbcType = INTEGER}</if>
+                <if test="item.idEstatusMinistracion != null"> ,#{ item.idEstatusMinistracion ,jdbcType = INTEGER}</if>
+                <if test="item.insertFecha != null"> ,#{ item.insertFecha ,jdbcType = TIMESTAMP}</if>
+                <if test="item.insertIdUsuario != null"> ,#{ item.insertIdUsuario ,jdbcType = VARCHAR}</if>                
+                <if test="item.cantidadMinistrada != null"> ,#{ item.cantidadMinistrada ,jdbcType = INTEGER}</if>
+            )
+        </foreach>
+    </insert>
+    
+    <update id="actualizarSurtimientoMinistrado" parameterType="java.util.List" >
+        <foreach collection="listSurtMinistrado" item="item" separator=" " index="index">
+            UPDATE surtimientoMinistrado SET cantidadMinistrada=#{ item.cantidadMinistrada , jdbcType = INTEGER},
+                fechaMinistrado=#{item.fechaMinistrado , jdbcType = TIMESTAMP },
+                fechaInicio=#{item.fechaInicio , jdbcType = TIMESTAMP },
+                comentarios=#{item.comentarios , jdbcType = TIMESTAMP },
+                idUsuario=#{ item.idUsuario , jdbcType = VARCHAR },
+                idEstatusSurtimiento=#{ item.idEstatusSurtimiento , jdbcType = INTEGER},
+                idEstatusMinistracion=#{ item.idEstatusMinistracion , jdbcType = INTEGER},
+                updateFecha=#{ item.updateFecha , jdbcType = TIMESTAMP },
+                updateIdUsuario=#{ item.updateIdUsuario , jdbcType = VARCHAR },
+                idMotivoNoMinistrado=#{ item.idMotivoNoMinistrado , jdbcType = INTEGER }
+                WHERE idMinistrado=#{ item.idMinistrado , jdbcType = VARCHAR };
+        </foreach>
+    </update>
+    
+    <select id="obtenerSurtimientosMinistrados" resultType="mx.mc.model.SurtimientoMinistrado" parameterType="java.util.List">
+        SELECT sm.* FROM surtimientoMinistrado sm 
+        INNER JOIN surtimientoEnviado se ON sm.idSurtimientoEnviado = se.idSurtimientoEnviado
+        INNER JOIN surtimientoInsumo si ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        WHERE 1 = 1
+        <if test=" listaSurtimientoInsumos.size() > 0 ">
+            AND si.idSurtimientoInsumo IN
+            <foreach item="item" index="index" collection="listaSurtimientoInsumos" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        AND sm.ministracionConfirmada = 1 AND sm.enviadoHIS = 0; 
+    </select>
+    
+     <update id="actualizarSurtMinistradoConfirmado" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="listMinistracion"  item="item"  index="index"  separator=";">
+            UPDATE surtimientoMinistrado
+            <set>
+                ministracionConfirmada = #{ item.ministracionConfirmada , jdbcType = INTEGER }                
+            </set>
+            WHERE idMinistrado = #{ item.idMinistrado , jdbcType = VARCHAR }
+        </foreach>
+    </update>
+    
+    <select id="obtenerSurtimientoMinistradoLazzy" parameterType="Map" resultType="mx.mc.model.SurtimientoMinistrado_Extend">
+        select sm.fechaMinistrado AS fechaMinistrado, pa.pacienteNumero AS pacienteNumero, concat(pa.nombreCompleto,' ', pa.apellidoPaterno,' ', pa.apellidoMaterno)  AS nombrePaciente, 
+        m.claveInstitucional AS claveInstitucional,m.nombreCorto AS nombreCorto, sm.cantidad AS cantidad, u.nombreUsuario AS nombreUsuarioMinistro, se.idSurtimientoEnviado
+        , p.folio
+        from surtimientoMinistrado sm 
+        inner join usuarios u on sm.idUsuario = u.idUsuario
+        inner join surtimientoEnviado se on sm.idSurtimientoEnviado = se.idSurtimientoEnviado
+        inner join surtimientoInsumo si on se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        inner join surtimiento s on si.idSurtimiento = s.idSurtimiento
+        inner join prescripcionInsumo pi on si.idPrescripcionInsumo = pi.idPrescripcionInsumo
+        inner join medicamento m on pi.idInsumo = m.idMedicamento
+        inner join prescripcion p on pi.idPrescripcion = p.idPrescripcion
+        inner join pacienteServicio ps on p.idPacienteServicio = ps.idPacienteServicio
+        inner join visita v on ps.idVisita = v.idVisita
+        inner join paciente pa on v.idPaciente = pa.idPaciente
+        where 1 = 1
+        <if test=" idEstructura != null">
+            AND ps.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idUsuario != null">
+            AND sm.idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        </if>
+            AND p.comentarios = INSTR(p.comentarios, 'FOLIO DP') > 0
+        order by sm.fechaMinistrado desc 
+        LIMIT #{startingAt}, #{maxPerPage}
+    </select>
+    
+    <select id="obtenerTotalSurtimientoMinistradoLazzy" parameterType="Map" resultType="Long">
+        select COUNT(*) AS total
+        from surtimientoMinistrado sm 
+        inner join usuarios u on sm.idUsuario = u.idUsuario
+        inner join surtimientoEnviado se on sm.idSurtimientoEnviado = se.idSurtimientoEnviado
+        inner join surtimientoInsumo si on se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        inner join surtimiento s on si.idSurtimiento = s.idSurtimiento
+        inner join prescripcionInsumo pi on si.idPrescripcionInsumo = pi.idPrescripcionInsumo
+        inner join medicamento m on pi.idInsumo = m.idMedicamento
+        inner join prescripcion p on pi.idPrescripcion = p.idPrescripcion
+        inner join pacienteServicio ps on p.idPacienteServicio = ps.idPacienteServicio
+        inner join visita v on ps.idVisita = v.idVisita
+        inner join paciente pa on v.idPaciente = pa.idPaciente
+        where 1 = 1
+        <if test=" idEstructura != null">
+            AND ps.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idUsuario != null">
+            AND sm.idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+     <select id="obtenerListSurtimientoMinistrado" parameterType="Map" resultType="mx.mc.model.SurtimientoMinistrado_Extend">
+        SELECT 
+            *
+        FROM
+            surtimientoMinistrado
+        WHERE
+            idSurtimientoEnviado = #{idSurtimientoEnviado}
+            AND idEstatusMinistracion = 1
+        ORDER BY orden DESC;
+    </select>
+    
+     <update id="updateSurtMinistradoForDevolucion" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="listSurtMinistrado"  item="item"  index="index"  separator=";">
+            UPDATE surtimientoMinistrado
+            <set>
+                cantidad= #{item.cantidad , jdbcType = INTEGER},
+                idEstatusSurtimiento = #{ item.idEstatusSurtimiento , jdbcType = INTEGER },
+                idEstatusMinistracion=#{ item.idEstatusMinistracion, jdbcType = INTEGER}                
+            </set>
+            WHERE idMinistrado = #{ item.idMinistrado , jdbcType = VARCHAR }
+        </foreach>
+    </update>
+    
+    <select id="obtenerListSurtimientoMinistradoSolucion" parameterType="Map" resultType="mx.mc.model.SurtimientoMinistrado_Extend">
+        SELECT sm.idMinistrado, sm.idSurtimientoEnviado, sm.fechaProgramado, sm.fechaMinistrado
+             , sm.cantidad, sm.idEstatusSurtimiento, sm.idEstatusMinistracion, inv.idInventario
+        FROM surtimientoMinistrado sm
+        INNER JOIN surtimientoEnviado se ON se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+        INNER JOIN surtimientoInsumo si ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        INNER JOIN surtimiento s ON s.idSurtimiento = si.idSurtimiento
+        INNER JOIN inventario inv ON inv.idInventario = se.idInventarioSurtido
+            WHERE s.claveAgrupada = #{ claveAgrupada, jdbcType = VARCHAR }
+    </select>
+    
+    <select  id="obtenerMinistracionesPaciente" parameterType="Map" resultType="mx.mc.model.SurtimientoMinistrado_Extend">
+        SELECT 
+            sm.fechaMinistrado
+            ,sm.fechaProgramado        
+            ,pr.fechaPrescripcion as fechaInicioTratamiento
+            ,pr.folio
+            ,m.claveInstitucional
+            ,m.nombreCorto
+            ,i.lote
+            ,i.fechaCaducidad
+            ,concat(u.nombre,' ',u.apellidoPaterno,' ',u.apellidoMaterno) as nombre
+            ,sm.cantidadMinistrada
+            ,pi.frecuencia
+            ,pi.dosis
+            ,pi.duracion
+            ,concat(p.nombreCompleto,' ',p.apellidoPaterno,' ',p.apellidoMaterno) as nombrePaciente
+            ,sm.idMinistrado
+            ,se.idSurtimientoEnviado
+            ,i.idInventario
+            ,si.idSurtimientoInsumo
+            ,pi.idPrescripcionInsumo
+            ,pr.idPrescripcion
+            ,ps.idPacienteServicio
+            ,v.idVisita
+            ,p.idPaciente
+            ,m.idMedicamento as idInsumo
+            ,u.idUsuario
+            ,f.nombreFabricante
+        FROM surtimientoMinistrado sm
+            INNER JOIN surtimientoEnviado se ON se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+            INNER JOIN inventario i ON i.idInventario = se.idInventarioSurtido
+            INNER JOIN surtimientoInsumo si ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+            INNER JOIN prescripcionInsumo pi ON pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+            INNER JOIN prescripcion pr ON pr.idPrescripcion = pi.idPrescripcion
+            INNER JOIN pacienteServicio ps ON ps.idPacienteServicio = pr.idPacienteServicio
+            INNER JOIN visita v ON v.idVisita = ps.idVisita
+            INNER JOIN paciente p ON p.idPaciente = v.idPaciente
+            INNER JOIN medicamento m ON m.idMedicamento = pi.idInsumo
+            INNER JOIN usuarios u ON u.idUsuario = sm.idUsuario
+            LEFT JOIN fabricante f ON i.idFabricante = f.idFabricante
+        WHERE 
+            sm.fechaMinistrado BETWEEN #{fechaInicio} AND #{fechaFin} 
+            AND p.idPaciente =#{idPaciente}
+            AND sm.idEstatusMinistracion = 2
+        ORDER BY sm.fechaMinistrado desc
+        ;
+    </select>
+    
+    <select id="obtenerUltimasMinistracionesPac"  parameterType="Map" resultType="mx.mc.model.SurtimientoMinistrado_Extend">
+        SELECT 
+            m.idMedicamento
+            ,sm.fechaMinistrado
+            ,sm.fechaProgramado
+            ,pr.fechaPrescripcion as fechaInicioTratamiento
+            ,pr.folio
+            ,m.claveInstitucional
+            ,m.nombreCorto
+            ,i.lote
+            ,i.fechaCaducidad
+            ,concat(u.nombre,' ',u.apellidoPaterno,' ',u.apellidoMaterno) as nombre
+            ,sm.cantidadMinistrada
+            ,pi.frecuencia
+            ,pi.dosis
+            ,pi.duracion
+            ,concat(p.nombreCompleto,' ',p.apellidoPaterno,' ',p.apellidoMaterno) as nombrePaciente
+            ,m.idViaAdministracion
+            ,sm.idMinistrado
+            ,se.idSurtimientoEnviado
+            ,i.idInventario
+            ,si.idSurtimientoInsumo
+            ,pi.idPrescripcionInsumo
+            ,pr.idPrescripcion
+            ,ps.idPacienteServicio
+            ,v.idVisita
+            ,p.idPaciente
+            ,m.idMedicamento as idInsumo
+            ,u.idUsuario
+        FROM surtimientoMinistrado sm
+            INNER JOIN surtimientoEnviado se ON se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+            INNER JOIN inventario i ON i.idInventario = se.idInventarioSurtido
+            INNER JOIN surtimientoInsumo si ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+            INNER JOIN prescripcionInsumo pi ON pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+            INNER JOIN prescripcion pr ON pr.idPrescripcion = pi.idPrescripcion
+            INNER JOIN pacienteServicio ps ON ps.idPacienteServicio = pr.idPacienteServicio
+            INNER JOIN visita v ON v.idVisita = ps.idVisita
+            INNER JOIN paciente p ON p.idPaciente = v.idPaciente
+            INNER JOIN medicamento m ON m.idMedicamento = pi.idInsumo
+            INNER JOIN usuarios u ON u.idUsuario = sm.idUsuario
+        WHERE 1=1 
+            AND p.idPaciente =#{idPaciente}
+            GROUP BY m.idMedicamento 
+            ORDER BY sm.insertFecha desc
+            limit 10
+        ;
+    </select>
+    
+    <select id="obtenerSurtimientosAValidar" parameterType="Map" resultType="mx.mc.dto.SurtimientoValidarDTO">
+        SELECT s.idSurtimiento, s.idEstatusSurtimiento, s.fechaProgramada as fechaSurtimiento, s.folio as folioSurtimiento,
+            si.idSurtimientoInsumo, si.fechaProgramada as fechaSurtimientoInsumo, se.idSurtimientoEnviado, sm.idMinistrado, sm.fechaProgramado as fechaProgMinistrado,
+            sm.fechaMinistrado 
+        FROM surtimiento s 
+        INNER JOIN surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento
+        LEFT JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        LEFT JOIN surtimientoMinistrado sm ON se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+        WHERE si.idPrescripcionInsumo = #{idPrescripcionInsumo, jdbcType = VARCHAR}
+        AND s.idEstatusSurtimiento not in (5,6,9)
+        ORDER BY s.updateFecha desc, si.idEstatusSurtimiento desc, si.fechaProgramada;
+    </select>
+    
+    <select id="obtenerSurtimientosAValidarOrdenadoASC" parameterType="Map" resultType="mx.mc.dto.SurtimientoValidarDTO">
+        SELECT s.fechaProgramada as fechaSurtimiento, s.folio as folioSurtimiento, si.fechaProgramada as fechaSurtimientoInsumo, si.idEstatusSurtimiento,
+        sm.fechaProgramado as fechaProgMinistrado, sm.fechaMinistrado
+        FROM surtimiento s 
+        INNER JOIN surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento
+        LEFT JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        LEFT JOIN surtimientoMinistrado sm ON se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+        WHERE si.idPrescripcionInsumo = #{idPrescripcionInsumo, jdbcType = VARCHAR}
+        AND s.idEstatusSurtimiento not in (5,6,9)
+        ORDER BY fechaSurtimiento ASC, fechaSurtimientoInsumo ASC, fechaProgMinistrado ASC, sm.fechaMinistrado ASC;
+    </select>
+    
+    <select id="obtenerSurtimientoMinistradoByIdSurtimiento" parameterType="Map" resultType="mx.mc.model.SurtimientoMinistrado_Extend">
+        SELECT fechaMinistrado, CONCAT(u.nombre, ' ', u.apellidoPaterno, ' ', u.apellidoMaterno) AS nombreUsuarioMinistro
+        FROM surtimiento s INNER JOIN surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento
+        INNER JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        INNER JOIN surtimientoMinistrado sm ON se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+        INNER JOIN usuarios u ON sm.idUsuario = u.idUsuario
+        where s.idSurtimiento = #{idSurtimiento, jdbcType = VARCHAR}
+    </select>
+</mapper>

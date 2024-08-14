@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DevolucionMinistracionDetalleMapper">
+    
+    <select id="obtener" resultType="mx.mc.model.DevolucionMinistracionDetalle" parameterType="mx.mc.model.DevolucionMinistracionDetalle">
+        SELECT  idDevolucionDetalle
+        ,idDevolucionMinistracion
+        ,idInsumo
+        ,idInventario
+        ,idMotivoDevolucion
+        ,cantidad
+        ,conforme 
+        ,idEstatusDevolucion
+        ,insertFecha
+        ,insertIdUsuario
+        ,updateFecha
+        ,updateIdUsuario
+        FROM devolucionMinistracionDetalle
+        WHERE 1=1
+        <if test="idDevolucionDetalle != null">AND idDevolucionDetalle=#{idDevolucionDetalle} </if>
+        <if test="idDevolucionMinistracion != null">AND idDevolucionMinistracion=#{idDevolucionMinistracion} </if>    
+        <if test="idInsumo != null">AND idInsumo=#{idInsumo} </if>    
+        <if test="idInventario != null">AND idInventario=#{idInventario} </if>    
+        <if test="idMotivoDevolucion != null">AND idMotivoDevolucion=#{idMotivoDevolucion} </if>    
+        <if test="cantidad != null">AND cantidad=#{cantidad} </if>    
+        <if test="conforme != null">AND conforme=#{conforme} </if>    
+        <if test="idEstatusDevolucion != null">AND idEstatusDevolucion=#{idEstatusDevolucion} </if>    
+        <if test="insertFecha != null">AND insertFecha=#{insertFecha} </if>    
+        <if test="insertIdUsuario != null">AND insertIdUsuario=#{insertIdUsuario} </if>    
+        <if test="updateFecha != null">AND updateFecha=#{updateFecha} </if>    
+        <if test="updateIdUsuario != null">AND updateIdUsuario=#{updateIdUsuario} </if>    
+    </select>
+    
+    <select id="obtenerLista"  resultType="mx.mc.model.DevolucionMinistracionDetalle"  parameterType="mx.mc.model.DevolucionMinistracionDetalle">
+        SELECT  idDevolucionDetalle
+        ,idDevolucionMinistracion
+        ,idInsumo
+        ,idInventario
+        ,idMotivoDevolucion
+        ,cantidad
+        ,conforme 
+        ,idEstatusDevolucion
+        ,insertFecha
+        ,insertIdUsuario
+        ,updateFecha
+        ,updateIdUsuario
+        FROM devolucionMinistracionDetalle
+        WHERE 1=1
+        <if test="idDevolucionDetalle != null">AND idDevolucionDetalle=#{idDevolucionDetalle} </if>
+        <if test="idDevolucionMinistracion != null">AND idDevolucionMinistracion=#{idDevolucionMinistracion} </if>    
+        <if test="idInsumo != null">AND idInsumo=#{idInsumo} </if>    
+        <if test="idInventario != null">AND idInventario=#{idInventario} </if>    
+        <if test="idMotivoDevolucion != null">AND idMotivoDevolucion=#{idMotivoDevolucion} </if>    
+        <if test="cantidad != null">AND cantidad=#{cantidad} </if>    
+        <if test="conforme != null">AND conforme=#{conforme} </if>  
+        <if test="idEstatusDevolucion != null">AND idEstatusDevolucion=#{idEstatusDevolucion} </if>    
+        <if test="insertFecha != null">AND insertFecha=#{insertFecha} </if>    
+        <if test="insertIdUsuario != null">AND insertIdUsuario=#{insertIdUsuario} </if>    
+        <if test="updateFecha != null">AND updateFecha=#{updateFecha} </if>    
+        <if test="updateIdUsuario != null">AND updateIdUsuario=#{updateIdUsuario} </if>    
+    </select>
+    
+    <select id="obtenerListaByIdDevolucionMinistracion"  resultType="mx.mc.model.DevolucionMinistracionDetalle"  parameterType="Map">
+        SELECT  idDevolucionDetalle
+        ,idDevolucionMinistracion
+        ,idInsumo
+        ,idInventario
+        ,idMotivoDevolucion
+        ,cantidad
+        ,conforme 
+        ,idEstatusDevolucion
+        ,insertFecha
+        ,insertIdUsuario
+        ,updateFecha
+        ,updateIdUsuario
+        FROM devolucionMinistracionDetalle
+        WHERE idEstatusDevolucion = 1
+        AND idDevolucionMinistracion=#{idDevolucionMinistracion}
+    </select>
+    
+     <select id="obtenerListaByIdDevolucionMinistracionExtended"  resultType="mx.mc.model.DevolucionMinistracionDetalleExtended"  parameterType="mx.mc.model.DevolucionMinistracionDetalleExtended">
+        SELECT dmd.idDevolucionDetalle,
+            dmd.idInventario,
+            si.idSurtimientoInsumo,
+            me.claveInstitucional,
+            me.nombreCorto,
+            i.lote,
+            i.fechaCaducidad,
+            SUM(dmd.cantidad) as cantidadDevuelta,
+            dmd.conforme,
+            dmd.idEstatusDevolucion,
+            dmd.idMotivoDevolucion,
+            dmd.idMotivoDevolucion as tipoDevolucion
+            FROM    devolucionMinistracionDetalle dmd
+            INNER JOIN    devolucionMinistracion dm ON dm.idDevolucionMinistracion = dmd.idDevolucionMinistracion
+            INNER JOIN    surtimiento su ON su.idSurtimiento = dm.idSurtimiento
+            INNER JOIN    inventario i ON i.idInventario = dmd.idInventario
+            INNER JOIN    medicamento me ON me.idMedicamento = dmd.idInsumo
+            INNER JOIN    surtimientoInsumo si ON su.idSurtimiento = dm.idSurtimiento
+            INNER JOIN    prescripcionInsumo pi ON dmd.idInsumo = pi.idInsumo AND si.idPrescripcionInsumo = pi.idPrescripcionInsumo
+        WHERE 1=1
+        AND su.idSurtimiento = si.idSurtimiento
+        AND su.idPrescripcion = pi.idPrescripcion
+        AND dmd.idEstatusDevolucion = #{ idEstatusDevolucion }
+        AND dmd.idDevolucionMinistracion = #{ idDevolucionMinistracion }
+        GROUP BY si.idSurtimientoInsumo, me.claveInstitucional, me.nombreCorto;
+    </select>
+    
+    <insert id="insertar"  parameterType="mx.mc.model.DevolucionMinistracionDetalle">
+        INSERT INTO devolucionMinistracionDetalle (
+        <if test="idDevolucionDetalle != null">idDevolucionDetalle </if>
+        <if test="idDevolucionMinistracion != null">,idDevolucionMinistracion </if>    
+        <if test="idInsumo != null">,idInsumo </if>    
+        <if test="idInventario != null">,idInvwentario </if>
+        <if test="idMotivoDevolucion != null">,idMotivoDevolucion </if>    
+        <if test="cantidad != null">,cantidad </if>    
+        <if test="idEstatusDevolucion != null">,idEstatusDevolucion </if>    
+        <if test="conforme != null">,conforme </if>  
+        <if test="insertFecha != null">,insertFecha </if>    
+        <if test="insertIdUsuario != null">,insertIdUsuario </if>    
+        <if test="updateFecha != null">,updateFecha </if>    
+        <if test="updateIdUsuario != null">,updateIdUsuario </if>    
+        )VALUES (
+        <if test="idDevolucionDetalle != null">#{idDevolucionDetalle} </if>
+        <if test="idDevolucionMinistracion != null">,#{idDevolucionMinistracion} </if>    
+        <if test="idInsumo != null">,#{idInsumo} </if>    
+        <if test="idInventario != null">,#{idInventario} </if>
+        <if test="idMotivoDevolucion != null">,#{idMotivoDevolucion} </if>    
+        <if test="cantidad != null">,#{cantidad} </if>    
+        <if test="idEstatusDevolucion != null">,#{idEstatusDevolucion} </if>    
+         <if test="conforme != null">,#{conforme} </if>  
+        <if test="insertFecha != null">,#{insertFecha} </if>    
+        <if test="insertIdUsuario != null">,#{insertIdUsuario} </if>    
+        <if test="updateFecha != null">,#{updateFecha} </if>    
+        <if test="updateIdUsuario != null">,#{updateIdUsuario} </if>    
+        )        
+    </insert>
+    
+    <insert id="insertarLista"  parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="list" item="item" index="index" separator=";">
+            INSERT INTO devolucionMinistracionDetalle (
+                <if test="item.idDevolucionDetalle != null">idDevolucionDetalle </if>
+                <if test="item.idDevolucionMinistracion != null">,idDevolucionMinistracion </if>    
+                <if test="item.idInsumo != null">,idInsumo </if>    
+                <if test="item.idInventario != null">,idInventario </if>
+                <if test="item.idMotivoDevolucion != null">,idMotivoDevolucion </if>    
+                <if test="item.cantidad != null">,cantidad </if>    
+                <if test="item.idEstatusDevolucion != null">,idEstatusDevolucion </if>    
+                <if test="item.conforme != null">,conforme </if>    
+                <if test="item.insertFecha != null">,insertFecha </if>    
+                <if test="item.insertIdUsuario != null">,insertIdUsuario </if>    
+                <if test="item.updateFecha != null">,updateFecha </if>    
+                <if test="item.updateIdUsuario != null">,updateIdUsuario </if>    
+            )VALUES (
+                <if test="item.idDevolucionDetalle != null">#{item.idDevolucionDetalle} </if>
+                <if test="item.idDevolucionMinistracion != null">,#{item.idDevolucionMinistracion} </if>    
+                <if test="item.idInsumo != null">,#{item.idInsumo} </if>    
+                <if test="item.idInventario != null">,#{item.idInventario} </if>
+                <if test="item.idMotivoDevolucion != null">,#{item.idMotivoDevolucion} </if>    
+                <if test="item.cantidad != null">,#{item.cantidad} </if>    
+                <if test="item.idEstatusDevolucion != null">,#{item.idEstatusDevolucion} </if>    
+                <if test="item.conforme != null">,#{item.conforme} </if>  
+                <if test="item.insertFecha != null">,#{item.insertFecha} </if>    
+                <if test="item.insertIdUsuario != null">,#{item.insertIdUsuario} </if>    
+                <if test="item.updateFecha != null">,#{item.updateFecha} </if>    
+                <if test="item.updateIdUsuario != null">,#{item.updateIdUsuario} </if>    
+            )
+        </foreach>
+    </insert>
+    
+    <update id="actualizar"  parameterType="mx.mc.model.DevolucionMinistracionDetalle">
+        UPDATE devolucionMinistracionDetalle
+        <set>
+            updateFecha=#{updateFecha}
+            , updateIdUsuario=#{updateIdUsuario}
+            <if test="idDevolucionMinistracion != null">, idDevolucionMinistracion=#{idDevolucionMinistracion} </if>    
+            <if test="idInsumo != null">, idInsumo=#{idInsumo} </if>    
+            <if test="idInventario != null">, idInsumo=#{idInventario} </if>
+            <if test="idMotivoDevolucion != null">, idMotivoDevolucion=#{idMotivoDevolucion} </if>    
+            <if test="cantidad != null">, cantidad=#{cantidad} </if>    
+            <if test="idEstatusDevolucion != null">, idEstatusDevolucion=#{idEstatusDevolucion} </if> 
+            <if test="conforme != null">,conforme = #{conforme} </if>    
+            <if test="insertFecha != null">, insertFecha=#{insertFecha} </if>    
+            <if test="insertIdUsuario != null">, insertIdUsuario=#{insertIdUsuario} </if>
+        </set>
+        WHERE idDevolucionDetalle = #{idDevolucionDetalle}
+    </update>
+    
+    <update id="actualizarLista"  parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="list" item="item" index="index" separator=";">
+            INSERT INTO devolucionMinistracionDetalle (
+                <if test="item.idDevolucionDetalle != null">idDevolucionDetalle </if>
+                <if test="item.idDevolucionMinistracion != null">,idDevolucionMinistracion </if>    
+                <if test="item.idInsumo != null">,idInsumo </if>    
+                <if test="item.idInventario != null">,idInventario </if>
+                <if test="item.idMotivoDevolucion != null">,idMotivoDevolucion </if>    
+                <if test="item.cantidad != null">,cantidad </if>    
+                <if test="item.idEstatusDevolucion != null">,idEstatusDevolucion </if>    
+                <if test="item.conforme != null">,conforme </if>    
+                <if test="item.insertFecha != null">,insertFecha </if>    
+                <if test="item.insertIdUsuario != null">,insertIdUsuario </if>    
+                <if test="item.updateFecha != null">,updateFecha </if>    
+                <if test="item.updateIdUsuario != null">,updateIdUsuario </if>    
+            )VALUES (
+                <if test="item.idDevolucionDetalle != null">#{item.idDevolucionDetalle} </if>
+                <if test="item.idDevolucionMinistracion != null">,#{item.idDevolucionMinistracion} </if>    
+                <if test="item.idInsumo != null">,#{item.idInsumo} </if>    
+                <if test="item.idInventario != null">,#{item.idInventario} </if>
+                <if test="item.idMotivoDevolucion != null">,#{item.idMotivoDevolucion} </if>    
+                <if test="item.cantidad != null">,#{item.cantidad} </if>    
+                <if test="item.idEstatusDevolucion != null">,#{item.idEstatusDevolucion} </if>    
+                <if test="item.conforme != null">,#{item.conforme} </if>  
+                <if test="item.insertFecha != null">,#{item.insertFecha} </if>    
+                <if test="item.insertIdUsuario != null">,#{item.insertIdUsuario} </if>    
+                <if test="item.updateFecha != null">,#{item.updateFecha} </if>    
+                <if test="item.updateIdUsuario != null">,#{item.updateIdUsuario} </if>    
+            )
+        </foreach>
+    </update>
+    
+    <delete id="eliminar"  parameterType="mx.mc.model.DevolucionMinistracionDetalle">
+        DELETE FROM devolucionMinistracionDetalle 
+        WHERE idDevolucionMinistracion = #{idDevolucionMinistracion}
+    </delete>
+    
+    <delete id="eliminarRegistradas"  parameterType="String">
+        DELETE FROM devolucionMinistracionDetalle 
+        WHERE idDevolucionMinistracion = #{idDevolucionMinistracion}
+    </delete>
+    
+    <select id="devolucionMiniDetalleExtend" resultType="mx.mc.model.DevolucionMinistracionDetalleExtended" parameterType="Map">
+        SELECT 
+            m.idMedicamento AS idInsumo,
+            m.claveInstitucional AS clave,
+            m.nombreCorto AS medicamento,
+            v.lote,
+            v.fechaCaducidad AS caducidad,
+            n.fechaInicio,
+            i.idSurtimiento,
+            i.idPrescripcionInsumo,
+            e.idSurtimientoEnviado,
+            e.idSurtimientoInsumo,
+            e.idInventarioSurtido,
+            IF((e.cantidadEnviado - e.cantidadRecibido) > 0,
+                (e.cantidadEnviado - e.cantidadRecibido),
+                (SELECT  COUNT(*)
+                    FROM surtimientoMinistrado
+                    WHERE idSurtimientoEnviado = e.idSurtimientoEnviado
+                                        AND (idEstatusSurtimiento = 1
+                                        OR idEstatusSurtimiento = 4))) AS cantidadEnviado,
+            e.idEstatusSurtimiento
+        FROM    surtimientoEnviado e
+                INNER JOIN    surtimientoInsumo i ON i.idSurtimientoInsumo = e.idSurtimientoInsumo
+                INNER JOIN    prescripcionInsumo n ON n.idPrescripcionInsumo = i.idPrescripcionInsumo
+                INNER JOIN    prescripcion p ON p.idPrescripcion = n.idPrescripcion
+                INNER JOIN    inventario v ON v.idInventario = e.idInventarioSurtido
+                INNER JOIN    medicamento m ON m.idMedicamento = v.idInsumo
+        WHERE
+            e.idEstatusSurtimiento = 4
+        <if test="idPrescripcion != null "> and p.idPrescripcion = #{idPrescripcion}</if>
+        ;
+    </select>
+    
+    <select id="obtenerDevolucionDetalleExtPorIdSurtimiento" resultType="mx.mc.model.DevolucionMinistracionDetalleExtended" parameterType="Map">         
+        SELECT 
+            pi.idInsumo,
+            me.claveInstitucional,
+            me.nombreCorto,
+            si.cantidadRecepcion,
+            si.idSurtimientoInsumo,
+            se.cantidadEnviado-c1.cantidadDevuelta,
+            se.cantidadRecibido,
+            IF(SUM(se.cantidadEnviado)  IS NULL, 0 , SUM(se.cantidadEnviado)) AS cantidadMaxima,
+            IF(SUM(se.cantidadRecibido)  IS NULL, 0 , SUM(se.cantidadRecibido)) AS cantidadRecibido,
+            c1.cantidadDevuelta,
+            (SELECT 
+                    SUM(sm1.cantidad) AS pendiente
+            FROM  surtimientoEnviado se1
+                    INNER JOIN   surtimientoMinistrado sm1 ON sm1.idSurtimientoEnviado = se1.idSurtimientoEnviado
+            WHERE  se1.idSurtimientoEnviado = se.idSurtimientoEnviado
+                    AND sm1.idEstatusMinistracion = 1) as pendiente,
+            c1.idMotivoDevolucion AS tipoDevolucion,
+            c1.idMotivoDevolucion AS idMotivoDevolucion,
+            c1.comentarios AS comentario,
+            se.idSurtimientoEnviado
+        FROM    surtimiento su
+            INNER JOIN   surtimientoInsumo si ON su.idSurtimiento = si.idSurtimiento
+            INNER JOIN   surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo 
+            INNER JOIN   prescripcionInsumo pi ON  si.idPrescripcionInsumo = pi.idPrescripcionInsumo
+            LEFT JOIN    (SELECT 
+                        SUM(dmd1.cantidad) as cantidadDevuelta,
+                dm1.idSurtimiento,
+                dmd1.idInsumo,
+                dm1.idMotivoDevolucion,
+                dm1.comentarios 
+                FROM devolucionMinistracion dm1
+                        INNER JOIN devolucionMinistracionDetalle dmd1 ON dmd1.idDevolucionMinistracion = dm1.idDevolucionMinistracion
+                 group by dm1.idSurtimiento
+             ) as c1 ON c1.idInsumo = pi.idInsumo AND c1.idSurtimiento =  su.idSurtimiento	
+            INNER JOIN   medicamento me ON me.idMedicamento = pi.idInsumo 
+        WHERE su.idSurtimiento = #{idSurtimiento}
+        GROUP BY si.idSurtimientoInsumo
+    ;
+    </select>
+    
+</mapper>

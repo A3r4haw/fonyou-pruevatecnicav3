@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.PresentacionMedicamentoMapper">
+    
+    <select id="obtenerTodo" resultType="mx.mc.model.PresentacionMedicamento" parameterType="mx.mc.model.PresentacionMedicamento">
+        SELECT  idPresentacion, nombrePresentacion 
+        FROM presentacionMedicamento
+        WHERE 1=1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.PresentacionMedicamento" parameterType="mx.mc.model.PresentacionMedicamento">
+        SELECT  idPresentacion, nombrePresentacion 
+        FROM presentacionMedicamento
+        WHERE 1=1
+        <if test = " activa != null" >
+            AND activa = #{ activa }
+        </if>
+        
+    </select>
+    <select id="obtenerPorId" resultType="mx.mc.model.PresentacionMedicamento" parameterType="Map" >
+        SELECT  idPresentacion, nombrePresentacion 
+        FROM presentacionMedicamento
+        <where>
+            <if test="idPresentacion != null"> idPresentacion = #{ idPresentacion, jdbcType = VARCHAR} </if>
+        </where>
+    </select>
+    
+    <select id="obtenerSiguienteId" parameterType="Map" resultType="Integer">
+        SELECT MAX(idPresentacion) + 1 FROM presentacionMedicamento;
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.PresentacionMedicamento">
+        INSERT INTO presentacionMedicamento (
+            idPresentacion, nombrePresentacion, activa, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        ) VALUES (
+            #{ idPresentacion, jdbcType = INTEGER }
+            ,#{ nombrePresentacion, jdbcType = VARCHAR }
+            ,#{ activa, jdbcType = INTEGER }
+            ,#{ insertFecha, jdbcType = TIMESTAMP }
+            ,#{ insertUsuarioId, jdbcType = VARCHAR }
+            ,#{ updateFecha, jdbcType = TIMESTAMP }
+            ,#{ updateUsuarioId, jdbcType = VARCHAR }
+        )
+    </insert>
+        
+</mapper>

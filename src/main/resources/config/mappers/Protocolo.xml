@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ProtocoloMapper" >
+    
+    <select id="obtener" resultType="mx.mc.model.Protocolo" parameterType="mx.mc.model.Protocolo" >
+        SELECT idProtocolo, idTipoProtocolo, claveProtocolo, descripcionProtocolo , idViaAdministracion , idDiagnostico, idEstatus, validaProtocolo
+        FROM protocolo
+        WHERE 1=1
+        <if test=" idProtocolo != null ">
+            AND idProtocolo = #{ idProtocolo , jdbcType = INTEGER }
+        </if>
+        <if test=" idTipoProtocolo != null ">
+            AND idTipoProtocolo = #{ idTipoProtocolo , jdbcType = INTEGER }
+        </if>
+        <if test=" claveProtocolo != null ">
+            AND claveProtocolo = #{ claveProtocolo , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcionProtocolo != null ">
+            AND descripcionProtocolo = #{ descripcionProtocolo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idViaAdministracion != null ">
+            AND idViaAdministracion = #{ idViaAdministracion , jdbcType = INTEGER }
+        </if>
+        <if test=" idDiagnostico != null ">
+            AND idDiagnostico = #{ idDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatus != null ">
+            AND idEstatus = #{ idEstatus , jdbcType = INTEGER }
+        </if>
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Protocolo" parameterType="mx.mc.model.Protocolo" >
+        SELECT idProtocolo, idTipoProtocolo, claveProtocolo, descripcionProtocolo , idViaAdministracion , idDiagnostico, idEstatus
+        FROM protocolo
+        WHERE 1=1
+        <if test=" idProtocolo != null ">
+            AND idProtocolo = #{ idProtocolo , jdbcType = INTEGER }
+        </if>
+        <if test=" idTipoProtocolo != null ">
+            AND idTipoProtocolo = #{ idTipoProtocolo , jdbcType = INTEGER }
+        </if>
+        <if test=" claveProtocolo != null ">
+            AND claveProtocolo = #{ claveProtocolo , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcionProtocolo != null ">
+            AND descripcionProtocolo = #{ descripcionProtocolo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idViaAdministracion != null ">
+            AND idViaAdministracion = #{ idViaAdministracion , jdbcType = INTEGER }
+        </if>
+        <if test=" idDiagnostico != null ">
+            AND idDiagnostico = #{ idDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatus != null ">
+            AND idEstatus = #{ idEstatus , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <select id="buscarProtocolosDiagnostico" resultType="mx.mc.model.ProtocoloExtended" parameterType="Map">
+        SELECT DISTINCT claveProtocolo, d.nombre AS diagnostico, m.idMedicamento, m.claveInstitucional AS claveMedicamento, m.nombreCorto AS nombreMedicamento, 
+        pd.idProtocoloDetalle, concat(pd.dosis,' ', uc.nombreUnidadConcentracion) as dosis, concat(pd.frecuencia, ' HRS') as frecuencia, pd.periodo, 
+         pd.ciclos, concat(e.noHrsEstabilidadMezcla, ' HRS') as estabilidad, pd.area, pd.peso, pd.receso 
+        FROM protocolo p 
+        INNER JOIN protocoloDetalle pd ON p.idProtocolo = pd.idProtocolo
+        INNER JOIN medicamento m ON pd.idInsumo = m.idMedicamento
+        LEFT JOIN estabilidad e ON pd.idInsumo = e.idInsumo
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        INNER JOIN diagnostico d on p.idDiagnostico = d.idDiagnostico
+        WHERE 1 = 1
+        <if test=" listaDiagnosticos != null ">
+            AND d.clave IN
+            <foreach item="item" index="index" collection="listaDiagnosticos" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+    
+    <select id="buscarProtocolosDiagnosticoAndMedicamentos" resultType="mx.mc.model.ProtocoloExtended" parameterType="Map">
+        SELECT DISTINCT claveProtocolo, d.nombre AS diagnostico, m.idMedicamento, m.claveInstitucional AS claveMedicamento, m.nombreCorto AS nombreMedicamento, 
+        pd.idProtocoloDetalle, concat(pd.dosis,' ', uc.nombreUnidadConcentracion) as dosis, concat(pd.frecuencia, ' HRS') as frecuencia, pd.periodo, 
+         pd.ciclos, concat(e.noHrsEstabilidadMezcla, ' HRS') as estabilidad, pd.area, pd.peso, pd.receso 
+        FROM protocolo p 
+        INNER JOIN protocoloDetalle pd ON p.idProtocolo = pd.idProtocolo
+        INNER JOIN medicamento m ON pd.idInsumo = m.idMedicamento
+        LEFT JOIN estabilidad e ON pd.idInsumo = e.idInsumo
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        INNER JOIN diagnostico d on p.idDiagnostico = d.idDiagnostico
+        WHERE 1 = 1
+        <if test=" listaDiagnosticos != null ">
+            AND d.clave IN
+            <foreach item="item" index="index" collection="listaDiagnosticos" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listaMedicamentos != null">
+            AND m.idMedicamento IN
+            <foreach item="item" index="index" collection="listaMedicamentos" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+    
+    <select id="buscarProtocolosByIdDiagnosticoAndIdProtocolo" resultType="mx.mc.model.ProtocoloExtended" parameterType="Map">
+        SELECT DISTINCT claveProtocolo, d.nombre AS diagnostico, m.idMedicamento, m.claveInstitucional AS claveMedicamento, m.nombreCorto AS nombreMedicamento, 
+        pd.idProtocoloDetalle, concat(pd.dosis,' ', uc.nombreUnidadConcentracion) as dosis, concat(pd.frecuencia, ' HRS') as frecuencia, pd.periodo, 
+         pd.ciclos, concat(e.noHrsEstabilidadMezcla, ' HRS') as estabilidad, pd.area, pd.peso, pd.receso 
+        FROM protocolo p 
+        INNER JOIN protocoloDetalle pd ON p.idProtocolo = pd.idProtocolo
+        INNER JOIN medicamento m ON pd.idInsumo = m.idMedicamento
+        LEFT JOIN estabilidad e ON pd.idInsumo = e.idInsumo
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        INNER JOIN diagnostico d on p.idDiagnostico = d.idDiagnostico
+        WHERE 1 = 1
+        AND p.idProtocolo = #{idProtocolo, jdbcType = VARCHAR}
+        AND p.idDiagnostico = #{idDiagnostico, jdbcType = INTEGER}
+    </select>
+</mapper> 

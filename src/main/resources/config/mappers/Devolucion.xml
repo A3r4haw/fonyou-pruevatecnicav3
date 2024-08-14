@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DevolucionMapper" >
+	<select id="obtener" resultType="mx.mc.model.Devolucion" parameterType="mx.mc.model.Devolucion" >
+        SELECT idDevolucion,folio,idAlmacenOrigen,idAlmacenDestino,fechaDevolucion,idUsrDevolucion,idEstatusDevolucion
+        FROM devolucion
+        WHERE 1=1
+        <if test=" idDevolucion != null ">
+            AND idDevolucion = #{ idDevolucion , jdbcType = VARCHAR }
+        </if>
+        <if test=" folio != null ">
+        	AND folio = #{ folio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idAlmacenOrigen != null ">
+        	AND idAlmacenOrigen = #{ idAlmacenOrigen , jdbcType = VARCHAR }
+        </if>
+        <if test=" idAlmacenDestino != null ">
+        	AND idAlmacenDestino = #{ idAlmacenDestino , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaDevolucion != null ">
+        	AND fechaDevolucion = #{ fechaDevolucion , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idUsrDevolucion != null ">
+        	AND idUsrDevolucion = #{ idUsrDevolucion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatusDevolucion != null ">
+        	AND idEstatusDevolucion = #{ idEstatusDevolucion , jdbcType = INTEGER }
+        </if>        
+	</select>
+	
+	<select id="obtenerListDevExtended" resultType="mx.mc.model.DevolucionExtended" parameterType="mx.mc.model.Devolucion" >
+        SELECT idDevolucion,folio,idAlmacenOrigen,idAlmacenDestino,fechaDevolucion,idUsrDevolucion,dv.idEstatusDevolucion,
+        		es.nombre AS nombreOrigen, esd.nombre AS nombreDestino, esd.idTipoAlmacen AS idTipoAlmacenDestino,
+        		ed.nombreEstatusDev AS nombreEstatus 
+        FROM devolucion dv INNER JOIN estructura es ON dv.idAlmacenOrigen = es.idEstructura
+        INNER JOIN estructura esd ON dv.idAlmacenDestino = esd.idEstructura
+        INNER JOIN estatusDevolucion ed ON dv.idEstatusDevolucion = ed.idEstatusDevolucion 
+        WHERE 1=1
+        <if test=" idDevolucion != null "> AND idDevolucion = #{ idDevolucion , jdbcType = VARCHAR } </if>
+        <if test=" folio != null ">	AND folio LIKE '%${folio}%' </if>
+        <if test=" idAlmacenOrigen != null "> AND idAlmacenOrigen = #{ idAlmacenOrigen , jdbcType = VARCHAR } </if>
+        <if test=" idAlmacenDestino != null ">	AND idAlmacenDestino = #{ idAlmacenDestino , jdbcType = VARCHAR } </if>
+        <if test=" fechaDevolucion != null "> AND fechaDevolucion = #{ fechaDevolucion , jdbcType = TIMESTAMP } </if>
+        <if test=" idUsrDevolucion != null ">	AND idUsrDevolucion = #{ idUsrDevolucion , jdbcType = VARCHAR } </if>
+        <if test=" idEstatusDevolucion != null ">	AND dv.idEstatusDevolucion = #{ idEstatusDevolucion , jdbcType = INTEGER } </if>                
+	</select>
+	
+	<insert id="insertar" parameterType="mx.mc.model.Devolucion">
+		INSERT INTO devolucion (
+		<if test=" idDevolucion != null"> idDevolucion	</if>
+		<if test=" folio != null">	,folio	</if> 
+		<if test=" idAlmacenOrigen != null"> ,idAlmacenOrigen	</if>
+		<if test=" idAlmacenDestino != null"> ,idAlmacenDestino	</if>
+		<if test=" fechaDevolucion != null"> ,fechaDevolucion	</if>
+		<if test=" idUsrDevolucion != null"> ,idUsrDevolucion	</if>
+		<if test=" idEstatusDevolucion != null"> ,idEstatusDevolucion	</if>		
+		 ) VALUES (
+		<if test=" idDevolucion != null"> #{ idDevolucion , jdbcType = VARCHAR }	</if>
+		<if test=" folio != null">	,#{ folio , jdbcType = VARCHAR }	</if> 
+		<if test=" idAlmacenOrigen != null"> ,#{ idAlmacenOrigen , jdbcType = VARCHAR }	</if>
+		<if test=" idAlmacenDestino != null"> ,#{ idAlmacenDestino , jdbcType = VARCHAR }	</if>
+		<if test=" fechaDevolucion != null"> ,#{ fechaDevolucion , jdbcType = TIMESTAMP }	</if>
+		<if test=" idUsrDevolucion != null"> ,#{ idUsrDevolucion , jdbcType = VARCHAR }	</if>
+		<if test=" idEstatusDevolucion != null"> ,#{ idEstatusDevolucion , jdbcType = INTEGER }	</if>		 
+		)
+	</insert>
+	
+	<delete id="eliminar" parameterType="mx.mc.model.Devolucion"  >
+        DELETE FROM devolucion 
+        WHERE idDevolucion = #{ idDevolucion , jdbcType = VARCHAR }
+    </delete>     
+	
+	<update id="actualizarEstatusDevolucion" parameterType="mx.mc.model.Devolucion" >
+		UPDATE devolucion SET 
+		idEstatusDevolucion = #{ idEstatusDevolucion, jdbcType = INTEGER }
+		<if test=" fechaDevolucion != null ">,fechaDevolucion = #{ fechaDevolucion, jdbcType = TIMESTAMP }</if>
+		<if test=" idUsrDevolucion != null ">,idUsrDevolucion = #{ idUsrDevolucion, jdbcType = VARCHAR }</if>
+		WHERE idDevolucion = #{ idDevolucion, jdbcType = VARCHAR }
+	</update>
+</mapper>

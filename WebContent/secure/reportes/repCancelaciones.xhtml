@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <script></script>
+
+    <h:head>
+        <title>REPORTE DE CONSULTA DE CANCELACIÓN DE RECETAS</title>
+        <!--<h:outputScript library="js" name="common.js" />        -->
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="movGralesId" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >                                
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+
+                                        <h3 style="text-align: center">REPORTE DE CANCELACIONES</h3>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px; font-weight: bolder;" value="Fecha inicio" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" value="#{repCancelacionesMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repCancelacionesMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px; font-weight: bolder;" value="Fecha Fin" />
+                                            <br/>
+                                            <p:calendar id="txtFechaFin" value="#{repCancelacionesMB.paramBusquedaReporte.fechaFin}"                                                         
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repCancelacionesMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade" >
+                                                <p:ajax event="dateSelect" listener="#{repCancelacionesMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                            </p:calendar>                                                                           
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:outputLabel style="margin-right: 10px; font-weight: bolder;" value="Receta" />
+                                            <br/>
+                                            <p:inputText value="#{repCancelacionesMB.paramBusquedaReporte.folio}"/>
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:commandButton value="Consultar Reporte"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{repCancelacionesMB.consultar}"
+                                                             update=":formTablaMovimientos, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"  
+                                                             style="float:right; margin-top: 15px"
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+
+
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+
+                                            <p:menuButton value="Exportar Documento" style="margin-top: 15px;margin-left: 8px">
+                                                <p:menuitem value="Formato PDF"                                                            
+                                                            actionListener="#{repCancelacionesMB.imprimeReporteCancelaciones()}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"
+                                                            />
+                                                <p:menuitem value="Formato EXCEL"
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false"
+                                                            actionListener="#{repCancelacionesMB.generarExcelCancelaciones}"/>                                                
+                                            </p:menuButton>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </p:panelGrid>	                                	
+                    </h:form><br />
+                    <h:form id="formTablaMovimientos" >
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     style="font-size: x-small !important;"
+                                     value="#{repCancelacionesMB.reporteCancelacionesLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true" scrollWidth="100%" scrollHeight="350">
+
+                            <p:column style="width: 8%"  headerText="FOLIO">
+                                <h:outputText value="#{result.folio}"/>
+                            </p:column>                    
+
+                            <p:column style="width: 12%" headerText="FECHA FIRMA">
+                                <h:outputText value="#{result.fechaFirma}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </p:column> 
+
+                            <p:column style="width: 12%" headerText="FECHA ENVÍO">
+                                <h:outputText value="#{result.fechaEnvio}">
+                                    <f:convertDateTime  pattern="dd/MM/yyyy HH:mm" />                                    
+                                </h:outputText>
+                            </p:column>            
+
+                            <p:column style="width: 8%"  headerText="MENSAJE">
+                                <h:outputText value="#{result.mensaje}"/>
+                            </p:column>                    
+
+
+                            <p:column style="width: 8%"  headerText="CÓDIGO">
+                                <h:outputText value="#{result.codigo}"/>
+                            </p:column>                    
+
+
+
+                        </p:dataTable>
+                    </h:form>	
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html> 

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>REPORTE DE INVENTARIO Y EXISTENCIAS</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <div style="background: #808080;padding: 10px;">
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                                <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                            </p:confirmDialog>
+                            <p:outputLabel value="Templates para Etiquetas" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>                            
+
+                            <p:inputText id="busqueda" 
+                                         value="#{templateEtiquetaMB.busquedaSolicitud}" 
+                                         style="width: 50%!important;border-radius:10px!important;margin-left: 30px;" 
+                                         placeholder="Buscar..." />                        
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>
+                            </i>                            
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{templateEtiquetaMB.buscarTemplate}"
+                                             update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();" style=" margin-left: 15px; margin-bottom: 8px;" />
+                        </div>    
+                        <p:commandButton class="btnNew" value="Agregar" icon="fa fa-plus" rendered="#{templateEtiquetaMB.permiso.puedeCrear}"
+                                         actionListener="#{templateEtiquetaMB.crearTemplate}" onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                                         oncomplete="PF('statusProcess').hide(); PF('mdlTemplate').show();"
+                                         ajax="true" update=":frmNewTemplate"  style=" margin: 5px 0; "  /> &nbsp;&nbsp;
+
+                        <br/>
+
+                        <p:dataTable  id="tblTemplates"  styleClass="cabecera" 
+                                      var="item" reflow="true"   
+                                      value="#{templateEtiquetaMB.templatesList}"                                          
+                                      style="margin-bottom:5px;"
+                                      scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="300" 
+                                      emptyMessage="No se encontraron registros" >
+                            
+                            <p:column headerText="Nombre" style="width: 150px;"  >
+                                <h:outputText value="#{item.nombre}" class="altoColumn" />
+                            </p:column>  
+                            
+                            <p:column headerText="Descripción" style="width: 300px;"  >
+                                <h:outputText value="#{item.descripcion}" class="altoColumn" />
+                            </p:column>  
+                            
+                            <p:column headerText="Tipo" style="width: 100px;">
+                                <h:outputText value="#{item.tipo}" title="#{item.tipo}" class="altoColumn" />
+                            </p:column>
+                            
+                            <p:column headerText="Acciones" style="width: 75px;" rendered="#{templateEtiquetaMB.permiso.puedeVer}" >
+                                <p:commandLink title="Editar"  actionListener="#{templateEtiquetaMB.obtenerTemplate(item.idTemplate)}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('mdlTemplate').show();" update=":frmNewTemplate" >
+                                    <i class="fa fa-edit iconMusAzul" />
+                                </p:commandLink> &nbsp;&nbsp;
+                                <p:commandLink title="Eliminar"  actionListener="#{templateEtiquetaMB.eliminarTemplate(item.idTemplate)}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update="mainForm" >
+                                    <i class="fa fa-trash iconMusRojo" />
+                                    <p:confirm header="Confirmación" message="¿Realmente desea aliminar el template?" icon="ui-icon-alert" />
+                                </p:commandLink>
+                            </p:column>
+                            <f:facet name="footer" >
+                                <p:outputLabel style="font-size: 1em !important; color: #000;">
+                                    #{templateEtiquetaMB.numeroRegistros} registros han sido encontrados
+                                </p:outputLabel>
+                            </f:facet>
+                        </p:dataTable>
+                    </h:form>
+
+                    <p:dialog header="Nuevo template" width="620" 
+                              widgetVar="mdlTemplate" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="frmNewTemplate">
+                            <p:messages id="validaMsg1" globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <table  style="width:100%!important; margin: 0px!important; " class="ui-grid-col-2,ui-grid-col-10">
+                                <tr>
+                                    <td><h:outputText value="Nombre:"/></td>
+                                    <td><p:inputText value="#{templateEtiquetaMB.templateEtiqueta.nombre}" style="width:400px;" tabindex="1" >
+                                            <p:ajax update="btnSaveTemp" listener="#{templateEtiquetaMB.reviewSave}" />
+                                        </p:inputText></td>
+                                </tr><tr>         
+                                    <td><h:outputText value="Descripción:"/></td>
+                                    <td><p:inputText value="#{templateEtiquetaMB.templateEtiqueta.descripcion}" style="width:400px;" tabindex="2" /></td>
+                                </tr><tr>         
+                                    <td><h:outputText value="Seleccione un tipo: "/></td>
+                                    <td><p:selectOneMenu style="width: 180px;"   value="#{templateEtiquetaMB.templateEtiqueta.tipo}"   tabindex="3"  >
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true"  />
+                                            <f:selectItem itemLabel="P" itemValue="P" />
+                                            <f:selectItem itemLabel="E" itemValue="E" />
+                                        <p:ajax update="btnSaveTemp" listener="#{templateEtiquetaMB.reviewSave}" />
+                                        </p:selectOneMenu></td>
+                                </tr><tr> 
+                                    <td colspan="2"><h:outputText value="Contenido del template:"/></td>
+                                </tr><tr> 
+                                    <td colspan="2">
+                                        <p:inputTextarea scrollHeight="20" autoResize="false"  tabindex="4"
+                                                         rows="20"  cols="20"  style="width:560px;"
+                                                         value="#{templateEtiquetaMB.templateEtiqueta.contenido}" >
+                                            <p:ajax update="btnSaveTemp" listener="#{templateEtiquetaMB.reviewSave}" />
+                                        </p:inputTextarea></td>
+                                </tr>
+                            </table>  
+                            <p:panel class="pnlActions">
+                                <p:commandButton id="btnTipCancel" class="btnItem" value="Cancelar"  style="width: 100px;"
+                                                 ajax="true" onclick="PF('mdlTemplate').hide();"  validateClient="false" />
+                                <p:commandButton id="btnSaveTemp" class="btnItem" disabled="#{!templateEtiquetaMB.activeBtnSave}"
+                                                 value="Guardar" style="margin:0; width: 100px; "
+                                                 actionListener="#{templateEtiquetaMB.saveTemplate}"
+                                                 onclick="PF('statusProcess').show();"
+                                                 styleClass="btnMusAzul" update="mainForm"
+                                                 oncomplete="if(args.estatus){ PF('statusProcess').hide(); PF('mdlTemplate').hide(); }"
+                                                 />
+                            </p:panel>
+                        </h:form>
+
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

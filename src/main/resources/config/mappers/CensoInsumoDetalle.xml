@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.CensoInsumoDetalleMapper" >
+
+    <select id="obtener" resultType="mx.mc.model.CensoInsumoDetalle" parameterType="mx.mc.model.CensoInsumoDetalle" >
+        SELECT idCensoInsumoDetalle, idCensoInsumo, numeroSurtimiento, minimo, maximo, numeroDias, idEstatusCensoInsumo,
+               insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM censoInsumoDetalle
+        WHERE 1=1
+        <if test=" idCensoInsumoDetalle != null ">
+            AND idCensoInsumoDetalle = #{ idCensoInsumoDetalle , jdbcType = VARCHAR }
+        </if>
+        <if test=" idCensoInsumo != null ">
+            AND idCensoInsumo = #{ idCensoInsumo , jdbcType = VARCHAR }
+        </if>        
+        <if test=" numeroSurtimiento != null ">
+            AND numeroSurtimiento = #{ numeroSurtimiento , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstatusCensoInsumo != null ">
+            AND idEstatusCensoInsumo = #{ idEstatusCensoInsumo , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <insert id="insertarListaCensoInsumoDetalle" parameterType="java.util.List">
+        INSERT INTO censoInsumoDetalle (
+                idCensoInsumoDetalle, idCensoInsumo, numeroSurtimiento, minimo, maximo, numeroDias, idEstatusCensoInsumo,
+                insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+            ) VALUES 
+        <foreach collection="list" item="item" separator="," index="index" >
+            (
+                #{ item.idCensoInsumoDetalle , jdbcType = VARCHAR },
+                #{ item.idCensoInsumo , jdbcType = VARCHAR },
+                #{ item.numeroSurtimiento , jdbcType = INTEGER },
+                #{ item.minimo , jdbcType = INTEGER },
+                #{ item.maximo , jdbcType = INTEGER },
+                #{ item.numeroDias , jdbcType = INTEGER },
+                #{ item.idEstatusCensoInsumo , jdbcType = INTEGER },
+                #{ item.insertFecha , jdbcType = TIMESTAMP },
+                #{ item.insertIdUsuario , jdbcType = VARCHAR },
+                #{ item.updateFecha , jdbcType = TIMESTAMP },
+                #{ item.updateIdUsuario , jdbcType = VARCHAR }
+            )
+        </foreach>
+    </insert>
+    
+    <delete id="eliminarListaCensoInsumoDetalle" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";" index="index" >
+            DELETE FROM censoInsumoDetalle
+                WHERE idCensoInsumoDetalle = #{ item.idCensoInsumoDetalle , jdbcType = VARCHAR }
+        </foreach>
+    </delete>
+    
+    <update id="actualizarListaCensoInsumoDetalle" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";" index="index" >
+            UPDATE censoInsumoDetalle
+                SET numeroSurtimiento = #{ item.numeroSurtimiento , jdbcType = INTEGER }
+                  , minimo = #{ item.minimo , jdbcType = INTEGER }
+                  , maximo = #{ item.maximo , jdbcType = INTEGER }
+                  , numeroDias = #{ item.numeroDias , jdbcType = INTEGER }
+                  , idEstatusCensoInsumo = #{ item.idEstatusCensoInsumo , jdbcType = INTEGER }
+                  , insertFecha = #{ item.insertFecha , jdbcType = TIMESTAMP }
+                  , insertIdUsuario = #{ item.insertIdUsuario , jdbcType = VARCHAR }
+                  , updateFecha = #{ item.updateFecha , jdbcType = TIMESTAMP }
+                  , updateIdUsuario = #{ item.updateIdUsuario , jdbcType = VARCHAR }
+            WHERE idCensoInsumoDetalle = #{ item.idCensoInsumoDetalle , jdbcType = VARCHAR }
+        </foreach>
+    </update>
+    
+    <select id="obtenerListaCensoInsumoDetalle" resultType="mx.mc.model.CensoInsumoDetalle" >
+        SELECT idCensoInsumoDetalle, idCensoInsumo, numeroSurtimiento, minimo, maximo, numeroDias, idEstatusCensoInsumo,
+               insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM censoInsumoDetalle
+        WHERE 1=1
+        <if test=" idCensoInsumo != null ">
+            AND idCensoInsumo = #{ idCensoInsumo , jdbcType = VARCHAR }
+        </if>        
+    </select>
+    
+    <select id="getCensoInsumoDetalleByMedicamentoCensoInsumo" resultType="mx.mc.model.CensoInsumoDetalleExtended" parameterType="mx.mc.model.CensoInsumoDetalleExtended" >
+        select 
+        cid.numeroSurtimiento,cid.minimo,cid.maximo,cid.idEstatusCensoInsumo,ci.vigenciaInicio,ci.vigenciaFin,ci.idMedicamento,ci.cantidadMinima 
+        from censoInsumoDetalle cid 
+        join censoInsumo ci on ci.idCensoInsumo = cid.idCensoInsumo
+        where ci.idCensoInsumo = #{ idCensoInsumo , jdbcType = VARCHAR }
+        and ci.idMedicamento = #{ idMedicamento , jdbcType = VARCHAR }
+        and cid.numeroSurtimiento = #{ numeroSurtimiento , jdbcType = INTEGER };
+    </select>
+    
+</mapper>

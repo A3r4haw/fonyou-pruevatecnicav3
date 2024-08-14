@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DimesaRecetaMapper" >
+ 
+    <select id="obtenerLista" resultType="mx.mc.model.DimesaReceta" parameterType="mx.mc.model.DimesaReceta" >
+        SELECT DISTINCT  p.idEstructura AS idEstructuraHospitalaria  , '' AS cama , '' AS descripcionServicio , '' AS estatus , p.fechaFirma as fecha 
+            , p.fechaFirma as fechaReferencia , p.folio AS folio,   s.folio AS folioPago, '' AS piso, '1' AS servicio, '' AS tipo
+            , pa.apellidoPaterno AS apellidoPaterno, pa.apellidoMaterno AS apellidoMaterno, '' AS descripcionPadecimiento
+            , '' AS descripcionPrograma, '' AS Direccion, pa.fechaNacimiento AS fechaNacimiento, pa.nombreCompleto AS nombre
+            , pa.pacienteNumero AS numeroAfiliacion , '' AS padecimiento , '' AS programa, pa.sexo AS sexo, '' AS Telefono
+            , u.apellidoMaterno AS medicoApellidoMaterno, u.apellidoPaterno AS medicoApellidoPaterno, u.cedProfesional AS medicoCedula, u.nombre as medicoNombre
+        FROM prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento and pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+        INNER JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        INNER JOIN inventario i ON se.idInventarioSurtido = i.idInventario
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN medicamento m on pi.idInsumo = m.idMedicamento
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        WHERE 
+        s.procesado = 0
+        AND s.folio NOT IN ( SELECT idrespuestaConsumo FROM respuestaConsumo )
+        AND p.idEstatusPrescripcion = 3 
+        AND s.idEstatusSurtimiento = 2 
+        AND se.cantidadEnviado <![CDATA[ > ]]> 0
+        Limit 20
+    </select>
+    
+    <select id="obtenerListaVales" resultType="mx.mc.model.DimesaReceta" parameterType="mx.mc.model.DimesaReceta" >
+        SELECT DISTINCT  p.idEstructura AS idEstructuraHospitalaria  , '' AS cama , '' AS descripcionServicio , '' AS estatus , p.fechaFirma as fecha 
+            , p.fechaFirma as fechaReferencia , si.folioVale AS folio,   s.folio AS folioPago, '' AS piso, '1' AS servicio, '' AS tipo
+            , pa.apellidoPaterno AS apellidoPaterno, pa.apellidoMaterno AS apellidoMaterno, '' AS descripcionPadecimiento
+            , '' AS descripcionPrograma, '' AS Direccion, pa.fechaNacimiento AS fechaNacimiento, pa.nombreCompleto AS nombre
+            , pa.pacienteNumero AS numeroAfiliacion , '' AS padecimiento , '' AS programa, pa.sexo AS sexo, '' AS Telefono
+            , u.apellidoMaterno AS medicoApellidoMaterno, u.apellidoPaterno AS medicoApellidoPaterno, u.cedProfesional AS medicoCedula, u.nombre as medicoNombre
+        FROM prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento and pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN medicamento m on pi.idInsumo = m.idMedicamento
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        WHERE s.procesadoVale = 0
+        AND s.folio NOT IN ( SELECT idrespuestaConsumo FROM respuestaConsumo )
+        AND p.idEstatusPrescripcion = 3 
+        AND s.idEstatusSurtimiento = 2 
+        AND si.cantidadVale <![CDATA[ > ]]> 0
+        AND si.folioVale IS NOT NULL
+        Limit 20
+    </select>
+    
+    <select id="obtenerListaCancelados" resultType="mx.mc.model.DimesaReceta" parameterType="mx.mc.model.DimesaReceta" >
+        SELECT DISTINCT  p.idEstructura AS idEstructuraHospitalaria  , '' AS cama , '' AS descripcionServicio , '' AS estatus , p.fechaFirma as fecha 
+            , p.fechaFirma as fechaReferencia , p.folio AS folio,   s.folio AS folioPago, '' AS piso, '1' AS servicio, '' AS tipo
+            , pa.apellidoMaterno AS apellidoPaterno, pa.apellidoMaterno AS apellidoMaterno, '' AS descripcionPadecimiento
+            , '' AS descripcionPrograma, '' AS Direccion, pa.fechaNacimiento AS fechaNacimiento, pa.nombreCompleto AS nombre
+            , pa.pacienteNumero AS numeroAfiliacion , '' AS padecimiento , '' AS programa, pa.sexo AS sexo, '' AS Telefono
+            , u.apellidoMaterno AS medicoApellidoMaterno, u.apellidoPaterno AS medicoApellidoPaterno, u.cedProfesional AS medicoCedula, u.nombre as medicoNombre
+        FROM prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN medicamento m on pi.idInsumo = m.idMedicamento
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        INNER JOIN surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento
+        INNER JOIN surtimientoEnviado se ON si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        INNER JOIN inventario i ON se.idInventarioSurtido = i.idInventario
+        WHERE 
+        s.procesado = 0
+        AND s.folio NOT IN ( SELECT idrespuestaConsumo FROM respuestaConsumo )
+        AND p.idEstatusPrescripcion = 4 
+        AND s.idEstatusSurtimiento = 5 
+        AND se.cantidadEnviado <![CDATA[ > ]]> 0
+        Limit 20
+    </select>
+</mapper>

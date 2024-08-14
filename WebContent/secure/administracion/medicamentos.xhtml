@@ -1,0 +1,677 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+      
+    <h:head>
+        <title>Medicamentos</title>
+    </h:head>
+
+    <h:body>
+
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">
+
+                <div class="mainPanel">
+
+                    <h:form id="mainForm">
+
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            
+                            <p:outputLabel value="Insumos" style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+                            
+                                <p:selectOneMenu style="width: 120px;" value="#{medicamentoMB.tipoInsumo}" >
+                                    <f:selectItems value="#{medicamentoMB.tipoInsumoList}" var="tipo" itemLabel="#{tipo.nombreCatalogo}" itemValue="#{tipo.idCatalogoGeneral}" />
+                                    <p:ajax update="tblMedicamentos" listener="#{medicamentoMB.obtieneInsumo}" />
+                                </p:selectOneMenu>
+                            <p:spacer width="10"/>
+                                <p:inputText id="textSearch" style="width: 50%!important;border-radius:10px!important;" 
+                                             value="#{medicamentoMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar..." />
+                                <i class="iconSearch">
+                                    <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>
+                                </i>
+                                <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{medicamentoMB.buscarMedicamento}"
+                                                 update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide();" style=" margin-left: 15px; margin-bottom: 8px;" />
+                                <ui:remove>
+                                <p:menuButton value="Exportar" 
+                                              style="margin-left: 15px">
+                                    <p:menuitem value="Excel"  
+                                                icon="fa fa-file-excel-o"
+                                                ajax="false">
+                                        <p:dataExporter type="xls" target="tblMedicamentos" fileName="Catalogo" />
+                                    </p:menuitem>
+                                    <p:menuitem value="Pdf" 
+                                                icon="fa fa-file-pdf-o" 
+                                                ajax="false"> 
+                                        <p:dataExporter type="pdf" target="tblMedicamentos" fileName="Catalogo" />
+                                    </p:menuitem>
+                                </p:menuButton>  
+                                </ui:remove>
+                            
+                            
+                        </div>
+                        <p:messages id="messages" showDetail="false" globalOnly="true" closable="true"  rendered="#{medicamentoMB.message}" >
+                            <p:autoUpdate />
+                        </p:messages>
+                            
+                        <p:commandButton class="btnNew" value="Agregar" disabled="#{medicamentoMB.btnNew}" icon="fa fa-plus" rendered="#{medicamentoMB.permiso.puedeCrear}"
+                                         actionListener="#{medicamentoMB.crearMedicamento}" onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                                         oncomplete="PF('statusProcess').hide(); PF('modalMedicamento').show();"
+                                         ajax="true" update=":formModal"  style=" margin: 5px 0; " resetValues="true"  /> &nbsp;&nbsp;
+
+                        <p:commandButton class="btnNew" value="Agregar Layout" disabled="#{medicamentoMB.btnNew}" icon="fa fa-plus" rendered="#{medicamentoMB.permiso.puedeProcesar}"
+                                         actionListener="#{medicamentoMB.crearMedicamento}" onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide(); PF('mdlLayout').show();"
+                                         ajax="true" update=":formLayout"  style=" margin: 5px 0; "  />
+                        <br/>
+                        
+                        <p:outputLabel value="No tiene permiso de visualización de esta transacción." 
+                               style="font-size: 18px !important; font-weight: bold; color: red;"
+                               rendered="#{!medicamentoMB.permiso.puedeVer}" />
+                        
+                        <p:dataTable  id="tblMedicamentos"  styleClass="cabecera" 
+                                      var="item" reflow="true"   
+                                      lazy="true"
+                                      value="#{medicamentoMB.medicamentosLazy}"                                          
+                                      style="margin-bottom:5px;"                                      
+                                      scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" 
+                                     paginatorPosition="bottom"
+                                     rows="10"
+                                     paginator="true"
+                                     paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     rendered="#{medicamentoMB.permiso.puedeVer}"
+                                      >
+                            <p:column headerText="Clave Alterna" style="width: 120px;" sortBy="#{item.claveAlterna}" rendered="false">
+                                <h:outputText value="#{item.claveAlterna}" class="altoColumn" />
+                            </p:column>  
+                            <p:column headerText="Codigo Barras Alterno" style="width: 120px;" sortBy="#{item.codigoBarrasAlterno}"  rendered="false">
+                                <h:outputText value="#{item.codigoBarrasAlterno}" class="altoColumn" />
+                            </p:column>  
+                            <p:column headerText="Clave Institucional" style="width: 120px;" sortBy="#{item.claveInstitucional}" >
+                                <h:outputText value="#{item.claveInstitucional}" class="altoColumn" />
+                            </p:column>                                                                
+                            <p:column headerText="Nombre Corto" style="width: 230px;" sortBy="#{item.nombreCorto}">
+                                <h:outputText value="#{item.nombreCorto}" title="#{item.nombreCorto}" class="altoColumn" />
+                            </p:column>
+                            <p:column headerText="Nombre Largo" style="width: 300px;" sortBy="#{item.nombreLargo}">
+                                <h:outputText value="#{item.nombreLargo}" title="#{item.nombreLargo}" class="altoColumn" />
+                            </p:column>
+                            <p:column headerText="Sustancia Activa" style="width: 150px;" rendered="#{medicamentoMB.medi}" sortBy="#{item.sustanciaActiva}">
+                                <h:outputText value="#{item.sustanciaActiva}" class="altoColumn" />
+                            </p:column>    
+                            <p:column headerText="Requiere Refrigeración" style="width: 150px;" sortBy="#{item.refrigeracion}">
+                                <h:outputText value="#{item.refrigeracion > 0 ? 'Si' : 'No'}" class="altoColumn"/>
+                            </p:column>
+                            <p:column headerText="Cuadro Básico" style="width: 90px;" rendered="#{medicamentoMB.mate}" >
+                                <h:outputText value="#{item.cuadroBasico}" class="altoColumn" />
+                            </p:column>
+                            <p:column headerText="Activo" style="width: 40px;">
+                                <h:outputText value="#{item.activo > 0 ? 'Si' : 'No' }" class="altoColumn" />
+                            </p:column>
+                            <p:column headerText="Acciones" style="width: 70px;" >
+                                <p:commandLink title="Ver"  actionListener="#{medicamentoMB.obtenerMedicamento(item.idMedicamento)}" rendered="#{medicamentoMB.permiso.puedeVer}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('modalMedicamento').show();" update=":formModal" >
+                                    <i class="fa fa-eye  iconMusAzul" />
+                                </p:commandLink> &nbsp;
+                                <p:commandLink title="#{item.activo > 0 ? 'Desactivar' : 'Activar'}" actionListener="#{medicamentoMB.statusMedicamento(item.idMedicamento,item.activo)}" rendered="#{medicamentoMB.permiso.puedeEditar}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":mainForm:tblMedicamentos " >
+                                    <i class="#{item.activo > 0 ? 'fa fa-toggle-on' : 'fa fa-toggle-off'}  iconMusAzul" />
+
+                                </p:commandLink> &nbsp;
+<!--                                <p:commandLink title="Asignar Localidad"  actionListener="# {medicamentoMB.obtenerLocalidad(item.idMedicamento)}" rendered="# {medicamentoMB.permiso.puedeProcesar}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('modalAsignarLocalidad').show();" update=":formModal2" >
+                                    <i class="fa fa-map-marker  iconMusAzul" />
+                                </p:commandLink>-->
+                            </p:column>                            
+                        </p:dataTable>
+                    </h:form>                                                                        
+
+                    <p:dialog header="Información del Insumo"
+                              widgetVar="modalMedicamento"
+                              closeOnEscape="true"
+                              closable="true"   styleClass="autoWidthDialog"                     
+                              modal="true" responsive="true" width="50%"  > 
+                        <h:form id="formModal" style="padding: 0px;">                                 
+                            <p:messages id="messages2" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:tabView style=" font-size:small !important;" id="tbViewMed" rendered="#{medicamentoMB.medi}" tabindex="22"  >
+                                <p:tab title="Básica">
+                                    <table  style="width:100%!important; margin: 0px!important; " class="ui-grid-col-2,ui-grid-col-10">
+                                        <tr>
+                                            <td colspan="2">
+                                                <p:outputLabel value="Clave Institucional *" class="plabel" /><br />
+                                                <p:inputText id="claveIns" label="Clave Institucional"  class="ptxt1"  tabindex="1"
+                                                             value="#{medicamentoMB.medicamentoSelect.claveInstitucional}" disabled="#{!medicamentoMB.activo}"
+                                                             maxlength="45" >
+                                                    <p:ajax event="blur" listener="#{medicamentoMB.validaEnTiempoClave()}" />
+                                                </p:inputText>                                            
+                                                <br />
+                                                <p:outputLabel value="Clave Alterna " class="plabel" /><br />
+                                                <p:inputText id="claveAlterna" label="Clave Institucional"  class="ptxt1"  tabindex="2"  
+                                                             value="#{medicamentoMB.medicamentoSelect.claveAlterna}" disabled="#{!medicamentoMB.activo}"
+                                                             maxlength="45" >
+
+                                                </p:inputText>
+                                                <br />
+                                                <p:outputLabel value="Sustancia Activa *" class="plabel" /><br />
+                                                <p:autoComplete  size="25" value="#{medicamentoMB.sustanciaSelect}"  autocomplete="on" 
+                                                                 completeMethod="#{medicamentoMB.autoComplete}"  
+                                                                 disabled="#{!medicamentoMB.activo}"
+                                                                 minQueryLength="2" 
+                                                                 scrollHeight="350"
+                                                                 var="sustancia" 
+                                                                 itemValue="#{sustancia.idSustanciaActiva}" 
+                                                                 itemLabel="#{sustancia.nombreSustanciaActiva}"
+                                                                 converter="sustanciaActivaConverter" tabindex="3" >
+                                                    <p:ajax event="itemSelect" listener="#{medicamentoMB.handleSelect}" ></p:ajax>
+                                                    <p:ajax event="itemUnselect" listener="#{medicamentoMB.handleUnSelect}" ></p:ajax>
+                                                </p:autoComplete>
+                                                <br />
+                                                <p:outputLabel value="Vía de Administración *" class="plabel" /><br />
+                                                <p:selectOneMenu  class="sOneMenu" value="#{medicamentoMB.medicamentoSelect.idViaAdministracion}"
+                                                                  tabindex="4"  disabled="#{!medicamentoMB.activo}"
+                                                                  filter="true"
+                                                                  filterMatchMode="contains" >
+                                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                                    <f:selectItems class="sOneMenu" value="#{medicamentoMB.viaAdministracionList}" var="via" itemLabel="#{via.nombreViaAdministracion}"
+                                                                   itemValue="#{via.idViaAdministracion}" />
+                                                </p:selectOneMenu>
+                                                <br />
+                                                <p:outputLabel value="Indivisible" class="plabel" /><br />
+                                                <p:selectBooleanButton  onLabel="Si" offLabel="No" tabindex="5"  value="#{medicamentoMB.medicamentoSelect.indivisible}" disabled="#{!medicamentoMB.activo}" />
+                                            </td>
+                                            <td colspan="4" >
+                                                <h:graphicImage id="ImgMedicamento" value="#{medicamentoMB.imagen}"  height="150" width="200" />
+                                                <p:fileUpload auto="true" label="Seleccionar Imagen" fileUploadListener="#{medicamentoMB.uploadAttachment}"
+                                                              update=":formModal:tbViewMed:ImgMedicamento"  disabled="#{!medicamentoMB.activo}"   />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="6">
+                                                <p:outputLabel value="Nombre corto *" class="plabel"  /><br />
+                                                <p:inputText id="nombreCorto" label="Nombre corto"  class="ptxt2" tabindex="7"
+                                                             value="#{medicamentoMB.medicamentoSelect.nombreCorto}" 
+                                                             disabled="#{!medicamentoMB.activo}" maxlength="299" required="true" />
+                                                <br />
+                                                <p:outputLabel value="Nombre largo" class="plabel" /><br />
+                                                <p:inputText  class="ptxt2"    tabindex="8"  value="#{medicamentoMB.medicamentoSelect.nombreLargo}" 
+                                                              maxlength="999"  disabled="#{!medicamentoMB.activo}" >
+                                                </p:inputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2"> 
+                                                <p:outputLabel value="Concentración *" class="plabel" /><br />                                                
+                                                <p:inputNumber maxlength="9" tabindex="9" 
+                                                               value="#{medicamentoMB.medicamentoSelect.concentracion}"                                                             
+                                                               disabled="#{!medicamentoMB.activo}" minValue="0" size="6" decimalSeparator="." thousandSeparator=","/>  
+                                            </td><td colspan="2">
+                                                <p:outputLabel value="Unidad Concentración *" class="plabel" /><br />
+                                                <p:selectOneMenu   class="sOneMenu" tabindex="10" 
+                                                                   value="#{medicamentoMB.medicamentoSelect.idUnidadConcentracion}"
+                                                                   disabled="#{!medicamentoMB.activo}" >
+                                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                                    <f:selectItems value="#{medicamentoMB.unidadConcentracionList}" var="unidad" itemLabel="#{unidad.nombreUnidadConcentracion}"
+                                                                   itemValue="#{unidad.idUnidadConcentracion}" />
+                                                </p:selectOneMenu>
+                                            </td>
+                                            <td colspan="1">
+                                                <h:outputText value=" Controlado" /><br />
+                                                <p:selectBooleanCheckbox value="#{medicamentoMB.medicamentoControlado}" tabindex="11" 
+                                                                         disabled="#{!medicamentoMB.activo}"/> <p:spacer width="10"/>                                               
+                                            </td>
+                                            
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">
+                                                <p:outputLabel value="Presentación entrada *" class="plabel" /><br />
+                                                <p:selectOneMenu  class="sOneMenu"  tabindex="12"
+                                                                  value="#{medicamentoMB.medicamentoSelect.idPresentacionEntrada}" 
+                                                                  disabled="#{!medicamentoMB.activo}"
+                                                                  filter="true"
+                                                                  filterMatchMode="contains" >
+                                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                                    <f:selectItems value="#{medicamentoMB.presentacionMedicamentoList}" var="presentacion" itemLabel="#{presentacion.nombrePresentacion}"
+                                                                   itemValue="#{presentacion.idPresentacion}" />
+                                                </p:selectOneMenu>
+                                                <br />
+                                                <p:outputLabel value="Categoría medicamento *" class="plabel" /><br />
+                                                <p:selectOneMenu  class="sOneMenu" tabindex="15"
+                                                                  value="#{medicamentoMB.medicamentoSelect.idCategoria}" 
+                                                                  disabled="#{!medicamentoMB.activo}"
+                                                                  filter="true"
+                                                                  filterMatchMode="contains" >
+                                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                                    <f:selectItems value="#{medicamentoMB.categoriaMedicamentoList}" var="categ" itemLabel="#{categ.nombreCategoriaMedicamento}"
+                                                                   itemValue="#{categ.idCategoriaMedicamento}" />
+                                                    <p:ajax update="subcategoria" listener="#{medicamentoMB.subcategoriaMedicamento()}" />
+                                                </p:selectOneMenu>                                                
+                                            </td><td colspan="2">
+                                                <p:outputLabel value="Factor de transformación *" class="plabel" /><br />
+                                                <p:inputNumber  class="ptxt1" minValue="1" decimalPlaces="0"  tabindex="13"
+                                                                value="#{medicamentoMB.medicamentoSelect.factorTransformacion}"
+                                                                disabled="#{!medicamentoMB.activo}" requiredMessage="Ingrese un número" converterMessage="Facor de Transformación. Ingrese un número"  />
+                                                <br />
+                                                <p:outputLabel value="Subcategoría medicamento" class="plabel" /><br />
+                                                <p:selectOneMenu id="subcategoria" class="sOneMenu" tabindex="16"
+                                                                 value="#{medicamentoMB.medicamentoSelect.idSubcategoria}" 
+                                                                 disabled="#{!medicamentoMB.activo}"  
+                                                                 filter="true"
+                                                                 filterMatchMode="contains"  >
+                                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                                    <f:selectItems value="#{medicamentoMB.subcategoriaMedicamentoList}" var="sub" itemLabel="#{sub.nombreSubcategoriaMedicamento}"
+                                                                   itemValue="#{sub.idSubcategoriaMedicamento}" />
+                                                </p:selectOneMenu>
+                                            </td><td colspan="2">
+                                                <p:outputLabel value="Presentación salida *" class="plabel" /><br />
+                                                <p:selectOneMenu  class="sOneMenu" tabindex="14"
+                                                                  value="#{medicamentoMB.medicamentoSelect.idPresentacionSalida}" 
+                                                                  disabled="#{!medicamentoMB.activo}" 
+                                                                  filter="true"
+                                                                  filterMatchMode="contains" >
+                                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                                    <f:selectItems value="#{medicamentoMB.presentacionMedicamentoList}" var="present" itemLabel="#{present.nombrePresentacion}"
+                                                                   itemValue="#{present.idPresentacion}" />
+                                                </p:selectOneMenu>
+                                                <br />                                          
+                                                <p:outputLabel value="Grupo" class="plabel" /><br />
+                                                <p:inputText  class="ptxt1" tabindex="17" 
+                                                              value="#{medicamentoMB.medicamentoSelect.grupo}"
+                                                              maxlength="20" disabled="#{!medicamentoMB.activo}" >
+                                                </p:inputText>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </p:tab>
+                                <p:tab title="Información Adicional" rendered="#{medicamentoMB.mostrarPropiedades}" >
+                                    <table  style="width:100%!important; margin: 0px!important; " class="ui-grid-col-2,ui-grid-col-10">
+                                        <tr>
+                                            <td>
+                                                <p:outputLabel value="Cantidad Por Envase " class="plabel" /><br />
+                                                <p:inputNumber maxlength="7" tabindex="24" 
+                                                               value="#{medicamentoMB.medicamentoSelect.cantPorEnvase}"
+                                                               disabled="#{!medicamentoMB.activo}" minValue="0" size="10" 
+                                                               decimalSeparator="." thousandSeparator="," decimalPlaces="2" />
+                                            </td>
+                                            <td>
+                                                <p:outputLabel value="Unidad de Medida " class="plabel" /><br />
+                                                <p:selectOneMenu class="sOneMenu" tabindex="25" 
+                                                                 value="#{medicamentoMB.medicamentoSelect.idUnidadMedida}"
+                                                                 filter="true" filterMatchMode="contains"
+                                                                   disabled="#{!medicamentoMB.activo}" >
+                                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="#{0}" noSelectionOption="true" />
+                                                    <f:selectItems value="#{medicamentoMB.unidadConcentracionList}" var="medida"
+                                                                   itemLabel="#{medida.nombreUnidadConcentracion}" itemValue="#{medida.idUnidadConcentracion}" />
+                                                </p:selectOneMenu>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <p:outputLabel value="Mezcla Parental" class="plabel" /><br />
+                                                <p:selectBooleanCheckbox value="#{medicamentoMB.parental}" tabindex="29"
+                                                                         disabled="#{!medicamentoMB.activo}"/> <p:spacer width="10"/> 
+                                            </td>
+                                            <td >
+                                                <p:outputLabel value="Osmolaridad (Osm/L)" class="plabel" /><br />
+                                                <p:inputNumber maxlength="7" tabindex="30" value="#{medicamentoMB.medicamentoSelect.osmolaridad}" 
+                                                               disabled="#{!medicamentoMB.activo}" minValue="0" size="10" 
+                                                               decimalSeparator="." thousandSeparator="," decimalPlaces="4"/>  
+                                            </td>
+                                            <td >
+                                                <p:outputLabel value="Densidad" class="plabel" /><br />
+                                                <p:inputNumber maxlength="7" tabindex="32" value="#{medicamentoMB.medicamentoSelect.densidad}"
+                                                               disabled="#{!medicamentoMB.activo}" minValue="0" size="10" 
+                                                               decimalSeparator="." thousandSeparator="," decimalPlaces="4"/>  
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>
+                                                <p:outputLabel value="Cálculo de NCA " class="plabel" /><br />
+                                                <p:selectBooleanCheckbox value="#{medicamentoMB.medicamentoSelect.calcularNCA}" tabindex="26"
+                                                                         disabled="#{!medicamentoMB.activo}"/> 
+                                            </td>
+                                            <td>
+                                                <p:outputLabel value="Dosis por mL " class="plabel" /><br />
+                                                <p:inputNumber maxlength="7" tabindex="27" 
+                                                               value="#{medicamentoMB.medicamentoSelect.dosisPorMl}"
+                                                               disabled="#{!medicamentoMB.activo}" minValue="0" size="10" 
+                                                               decimalSeparator="." thousandSeparator="," decimalPlaces="2" />
+                                                <p:outputLabel value=" " class="plabel" />
+                                            </td>
+                                            <td>
+                                                <p:outputLabel value="Unidad de Dosis " class="plabel" /><br />
+                                                <p:selectOneMenu class="sOneMenu" tabindex="28" 
+                                                                 value="#{medicamentoMB.medicamentoSelect.idUnidadMedidaDosis}"
+                                                                 filter="true" filterMatchMode="contains"
+                                                                   disabled="#{!medicamentoMB.activo}" >
+                                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="#{0}" noSelectionOption="true" />
+                                                    <f:selectItems value="#{medicamentoMB.unidadConcentracionList}" var="medida"
+                                                                   itemLabel="#{medida.nombreUnidadConcentracion}" itemValue="#{medida.idUnidadConcentracion}" />
+                                                </p:selectOneMenu>
+                                            </td>
+                                        </tr>
+                                            
+                                        <tr>
+                                            <td>
+                                                <p:outputLabel value="Es Diluyente " class="plabel" /><br />
+                                                <p:selectBooleanCheckbox value="#{medicamentoMB.medicamentoSelect.diluyente}" tabindex="33"
+                                                                         disabled="#{!medicamentoMB.activo}"/> 
+                                            </td>
+                                            <td>
+                                                <p:outputLabel value="Incluye Diluyente " class="plabel" /><br />
+                                                <p:selectBooleanCheckbox value="#{medicamentoMB.medicamentoSelect.incluyeDiluyente}" tabindex="34"
+                                                                         disabled="#{!medicamentoMB.activo}"/>
+                                            </td>
+                                            <td>
+                                                <p:outputLabel value="Requiere Diluyente " class="plabel" /><br />
+                                                <p:selectBooleanCheckbox value="#{medicamentoMB.medicamentoSelect.requiereDiluyente}" tabindex="35"
+                                                                         disabled="#{!medicamentoMB.activo}"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <p:outputLabel value="Estabilidad (hrs)" class="plabel" /><br />
+                                                <p:inputNumber maxlength="7" tabindex="36" 
+                                                               value="#{medicamentoMB.medicamentoSelect.noHorasEstabilidad}"
+                                                               disabled="#{!medicamentoMB.activo}" minValue="0" size="10" 
+                                                               decimalSeparator="." thousandSeparator="," decimalPlaces="0" />
+                                            </td>
+                                            <td>
+                                                <p:outputLabel value="Estabilidad Abierto (hrs)" class="plabel" /><br />
+                                                <p:inputNumber maxlength="7" tabindex="37" 
+                                                               value="#{medicamentoMB.medicamentoSelect.noHorasEstabilidadAbierto}"
+                                                               disabled="#{!medicamentoMB.activo}" minValue="0" size="10" 
+                                                               decimalSeparator="." thousandSeparator="," decimalPlaces="3" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <p:outputLabel value="Es fotosensible " class="plabel" /><br />
+                                                <p:selectBooleanCheckbox value="#{medicamentoMB.medicamentoSelect.fotosensible}" tabindex="38"
+                                                                         disabled="#{!medicamentoMB.activo}"/>
+                                            </td>
+                                            <td>
+                                                <p:outputLabel value="Temperatura Ambiente " class="plabel" /><br />
+                                                <p:selectBooleanCheckbox value="#{medicamentoMB.medicamentoSelect.tempAmbiente}" tabindex="39"
+                                                                         disabled="#{!medicamentoMB.activo}"/>
+                                            </td>
+                                            <td>
+                                                <p:outputLabel value="Temperatura Refrigeración " class="plabel" /><br />
+                                                <p:selectBooleanCheckbox value="#{medicamentoMB.medicamentoSelect.tempRefrigeracion}" tabindex="40"
+                                                                         disabled="#{!medicamentoMB.activo}"/> <p:spacer width="10"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <p:outputLabel value="No agitar " class="plabel" /><br />
+                                                <p:selectBooleanCheckbox value="#{medicamentoMB.medicamentoSelect.noAgitar}" tabindex="41"
+                                                                         disabled="#{!medicamentoMB.activo}"/> <p:spacer width="10"/>
+                                            </td>
+                                            <td>
+                                                <p:outputLabel value="Es contenedor " class="plabel" /><br />
+                                                <p:selectBooleanCheckbox value="#{medicamentoMB.medicamentoSelect.contenedor}" tabindex="42"
+                                                                         disabled="#{!medicamentoMB.activo}"/> <p:spacer width="10"/>
+                                            </td>
+                                            <td>
+                                                <p:outputLabel value="Calorias (Kcal/g) " class="plabel" /><br />
+                                                <p:inputNumber maxlength="7" tabindex="43" 
+                                                               value="#{medicamentoMB.medicamentoSelect.calorias}"
+                                                               disabled="#{!medicamentoMB.activo}" minValue="0" size="10" 
+                                                               decimalSeparator="." thousandSeparator="," decimalPlaces="3" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <p:outputLabel value="Requiere Autorización " class="plabel" /><br />
+                                                <p:selectBooleanCheckbox value="#{medicamentoMB.medicamentoSelect.autorizar}" tabindex="44"
+                                                                         disabled="#{!medicamentoMB.activo}"/> <p:spacer width="10"/>
+                                            </td>
+                                        </tr>
+                                        <ui:remove>
+                                        <tr>
+                                            <td colspan="2">  
+                                                <p:outputLabel value="Laboratorio" class="plabel" /><br />
+                                                <p:inputText  class="ptxt1"  tabindex="43"  
+                                                              value="#{medicamentoMB.medicamentoSelect.laboratorio}"
+                                                              disabled="#{!medicamentoMB.activo}"
+                                                              maxlength="50"  >
+                                                </p:inputText>
+                                            </td>
+                                            <td colspan="2">
+                                                <p:outputLabel value="Presentación laboratorio" class="plabel" /><br />
+                                                <p:inputText  class="ptxt1"   tabindex="44"   
+                                                              value="#{medicamentoMB.medicamentoSelect.presentacionLaboratorio}" 
+                                                              maxlength="100"  disabled="#{!medicamentoMB.activo}" >
+                                                </p:inputText>
+                                            </td>
+                                            <td colspan="2">
+                                                <p:outputLabel value="Ubicación" class="plabel" rendered="false" /><br />
+                                                <p:inputText id="ubicacion" label="Ubicacíon"  class="ptxt1"  rendered="false"  tabindex="45"  
+                                                             value="#{medicamentoMB.medicamentoSelect.ubicacion}" 
+                                                             disabled="#{!medicamentoMB.activo}" maxlength="40" required="false">
+                                                </p:inputText>
+                                            </td>
+                                        </tr>
+                                        </ui:remove>
+                                        
+                                            
+                                    </table>
+                                </p:tab>
+                            </p:tabView>
+                            <p:tabView style=" font-size:small !important;" id="tbViewMat" rendered="#{medicamentoMB.mate}" tabindex="10"  >
+                                <p:tab title="Básica">
+                                    <table  style="width:100%!important; margin: 0px!important; ">
+                                    <tr>
+                                        <td colspan="2">
+                                            <p:outputLabel value="Clave Institucional" class="plabel" /><br />
+                                            <p:inputText id="claveMat"  class="ptxt1" tabindex="1"  
+                                                         value="#{medicamentoMB.medicamentoSelect.claveInstitucional}" disabled="#{!medicamentoMB.activo}" >
+<!--                                                <p:ajax event="blur" listener="# {medicamentoMB.validaEnTiempoClave()}" />-->
+                                            </p:inputText>
+                                            <br />
+                                            <p:outputLabel value="Clave Alterna " class="plabel" /><br />
+                                            <p:inputText id="claveAlternaMat" label="Clave Institucional"  class="ptxt1"  tabindex="2"  
+                                                         value="#{medicamentoMB.medicamentoSelect.claveAlterna}" disabled="#{!medicamentoMB.activo}"
+                                                         maxlength="45" >
+                                            </p:inputText>
+                                            <br />
+                                            <p:outputLabel value="Cuadro Basico" /><br />
+                                            <p:selectOneMenu  class="sOneMenu" requiredMessage="Presentacion requerido" 
+                                                              value="#{medicamentoMB.medicamentoSelect.cuadroBasico}" 
+                                                              disabled="#{!medicamentoMB.activo}" tabindex="3"
+                                                              filter="true"
+                                                              filterMatchMode="contains" >
+                                                <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                                <f:selectItems value="#{medicamentoMB.categoriaMedicamentoList}" var="categ" itemLabel="#{categ.nombreCategoriaMedicamento}"
+                                                               itemValue="#{categ.idCategoriaMedicamento}" />
+                                                <p:ajax  listener="#{medicamentoMB.subcategoriaMedicamento()}" />
+                                            </p:selectOneMenu>
+                                        </td><td colspan="2">                                            
+                                            <h:graphicImage id="ImgMaterial" value="#{medicamentoMB.imagen}"  height="150" width="200" />
+                                            <p:fileUpload auto="true" label="Seleccionar Imagen" 
+                                                          dragDropSupport="true" mode="advanced" multiple="false" fileLimit="1" fileLimitMessage="Sólo se permite adjuntar 1 Archivo" 
+                                                          style="width: 200px !important;" update="ImgMaterial"
+                                                          sizeLimit="10000000" invalidSizeMessage="Este archivo supero el tamaño de 10MB"
+                                                            allowTypes="/(\.|\/)(jpeg|png|jpg|tiff|gif)$/"
+                                                            invalidFileMessage="Tipo de archivo inválido"
+                                                          disabled="#{!medicamentoMB.activo}" rendered="true"
+                                                          fileUploadListener="#{medicamentoMB.uploadAttachment}" 
+                                                          onstart="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" />
+                                        </td>
+                                    </tr> <tr>
+                                        <td colspan="4">
+                                            <p:outputLabel value="Nombre corto" class="plabel" /><br />
+                                            <p:inputText  class="ptxt2"    tabindex="5"  value="#{medicamentoMB.medicamentoSelect.nombreCorto}" 
+                                                          disabled="#{!medicamentoMB.activo}" >
+                                            </p:inputText>
+                                            <br />
+                                            <p:outputLabel value="Nombre largo" class="plabel" /><br />
+                                            <p:inputText  class="ptxt2"   tabindex="6"  value="#{medicamentoMB.medicamentoSelect.nombreLargo}" disabled="#{!medicamentoMB.activo}" >
+                                            </p:inputText>
+                                        </td>
+                                    </tr><tr>
+                                        <td colspan="2"><br /> 
+                                            <p:outputLabel value="Presentación entrada" class="plabel" /><br />
+                                            <p:selectOneMenu  class="sOneMenu" value="#{medicamentoMB.medicamentoSelect.idPresentacionEntrada}"
+                                                              requiredMessage="Presentacion requerido" disabled="#{!medicamentoMB.activo}" tabindex="7"
+                                                             filter="true" filterMatchMode="contains"  >
+                                                <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                                <f:selectItems value="#{medicamentoMB.presentacionMedicamentoList}" var="presentacion" itemLabel="#{presentacion.nombrePresentacion}"
+                                                               itemValue="#{presentacion.idPresentacion}" />
+                                            </p:selectOneMenu>
+                                        </td>
+
+                                        <td colspan="2">
+                                            <p:outputLabel value="Factor de transformación *" class="plabel" style="margin-top: 20px" /><br />
+                                            <p:inputNumber  class="sOneMenu" minValue="1" decimalPlaces="0" value="#{medicamentoMB.medicamentoSelect.factorTransformacion}" disabled="#{!medicamentoMB.activo}" tabindex="8"  />
+                                            <br />
+                                        </td>
+                                        <td colspan="2"><br /> 
+                                            <p:outputLabel value="Presentación salida" class="plabel" /><br />
+                                            <p:selectOneMenu  class="sOneMenu" value="#{medicamentoMB.medicamentoSelect.idPresentacionSalida}"   
+                                                              requiredMessage="Presentacion requerido" disabled="#{!medicamentoMB.activo}" tabindex="9"
+                                                              filter="true" filterMatchMode="contains"  >
+                                                <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                                <f:selectItems value="#{medicamentoMB.presentacionMedicamentoList}" var="present" itemLabel="#{present.nombrePresentacion}"
+                                                               itemValue="#{present.idPresentacion}" />
+                                            </p:selectOneMenu>                                                
+                                        </td>
+                                    </tr>
+                                </table> 
+                                </p:tab>
+                            </p:tabView>
+
+                            <p:panel class="pnlActions">
+                                &nbsp;&nbsp;                                    
+                                <p:commandButton id="btnEdit" class="btnItem" value="Editar" actionListener="#{medicamentoMB.editMedicamento}"
+                                                 styleClass="btnMusAzul" tabindex="42"
+                                                 ajax="true" update=":formModal"  rendered="#{!medicamentoMB.rndEdit}" onclick="PF('statusProcess').show();" 
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalMedicamento').show();" validateClient="false" />
+                                &nbsp;&nbsp;
+                                <p:commandButton id="btnSave"  class="btnItem" value="Guardar" actionListener="#{medicamentoMB.saveMedicamento}"
+                                                 styleClass="btnMusAzul"  tabindex="43"
+                                                 update=":formModal, :mainForm:tblMedicamentos"  ajax="true" rendered="#{!medicamentoMB.rndSave}" onclick="PF('statusProcess').show();" 
+                                                 oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('modalMedicamento').hide(); }" validateClient="true"  />
+                            </p:panel> 
+
+                        </h:form>                                     
+                    </p:dialog>                                                   
+
+                    <p:dialog header="AGREGAR INSUMOS DE FORMA MASIVA"
+                              widgetVar="mdlLayout"
+                              closeOnEscape="true"
+                              closable="true"   styleClass="autoWidthDialog"                     
+                              modal="true" responsive="true"  >                             
+                        <h:form id="formLayout" style="padding: 0px;"> 
+                            <p:messages id="msjLayout" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:fileUpload  dragDropSupport="false" uploadLabel="Subir Archivo" cancelLabel="Cancelar" label="Seleccionar Archivo" 
+                                           allowTypes="/(\.|\/)(xlsx|xls)$/" invalidFileMessage="Tipo de archivo invalido" 
+                                           fileUploadListener="#{medicamentoMB.layoutFileUpload}"  mode="advanced" update="formLayout"  />
+                            <p:outputPanel rendered="#{medicamentoMB.noProcess}" >
+                                <p:dataTable  id="tblNoProcessEstructura"
+                                              var="item" editable="true"  
+                                              emptyMessage="Sin registros"
+                                              value="#{medicamentoMB.medicamentoLayout}"
+                                              styleClass="styleEventosPlanPrestacion" reflow="true"
+                                              style="margin-bottom:5px;" 
+                                              scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" > 
+
+                                    <f:facet name="header" ><h:outputText style="color: #000;" value="Datos NO procesados" /></f:facet>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.claveInstitucional}" headerText="Clave Institucional" >
+                                        <h:outputText value="#{item.claveInstitucional}" title="#{item.claveInstitucional}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.nombreCorto}" headerText="Nombre Corto" >
+                                        <h:outputText value="#{item.nombreCorto}" title="#{item.nombreCorto}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.nombreLargo}" headerText="Nombre Largo" >
+                                        <h:outputText value="#{item.nombreLargo}" title="#{item.nombreLargo}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.grupo}" headerText="Activo" >
+                                        <h:outputText value="#{item.grupo}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.categoria}" headerText="Motivo" >
+                                        <h:outputText value="#{item.categoria}" title="#{item.categoria}" class="altoColumn" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:outputPanel>
+                            <p:panel class="pnlActions">
+                                <p:commandButton class="btnNew" value="Aceptar" 
+                                                 actionListener="#{medicamentoMB.obtieneInsumo}" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('mdlLayout').hide();"
+                                                 ajax="true" update="mainForm:tblMedicamentos"  style=" margin: 5px 0; "  />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>  
+                    
+                    <p:dialog header="ASIGNAR LOCALIDAD EN AVG"
+                              widgetVar="modalAsignarLocalidad"
+                              closeOnEscape="true"
+                              closable="true"   styleClass="autoWidthDialog"                     
+                              modal="true" responsive="true"  >                             
+                        <h:form id="formModal2" style="padding: 0px;">                                 
+                            <p:messages id="messages3" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+
+                            <p:panel style="border:#0081c2 solid 1px; padding:0px!important;"  rendered="#{medicamentoMB.medi}">  
+
+                                <table  style="width:100%!important; margin: 0px!important; " class="ui-grid-col-2,ui-grid-col-10">
+                                    <tr>
+                                        <td colspan="2">
+                                            <p:outputLabel value="Clave Institucional" class="plabel" /><br />
+                                            <p:inputText id="claveAsig" label="Clave Institucional"  class="ptxt1"  tabindex="1"  
+                                                         value="#{medicamentoMB.medicamentoSelect.claveInstitucional}" disabled="#{!medicamentoMB.activo}"
+                                                         maxlength="45" >
+                                            </p:inputText>
+                                            <br />                                            
+                                            <p:outputLabel value="Localidad *" class="plabel" /><br />
+                                            <p:selectOneMenu  class="sOneMenu" value="#{medicamentoMB.medicamentoSelect.idLocalidadAVG}"
+                                                              tabindex="3"  disabled="#{medicamentoMB.activo}"
+                                                              filter="true"
+                                                              filterMatchMode="contains" >
+                                                <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                                <f:selectItems class="sOneMenu" value="#{medicamentoMB.localidadList}" var="local" itemLabel="#{local.localidad}"
+                                                               itemValue="#{local.idLocalidadAVG}" />
+                                            </p:selectOneMenu>
+                                            <br />
+                                        </td>
+                                    </tr>
+                                </table>                         
+                            </p:panel>
+                            <p:panel class="pnlActions">
+                                <p:commandButton id="btnCancel2" class="btnItem" value="Cancelar" 
+                                                 onclick="PF('modalAsignarLocalidad').hide();"  validateClient="false" />
+                                &nbsp;&nbsp;                                                                    
+                                <p:commandButton id="btnSave2"  class="btnItem" value="Asignar" actionListener="#{medicamentoMB.asignarLocalidad()}" styleClass="btnMusAzul"
+                                                 update=":formModal2, :mainForm:tblMedicamentos"  ajax="true" onclick="PF('statusProcess').show();" 
+                                                 oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('modalAsignarLocalidad').hide(); }" validateClient="false"  />
+                            </p:panel> 
+
+                        </h:form>                                     
+                    </p:dialog>       
+                </div>
+            </ui:define>
+
+            <ui:define name="footer">
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+
+</html>

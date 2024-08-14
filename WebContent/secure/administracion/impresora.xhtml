@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Impresoras</title>
+    </h:head>
+
+    <h:body>
+
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">
+
+                <div class="mainPanel">
+
+                    <h:form id="mainForm">
+
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Impresoras" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+
+                                <p:inputText id="textSearch" 
+                                         value="#{impresoraMB.cadenaBusqueda}" 
+                                         style="width: 50%!important;border-radius:10px!important;" 
+                                         placeholder="Buscar por nombre..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15" style=""/>
+                            </i>
+                                
+                                <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{impresoraMB.buscarImpresoras()}"
+                                                 update=":mainForm" ajax="false" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide();" style=" margin-left: 15px; margin-bottom: 8px;" />
+                        </div>
+                        <p:messages id="messages" showDetail="false" globalOnly="true" closable="true"  rendered="#{impresoraMB.message}" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <p:commandButton class="btnNew" value="Agregar" icon="fa fa-plus" rendered="#{impresoraMB.permiso.puedeCrear}"
+                                         actionListener="#{impresoraMB.crearImpresora}" onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                                         oncomplete="PF('statusProcess').hide(); PF('modalImpresora').show();"
+                                         ajax="true" update=":formModal"  style=" margin: 5px 0; "  /> &nbsp;&nbsp;
+                      
+                        <br/>
+                        
+                        <p:outputLabel value="No tiene permiso de visualización de esta transacción." 
+                               style="font-size: 18px !important; font-weight: bold; color: red;"
+                               rendered="#{!impresoraMB.permiso.puedeVer}" />
+
+                        <p:dataTable  id="tblImpresoras"  styleClass="cabecera" 
+                                      var="item" reflow="true"   
+                                      value="#{impresoraMB.impresoraList}"                                          
+                                      style="margin-bottom:5px;"
+                                      scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="300" 
+                                      emptyMessage="No se encontraron registros"
+                                      rendered="#{impresoraMB.permiso.puedeVer}" >
+                            <p:column headerText="Nombre" style="width: 120px;" sortBy="#{item.descrpcion}" >
+                                <h:outputText value="#{item.descripcion}" class="altoColumn" />
+                            </p:column>                                                                
+                            <p:column headerText="Ip Impresora / Nombre (cups)" style="width: 230px;">
+                                <h:outputText value="#{item.ipImpresora}" title="#{item.ipImpresora}" class="altoColumn" />
+                            </p:column>
+                            <p:column headerText="Tipo" style="width: 300px;">
+                                <h:outputText value="#{item.tipo}" title="#{item.tipo}" class="altoColumn" />
+                            </p:column>
+                            
+                            <p:column headerText="Acciones" style="width: 75px;" >
+                                <p:commandLink title="Editar"  actionListener="#{impresoraMB.obtenerImpresora(item.idImpresora)}" rendered="#{impresoraMB.permiso.puedeVer}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('modalImpresora').show();" update=":formModal" >
+                                    <i class="fa fa-eye  iconMusAzul" />
+                                </p:commandLink> &nbsp;
+                            </p:column>
+                            <f:facet name="footer" >
+                                <p:outputLabel style="font-size: 1em !important; color: #000;">
+                                    #{impresoraMB.numeroRegistros} registros han sido encontrados
+                                </p:outputLabel> 
+                            </f:facet>
+                        </p:dataTable>
+                    </h:form>                                                                        
+
+                    <p:dialog header="Información de la Impresora"
+                              widgetVar="modalImpresora"
+                              closeOnEscape="true"
+                              closable="true"   styleClass="autoWidthDialog"                     
+                              modal="true" responsive="true"  >                             
+                        <h:form id="formModal" style="padding: 0px;">                                 
+                            <p:messages id="messages2" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+
+                            <p:panel style="border:#0081c2 solid 1px; padding:0px!important;">  
+
+                                <table  style="width:100%!important; margin: 0px!important; " class="ui-grid-col-2,ui-grid-col-10">
+                                    <tr>
+                                        <td>
+                                            <p:outputLabel for="tipo" value="Tipo * " class="plabel" />
+                                            <p:selectOneMenu id="tipo" value="#{impresoraMB.impresoraSelect.tipo}" style="width:125px">
+                                                <f:selectItem itemLabel="Seleccione Opción" itemValue="" />
+                                                <f:selectItem itemLabel="P" itemValue="P" />
+                                                <f:selectItem itemLabel="E" itemValue="E" />
+                                                <f:selectItem itemLabel="N" itemValue="N" />
+                                                <p:ajax update="nombre,ip_impresora"/>
+                                            </p:selectOneMenu>
+                                            <ui:remove><p:inputText id="tipo" label="Tipo"  class="ptxt1"  tabindex="1"  
+                                                         value="#{impresoraMB.impresoraSelect.tipo}"
+                                                         maxlength="10" >
+                                                </p:inputText> </ui:remove>
+                                        </td>
+                                        <td>
+                                            <p:outputLabel value="Nombre * " class="plabel" />
+                                            <p:inputText id="nombre" label="Nombre"  class="ptxt1"  tabindex="1"  
+                                                         value="#{impresoraMB.impresoraSelect.descripcion}"
+                                                         maxlength="45" disabled="#{impresoraMB.impresoraSelect.tipo eq 'N'}">
+                                            </p:inputText>                                                                                                                     
+                                        </td>
+                                        <td>
+                                            <p:panel id="ip_impresora">
+                                                <p:outputLabel value="Ip Impresora * " class="plabel" rendered="#{impresoraMB.impresoraSelect.tipo ne 'N'}"/>
+                                                <p:inputText id="ipImpresora" label="Ip Impresora"  class="ptxt1"  tabindex="1"  
+                                                             value="#{impresoraMB.impresoraSelect.ipImpresora}"
+                                                             maxlength="20" rendered="#{impresoraMB.impresoraSelect.tipo ne 'N'}">
+                                                </p:inputText>
+
+                                                <p:outputLabel value="Cups * " class="plabel" rendered="#{impresoraMB.impresoraSelect.tipo eq 'N'}"/>
+                                                <p:selectOneMenu id="nameCups" value="#{impresoraMB.impresoraCupsSelected}" rendered="#{impresoraMB.impresoraSelect.tipo eq 'N'}">
+                                                    <f:selectItem itemLabel="Seleccione una impresora" itemValue="" noSelectionOption="true"/>
+                                                    <f:selectItems value="#{impresoraMB.cupsPrinters}" var="impr" itemLabel="#{impr.name} - #{impr.location}" itemValue="#{impr.name}"/>
+                                                    <p:ajax process="ip_impresora" update="nombre,ip_impresora" listener="#{impresoraMB.setDescripcionImpresora}"/>
+                                                </p:selectOneMenu>
+                                            </p:panel>
+                                        </td>
+                                    </tr>
+                                </table>                         
+                            </p:panel>
+
+                            <p:panel class="pnlActions">
+                                <p:commandButton id="btnCancel" class="btnItem" value="Cancelar" 
+                                                 onclick="PF('modalImpresora').hide();"  validateClient="false" />
+                                &nbsp;&nbsp;                                    
+                                <p:commandButton id="btnEdit" class="btnItem" value="Editar" actionListener="#{impresoraMB.editImpresora}" styleClass="btnMusAzul"
+                                                 ajax="true" update=":formModal" onclick="PF('statusProcess').show();" rendered="false"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalImpresora').show();" validateClient="false" />
+                                &nbsp;&nbsp;
+                                <p:commandButton id="btnSave"  class="btnItem" value="Guardar" actionListener="#{impresoraMB.saveImpresora}" styleClass="btnMusAzul"
+                                                 update=":formModal, :mainForm:tblImpresoras"  ajax="true" onclick="PF('statusProcess').show();" 
+                                                 oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('modalImpresora').hide(); }" validateClient="true"  />
+                            </p:panel> 
+
+                        </h:form>                                     
+                    </p:dialog>                                                                                                              
+                </div>
+            </ui:define>
+
+            <ui:define name="footer">
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+
+</html>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.FrecuenciaMapper" >
+    <select id="obtenerLista" resultType="mx.mc.model.Frecuencia" parameterType="mx.mc.model.Frecuencia" >
+        SELECT nombre, frecuencia, estatus, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM frecuencia
+        WHERE 1=1
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" frecuencia != null ">
+            AND frecuencia = #{ frecuencia , jdbcType = INTEGER }
+        </if>
+        <if test=" estatus != null ">
+            AND estatus = #{ estatus , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+		AND insertFecha = #{ insertFecha , jdbcType = TIMESTAMP }
+	</if>
+	<if test=" insertIdUsuario != null ">
+		AND insertIdUsuario = #{ insertIdUsuario , jdbcType = VARCHAR }
+	</if>
+	<if test=" updateFecha != null ">
+		AND updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+	</if>
+	<if test=" updateIdUsuario != null ">
+		AND updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+	</if>
+    </select>
+</mapper>
+        

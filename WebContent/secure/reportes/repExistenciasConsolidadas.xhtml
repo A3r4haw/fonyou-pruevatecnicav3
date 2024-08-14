@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>EXISTENCIAS CONSOLIDADAS</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="estatusId" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="EXISTENCIAS CONSOLIDADAS" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                  
+                                        
+                                   
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;"  value="Insumos" />
+                                            <br/>
+                                            
+                                            <p:autoComplete id="txtInsumos"                                                             
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{repExistenciasConsolidadasMB.medicamento_Extended.listInsumos}"
+                                                            completeMethod="#{repExistenciasConsolidadasMB.autocompleteInsumo}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="insum" 
+                                                            placeholder="Filtro Insumos" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{insum.nombreCorto}" itemValue="#{insum}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="#{!repExistenciasConsolidadasMB.permiso.puedeEditar}"
+                                                            style="width: 90% !important"
+                                                            scrollHeight = "350" >
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>                                        
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;" value="Almacén / Sub-Almacén" />
+                                            <br/>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{repExistenciasConsolidadasMB.estructuraUsuario.nombre}" 
+                                                           rendered="#{!repExistenciasConsolidadasMB.administrador}"/>
+                                            
+                                            <p:selectOneMenu id="comboAlmacenSubAlmacen" 
+                                                             value="#{repExistenciasConsolidadasMB.idEstructura}"
+                                                             disabled="#{!repExistenciasConsolidadasMB.permiso.puedeVer}"
+                                                             style="vertical-align: middle; margin-right: 10px; width: 200px"
+                                                             rendered="#{repExistenciasConsolidadasMB.administrador}"
+                                                             filter="true" filterMatchMode="contains" panelStyle="width:250px"> 
+                                                             
+                                                <f:selectItem itemLabel="Todos..."  value="#{null}"/>
+                                                <f:selectItems value="#{repExistenciasConsolidadasMB.listaAuxiliar}"
+                                                               var="almacen"
+                                                               itemValue="#{almacen.idEstructura}"
+                                                               itemLabel="#{almacen.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <div class="ui-g-12 ui-md-6 ui-lg-3" style="margin-top: 0px">                                            
+                                                <p:commandButton value="Generar Reporte" style="margin-top: 15px; width: 175px; margin-left: 8px;"
+                                                                 onclick="PF('statusProcess').show();"
+                                                                 rendered="#{repExistenciasConsolidadasMB.permiso.puedeVer}"
+                                                                 actionListener="#{repExistenciasConsolidadasMB.consultar}"
+                                                                 update="formTablaEstatusInsumos, :mainForm:msg"
+                                                                 oncomplete="PF('statusProcess').hide();" 
+                                                                 icon="fa fa-check-circle"                                                               
+                                                                 styleClass="btnMusAzul"
+                                                                 /> 
+                                                                                                          
+                                            </div>
+                                            
+                                             
+                                             <p:menuButton value="Exportar Archivo" style="margin-top: 15px; width: 200px; margin-left: 8px"
+                                                           rendered="#{repExistenciasConsolidadasMB.permiso.puedeVer}" >
+                                                 <p:menuitem value="Formato PDF"
+                                                             actionListener="#{repExistenciasConsolidadasMB.imprimeReporteExist_Consolidadas()}"
+
+                                                             update=":formPDF"
+                                                             onclick="PF('statusProcess').show();" 
+                                                             oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                             icon="fa fa-file-pdf-o"
+                                                             process=":mainForm"
+                                                             />
+
+                                                 <p:menuitem value="Formato EXCEL"
+                                                             icon="fa fa-file-excel-o"
+                                                             ajax="false"
+                                                             actionListener="#{repExistenciasConsolidadasMB.imprimeExcel_ReporteExist_Consolidadas}"/>
+
+
+                                            </p:menuButton>
+
+                                        </div>
+                                        
+                                        
+                                        
+                                    </div>
+
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form><br />
+                    <h:form id="formTablaEstatusInsumos" >
+<style type="text/css">
+    .ui-datatable-header {
+        height: 20px
+    }
+</style>
+                        <p:outputLabel value="No tiene Permiso para esta Transacción"
+                                       rendered="#{!repExistenciasConsolidadasMB.permiso.puedeVer}" style="color: red; font-weight: bolder;"  />
+                        <p:dataTable emptyMessage="" rows="10"
+                                     rendered="#{repExistenciasConsolidadasMB.permiso.puedeVer}"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     value="#{repExistenciasConsolidadasMB.repExistenciasConsolidadasLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="font-size: x-small !important; width: 120% !important;"
+                                     >
+                            <f:facet name="header">
+                                <p:commandButton id="toggler" type="button" value="Columnas" style="float:right" icon="fa fa-columns" />
+                                <p:columnToggler datasource="resultadosDT" trigger="toggler" />
+                            </f:facet>
+                            
+                            <p:column class="" headerText="ALMACÉN" style="width: 6%; " >
+                                <h:outputText value="#{result.nombreAlmacen}"/>
+                            </p:column>  
+                            
+                            <p:column class="" headerText="PARTIDA" style="width: 6%; " >
+                                <h:outputText value="#{result.partida}"/>
+                            </p:column> 
+
+                            <p:column class="" headerText="CLAVE" style="width: 6%; " >
+                                <h:outputText value="#{result.claveInstitucional}"/>
+                            </p:column>                             
+                            
+                            <p:column class="" headerText="DESCRIPCIÓN" style="width: 10%; " >
+                                <h:outputText value="#{result.nombreCorto}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="TIPO DE INSUMO" style="width: 5%; " >
+                                <h:outputText value="#{result.tipoInsumo}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="EXISTENCIA TOTAL"  style="width: 5%;">
+                                <h:outputText value="#{result.cantidadActual}">
+                                <f:convertNumber maxFractionDigits="1"/>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column class="" headerText="RESERVADO"  style="width: 5%;">
+                                <h:outputText value="#{result.cantidadReservada}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="DISPONIBILIDAD" style="width: 5%;">
+                                <h:outputText value="#{result.cantidadDisponible}">
+                                <f:convertNumber maxFractionDigits="1"/>
+                            </h:outputText>
+                            </p:column>
+                            
+                            <p:column class="" headerText="DPN" style="width: 5%;">
+                                <h:outputText value="#{result.cantidadAutorizada}"/>
+                            </p:column>
+                            <p:column class="" headerText="PRECIO" style="width: 5%;">
+                                <h:outputText value="#{result.precio}">
+                                    <f:convertNumber currencySymbol="$" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="IMPORTE" style="width: 5%;">
+                                <h:outputText value="#{result.importe}">
+                                <f:convertNumber currencySymbol="$" maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>	
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes" 
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

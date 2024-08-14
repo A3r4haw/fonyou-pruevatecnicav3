@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ViaAdministracionMapper">
+    
+    <select id="obtener" resultType="mx.mc.model.ViaAdministracion" parameterType="mx.mc.model.ViaAdministracion">
+        SELECT idViaAdministracion, nombreViaAdministracion, activa 
+        FROM viaAdministracion
+        WHERE 1=1
+        <if test="idViaAdministracion != null">
+            AND idViaAdministracion = #{ idViaAdministracion }
+        </if>
+        <if test="nombreViaAdministracion != null">
+            AND nombreViaAdministracion = #{ nombreViaAdministracion }
+        </if>
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerTodo" resultType="mx.mc.model.ViaAdministracion" parameterType="mx.mc.model.ViaAdministracion">
+        SELECT idViaAdministracion,nombreViaAdministracion, activa 
+        FROM viaAdministracion
+        WHERE 1=1
+        AND activa = 1;
+    </select>
+    
+    <select id="obtenerPorId" resultType="mx.mc.model.ViaAdministracion" parameterType="Integer">
+        SELECT idViaAdministracion, nombreViaAdministracion, activa 
+        FROM viaAdministracion
+        WHERE idViaAdministracion = #{idViaAdministracion, jdbcType = INTEGER}
+    </select>
+    
+    <select id="obtenerSiguienteId" parameterType="Map" resultType="Integer">
+        SELECT MAX(idViaAdministracion) + 1 FROM viaAdministracion;
+    </select>
+    
+    <select id="validaNombreExistenteVia" resultType="String" parameterType="String">
+        SELECT nombreViaAdministracion FROM viaAdministracion
+        WHERE nombreViaAdministracion = #{nombreViaAdministracion, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtenerSiguiente" parameterType="Map" resultType="Integer">
+        SELECT MAX(idViaAdministracion) + 1 FROM viaAdministracion;
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.ViaAdministracion">
+        INSERT INTO viaAdministracion (
+            idViaAdministracion, nombreViaAdministracion, activa, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        ) VALUES (
+            #{ idViaAdministracion, jdbcType = INTEGER }
+            ,#{ nombreViaAdministracion, jdbcType = VARCHAR }
+            ,#{ activa }
+            ,#{ insertFecha, jdbcType = TIMESTAMP }
+            ,#{ insertUsuarioId, jdbcType = VARCHAR }
+            ,#{ updateFecha, jdbcType = TIMESTAMP }
+            ,#{ updateUsuarioId, jdbcType = VARCHAR }
+        )
+    </insert>
+    
+    <select id="obtenerBusquedaViaAdministraciones" resultType="mx.mc.model.ViaAdministracion" parameterType="Map">
+        SELECT idViaAdministracion, nombreViaAdministracion, activa, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM viaAdministracion
+        WHERE 1 = 1
+        <if test="paramBusquedaReporte.cadenaBusqueda != null ">
+            AND nombreViaAdministracion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR idViaAdministracion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+        </if>
+        <if test=" sortField == null" > 
+            ORDER BY idViaAdministracion asc
+        </if>
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'idViaAdministracion'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY idViaAdministracion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY idViaAdministracion desc
+                </if>            
+            </if>
+            <if test="sortField == 'nombreViaAdministracion'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreViaAdministracion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreViaAdministracion desc
+                </if>
+            </if>
+            <if test="sortField == 'activa'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY activa asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY activa desc
+                </if>
+            </if>
+        </if>    
+         LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER} 
+    </select>
+    
+    <select id="obtenerTotalBusquedaViaAdministraciones" resultType="Long" parameterType="Map">
+        SELECT COUNT(*)
+        FROM viaAdministracion
+        WHERE 1 = 1
+        <if test="paramBusquedaReporte.cadenaBusqueda != null ">
+            AND nombreViaAdministracion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR idViaAdministracion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+        </if>
+    </select>
+    
+    <update id="actualizar" parameterType="mx.mc.model.ViaAdministracion">
+        UPDATE viaAdministracion SET 
+        <if test=" nombreViaAdministracion != null ">
+            nombreViaAdministracion = #{nombreViaAdministracion, jdbcType = VARCHAR}, 
+        </if>
+        <if test=" activa != null ">
+            activa = #{activa, jdbcType = VARCHAR},
+        </if>
+        <if test="updateFecha != null">
+            updateFecha = #{updateFecha, jdbcType = TIMESTAMP}, 
+        </if>
+        <if test="updateUsuarioId != null">
+            updateIdUsuario = #{updateUsuarioId, jdbcType = VARCHAR}
+        </if>
+        WHERE idViaAdministracion = #{idViaAdministracion, jdbcType = INTEGER} 
+    </update>
+    
+</mapper>

@@ -1,0 +1,774 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.PrescripcionMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Prescripcion" parameterType="mx.mc.model.Prescripcion" >
+        SELECT idPrescripcion
+        , idEstructura
+        , idPacienteServicio
+        , folio
+        , fechaPrescripcion
+        , fechaFirma
+        , tipoPrescripcion
+        , tipoConsulta
+        , idMedico
+        , recurrente
+        , comentarios
+        , idEstatusPrescripcion
+        , idEstatusGabinete
+        , resurtimiento
+        , origenDestino
+        , insertFecha
+        , insertIdUsuario
+        , updateFecha
+        , updateIdUsuario
+        , idEntidadHospitalaria
+        , idTipoSolucion
+        , idViaAdministracion
+        , idSigno
+        , idProtocolo
+        , idDiagnostico
+        , idPacienteUbicacion
+        FROM prescripcion
+        WHERE 1=1
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPacienteServicio != null ">
+            AND idPacienteServicio = #{ idPacienteServicio , jdbcType = VARCHAR }
+        </if>
+        <if test=" folio != null ">
+            AND folio = #{ folio , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaPrescripcion != null ">
+            AND fechaPrescripcion = #{ fechaPrescripcion , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" fechaFirma != null ">
+            AND fechaFirma = #{ fechaFirma , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" tipoPrescripcion != null ">
+            AND tipoPrescripcion = #{ tipoPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipoConsulta != null ">
+            AND tipoConsulta = #{ tipoConsulta , jdbcType = VARCHAR }
+        </if>
+        <if test=" idMedico != null ">
+            AND idMedico = #{ idMedico , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatusPrescripcion != null ">
+            AND idEstatusPrescripcion = #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        </if>
+        <if test=" idProtocolo != null ">
+            AND idProtocolo = #{ idProtocolo , jdbcType = INTEGER }
+        </if>
+        <if test=" idDiagnostico != null ">
+            AND idDiagnostico = #{ idDiagnostico , jdbcType = INTEGER }
+        </if>
+        LIMIT 0, 1
+    </select>
+    
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Prescripcion" parameterType="mx.mc.model.Prescripcion" >
+        SELECT idPrescripcion
+        , idEstructura
+        , idPacienteServicio
+        , folio
+        , fechaPrescripcion
+        , fechaFirma
+        , tipoPrescripcion
+        , tipoConsulta
+        , idMedico
+        , recurrente
+        , comentarios
+        , idEstatusPrescripcion
+        , idEstatusGabinete
+        , resurtimiento
+        , origenDestino
+        , insertFecha
+        , insertIdUsuario
+        , updateFecha
+        , updateIdUsuario
+        , idEntidadHospitalaria
+        , idTipoSolucion
+        , idViaAdministracion
+        , idSigno
+        , idProtocolo
+        , idDiagnostico
+        , idPacienteUbicacion
+        FROM prescripcion
+        WHERE 1=1
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPacienteServicio != null ">
+            AND idPacienteServicio = #{ idPacienteServicio , jdbcType = VARCHAR }
+        </if>
+        <if test=" folio != null ">
+            AND folio = #{ folio , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaPrescripcion != null ">
+            AND fechaPrescripcion = #{ fechaPrescripcion , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" fechaFirma != null ">
+            AND fechaFirma = #{ fechaFirma , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" tipoPrescripcion != null ">
+            AND tipoPrescripcion = #{ tipoPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipoConsulta != null ">
+            AND tipoConsulta = #{ tipoConsulta , jdbcType = VARCHAR }
+        </if>
+        <if test=" idMedico != null ">
+            AND idMedico = #{ idMedico , jdbcType = VARCHAR }
+        </if>
+        <if test=" recurrente != null ">
+            AND recurrente = #{ recurrente , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstatusPrescripcion != null ">
+            AND idEstatusPrescripcion = #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    
+    <select id="obtenerPrescripcionesPorIdPaciente" resultType="mx.mc.model.Prescripcion_Extended" parameterType="Map" >
+        SELECT
+        p.idPrescripcion 
+        , p.idPacienteServicio 
+        , p.folio 
+        , p.fechaPrescripcion 
+        , p.tipoPrescripcion 
+        , p.tipoConsulta 
+        , p.idMedico 
+        , p.recurrente 
+        , p.comentarios 
+        , p.idEstatusPrescripcion 
+        , CONCAT(u.nombre , ' ' , u.apellidoPaterno , ' ' , u.apellidoMaterno) AS nombreMedico
+        , ep.estatus AS estatusPrescripcion
+        FROM prescripcion p
+        INNER JOIN pacienteServicio ps on p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v on ps.idVisita = v.idVisita
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN estatusPrescripcion ep ON p.idEstatusPrescripcion = ep.idEstatusPrescripcion
+        WHERE 
+        v.idPaciente = #{ idPaciente , jdbcType = VARCHAR }
+        <if test=" idPrescripcion != null ">
+            AND p.idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaPrescripcion != null ">
+            AND fechaPrescripcion = #{ fechaPrescripcion , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" tipoConsulta != null ">
+            AND tipoConsulta = #{ tipoConsulta , jdbcType = VARCHAR }
+        </if>
+        <if test=" cadenaBusqueda != null ">
+            AND (
+            folio LIKE '%${ cadenaBusqueda }%'
+            OR u.nombreCompleto LIKE '%${ cadenaBusqueda }%'
+            OR u.apellidoPaterno LIKE '%${ cadenaBusqueda }%'
+            OR u.apellidoMaterno LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+        ORDER BY p.fechaPrescripcion DESC
+    </select>
+    
+    <select id="obtenerRecetasManuales" parameterType="Map" resultType="Prescripcion_Extended">
+        SELECT DISTINCT pa.idPaciente,p.idPrescripcion , p.folio , p.fechaPrescripcion , pa.nombreCompleto AS nombrePaciente 
+        , pa.apellidoPaterno AS appPaciente , pa.apellidoMaterno AS apmPaciente, e.nombre AS ubicacion
+        , u.nombre AS nombreMedico , u.apellidoPaterno AS appMedico , u.apellidoMaterno AS apmMedico
+        , ep.estatus AS estatusPrescripcion , p.idEstatusPrescripcion
+        , s.folio as folioSurtimiento , s.fechaProgramada
+        FROM prescripcion p
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN estatusPrescripcion ep ON ep.idEstatusPrescripcion = p.idEstatusPrescripcion
+        INNER JOIN pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+        INNER JOIN visita v ON v.idVisita = ps.idVisita
+        INNER JOIN paciente pa ON pa.idPaciente = v.idPaciente
+        INNER JOIN estructura e ON e.idEstructura = ps.idEstructura
+        INNER JOIN usuarios u ON u.idUsuario = p.idMedico
+        WHERE 1 = 1
+        <if test=" cadenaBusqueda != null ">
+            AND (
+            p.folio LIKE '%${ cadenaBusqueda }%'
+            OR pa.nombreCompleto LIKE '%${ cadenaBusqueda }%'
+            OR pa.apellidoPaterno LIKE '%${ cadenaBusqueda }%'
+            OR pa.apellidoMaterno LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+        <if test=" listaTipoPrescripcion.size() > 0 ">
+            AND tipoPrescripcion IN
+            <foreach item="item" index="index" collection="listaTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listaEstatusPrescripcion.size() > 0 ">
+            AND p.idEstatusPrescripcion IN
+            <foreach item="item" index="index" collection="listaEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+    
+    <select id="obtenerReporteMedicamentosControlados" resultType="mx.mc.model.ReporteLibroControlados" parameterType="Map" >
+        SELECT si.idSurtimientoInsumo , '' as idReabastoInsumo , i.lote , i.fechaCaducidad , pr.fechaPrescripcion as fechaAno , tp.idTipoOrigen, tp.nombre as procedencia
+        , CONCAT(us.nombre,' ',us.apellidoPaterno,' ',us.apellidoPaterno ) as nombreMedico , us.cedProfesional as cedula
+        ,'' as numFactura , pr.folio as numReceta , 0 as cantidadAdquirida , se.cantidadEnviado as cantidadVendida 
+        ,se.cantidadEnviado as saldo , si.notas as observaciones , usf.nombreUsuario as firma
+        FROM prescripcion pr
+        INNER JOIN surtimiento su ON su.idPrescripcion = pr.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON si.idSurtimiento = su.idSurtimiento
+        INNER JOIN surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+        INNER JOIN prescripcionInsumo pi ON pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+        INNER JOIN medicamento me ON me.idMedicamento = pi.idInsumo
+        INNER JOIN inventario i ON i.idInventario = se.idInventarioSurtido
+        INNER JOIN tipoOrigen tp ON tp.idTipoOrigen = i.idTipoOrigen
+        INNER JOIN usuarios us ON us.idUsuario = pr.idMedico
+        LEFT JOIN usuarios usf ON usf.idUsuario = si.firmaControlados
+        WHERE 1 = 1 
+        AND me.idSubcategoria IN
+        <foreach item="item" index="index" collection="parametrosBusqueda.listaSubCategorias" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND pr.fechaPrescripcion BETWEEN #{parametrosBusqueda.fechaInicio, jdbcType = TIMESTAMP } AND #{parametrosBusqueda.fechaFin, jdbcType = TIMESTAMP }
+        AND i.idEstructura = #{ parametrosBusqueda.idEstructura , jdbcType = VARCHAR }
+        AND i.idInventario = #{ parametrosBusqueda.idInventario , jdbcType = VARCHAR }
+        AND me.idMedicamento = #{parametrosBusqueda.idMedicamento , jdbcType = VARCHAR}
+        UNION
+        SELECT '' as idSurtimientoInsumo , ri.idReabastoInsumo , i.lote , i.fechaCaducidad , r.fechaSolicitud as fechaAno, tp.idTipoOrigen, tp.nombre as procedencia
+        , CONCAT(us.nombre,' ',us.apellidoPaterno,' ',us.apellidoPaterno ) as nombreMedico , us.cedProfesional as cedula
+        ,r.folio as numFactura , '' as numReceta , re.cantidadEnviado as cantidadAdquirida,0 as cantidadVendida 
+        ,re.cantidadEnviado as saldo , ri.observaciones , usf.nombreUsuario as firma
+        FROM reabasto r
+        INNER JOIN reabastoInsumo ri ON ri.idReabasto = r.idReabasto
+        INNER JOIN reabastoEnviado re ON re.idReabastoInsumo = ri.idReabastoInsumo
+        INNER JOIN medicamento me ON me.idMedicamento = re.idInsumo
+        INNER JOIN inventario i ON i.idInventario = re.idInventarioSurtido
+        INNER JOIN tipoOrigen tp ON tp.idTipoOrigen = i.idTipoOrigen
+        INNER JOIN usuarios us ON us.idUsuario = r.idUsuarioSolicitud
+        LEFT JOIN usuarios usf ON usf.idUsuario = ri.firmaControlados
+        WHERE 1 = 1 
+        AND me.idSubcategoria IN 
+        <foreach item="item" index="index" collection="parametrosBusqueda.listaSubCategorias" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        AND r.fechaSolicitud BETWEEN #{parametrosBusqueda.fechaInicio, jdbcType = TIMESTAMP } AND #{parametrosBusqueda.fechaFin, jdbcType = TIMESTAMP }
+        AND i.idEstructura = #{ parametrosBusqueda.idEstructura , jdbcType = VARCHAR }
+        AND i.idInventario = #{ parametrosBusqueda.idInventario , jdbcType = VARCHAR }
+        AND me.idMedicamento = #{ parametrosBusqueda.idMedicamento , jdbcType = VARCHAR}; 
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Prescripcion" >
+        INSERT INTO prescripcion (
+            idPrescripcion
+        <if test=" idEstructura != null ">
+            , idEstructura
+        </if>
+        <if test=" idPacienteServicio != null ">
+            , idPacienteServicio
+        </if>
+        <if test=" folio != null ">
+            , folio
+        </if>
+        <if test=" fechaPrescripcion != null ">
+            , fechaPrescripcion
+        </if>
+        <if test=" fechaFirma != null ">
+            , fechaFirma
+        </if>
+        <if test=" tipoPrescripcion != null ">
+            , tipoPrescripcion
+        </if>
+        <if test=" tipoConsulta != null ">
+            , tipoConsulta
+        </if>
+        <if test=" idMedico != null ">
+            , idMedico
+        </if>
+        <if test=" recurrente != null ">
+            , recurrente
+        </if>
+        <if test=" comentarios != null ">
+            , comentarios
+        </if>
+        <if test=" idEstatusPrescripcion != null ">
+            , idEstatusPrescripcion
+        </if>
+        <if test=" idEstatusGabinete != null ">
+            , idEstatusGabinete
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            ,updateIdUsuario
+        </if>
+        <if test=" idEntidadHospitalaria != null ">
+            ,idEntidadHospitalaria
+        </if>
+        <if test=" idTipoSolucion != null ">
+            ,idTipoSolucion
+        </if>
+        <if test=" idViaAdministracion != null ">
+            ,idViaAdministracion
+        </if>
+        <if test=" idSigno != null ">
+            ,idSigno
+        </if>
+        <if test=" idProtocolo != null ">
+            ,idProtocolo
+        </if>
+        <if test=" idDiagnostico != null ">
+            ,idDiagnostico
+        </if>
+        <if test=" idPacienteUbicacion != null ">
+            , idPacienteUbicacion
+        </if>
+        ) VALUES (
+            #{ idPrescripcion , jdbcType = VARCHAR }
+        <if test=" idEstructura != null ">
+            , #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPacienteServicio != null ">
+            , #{ idPacienteServicio , jdbcType = VARCHAR }
+        </if>
+        <if test=" folio != null ">
+            , #{ folio , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaPrescripcion != null ">
+            , #{ fechaPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaFirma != null ">
+            , #{ fechaFirma , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipoPrescripcion != null ">
+            , #{ tipoPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipoConsulta != null ">
+            , #{ tipoConsulta , jdbcType = VARCHAR }
+        </if>
+        <if test=" idMedico != null ">
+            , #{ idMedico , jdbcType = VARCHAR }
+        </if>
+        <if test=" recurrente != null ">
+            , #{ recurrente , jdbcType = VARCHAR }
+        </if>
+        <if test=" comentarios != null ">
+            , #{ comentarios , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatusPrescripcion != null ">
+            , #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstatusGabinete != null ">
+            , #{ idEstatusGabinete , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEntidadHospitalaria != null " >
+            , #{ idEntidadHospitalaria , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoSolucion != null ">
+            , #{ idTipoSolucion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idViaAdministracion != null ">
+            , #{ idViaAdministracion , jdbcType = INTEGER }
+        </if>
+        <if test=" idSigno != null ">
+            , #{ idSigno , jdbcType = VARCHAR }
+        </if>
+        <if test=" idProtocolo != null ">
+            , #{ idProtocolo , jdbcType = INTEGER }
+        </if>
+        <if test=" idDiagnostico != null ">
+            , #{ idDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPacienteUbicacion != null ">
+            , #{ idPacienteUbicacion , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+
+    <insert id="insertarLista" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="list" item="item" separator=";" index="index">            
+            INSERT INTO prescripcion (
+                idPrescripcion
+            <if test=" item.idEstructura != null "> , idEstructura </if>
+            <if test=" item.idPacienteServicio != null "> , idPacienteServicio </if>
+            <if test=" item.folio != null "> , folio </if>
+            <if test=" item.fechaPrescripcion != null "> , fechaPrescripcion </if>
+            <if test=" item.fechaFirma != null "> , fechaFirma </if>
+            <if test=" item.tipoPrescripcion != null "> , tipoPrescripcion </if>
+            <if test=" item.tipoConsulta != null "> , tipoConsulta </if>
+            <if test=" item.idMedico != null "> , idMedico </if>
+            <if test=" item.recurrente != null "> , recurrente </if>
+            <if test=" item.comentarios != null "> , comentarios </if>
+            <if test=" item.idEstatusPrescripcion != null "> , idEstatusPrescripcion </if>
+            <if test=" item.idEstatusGabinete != null "> , idEstatusGabinete </if>
+            <if test=" item.insertFecha != null "> , insertFecha </if>
+            <if test=" item.insertIdUsuario != null "> , insertIdUsuario </if>
+            <if test=" item.updateFecha != null "> , updateFecha </if>
+            <if test=" item.updateIdUsuario != null "> ,updateIdUsuario </if>
+            <if test=" item.idEntidadHospitalaria != null "> ,idEntidadHospitalaria </if>
+            <if test=" item.idTipoSolucion != null "> ,idTipoSolucion </if>
+            <if test=" item.idViaAdministracion != null "> ,idViaAdministracion </if>
+            <if test=" item.idSigno != null "> ,idSigno </if>
+            <if test=" item.idProtocolo != null "> ,idProtocolo </if>
+            <if test=" item.idDiagnostico != null "> ,idDiagnostico </if>
+            <if test=" item.idPacienteUbicacion != null "> , idPacienteUbicacion </if>
+            )  VALUES 
+                ( #{ item.idPrescripcion , jdbcType = VARCHAR }
+            <if test=" item.idEstructura != null "> , #{ item.idEstructura , jdbcType = VARCHAR } </if>
+            <if test=" item.idPacienteServicio != null "> , #{ item.idPacienteServicio , jdbcType = VARCHAR } </if>
+            <if test=" item.folio != null "> , #{ item.folio , jdbcType = VARCHAR } </if>
+            <if test=" item.fechaPrescripcion != null "> , #{ item.fechaPrescripcion , jdbcType = VARCHAR } </if>
+            <if test=" item.fechaFirma != null "> , #{ item.fechaFirma , jdbcType = VARCHAR } </if>
+            <if test=" item.tipoPrescripcion != null "> , #{ item.tipoPrescripcion , jdbcType = VARCHAR } </if>
+            <if test=" item.tipoConsulta != null "> , #{ item.tipoConsulta , jdbcType = VARCHAR } </if>
+            <if test=" item.idMedico != null "> , #{ item.idMedico , jdbcType = VARCHAR } </if>
+            <if test=" item.recurrente != null "> , #{ item.recurrente , jdbcType = VARCHAR } </if>
+            <if test=" item.comentarios != null "> , #{ item.comentarios , jdbcType = VARCHAR } </if>
+            <if test=" item.idEstatusPrescripcion != null "> , #{ item.idEstatusPrescripcion , jdbcType = INTEGER } </if>
+            <if test=" item.idEstatusGabinete != null "> , #{ item.idEstatusGabinete , jdbcType = INTEGER } </if>
+            <if test=" item.insertFecha != null "> , #{ item.insertFecha , jdbcType = TIMESTAMP } </if>
+            <if test=" item.insertIdUsuario != null "> , #{ item.insertIdUsuario , jdbcType = VARCHAR } </if>
+            <if test=" item.updateFecha != null "> , #{ item.updateFecha , jdbcType = TIMESTAMP } </if>
+            <if test=" item.updateIdUsuario != null "> , #{ item.updateIdUsuario , jdbcType = VARCHAR } </if>
+            <if test=" item.idEntidadHospitalaria != null " > , #{ item.idEntidadHospitalaria , jdbcType = VARCHAR } </if>
+            <if test=" item.idTipoSolucion != null "> , #{ item.idTipoSolucion , jdbcType = VARCHAR } </if>
+            <if test=" item.idViaAdministracion != null "> , #{ item.idViaAdministracion , jdbcType = INTEGER } </if>
+            <if test=" item.idSigno != null "> , #{ item.idSigno , jdbcType = VARCHAR } </if>
+            <if test=" item.idProtocolo != null "> , #{ item.idProtocolo , jdbcType = INTEGER } </if>
+            <if test=" item.idDiagnostico != null "> , #{ item.idDiagnostico , jdbcType = VARCHAR } </if>
+            <if test=" item.idPacienteUbicacion != null "> , #{ item.idPacienteUbicacion , jdbcType = VARCHAR } </if>
+            )
+        </foreach>            
+    </insert>
+
+    <update id="actualizar" parameterType="mx.mc.model.Prescripcion"  >
+        UPDATE prescripcion SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" idPacienteServicio != null ">
+            , idPacienteServicio = #{ idPacienteServicio , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaPrescripcion != null ">
+            , fechaPrescripcion = #{ fechaPrescripcion , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" fechaFirma != null ">
+            , fechaFirma = #{ fechaFirma , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" tipoPrescripcion != null ">
+            , tipoPrescripcion = #{ tipoPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipoConsulta != null ">
+            , tipoConsulta = #{ tipoConsulta , jdbcType = VARCHAR }
+        </if>
+        <if test=" idMedico != null ">
+            , idMedico = #{ idMedico , jdbcType = VARCHAR }
+        </if>
+        <if test=" recurrente != null ">
+            , recurrente = #{ recurrente , jdbcType = INTEGER }
+        </if>
+        <if test=" comentarios != null ">
+            , comentarios = #{ comentarios , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatusPrescripcion != null ">
+            , idEstatusPrescripcion = #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstatusGabinete != null ">
+            , idEstatusGabinete = #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        </if>
+        <if test=" idTipoSolucion != null ">
+            , idTipoSolucion = #{ idTipoSolucion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idViaAdministracion != null ">
+            , idViaAdministracion = #{ idViaAdministracion , jdbcType = INTEGER }
+        </if>
+        <if test=" idSigno != null ">
+            , idSigno = #{ idSigno , jdbcType = VARCHAR }
+        </if>
+        <if test=" idProtocolo != null ">
+            , idProtocolo = #{ idProtocolo , jdbcType = INTEGER }
+        </if>
+        <if test=" idDiagnostico != null ">
+            , idDiagnostico = #{ idDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPacienteUbicacion != null ">
+            , idPacienteUbicacion = #{ idPacienteUbicacion , jdbcType = VARCHAR }
+        </if>
+        
+        WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.Prescripcion" >
+        DELETE FROM prescripcion 
+        WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </delete>
+    
+    
+    <update id="cancelar" parameterType="Map"  >
+        UPDATE prescripcion SET
+        updateFecha = #{ fecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        , idEstatusPrescripcion = #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        , idEstatusGabinete = #{ idEstatusGabinete , jdbcType = INTEGER }
+        WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </update>
+    
+    <update id="cancelarChiconcuac" parameterType="mx.mc.model.Prescripcion"  >
+        UPDATE prescripcion SET
+        updateFecha = #{ fecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        , idEstatusPrescripcion = #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        , idEstatusGabinete = #{ idEstatusGabinete , jdbcType = INTEGER } 
+        ,folio = #{folio,jdbcType = VARCHAR }
+        WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </update>
+    
+    <update id="cambiarEstatusPrescripcion" parameterType="mx.mc.model.Prescripcion"  >
+        UPDATE prescripcion SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        , idEstatusPrescripcion = #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </update>
+    
+    <update id="wsCancelar" parameterType="mx.mc.model.Prescripcion"  >
+        
+        UPDATE prescripcion SET
+        idEstatusPrescripcion = #{ procesado , jdbcType = INTEGER }
+        WHERE folio = #{ folio , jdbcType = VARCHAR }
+    </update>          
+    
+    <select id="verificarFolioCancelar" resultType="mx.mc.model.Prescripcion" parameterType="Map" >
+        select folio from prescripcion where folio like '%${folio}%' order by insertFecha desc limit 1;        
+    </select>
+    
+    <select id="selectCabiDrgOrdList" resultType="mx.mc.model.IntipharmPrescription">
+        SELECT distinct
+        s.idSurtimiento
+        ,p.idPrescripcion
+        ,p.folio
+        ,s.folio AS folioSurtimiento
+        , date_format(p.fechaPrescripcion , "%d-%m-%Y") as fechaPrescripcion
+        ,date_format(s.fechaProgramada , "%d-%m-%Y") as fechaProgramada
+        ,case p.tipoPrescripcion
+        when 'N' then 'R' 
+        when 'U' then 'E' 
+        else 'X'
+        end as tipoPrescripcion        
+        ,c.nombreCama
+        ,pac.pacienteNumero         
+        ,es.claveEstructura  
+        ,e.descripcion    
+        ,p.comentarios as indicaciones,
+        CONCAT(pac.nombreCompleto,
+        ' ',
+        pac.apellidoPaterno,
+        ' ',
+        pac.apellidoMaterno) AS nombrePaciente,        
+        date_format(pac.fechaNacimiento, "%d-%m-%Y") as fechaNacimiento,
+        IF(pac.sexo = 'M', 1, 2) AS sexo,
+        c.nombreCama
+        FROM
+        surtimiento s
+        INNER JOIN    prescripcion p ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN    pacienteServicio ps ON (ps.idPacienteServicio = p.idPacienteServicio and ps.fechaAsignacionFin is null)
+        INNER JOIN    visita v ON (v.idVisita = ps.idVisita AND v.fechaEgreso IS NULL)
+        LEFT JOIN    paciente pac ON pac.idPaciente = v.idPaciente
+        LEFT JOIN    estructura e ON e.idEstructura = p.idEstructura
+        inner join estructuraAlmacenServicio ea on e.idEstructura = ea.idEstructuraServicio
+        inner join estructura es on ea.idEstructuraAlmacen = es.idEstructura
+        LEFT JOIN    pacienteUbicacion pu ON (pu.idPacienteServicio = ps.idPacienteServicio and pu.fechaUbicaFin is null)
+        LEFT JOIN    cama c ON c.idCama = pu.idCama
+        INNER JOIN surtimientoInsumo si on si.idSurtimiento = s.idSurtimiento
+        WHERE si.idEstatusSurtimiento = 1
+        <!--
+        and p.idEstatusPrescripcion = 2  -->
+        and  date_format(s.fechaProgramada,'%Y-%m-%d') =  date_format(now(),'%Y-%m-%d')        
+        and e.envioHL7 = 1
+        <!--and now() > date_add(s.fechaProgramada,INTERVAL 1 MINUTE) -->
+        order by p.fechaPrescripcion asc
+
+        limit 10 ;
+    </select>
+    
+    <select id="selectCabiDrgOrdListMedication" resultType="mx.mc.model.IntipharmPrescriptionMedication" >
+        SELECT 
+            m.claveInstitucional AS institutionalCode,
+            m.nombreCorto,
+            m.nombreLargo,
+            si.numeroMedicacion,
+            m.concentracion,
+            2 as tipoMedicamento,
+            si.cantidadSolicitada,
+            p.idPrescripcion,
+            ifnull(pm.nombrePresentacion,'Pieza') as presentacion,
+            uc.nombreUnidadConcentracion as unidadMedida,                
+            case scm.idSubcategoriaMedicamento
+            when 22 then 3 
+            when 23 then 3
+            when 24 then 3
+            else 2
+            end as idSubcategoriaMedicamento        
+        FROM  surtimiento s
+            INNER JOIN        surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento
+            INNER JOIN        prescripcion p ON p.idPrescripcion = s.idPrescripcion
+            INNER JOIN        prescripcionInsumo pi ON (pi.idPrescripcion = p.idPrescripcion  AND pi.idPrescripcionInsumo = si.idPrescripcionInsumo)
+            INNER JOIN        medicamento m ON m.idMedicamento = pi.idInsumo
+            LEFT JOIN        presentacionMedicamento pm ON pm.idPresentacion = m.idPresentacionSalida
+            INNER JOIN        unidadConcentracion uc ON uc.idUnidadConcentracion = m.idUnidadConcentracion
+            LEFT JOIN        subcategoriaMedicamento scm ON scm.idSubcategoriaMedicamento = m.idSubcategoria
+        WHERE
+        1 = 1
+        AND si.idEstatusSurtimiento = 1 
+        AND    s.folio = #{ folio , jdbcType = VARCHAR }        
+       <!-- LIMIT 10  -->
+    </select>
+    
+    <update id="actualizarByfolioSurt" parameterType="mx.mc.model.Prescripcion" >
+        UPDATE prescripcion p        
+        INNER JOIN
+        prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        SET         
+        p.idEstatusPrescripcion = 3,
+        pi.idEstatusPrescripcion = 3
+        WHERE  p.folio = #{ folio , jdbcType = VARCHAR }
+    </update>
+    
+    <select id="obtenerFolioPrescBySurt" resultType="String" parameterType="Map" >
+        select p.folio from prescripcion p inner join surtimiento s on s.idPrescripcion = p.idPrescripcion
+        where s.folio = #{ folio , jdbcType = VARCHAR }
+    </select>
+    
+    
+    <select id="obtenerByFolioPrescripcionForList"  resultType="mx.mc.model.Prescripcion_Extended" parameterType="Map">
+        SELECT 
+			p.*, CONCAT(pa.nombreCompleto," ",pa.apellidoPaterno," ",pa.apellidoMaterno) as nombrePaciente
+        FROM   prescripcion as p
+        INNER JOIN      pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio AND ps.idEstructura = p.idEstructura
+        INNER JOIN      visita v ON v.idVisita = ps.idVisita
+        INNER JOIN      paciente pa ON pa.idPaciente = v.idPaciente AND pa.idPaciente = v.idPaciente
+        WHERE 
+        1=1
+        <if test="filter == 'Folio'">
+            AND  p.folio = #{ pacienteNombre, jdbcType = VARCHAR }
+        </if>    
+        <if test="filter == 'Paciente'">
+            AND CONCAT(pa.nombreCompleto," ",pa.apellidoPaterno," ",pa.apellidoMaterno) like '%${pacienteNombre}%'
+        </if>
+        AND p.idEstatusPrescripcion = 2;
+    </select>
+    <select id="obtenerPrescripcionByFolio"  resultType="mx.mc.model.Prescripcion_Extended" parameterType="Map">
+        SELECT 
+        *
+        FROM   prescripcion
+        WHERE 
+        folio =  #{prescripcionFolio, jdbcType = VARCHAR }
+        AND fechaPrescripcion BETWEEN DATE_ADD(NOW(), INTERVAL -1 DAY) AND NOW()
+    </select>
+    
+    
+    <update id="updateAsignPrescripcion"  parameterType="Map" >
+        UPDATE prescripcion 
+        SET
+        idEstatusPrescripcion = #{ idEstatusPrescripcion }
+        ,comentarios = #{ comentarios }
+        ,updateFecha = #{ updateFecha  }
+        ,updateIdUsuario = #{ updateIdUsuario }
+        WHERE idPrescripcion = #{ idPrescripcion }
+    </update>  
+    
+    <select id="obtenerByFolioPrescripcion"  resultType="mx.mc.model.Prescripcion_Extended" parameterType="Map">
+        SELECT 
+        *
+        FROM   prescripcion
+        WHERE 
+        folio =  #{prescripcionFolio, jdbcType = VARCHAR }
+    </select>
+    
+    <select id="obtener1erPrescripcionByIdPacienteAndIdPrescripcion" resultType="mx.mc.model.Prescripcion" parameterType="Map" >
+        SELECT
+        p.idPrescripcion 
+        , p.idPacienteServicio 
+        , p.folio 
+        , p.fechaPrescripcion 
+        , p.tipoPrescripcion 
+        , p.tipoConsulta 
+        , p.idMedico 
+        , p.recurrente 
+        , p.comentarios 
+        , p.idEstatusPrescripcion 
+        , p.idProtocolo
+        , p.idDiagnostico
+        FROM prescripcion p
+        INNER JOIN pacienteServicio ps on p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v on ps.idVisita = v.idVisita
+         WHERE 
+        v.idPaciente = #{ idPaciente , jdbcType = VARCHAR }
+        AND p.idPrescripcion = #{idPrescripcion, jdbcType = VARCHAR}
+        ORDER BY p.fechaPrescripcion ASC LIMIT 1;
+    </select>    
+    <select id="obtenerRecetasSurtidas" resultType="mx.mc.model.Prescripcion_Extended" >
+        SELECT 
+            r.fechaPrescripcion,
+            r.folio,
+            s.folio as folioSurtimiento,
+            p.pacienteNumero,
+            p.nombreCompleto AS nombrePaciente,
+            p.apellidoPaterno AS appPaciente,
+            p.apellidoMaterno AS apmPaciente,
+            e.nombre AS ubicacion,
+            ep.estatus AS EstatusPrescripcion,
+            r.tipoConsulta,        
+            r.tipoPrescripcion,
+            u.nombre as nombreMedico,
+            u.apellidoPaterno as appMedico,
+            u.apellidoMaterno as apmMedico,
+            r.idPrescripcion,
+            p.idPaciente,
+            r.idMedico,
+            r.insertIdUsuario
+        FROM    prescripcion r
+            INNER JOIN surtimiento s ON s.idPrescripcion = r.idPrescripcion
+            INNER JOIN    pacienteServicio ps ON ps.idPacienteServicio = r.idPacienteServicio
+            INNER JOIN    visita v ON v.idVisita = ps.idVisita
+            INNER JOIN    paciente p ON p.idPaciente = v.idPaciente
+            INNER JOIN    estructura e ON e.idEstructura = r.idEstructura
+            INNER JOIN    estatusPrescripcion ep ON ep.idEstatusPrescripcion = r.idEstatusPrescripcion
+            INNER JOIN	usuarios u on u.idUsuario = r.idMedico
+        WHERE
+            r.tipoConsulta = 'E'
+        <if test=" cadenaBusqueda != null ">
+            AND (
+            r.folio LIKE '%${ cadenaBusqueda }%'
+            OR p.nombreCompleto LIKE '%${ cadenaBusqueda }%'
+            OR p.apellidoPaterno LIKE '%${ cadenaBusqueda }%'
+            OR e.nombre LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+        order by r.fechaPrescripcion desc;
+    </select>
+</mapper>

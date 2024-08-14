@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.NotaDispenColectDetalleMapper" >
+    
+    <select id="obtener" resultType="mx.mc.model.NotaDispenColectDetalle" parameterType="mx.mc.model.NotaDispenColectDetalle" >
+        SELECT * FROM notaDispenColectDetalle
+        WHERE 1=1
+        <if test=" idNotaDispenColectDetalle != null " >
+            AND idNotaDispenColectDetalle = #{ idNotaDispenColectDetalle }
+        </if>
+        <if test=" idNotaDispenColect != null " >
+            AND idNotaDispenColect = #{ idNotaDispenColect }
+        </if>
+        <if test=" idSolucion != null " >
+            AND idSolucion = #{ idSolucion }
+        </if>
+        <if test=" numeroMezcla != null " >
+            AND numeroMezcla = #{ numeroMezcla }
+        </if>
+        <if test=" comentarios != null " >
+            AND comentarios = #{ comentarios }
+        </if>
+        <if test=" idContenedor != null " >
+            AND idContenedor = #{ idContenedor }
+        </if>
+        <if test=" idEstatusDispenColect != null " >
+            AND idEstatusDispenColect = #{ idEstatusDispenColect }
+        </if>
+        LIMIT 1;
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.NotaDispenColectDetalle" parameterType="mx.mc.model.NotaDispenColectDetalle" >
+        SELECT * FROM notaDispenColectDetalle
+        WHERE 1=1
+        <if test=" idNotaDispenColectDetalle != null " >
+            AND idNotaDispenColectDetalle = #{ idNotaDispenColectDetalle }
+        </if>
+        <if test=" idNotaDispenColect != null " >
+            AND idNotaDispenColect = #{ idNotaDispenColect }
+        </if>
+        <if test=" idSurtimiento != null " >
+            AND idSurtimiento = #{ idSurtimiento }
+        </if>
+        <if test=" idSolucion != null " >
+            AND idSolucion = #{ idSolucion }
+        </if>
+        <if test=" numeroMezcla != null " >
+            AND numeroMezcla = #{ numeroMezcla }
+        </if>
+        <if test=" comentarios != null " >
+            AND comentarios = #{ comentarios }
+        </if>
+        <if test=" idContenedor != null " >
+            AND idContenedor = #{ idContenedor }
+        </if>
+        <if test=" idEstatusDispenColect != null " >
+            AND idEstatusDispenColect = #{ idEstatusDispenColect }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.NotaDispenColect" >
+        INSERT INTO notaDispenColectDetalle(
+        idNotaDispenColectDetalle 
+        , idNotaDispenColect 
+        , idSurtimiento 
+        , idSolucion 
+        <if test=" numeroMezcla !=  null "> , numeroMezcla </if>
+        <if test=" idContenedor !=  null "> , idContenedor </if>
+        <if test=" comentarios !=  null "> , comentarios </if>
+        , idEstatusDispenColect 
+        , insertFecha 
+        , insertIdUsuario 
+        <if test=" updateFecha !=  null "> , updateFecha </if>
+        <if test=" updateIdUsuario !=  null "> , updateIdUsuario </if>
+        ) VALUES (
+        #{ idNotaDispenColectDetalle }
+        , #{ idNotaDispenColect }
+        , #{ idSurtimiento }
+        , #{ idSolucion }
+        <if test=" numeroMezcla !=  null "> , #{ numeroMezcla } </if>
+        <if test=" idContenedor !=  null "> , #{ idContenedor } </if>
+        <if test=" comentarios !=  null "> , #{ comentarios } </if>
+        , #{ idEstatusDispenColect }
+        , #{ insertFecha }
+        , #{ insertIdUsuario }
+        <if test=" updateFecha !=  null "> , #{ updateFecha } </if>        
+        <if test=" updateIdUsuario !=  null "> , #{ updateIdUsuario } </if>
+        );
+    </insert>
+    
+    <insert id="registrarLista" parameterType="java.util.List" >
+        INSERT INTO notaDispenColectDetalle(
+        idNotaDispenColectDetalle 
+        , idNotaDispenColect 
+        , idSurtimiento 
+        , idSolucion 
+        , numeroMezcla 
+        , idContenedor 
+        , comentarios 
+        , idEstatusDispenColect 
+        , insertFecha 
+        , insertIdUsuario 
+        , updateFecha 
+        , updateIdUsuario 
+        ) VALUES
+        <foreach collection="list" item="item" separator="," index="index">  
+            (
+            #{ item.idNotaDispenColectDetalle }
+            , #{ item.idNotaDispenColect }
+            , #{ item.idSurtimiento }
+            , #{ item.idSolucion }
+            , #{ item.numeroMezcla } 
+            , #{ item.idContenedor } 
+            , #{ item.comentarios } 
+            , #{ item.idEstatusDispenColect } 
+            , #{ item.insertFecha } 
+            , #{ item.insertIdUsuario } 
+            , #{ item.updateFecha } 
+            , #{ item.updateIdUsuario }
+            )
+        </foreach>
+    </insert>
+    
+    <update id="actualizar" parameterType="mx.mc.model.NotaDispenColectDetalle"  >
+        UPDATE notaDispenColectDetalle SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" idNotaDispenColect !=  null "> , idNotaDispenColect = #{ idNotaDispenColect } </if>
+        <if test=" idSurtimiento !=  null "> , idSurtimiento = #{ idSurtimiento } </if>
+        <if test=" numeroMezcla !=  null "> , numeroMezcla = #{ numeroMezcla }  </if>
+        <if test=" idContenedor !=  null "> , idContenedor = #{ idContenedor }  </if>
+        <if test=" comentarios !=  null "> , comentarios = #{ comentarios } </if>
+        <if test=" idEstatusDispenColect !=  null "> , idEstatusDispenColect = #{ idEstatusDispenColect } </if>
+        WHERE idNotaDispenColectDetalle = #{ idNotaDispenColectDetalle };
+    </update>
+    
+    <update id="actualizarLista" parameterType="java.util.List" >
+        <foreach collection="list" item="item" separator=";" index="index">  
+            UPDATE notaDispenColectDetalle SET
+            updateFecha = #{ item.updateFecha  }
+            , updateIdUsuario = #{ item.updateIdUsuario }
+            <if test=" item.idNotaDispenColect !=  null "> , idNotaDispenColect = #{ item.idNotaDispenColect } </if>
+            <if test=" item.idSurtimiento !=  null "> , idSurtimiento = #{ item.idSurtimiento } </if>
+            <if test=" item.numeroMezcla !=  null "> , numeroMezcla = #{ item.numeroMezcla }  </if>
+            <if test=" item.idContenedor !=  null "> , idContenedor = #{ item.idContenedor }  </if>
+            <if test=" item.comentarios !=  null "> , comentarios = #{ item.comentarios } </if>
+            <if test=" item.idEstatusDispenColect !=  null "> , idEstatusDispenColect = #{ item.idEstatusDispenColect } </if>
+            WHERE idNotaDispenColectDetalle = #{ item.idNotaDispenColectDetalle }
+        </foreach>
+    </update>
+    
+    
+    
+    <select id="obtenerListaMezclas" resultType="mx.mc.model.NotaDispenColectDetalle_Extended" parameterType="mx.mc.model.NotaDispenColectDetalle_Extended" >
+        SELECT * FROM notaDispenColectDetalle
+        WHERE 1=1
+        <if test=" idNotaDispenColectDetalle != null " >
+            AND idNotaDispenColectDetalle = #{ idNotaDispenColectDetalle }
+        </if>
+        <if test=" idNotaDispenColect != null " >
+            AND idNotaDispenColect = #{ idNotaDispenColect }
+        </if>
+        <if test=" idSurtimiento != null " >
+            AND idSurtimiento = #{ idSurtimiento }
+        </if>
+        <if test=" idSolucion != null " >
+            AND idSolucion = #{ idSolucion }
+        </if>
+        <if test=" numeroMezcla != null " >
+            AND numeroMezcla = #{ numeroMezcla }
+        </if>
+        <if test=" comentarios != null " >
+            AND comentarios = #{ comentarios }
+        </if>
+        <if test=" idContenedor != null " >
+            AND idContenedor = #{ idContenedor }
+        </if>
+        <if test=" idEstatusDispenColect != null " >
+            AND idEstatusDispenColect = #{ idEstatusDispenColect }
+        </if>
+    </select>
+    
+    <update id="eliminarLista" parameterType="Map"  >
+        DELETE FROM notaDispenColectDetalle 
+        WHERE idNotaDispenColect = #{ idNotaDispenColect };
+    </update>
+    
+</mapper>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ReporteHistorialTerapeuticoMapper" >
+ 
+    <select id="constultaRepTerapeutico" resultType="mx.mc.model.ReporteTerapeutico" parameterType="Map">
+        SELECT distinct
+        v.idVisita,
+        ifnull( v.tipoVisita, 'HOSP') as tipoVisita,
+        ifnull(numVisita, '1') AS numVisita,
+        v.fechaIngreso,
+        v.fechaEgreso,
+        e.nombre AS especialidad,
+        c.nombreCama,
+        CONCAT(uu.nombre,
+        ' ',
+        uu.apellidoPaterno,
+        ' ',
+        uu.apellidoMaterno) AS medico,
+        CONCAT(pac.nombreCompleto,
+        ' ',
+        pac.apellidoPaterno,
+        ' ',
+        pac.apellidoMaterno) as paciente,
+        p.folio,
+        ep.estatus as estausPrescripcion,
+        m.claveInstitucional as claveMedicamento,
+        m.tipo AS tipoMedicamento,
+        m.nombreLargo,
+        pm.nombrePresentacion as presentacion,
+        sm.cantidad AS cantidadSurtida
+
+        FROM prescripcion p 
+        INNER JOIN estatusPrescripcion ep ON ep.idEstatusPrescripcion = p.idEstatusPrescripcion 
+        INNER JOIN prescripcionInsumo pi ON pi.idPrescripcion = p.idPrescripcion 
+        INNER JOIN medicamento m ON m.idMedicamento = pi.idInsumo 
+        INNER JOIN presentacionMedicamento pm ON pm.idPresentacion = m.idPresentacionSalida 
+        INNER JOIN estructura e ON e.idEstructura = p.idEstructura
+        INNER JOIN surtimiento s ON s.idPrescripcion = p.idPrescripcion 
+        INNER JOIN surtimientoInsumo si ON si.idSurtimiento = s.idSurtimiento and pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+        INNER JOIN surtimientoMinistrado sm ON pi.idPrescripcion = p.idPrescripcion 
+        INNER JOIN pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio 
+        INNER JOIN visita v ON v.idVisita = ps.idVisita 
+        INNER JOIN paciente pac ON pac.idPaciente = v.idPaciente 
+        INNER JOIN pacienteUbicacion pu ON pu.idPacienteServicio = ps.idPacienteServicio 
+        LEFT JOIN pacienteServicioPeriferico pp ON pu.idPacienteServicio = ps.idPacienteServicio 
+        LEFT JOIN cama c ON c.idCama = pu.idCama LEFT JOIN usuarios uu ON uu.idUsuario = p.idMedico 
+        where 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND v.fechaIngreso between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND uu.idUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.pacienteList != null ">
+            AND pac.idPaciente IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.pacienteList" open="(" separator="," close=")">
+                #{item.idPaciente}
+            </foreach>
+        </if>
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+
+    <!--OBTENER REGISTROS COLOCAR LOS DATOS DE QUERY -->
+    <select id="obtenerRepTerapeutico" resultType="Long" parameterType="Map">
+        Select count(*)  from
+        (SELECT distinct 
+        v.idVisita,
+        ifnull( v.tipoVisita, 'HOSP') as tipoVisita,
+        ifnull(numVisita, '1') AS numVisita,
+        v.fechaIngreso,
+        v.fechaEgreso,
+        e.nombre AS especialidad,
+        c.nombreCama,
+        CONCAT(uu.nombre, ' ', uu.apellidoPaterno, ' ', uu.apellidoMaterno) AS medico,
+        CONCAT(pac.nombreCompleto, ' ', pac.apellidoPaterno, ' ', pac.apellidoMaterno) AS paciente,
+        p.folio,
+        ep.estatus as estausPrescripcion,
+        m.claveInstitucional as claveMedicamento,
+        m.tipo AS tipoMedicamento,
+        m.nombreLargo,
+        pm.nombrePresentacion as presentacion,
+        sm.cantidad AS cantidadSurtida 
+        FROM prescripcion p 
+        INNER JOIN estatusPrescripcion ep ON ep.idEstatusPrescripcion = p.idEstatusPrescripcion 
+        INNER JOIN prescripcionInsumo pi ON pi.idPrescripcion = p.idPrescripcion 
+        INNER JOIN medicamento m ON m.idMedicamento = pi.idInsumo 
+        INNER JOIN presentacionMedicamento pm ON pm.idPresentacion = m.idPresentacionSalida 
+        INNER JOIN estructura e ON e.idEstructura = p.idEstructura
+        INNER JOIN surtimiento s ON s.idPrescripcion = p.idPrescripcion 
+        INNER JOIN surtimientoInsumo si ON si.idSurtimiento = s.idSurtimiento and pi.idPrescripcionInsumo = si.idPrescripcionInsumo
+        INNER JOIN surtimientoMinistrado sm ON pi.idPrescripcion = p.idPrescripcion 
+        INNER JOIN pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio 
+        INNER JOIN visita v ON v.idVisita = ps.idVisita 
+        INNER JOIN paciente pac ON pac.idPaciente = v.idPaciente 
+        INNER JOIN pacienteUbicacion pu ON pu.idPacienteServicio = ps.idPacienteServicio 
+        LEFT JOIN pacienteServicioPeriferico pp ON pu.idPacienteServicio = ps.idPacienteServicio 
+        LEFT JOIN cama c ON c.idCama = pu.idCama LEFT JOIN usuarios uu ON uu.idUsuario = p.idMedico 
+              
+        where 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND v.fechaIngreso between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND uu.idUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.idUsuario}
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.pacienteList != null ">
+            AND pac.idPaciente IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.pacienteList" open="(" separator="," close=")">
+                #{item.idPaciente}
+            </foreach>
+        </if>
+        ) AS total
+    </select>
+  
+</mapper>

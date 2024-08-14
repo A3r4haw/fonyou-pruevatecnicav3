@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.MedicamentoConcomitanteMapper" >
+    <insert id="insertar" parameterType="mx.mc.model.MedicamentoConcomitante" >
+        INSERT INTO medicamentoConcomitante (
+        <if test ="idConcomitante != null">
+            idConcomitante,
+        </if><if test ="idReaccion != null">
+            idReaccion,
+        </if><if test ="idInsumo != null">
+            idInsumo,
+        </if><if test ="clave != null">
+            clave,
+        </if><if test ="dosis != null">
+            dosis,
+        </if><if test ="inicioTratamiento != null">
+            inicioTratamiento,
+        </if><if test ="finTratamiento != null">
+            finTratamiento,
+        </if><if test ="idDiagnostico != null">
+            idDiagnostico,
+        </if><if test ="motivoPrescripcion != null">
+            motivoPrescripcion,
+        </if><if test ="insertFecha != null">
+            insertFecha,
+        </if><if test ="insertIdUsuario != null">
+            insertIdUsuario,
+        </if><if test ="updateFecha != null">
+            updateFecha,
+        </if><if test ="updateIdUsuario != null">
+            updateIdUsuario
+        </if>)
+        VALUES (
+        <if test ="idConcomitante != null">
+            #{idConcomitante}
+        </if><if test ="idReaccion != null">
+            , #{idReaccion}
+        </if><if test ="idInsumo != null">
+            , #{idInsumo}
+        </if><if test ="clave != null">
+            , #{clave}
+        </if><if test ="dosis != null">
+            , #{dosis}
+        </if><if test ="inicioTratamiento != null">
+            , #{inicioTratamiento}
+        </if><if test ="finTratamiento != null">
+            , #{finTratamiento}
+        </if><if test ="idDiagnostico != null">
+            , #{idDiagnostico}
+        </if><if test ="motivoPrescripcion != null">
+            , #{motivoPrescripcion}
+        </if><if test ="insertFecha != null">
+            , #{insertFecha}
+        </if><if test ="insertIdUsuario != null">
+            , #{insertIdUsuario}
+        </if><if test ="updateFecha != null">
+            , #{updateFecha}
+        </if><if test ="updateIdUsuario != null">
+            , #{updateIdUsuario}</if>);
+    </insert>
+    
+    <insert id="insertarListaInsumos" parameterType="Map">
+    	<foreach collection="listaInsumos" item="item" separator=";">
+            INSERT INTO medicamentoConcomitante(
+            <if test ="item.idConcomitante != null">
+                idConcomitante,
+            </if><if test ="item.idReaccion != null">
+                idReaccion,
+            </if><if test ="item.idInsumo != null">
+                idInsumo,
+            </if><if test ="item.clave != null">
+                clave,
+            </if><if test ="item.dosis != null">
+                dosis,
+            </if><if test ="item.inicioTratamiento != null">
+                inicioTratamiento,
+            </if><if test ="item.finTratamiento != null">
+                finTratamiento,
+            </if><if test ="item.idDiagnostico != null">
+                idDiagnostico,
+            </if><if test ="item.motivoPrescripcion != null">
+                motivoPrescripcion,
+            </if><if test ="item.insertFecha != null">
+                insertFecha,
+            </if><if test ="item.insertIdUsuario != null">
+                insertIdUsuario
+            </if>
+            ) VALUES (
+            <if test ="item.idConcomitante != null">
+                #{item.idConcomitante}
+            </if><if test ="item.idReaccion != null">
+                , #{item.idReaccion}
+            </if><if test ="item.idInsumo != null">
+                , #{item.idInsumo}
+            </if><if test ="item.clave != null">
+                , #{item.clave}
+            </if><if test ="item.dosis != null">
+                , #{item.dosis}
+            </if><if test ="item.inicioTratamiento != null">
+                , #{item.inicioTratamiento}
+            </if><if test ="item.finTratamiento != null">
+                , #{item.finTratamiento}
+            </if><if test ="item.idDiagnostico != null">
+                , #{item.idDiagnostico}
+            </if><if test ="item.motivoPrescripcion != null">
+                , #{item.motivoPrescripcion}
+            </if><if test ="item.insertFecha != null">
+                , #{item.insertFecha}
+            </if><if test ="item.insertIdUsuario != null">
+                , #{item.insertIdUsuario}
+            </if>
+            )
+        </foreach>
+    </insert>
+    
+    <update id="actualizar" parameterType="mx.mc.model.MedicamentoConcomitante" >
+        UPDATE medicamentoConcomitante
+        SET
+        <if test ="idConcomitante != null">
+            idConcomitante = #{idConcomitante}
+        </if><if test ="idReaccion != null">
+            ,idReaccion = #{idReaccion}
+        </if><if test ="idInsumo != null">
+            ,idInsumo = #{idInsumo}
+        </if><if test ="clave != null">
+            ,clave = #{clave}
+        </if><if test ="dosis != null">
+            ,dosis = #{dosis}
+        </if><if test ="inicioTratamiento != null">
+            ,inicioTratamiento = #{inicioTratamiento}
+        </if><if test ="finTratamiento != null">
+            ,finTratamiento = #{finTratamiento}
+        </if><if test ="idDiagnostico != null">
+            ,idDiagnostico = #{idDiagnostico}
+        </if><if test ="motivoPrescripcion != null">
+            ,motivoPrescripcion = #{motivoPrescripcion}
+        </if><if test ="insertFecha != null">
+            ,insertFecha = #{insertFecha}
+        </if><if test ="insertIdUsuario != null">
+            ,insertIdUsuario = #{insertIdUsuario}
+        </if><if test ="updateFecha != null">
+            ,updateFecha = #{updateFecha}
+        </if><if test ="updateIdUsuario != null"> 
+            ,updateIdUsuario = #{updateIdUsuario}
+        </if>
+        WHERE idConcomitante = #{idConcomitante};
+    </update>
+    
+    <update id="actualizarListaInsumos" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="listaInsumo"  item="item"  index="index"  separator=";">
+            UPDATE medicamentoConcomitante
+            <set>
+                <if test ="idReaccion != null">
+                    idReaccion = #{item.idReaccion}
+                </if><if test ="idInsumo != null">
+                    ,idInsumo = #{item.idInsumo}
+                </if><if test ="clave != null">
+                    ,clave = #{item.clave}
+                </if><if test ="dosis != null">
+                    ,dosis = #{item.dosis}
+                </if><if test ="inicioTratamiento != null">
+                    ,inicioTratamiento = #{item.inicioTratamiento}
+                </if><if test ="finTratamiento != null">
+                    ,finTratamiento = #{item.finTratamiento}
+                </if><if test ="idDiagnostico != null">
+                    ,idDiagnostico = #{item.idDiagnostico}
+                </if><if test ="motivoPrescripcion != null">
+                    ,motivoPrescripcion = #{item.motivoPrescripcion}
+                </if><if test ="updateFecha != null">
+                    ,updateFecha = #{item.updateFecha}
+                </if><if test ="updateIdUsuario != null">
+                    ,updateIdUsuario = #{item.updateIdUsuario}
+                </if>
+            </set>   
+            WHERE idConcomitante = #{item.idConcomitante}            
+        </foreach>
+    </update>
+    
+    <delete id="eliminarInsumos"  parameterType="Map">
+        DELETE FROM medicamentoConcomitante WHERE idReaccion = #{idReaccion};
+    </delete>
+    
+    <select id="obtener" resultType="mx.mc.model.MedicamentoConcomitante" parameterType="mx.mc.model.MedicamentoConcomitante" >
+        SELECT idConcomitante,
+            idReaccion,
+            idInsumo,
+            clave,
+            dosis,
+            inicioTratamiento,
+            finTratamiento,
+            idDiagnostico,
+            motivoPrescripcion,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario
+        FROM medicamentoConcomitante
+        WHERE 
+        idConcomitante = #{idConcomitante};
+    </select>
+
+    <select id="obtenerListaByIdReaccion" resultType="mx.mc.model.MedicamentoConcomitanteExtended" parameterType="Map">
+       SELECT 
+            m.nombreCorto as medicamento, 
+            v.nombreViaAdministracion as viaAdministracion,
+            m.claveInstitucional as clave,
+            c.*
+        FROM    medicamentoConcomitante c
+            INNER JOIN  medicamento m ON m.idMedicamento = c.idInsumo
+            INNER JOIN  viaAdministracion v on v.idViaAdministracion = m.idViaAdministracion
+        WHERE  idReaccion = #{idReaccion}        
+    </select>
+</mapper>

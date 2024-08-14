@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.CalculoNptMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.CalculoNpt" parameterType="mx.mc.model.CalculoNpt" >
+        SELECT *
+        FROM calculoNpt
+        WHERE 1=1
+        <if test=" idCalculo != null ">
+            AND idCalculo = #{ idCalculo , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipo != null ">
+            AND tipo = #{ tipo , jdbcType = INTEGER }
+        </if>
+        LIMIT 0, 1;
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.CalculoNpt" parameterType="mx.mc.model.CalculoNpt" >
+        SELECT *
+        FROM calculoNpt
+        WHERE 1=1
+        <if test=" idCalculo != null ">
+            AND idCalculo = #{ idCalculo , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipo != null ">
+            AND tipo = #{ tipo , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.CalculoNpt" >
+        INSERT INTO calculoNpt (
+        <if test=" idCalculo != null ">
+            idCalculo
+        </if>
+        <if test=" claveInstitucional != null ">
+            , claveInstitucional
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion
+        </if>
+        <if test=" tipo != null ">
+            , tipo
+        </if>
+        <if test=" formula != null ">
+            , formula
+        </if>
+        <if test=" activo != null ">
+            , activo
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertidUsuario != null ">
+            , insertidUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario
+        </if>
+        ) VALUES (
+        <if test=" idCalculo != null ">
+            #{ idCalculo , jdbcType = VARCHAR }
+        </if>
+        <if test=" claveInstitucional != null ">
+            , #{ claveInstitucional , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipo != null ">
+            , #{ tipo , jdbcType = VARCHAR }
+        </if>
+        <if test=" formula != null ">
+            , #{ formula , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , #{ activo , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertidUsuario != null ">
+            , #{ insertidUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.CalculoNpt"  >
+        UPDATE calculoNpt SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" claveInstitucional != null ">
+            , claveInstitucional = #{ claveInstitucional , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" tipo != null ">
+            , tipo = #{ tipo , jdbcType = VARCHAR }
+        </if>
+        <if test=" formula != null ">
+            , formula = #{ formula , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        WHERE idCalculo = #{ idCalculo , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.CalculoNpt"  >
+        DELETE FROM calculoNpt
+        WHERE idCalculo = #{ idCalculo , jdbcType = VARCHAR }
+    </delete>
+    
+</mapper>

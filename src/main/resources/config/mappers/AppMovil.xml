@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.AppMovilMapper" >
+ 
+    
+    <insert id="storeApp" parameterType="mx.mc.model.AplicationMovil" >        
+        INSERT INTO versionAPK (        
+            idVersion, 
+            nombre, 
+            versionName, 
+            versionCode,
+            descripcion, 
+            activo, 
+            insertFecha    
+        ) VALUES (  
+                uuid()          
+            , #{ nombre , jdbcType = VARCHAR }
+            , #{ versionName , jdbcType = VARCHAR }
+            , #{ versionCode , jdbcType = VARCHAR }
+            , "${descripcion}"
+            , #{ activo , jdbcType = BOOLEAN  }
+            , now()
+        )
+    </insert>
+    
+    
+    <update id="updateLista" parameterType="String">
+        update versionAPK
+          <set>
+            activo = true
+          </set>
+        where idVersion=#{id};
+    </update>
+    
+    <update id="updateListaAux">
+        update versionAPK
+          <set>
+            activo = false
+          </set>
+        where activo=true;
+    </update>
+    
+    
+    <select id="obtenerLista" resultType="mx.mc.model.AplicationMovil" parameterType="String">
+        SELECT * FROM versionAPK WHERE 1 = 1
+        <if test=" versionName != null ">
+            AND versionName = #{versionName, jdbcType=VARCHAR}
+        </if>
+        <if test=" versionCode != null ">
+            AND versionCode = #{versionCode, jdbcType=LONG}
+        </if>
+    </select>
+    
+    
+    <select id="obtenerAPK" resultType="mx.mc.model.AplicationMovil">
+        SELECT * FROM versionAPK WHERE activo = true
+    </select>
+    
+</mapper>

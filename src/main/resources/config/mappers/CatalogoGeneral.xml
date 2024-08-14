@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.CatalogoGeneralMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.CatalogoGeneral" parameterType="mx.mc.model.CatalogoGeneral" >
+        SELECT idCatalogoGeneral , nombreCatalogo , estatus , idGrupo , insertIdUsuario, clave,orden, condicion
+               insertFecha , updateIdUsuario , updateFecha
+        FROM catalogoGeneral
+        WHERE 1 = 1 
+        <if test=" idCatalogoGeneral != null ">
+            AND idCatalogoGeneral = #{ idCatalogoGeneral , jdbcType = VARCHAR }
+        </if>
+        <if test=" idGrupo != null ">
+            AND idGrupo = #{ idGrupo , jdbcType = INTEGER }
+        </if>
+        ORDER BY orden ASC, nombreCatalogo ASC
+    </select>
+        
+    <select id="obtenerLista" resultType="mx.mc.model.CatalogoGeneral" parameterType="mx.mc.model.CatalogoGeneral" >
+  
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Rol" >
+       
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.Rol"  >
+        
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.Rol" >
+        
+    </delete>
+    
+    <select id="obtenerCatalogosPorGrupo" resultType="mx.mc.model.CatalogoGeneral" parameterType="Map" >
+        SELECT idCatalogoGeneral, nombreCatalogo, estatus, insertIdUsuario, insertFecha, updateIdUsuario, updateFecha, idGrupo, clave,orden, condicion
+        FROM catalogoGeneral
+        WHERE 1=1
+        <if test=" idGrupo != null ">
+            AND idGrupo = #{ idGrupo , jdbcType = INTEGER }
+        </if>
+        AND estatus = 1
+        ORDER BY orden ASC, nombreCatalogo ASC
+    </select>
+    <select id="obtenerTiposInsumos" resultType="mx.mc.model.CatalogoGeneral" parameterType="Map" >
+        Select distinct c.nombreCatalogo,c.idCatalogoGeneral 
+        from almacenPuntosControl a
+        inner join medicamento m on a.idMedicamento = m.idMedicamento
+        inner join estructura e on a.idAlmacen = e.idEstructura
+        inner join catalogoGeneral c on m.tipo = c.idCatalogoGeneral
+        where idEstructura=#{idEstructura}
+        and c.idGrupo=#{idGrupo}
+        and c.estatus = 1
+        and a.activo=1
+        and m.activo=1
+        and e.activa=1
+        ORDER BY orden ASC, nombreCatalogo ASC;
+    </select>
+    
+</mapper>

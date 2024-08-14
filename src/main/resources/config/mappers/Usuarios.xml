@@ -1,0 +1,759 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.UsuarioMapper" >
+ 
+    <select id="obtenerVista" resultType="mx.mc.model.VistaUsuario" parameterType="Map">
+        SELECT idUsuario, nombre, apellidoPaterno, apellidoMaterno, nombreUsuario, estructura, pathEstructura, nombreRol, activo, correoElectronico
+        FROM viewUsuarios
+        WHERE 1=1        
+        <if test=" cadena != null ">
+            AND ( idUsuario LIKE '%${cadena}%'
+            OR nombre LIKE '%${cadena}%'
+            OR apellidoPaterno LIKE '%${cadena}%'
+            OR apellidoMaterno LIKE '%${cadena}%'
+            OR nombreUsuario LIKE '%${cadena}%'
+            OR estructura LIKE '%${cadena}%'
+            OR pathEstructura LIKE '%{cadena}%'
+            OR nombreRol LIKE '%${cadena}%'
+            OR activo LIKE '%${cadena}%' )
+        </if>        
+        
+    </select>
+    
+    <select id="obtenerUsuariosOrdenadoPorCadena" resultType="mx.mc.model.VistaUsuario" parameterType="Map">
+        SELECT  u.idUsuario,
+                u.nombre,
+                u.apellidoPaterno,
+                u.apellidoMaterno,
+                u.nombreUsuario,
+                u.correoElectronico,
+                u.activo,
+                e.nombre AS estructura,
+                u.pathEstructura,
+                r.nombre AS nombreRol
+        FROM usuarios u
+	LEFT JOIN usuariosRoles ur ON u.idUsuario = ur.idUsuario
+	LEFT JOIN roles r ON ur.idRol = r.idRol
+	LEFT JOIN estructura e ON u.idEstructura = e.idEstructura
+        WHERE
+        u.nombreUsuario not in ('mirth' , 'superadmin', 'admin' , 'motion')
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null and paramBusquedaReporte.cadenaBusqueda != '' ">
+            AND ( u.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                    OR u.apellidoPaterno LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                    OR u.apellidoMaterno LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                    OR u.nombreUsuario LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                    OR e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                    OR u.pathEstructura LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                    OR r.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+        
+        <if test="sortField == null or sortField == '' " > 
+            ORDER BY u.nombre asc
+        </if>
+        
+        <if test="sortField == 'nombre'" > 
+            <if test="sortOrder == 'asc'" > 
+                ORDER BY u.nombre asc
+            </if>
+            <if test="sortOrder == 'desc'" > 
+                ORDER BY u.nombre desc
+            </if>            
+        </if>
+        
+        <if test="sortField == 'apellidoPaterno'" > 
+            <if test="sortOrder == 'asc'" > 
+                ORDER BY u.apellidoPaterno asc
+            </if>
+            <if test="sortOrder == 'desc'" > 
+                ORDER BY u.apellidoPaterno desc
+            </if>
+        </if>
+        
+        <if test="sortField == 'apellidoMaterno'" > 
+            <if test="sortOrder == 'asc'" > 
+                ORDER BY u.apellidoMaterno asc
+            </if>
+            <if test="sortOrder == 'desc'" > 
+                ORDER BY u.apellidoMaterno desc
+            </if>            
+        </if>
+        
+        <if test="sortField == 'nombreUsuario'" > 
+            <if test="sortOrder == 'asc'" > 
+                ORDER BY u.nombreUsuario asc
+            </if>
+            <if test="sortOrder == 'desc'" > 
+                ORDER BY u.nombreUsuario desc
+            </if>            
+        </if>
+        
+        <if test="sortField == 'estructura'" >
+            <if test="sortOrder == 'asc'" > 
+                ORDER BY estructura asc
+            </if>
+            <if test="sortOrder == 'desc'" > 
+                ORDER BY estructura desc
+            </if>    
+        </if>
+        
+        <if test="sortField == 'nombreRol'">
+            <if test="sortOrder == 'asc'" >
+                ORDER BY nombreRol asc
+            </if>
+            <if test="sortOrder == 'desc'" >
+                ORDER BY nombreRol desc
+            </if>    
+        </if>
+        
+        <if test="sortField == 'activo'">
+            <if test="sortOrder == 'asc'" >
+                ORDER BY u.activo asc
+            </if>
+            <if test="sortOrder == 'desc'" >
+                ORDER BY u.activo desc
+            </if>    
+        </if>
+        
+        LIMIT #{ startingAt , jdbcType = INTEGER}, #{ maxPerPage , jdbcType = INTEGER}
+        
+    </select>
+    
+    <select id="obtenerTotalUsuariosOrdenadoPorCadena" resultType="Long" parameterType="Map">
+        SELECT 
+            count(*)
+        FROM usuarios u
+	LEFT JOIN usuariosRoles ur ON u.idUsuario = ur.idUsuario
+	LEFT JOIN roles r ON ur.idRol = r.idRol
+	LEFT JOIN estructura e ON u.idEstructura = e.idEstructura
+        WHERE
+        u.nombreUsuario not in ('mirth' , 'superadmin', 'admin' , 'motion')
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null and paramBusquedaReporte.cadenaBusqueda != '' ">
+            AND ( u.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                    OR u.apellidoPaterno LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                    OR u.apellidoMaterno LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                    OR u.nombreUsuario LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                    OR e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                    OR u.pathEstructura LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                    OR r.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+    </select>
+    
+    <select id="obtenerUsuariosByFechaCreacion" resultType="mx.mc.model.VistaUsuario" parameterType="Map">  
+        SELECT 
+                u.idUsuario,
+                u.nombre,
+                u.apellidoPaterno,
+                u.apellidoMaterno,
+                u.nombreUsuario,
+                u.correoElectronico,
+                u.activo,
+                e.nombre AS estructura,
+                u.pathEstructura,
+                r.nombre AS nombreRol
+        FROM
+	(((usuarios u
+	LEFT JOIN usuariosRoles ur ON ((u.idUsuario = ur.idUsuario)))
+	LEFT JOIN roles r ON ((ur.idRol = r.idRol)))
+	LEFT JOIN estructura e ON ((u.idEstructura = e.idEstructura)))
+        WHERE 1 = 1
+        AND ((u.nombreUsuario <![CDATA[<>]]> 'Mirth') AND (u.nombreUsuario <![CDATA[<>]]> 'SUPERADMIN') AND (u.nombreUsuario <![CDATA[<>]]> 'ADMIN') AND (u.nombreUsuario <![CDATA[<>]]> 'motion'))
+        <if test=" cadena != null ">
+            AND ( u.idUsuario LIKE '%${cadena}%'
+            OR u.nombre LIKE '%${cadena}%'
+            OR u.apellidoPaterno LIKE '%${cadena}%'
+            OR u.apellidoMaterno LIKE '%${cadena}%'
+            OR u.nombreUsuario LIKE '%${cadena}%'
+            OR e.nombre LIKE '%${cadena}%'
+            OR u.pathEstructura LIKE '%{cadena}%'
+            OR r.nombre LIKE '%${cadena}%'
+            OR u.activo LIKE '%${cadena}%' )
+        </if>      
+        ORDER BY u.insertFecha DESC
+    </select>
+    
+    <select id="obtener" resultType="mx.mc.model.Usuario" parameterType="mx.mc.model.Usuario" >
+        SELECT idUsuario , nombreUsuario , claveAcceso , correoElectronico , nombre , apellidoPaterno , apellidoMaterno , activo , usuarioBloqueado , fechaVigencia , ultimoIngreso , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , idEstructura, pathEstructura, idTipoUsuario, cedProfesional, cedEspecialidad , prescribeControlados, administrador, idTipoPerfil, matriculaPersonal, idTipoSolucion
+        FROM usuarios
+        WHERE 1=1
+        <if test=" idUsuario != null ">
+            AND idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombreUsuario != null ">
+            AND nombreUsuario = #{ nombreUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" claveAcceso != null ">
+            AND claveAcceso = #{ claveAcceso , jdbcType = VARCHAR }
+        </if>
+        <if test=" correoElectronico != null ">
+            AND correoElectronico  = #{ correoElectronico , jdbcType = VARCHAR } 
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" apellidoPaterno != null ">
+            AND apellidoPaterno = #{ apellidoPaterno , jdbcType = VARCHAR }
+        </if>
+        <if test=" apellidoMaterno != null ">
+            AND apellidoMaterno = #{ apellidoMaterno , jdbcType = VARCHAR }
+        </if>
+<!--        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        <if test=" usuarioBloqueado != null ">
+            AND usuarioBloqueado = #{ usuarioBloqueado , jdbcType = INTEGER }
+        </if>-->
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test="pathEstructura != null"> 
+            AND pathEstructura = #{pathEstructura,jdbcType= VARCHAR}
+        </if>
+        <if test=" idTipoUsuario != null ">
+            AND idTipoUsuario = #{ idTipoUsuario , jdbcType = INTEGER }
+        </if>
+        <if test=" cedProfesional != null ">
+            AND cedProfesional = #{ cedProfesional , jdbcType = VARCHAR }
+        </if>
+        <if test=" cedEspecialidad != null ">
+            AND cedEspecialidad = #{ cedEspecialidad , jdbcType = VARCHAR }
+        </if>
+        LIMIT 1
+    </select>
+                
+    <select id="obtenerUsuario" resultType="mx.mc.model.Usuario" parameterType="mx.mc.model.Usuario" >
+        SELECT idUsuario , nombreUsuario , claveAcceso , correoElectronico , nombre , apellidoPaterno , apellidoMaterno , activo , usuarioBloqueado , fechaVigencia , ultimoIngreso , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario, idTipoUsuario, cedProfesional, cedEspecialidad , prescribeControlados, administrador, idTipoPerfil, matriculaPersonal, idEstructura, pathEstructura 
+        FROM usuarios
+        WHERE 1=1
+        <if test=" nombreUsuario != null ">
+            AND nombreUsuario = #{ nombreUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" correoElectronico != null ">
+            AND correoElectronico  = #{ correoElectronico , jdbcType = VARCHAR } 
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" apellidoPaterno != null ">
+            AND apellidoPaterno = #{ apellidoPaterno , jdbcType = VARCHAR }
+        </if>
+        <if test=" apellidoMaterno != null ">
+            AND apellidoMaterno = #{ apellidoMaterno , jdbcType = VARCHAR }
+        </if>  
+    </select>
+    <select id="obtenerLista" resultType="mx.mc.model.Usuario" parameterType="mx.mc.model.Usuario" >
+        SELECT idUsuario , nombreUsuario , claveAcceso , correoElectronico , nombre , apellidoPaterno , apellidoMaterno , activo , usuarioBloqueado , fechaVigencia , ultimoIngreso , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario, idTipoUsuario, cedProfesional, cedEspecialidad , prescribeControlados, administrador, idTipoPerfil, matriculaPersonal, idEstructura, pathEstructura 
+        FROM usuarios
+        WHERE 1=1
+        <if test=" idUsuario != null ">
+            AND idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombreUsuario != null ">
+            AND nombreUsuario = #{ nombreUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" claveAcceso != null ">
+            AND claveAcceso = #{ claveAcceso , jdbcType = VARCHAR }
+        </if>
+        <if test=" correoElectronico != null ">
+            AND SHA1( correoElectronico ) = SHA1 ( #{ correoElectronico , jdbcType = VARCHAR } )
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" apellidoPaterno != null ">
+            AND apellidoPaterno = #{ apellidoPaterno , jdbcType = VARCHAR }
+        </if>
+        <if test=" apellidoMaterno != null ">
+            AND apellidoMaterno = #{ apellidoMaterno , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        <if test=" usuarioBloqueado != null ">
+            AND usuarioBloqueado = #{ usuarioBloqueado , jdbcType = INTEGER }
+        </if>
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" pathEstructura != null">
+            AND pathEstructura = #{ pathEstructura, jdbcType = VARCHAR}
+        </if>
+        <if test=" idTipoUsuario != null ">
+            AND idTipoUsuario = #{ idTipoUsuario , jdbcType = INTEGER }
+        </if>
+        <if test=" cedProfesional != null ">
+            AND cedProfesional = #{ cedProfesional , jdbcType = VARCHAR }
+        </if>
+        <if test=" cedEspecialidad != null ">
+            AND cedEspecialidad = #{ cedEspecialidad , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <select id="obtenerNombreUsuarioCorreoElectronico" resultType="mx.mc.model.Usuario" parameterType="Map" >
+        SELECT idUsuario , nombreUsuario , claveAcceso , correoElectronico , nombre , apellidoPaterno , apellidoMaterno , activo , usuarioBloqueado , fechaVigencia , ultimoIngreso , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario, idTipoUsuario, cedProfesional, cedEspecialidad , prescribeControlados, administrador, idTipoPerfil, matriculaPersonal, idEstructura, pathEstructura 
+        , CASE WHEN fechaVigencia <![CDATA[ < ]]> now() THEN 1 ELSE 0 END AS actualizarClave
+        , numErrorAcceso
+        FROM usuarios
+        WHERE 
+            ( nombreUsuario = #{ username , jdbcType = VARCHAR } OR correoElectronico = #{ username , jdbcType = VARCHAR } )
+        LIMIT 0,1
+    </select>
+    <select id="obtenerUsuarioPorId" resultType="mx.mc.model.Usuario" parameterType="Map">
+        SELECT idUsuario , nombreUsuario , claveAcceso , correoElectronico , nombre , apellidoPaterno , apellidoMaterno , activo , usuarioBloqueado , fechaVigencia , ultimoIngreso , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , idEstructura, pathEstructura, idTipoUsuario, cedProfesional, cedEspecialidad , prescribeControlados, administrador, idTipoPerfil, matriculaPersonal, idTipoSolucion
+        FROM usuarios
+        WHERE 1=1
+        <if test=" idUsuario != null ">
+            AND idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <select id="obtenerIdEstructuraPadre" resultType="mx.mc.model.Usuario" parameterType="Map">
+        SELECT e.idEstructuraPadre as idEstructura
+        FROM usuarios u INNER JOIN estructura e
+        ON u.idEstructura = e.idEstructura
+        WHERE 1 = 1
+        <if test="idUsuario != null">
+            AND u.idUsuario = #{idUsuario , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <select id="obtenerDoctoresPorTurnoYConsultorio" resultType="mx.mc.model.Usuario_Extended" parameterType="Map">
+        SELECT u.idUsuario , u.nombre , u.apellidoPaterno , u.apellidoMaterno, idTipoUsuario, cedProfesional, cedEspecialidad , prescribeControlados, administrador, idTipoPerfil, matriculaPersonal, u.idEstructura
+        FROM usuarios u 
+        INNER JOIN  turnoMedico tm
+        ON u.idUsuario = tm.idMedico
+        INNER JOIN estructura es
+        ON es.idEstructura = u.idEstructura
+        WHERE activo = 1
+        AND tm.idTurno = #{ idTurno , jdbcType = INTEGER }
+        AND u.idEstructura = #{ idEstructura , jdbcType = VARCHAR}
+    </select>
+        
+    <insert id="insertar" parameterType="mx.mc.model.Usuario" >
+        INSERT INTO usuarios (
+        <if test=" idUsuario != null ">
+            idUsuario
+        </if>
+        <if test=" nombreUsuario != null ">
+            , nombreUsuario
+        </if>
+        <if test=" claveAcceso != null ">
+            , claveAcceso
+        </if>
+        <if test=" correoElectronico != null ">
+            , correoElectronico
+        </if>
+         <if test=" matriculaPersonal != null ">
+            , matriculaPersonal
+        </if>
+        <if test=" nombre != null ">
+            , nombre
+        </if>
+        <if test=" apellidoPaterno != null ">
+            , apellidoPaterno
+        </if>
+        <if test=" apellidoMaterno != null ">
+            , apellidoMaterno
+        </if>
+        <if test=" activo != null ">
+            , activo
+        </if>
+        <if test=" usuarioBloqueado != null ">
+            , usuarioBloqueado
+        </if>
+        <if test=" fechaVigencia != null ">
+            , fechaVigencia
+        </if>
+        <if test=" ultimoIngreso != null ">
+            , ultimoIngreso
+        </if>
+        <if test=" idEstructura != null ">
+            , idEstructura
+        </if>
+        <if test=" pathEstructura != null">
+            , pathEstructura
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario
+        </if>
+        <if test=" idTipoUsuario != null ">
+            , idTipoUsuario
+        </if>
+        <if test=" cedProfesional != null ">
+            , cedProfesional
+        </if>
+        <if test=" cedEspecialidad != null ">
+            , cedEspecialidad
+        </if>
+        <if test=" prescribeControlados != null ">
+            , prescribeControlados
+        </if>
+        <if test=" administrador != null ">
+            , administrador
+        </if>
+        <if test=" idTipoPerfil != null ">
+            , idTipoPerfil
+        </if>
+        <!-- if test=" idTipoSolucion != null " -->
+            , idTipoSolucion
+        <!-- /if -->
+        ) VALUES (
+        <if test=" idUsuario != null ">
+            #{ idUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombreUsuario != null ">
+            , #{ nombreUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" claveAcceso != null ">
+            , #{ claveAcceso , jdbcType = VARCHAR }
+        </if>
+        <if test=" correoElectronico != null ">
+            , #{ correoElectronico , jdbcType = VARCHAR }
+        </if>
+        <if test=" matriculaPersonal != null ">
+            , #{ matriculaPersonal , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            , #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" apellidoPaterno != null ">
+            , #{ apellidoPaterno , jdbcType = VARCHAR }
+        </if>
+        <if test=" apellidoMaterno != null ">
+            , #{ apellidoMaterno , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , #{ activo , jdbcType = INTEGER }
+        </if>
+        <if test=" usuarioBloqueado != null ">
+            , #{ usuarioBloqueado , jdbcType = INTEGER }
+        </if>
+        <if test=" fechaVigencia != null ">
+            , #{ fechaVigencia , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" ultimoIngreso != null ">
+            , #{ ultimoIngreso , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idEstructura != null ">
+            , #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" pathEstructura != null">
+            ,#{ pathEstructura,jdbcType= VARCHAR}
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoUsuario != null ">
+            , #{ idTipoUsuario , jdbcType = INTEGER }
+        </if>
+        <if test=" cedProfesional != null ">
+            , #{ cedProfesional , jdbcType = VARCHAR }
+        </if>
+        <if test=" cedEspecialidad != null ">
+            , #{ cedEspecialidad , jdbcType = VARCHAR }
+        </if>
+        <if test=" prescribeControlados != null ">
+            , #{ prescribeControlados , jdbcType = BOOLEAN }
+        </if>
+        <if test=" administrador != null ">
+            , #{ administrador , jdbcType = INTEGER }
+        </if>
+        <if test=" idTipoPerfil != null ">
+            , #{ idTipoPerfil , jdbcType = INTEGER }
+        </if>
+        <!-- if test=" idTipoSolucion != null " -->
+            , #{ idTipoSolucion , jdbcType = VARCHAR }
+        <!-- /if -->
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.Usuario" >
+        UPDATE usuarios SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" nombreUsuario != null ">
+            , nombreUsuario = #{ nombreUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" claveAcceso != null ">
+            , claveAcceso = #{ claveAcceso , jdbcType = VARCHAR }
+        </if>
+        <if test=" correoElectronico != null ">
+            , correoElectronico = #{ correoElectronico , jdbcType = VARCHAR }
+        </if>
+        <if test=" matriculaPersonal != null ">
+            , matriculaPersonal = #{ matriculaPersonal , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            , nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" apellidoPaterno != null ">
+            , apellidoPaterno = #{ apellidoPaterno , jdbcType = VARCHAR }
+        </if>
+        <if test=" apellidoMaterno != null ">
+            , apellidoMaterno = #{ apellidoMaterno , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        <if test=" usuarioBloqueado != null ">
+            , usuarioBloqueado = #{ usuarioBloqueado , jdbcType = INTEGER }
+        </if>
+        <if test=" fechaVigencia != null ">
+            , fechaVigencia = #{ fechaVigencia , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" ultimoIngreso != null ">
+            , ultimoIngreso = #{ ultimoIngreso , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idEstructura != null ">
+            , idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" pathEstructura != null">
+            , pathEstructura=#{ pathEstructura,jdbcType = VARCHAR}
+        </if>
+        <if test=" idTipoUsuario != null ">
+            , idTipoUsuario = #{ idTipoUsuario , jdbcType = INTEGER }
+        </if>
+        <if test=" cedProfesional != null ">
+            , cedProfesional = #{ cedProfesional , jdbcType = VARCHAR }
+        </if>
+        <if test=" cedEspecialidad != null ">
+            , cedEspecialidad = #{ cedEspecialidad , jdbcType = VARCHAR }
+        </if>
+        <if test=" prescribeControlados != null ">
+            , prescribeControlados = #{ prescribeControlados , jdbcType = BOOLEAN }
+        </if>
+        <if test=" administrador != null ">
+            , administrador = #{ administrador , jdbcType = INTEGER }
+        </if>
+        <if test=" idTipoPerfil != null ">
+            , idTipoPerfil = #{ idTipoPerfil , jdbcType = INTEGER }
+        </if>
+        <if test=" numErrorAcceso != null ">
+            , numErrorAcceso = #{ numErrorAcceso , jdbcType = INTEGER }
+        </if>
+        <if test=" idTipoSolucion != null ">
+            , idTipoSolucion = #{ idTipoSolucion , jdbcType = VARCHAR }
+        </if>
+        WHERE idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.Usuario" >
+        DELETE FROM usuarios 
+        WHERE idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+    </delete>
+    
+    <select id="obtenerUsuarios" resultType="mx.mc.model.Usuario" parameterType="Map">
+        SELECT DISTINCT idUsuario , nombreUsuario , claveAcceso , correoElectronico , nombre , apellidoPaterno , apellidoMaterno , activo , usuarioBloqueado , fechaVigencia , ultimoIngreso , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario, idTipoUsuario, cedProfesional, cedEspecialidad , prescribeControlados, administrador, idTipoPerfil, matriculaPersonal, idEstructura, pathEstructura 
+        FROM usuarios u
+        WHERE
+        1 = 1
+        <if test="cadenaBusqueda != null">
+            AND (
+            u.nombreUsuario LIKE '%${ cadenaBusqueda }%'
+            OR u.nombre LIKE '%${ cadenaBusqueda }%'
+            OR u.apellidoPaterno LIKE '%${ cadenaBusqueda }%' 
+            OR u.apellidoMaterno LIKE '%${ cadenaBusqueda }%' 
+            OR CONCAT(u.nombre,' ', u.apellidoPaterno,' ',u.apellidoMaterno) LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+    </select>
+    
+    <select id="obtenerMedicosPorCriteriosBusqueda" resultType="mx.mc.model.Usuario" parameterType="Map">
+        SELECT idUsuario, nombreUsuario, nombre, apellidoPaterno, apellidoMaterno , numeroMedico , cedProfesional
+        ,concat(nombre,' ', apellidoPaterno,' ',  apellidoMaterno ) as nombres, cedEspecialidad
+        FROM usuarios 
+        WHERE 1 = 1
+        AND idTipoUsuario = #{ idTipoUsuario ,jdbcType = INTEGER }
+        <if test=" puedePrescribir != null ">
+            AND prescribeControlados = #{ puedePrescribir , jdbcType = INTEGER }
+        </if>
+        <if test="cadenaBusqueda != null">
+            HAVING nombres like '%${ cadenaBusqueda }%'
+            OR nombreUsuario LIKE '%${ cadenaBusqueda }%'
+            OR cedEspecialidad like '%${ cadenaBusqueda }%'            
+        </if>
+        LIMIT #{numRegistros , jdbcType = INTEGER}; 
+    </select>
+    
+    <select id="obtenerListaMedicosActivos" resultType="mx.mc.model.Usuario" parameterType="Map">
+        SELECT u.idUsuario, u.nombreUsuario, u.nombre, u.apellidoPaterno, u.apellidoMaterno , u.numeroMedico , u.cedProfesional
+        FROM usuarios u 
+        INNER JOIN tipoUsuario t ON u.idTipoUsuario = t.idTipoUsuario 
+        WHERE 1 = 1
+        AND u.activo = 1
+        AND u.idTipoUsuario = 1
+    </select>
+    
+    <select id="obtenerCuentaUsuarioPorId" resultType="mx.mc.model.Usuario_Extended" parameterType="Map">
+        SELECT e.nombre as nombreServicio,
+        e.idEstructura,
+        u.idUsuario,
+        u.nombreUsuario,tp.perfil,
+        u.claveAcceso,
+        u.correoElectronico,
+        u.nombre,
+        u.apellidoPaterno,
+        u.apellidoMaterno,
+        u.fechaVigencia,
+        <!-- date_format(u.fechaVigencia,'%d-%m-%Y') as fechaVigencia, -->
+        u.idEstructura,    
+        u.cedProfesional,
+        u.cedEspecialidad    
+        FROM usuarios u
+        LEFT JOIN estructura e ON e.idEstructura = u.idEstructura
+        LEFT JOIN tipoPerfil tp on tp.idTipoPerfil = u.idTipoPerfil
+        WHERE u.idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        LIMIT 1;
+    </select>
+    
+    
+    <update id="actualizarCuentaUsuario" parameterType="mx.mc.model.Usuario" >
+        UPDATE usuarios SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        
+        <if test=" claveAcceso != null ">
+            , claveAcceso = #{ claveAcceso , jdbcType = VARCHAR }
+        </if>
+        <if test=" correoElectronico != null ">
+            , correoElectronico = #{ correoElectronico , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            , nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" apellidoPaterno != null ">
+            , apellidoPaterno = #{ apellidoPaterno , jdbcType = VARCHAR }
+        </if>
+        <if test=" apellidoMaterno != null ">
+            , apellidoMaterno = #{ apellidoMaterno , jdbcType = VARCHAR }
+        </if>        
+                        
+        WHERE idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+    </update>
+    
+    
+    <select id="obtenerListaUsuarios" resultType="mx.mc.model.Usuario_Extended" parameterType="Map">
+        SELECT *
+        FROM usuarios
+        WHERE idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+    </select>
+    
+    
+    <select id="obtenerUsuarioByIdUsuario" resultType="mx.mc.model.Usuario" parameterType="Map">
+        SELECT u.idUsuario, u.nombreUsuario, u.claveAcceso, u.nombre, u.apellidoPaterno, u.apellidoMaterno,
+        u.fechaVigencia, u.idEstructura,  u.cedProfesional, u.cedEspecialidad, administrador, idTipoPerfil
+        FROM usuarios u 
+        WHERE 1=1
+        <if test=" idUsuario != null ">
+            AND u.idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <select id="getUserByUserName" resultType="mx.mc.model.Usuario" parameterType="Map">
+        SELECT *
+        FROM usuarios
+        WHERE 1=1
+        <if test=" nombreUsuario != null ">
+            AND nombreUsuario = #{ nombreUsuario , jdbcType = VARCHAR }
+        </if>
+        limit 1
+    </select>
+    
+    <select id="getUserByEmail" resultType="mx.mc.model.Usuario" parameterType="Map">
+        SELECT *
+        FROM usuarios
+        WHERE 1=1
+        <if test=" correoElectronico != null ">
+            AND correoElectronico = #{ correoElectronico , jdbcType = VARCHAR }
+        </if>
+        limit 1
+    </select>
+    
+     <select id="obtenerMedicosPorCriteriosBusquedaYEstructura" resultType="mx.mc.model.Usuario" parameterType="Map">
+        SELECT idUsuario, nombreUsuario, nombre, apellidoPaterno, apellidoMaterno , numeroMedico , cedProfesional
+        ,concat(nombre,' ', apellidoPaterno,' ',  apellidoMaterno ) as nombres, cedEspecialidad
+        FROM usuarios 
+        WHERE 1 = 1
+        AND idTipoUsuario = #{ idTipoUsuario ,jdbcType = INTEGER }
+        <if test=" puedePrescribir != null ">
+            AND prescribeControlados = #{ puedePrescribir , jdbcType = INTEGER }
+        </if>
+        <if test = " idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test="cadenaBusqueda != null">
+            HAVING nombres like '%${ cadenaBusqueda }%'
+            OR nombreUsuario LIKE '%${ cadenaBusqueda }%'
+            OR cedEspecialidad like '%${ cadenaBusqueda }%'            
+        </if>
+        LIMIT #{numRegistros , jdbcType = INTEGER}; 
+    </select>  
+      
+    <select id="obtenerUsuarioByMatriculaPersonal" resultType="mx.mc.model.Usuario" parameterType="Map">
+        SELECT u.idUsuario, u.nombreUsuario, u.claveAcceso, u.nombre, u.apellidoPaterno, u.apellidoMaterno,
+        u.fechaVigencia, u.idEstructura,  u.cedProfesional, u.cedEspecialidad, administrador, idTipoPerfil
+        FROM usuarios u 
+        WHERE         
+            u.matriculaPersonal = #{ matriculaPersonal , jdbcType = VARCHAR }        
+    </select>
+    
+    <select id="getAllUsersByIdRol" resultType="mx.mc.model.Usuario" parameterType="Map" >
+        select * from usuarios u 
+        join usuariosRoles ur  on ur.idUsuario = u.idUsuario
+        join roles r on r.idRol = ur.idRol
+        where r.idRol = #{ idRol , jdbcType = VARCHAR }        
+    </select>
+    
+    <select id="obtenerAutoCompUsario"  resultType="mx.mc.model.Usuario" parameterType="Map" >
+        SELECT 
+            idUsuario,
+            nombreUsuario,
+            correoElectronico,
+            CONCAT(nombre,' ',apellidoPaterno,' ',apellidoMaterno) as nombre
+         FROM
+             usuarios
+         WHERE
+             nombreUsuario LIKE '%${ cadena }%'
+             OR CONCAT(nombre,' ',apellidoPaterno,' ',apellidoMaterno) LIKE '%${ cadena }%'
+             OR correoElectronico LIKE '%${ cadena }%';
+    </select>
+    
+    <select id="obtenerUsuarioQuimicos" resultType="mx.mc.model.Usuario" parameterType="Map">
+        SELECT DISTINCT idUsuario , nombreUsuario , claveAcceso , correoElectronico , nombre , apellidoPaterno , apellidoMaterno , activo , usuarioBloqueado , fechaVigencia , ultimoIngreso , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario, idTipoUsuario, cedProfesional, cedEspecialidad , prescribeControlados, administrador, idTipoPerfil, matriculaPersonal, idEstructura, pathEstructura 
+        FROM usuarios u
+        WHERE
+        1 = 1
+        AND idTipoUsuario = 4 AND activo = 1
+        <if test="cadenaBusqueda != null">
+            AND (
+            u.nombreUsuario LIKE '%${ cadenaBusqueda }%'
+            OR u.nombre LIKE '%${ cadenaBusqueda }%'
+            OR u.apellidoPaterno LIKE '%${ cadenaBusqueda }%' 
+            OR u.apellidoMaterno LIKE '%${ cadenaBusqueda }%' 
+            OR CONCAT(u.nombre,' ', u.apellidoPaterno,' ',u.apellidoMaterno) LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,1102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ReabastoInsumoMapper">
+    
+    <select id="obtener" parameterType="mx.mc.model.ReabastoInsumo" resultType="mx.mc.model.ReabastoInsumo">
+        SELECT idReabastoInsumo, idReabasto, idInsumo, observaciones, cantidadSolicitada, cantidadComprometida, cantidadSurtida, cantidadRecibida, cantidadIngresada, idEstatusReabasto, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario,transferencia,idUsuarioAutoriza
+        FROM reabastoInsumo
+        WHERE 1=1
+        <if test="idReabastoInsumo != null">    AND idReabastoInsumo = #{idReabastoInsumo,jdbcType=VARCHAR}</if>
+        <if test="idReabasto != null">          AND idReabasto = #{idReabasto,jdbcType=VARCHAR}</if>
+        <if test="idInsumo != null">            AND idInsumo = #{idInsumo,jdbcType=VARCHAR}</if>
+        <if test="observaciones != null">       AND observaciones = #{observaciones,jdbcType=VARCHAR}</if>
+        <if test="cantidadSolicitada != null">  AND cantidadSolicitada = #{cantidadSolicitada,jdbcType=INTEGER}</if>
+        <if test="cantidadComprometida != null">AND cantidadComprometida = #{cantidadComprometida,jdbcType=INTEGER}</if>
+        <if test="cantidadSurtida != null">     AND cantidadSurtida = #{cantidadSurtida,jdbcType=INTEGER}</if>
+        <if test="cantidadRecibida != null">    AND cantidadRecibida = #{cantidadRecibida,jdbcType=INTEGER}</if>
+        <if test="cantidadIngresada != null">   AND cantidadIngresada = #{cantidadIngresada,jdbcType=INTEGER}</if>
+        <if test="idEstatusReabasto != null">   AND idEstatusReabasto = #{idEstatusReabasto,jdbcType=INTEGER}</if>
+        <if test="insertFecha != null">         AND insertFecha = #{insertFecha,jdbcType=TIMESTAMP}</if>
+        <if test="insertIdUsuario != null">     AND insertIdUsuario = #{insertIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="updateFecha != null">         AND updateFecha = #{updateFecha,jdbcType=TIMESTAMP}</if>
+        <if test="updateIdUsuario != null">     AND updateIdUsuario = #{updateIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="transferencia != null">       AND transferencia=#{transferencia}</if>
+        <if test="idUsuarioAutoriza != null">   AND idUsuarioAutoriza=#{idUsuarioAutoriza}</if>;
+        
+    </select>
+    
+    <select id="obtenerLista" parameterType="mx.mc.model.ReabastoInsumo" resultType="mx.mc.model.ReabastoInsumo">
+        SELECT idReabastoInsumo, idReabasto, idInsumo, observaciones, cantidadSolicitada, cantidadComprometida, cantidadSurtida, cantidadRecibida, cantidadIngresada, idEstatusReabasto, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario,transferencia,idUsuarioAutoriza
+        FROM reabastoInsumo
+        WHERE 1=1
+        <if test="idReabastoInsumo != null">    AND idReabastoInsumo = #{idReabastoInsumo,jdbcType=VARCHAR}</if>
+        <if test="idReabasto != null">          AND idReabasto = #{idReabasto,jdbcType=VARCHAR}</if>
+        <if test="idInsumo != null">            AND idInsumo = #{idInsumo,jdbcType=VARCHAR}</if>
+        <if test="observaciones != null">       AND observaciones = #{observaciones,jdbcType=VARCHAR}</if>
+        <if test="cantidadSolicitada != null">  AND cantidadSolicitada = #{cantidadSolicitada,jdbcType=INTEGER}</if>
+        <if test="cantidadComprometida != null">AND cantidadComprometida = #{cantidadComprometida,jdbcType=INTEGER}</if>
+        <if test="cantidadSurtida != null">     AND cantidadSurtida = #{cantidadSurtida,jdbcType=INTEGER}</if>
+        <if test="cantidadRecibida != null">    AND cantidadRecibida = #{cantidadRecibida,jdbcType=INTEGER}</if>
+        <if test="cantidadIngresada != null">   AND cantidadIngresada = #{cantidadIngresada,jdbcType=INTEGER}</if>
+        <if test="idEstatusReabasto != null">   AND idEstatusReabasto = #{idEstatusReabasto,jdbcType=INTEGER}</if>
+        <if test="insertFecha != null">         AND insertFecha = #{insertFecha,jdbcType=TIMESTAMP}</if>
+        <if test="insertIdUsuario != null">     AND insertIdUsuario = #{insertIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="updateFecha != null">         AND updateFecha = #{updateFecha,jdbcType=TIMESTAMP}</if>
+        <if test="updateIdUsuario != null">     AND updateIdUsuario = #{updateIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="transferencia != null">       AND transferencia=#{transferencia}</if>
+        <if test="idUsuarioAutoriza != null">   AND idUsuarioAutoriza=#{idUsuarioAutoriza}</if>;
+    </select>
+    
+    <select id="obtenerReabastoInsumoExtends" resultType="mx.mc.model.ReabastoInsumoExtended" parameterType="Map">
+        SELECT ri.idReabastoInsumo,ri.idReabasto,ri.idInsumo,observaciones,cantidadSolicitada,
+        cantidadComprometida,cantidadSurtida,ri.cantidadRecibida,ri.cantidadIngresada,
+        ri.idEstatusReabasto,ri.insertFecha,ri.insertIdUsuario,ri.updateFecha,
+        ri.updateIdUsuario,m.claveInstitucional,m.nombreCorto,
+        pm.nombrePresentacion,pm.idPresentacion,m.factorTransformacion,m.activo
+        , if(re.cantidadXCaja>0,re.cantidadXCaja,m.factorTransformacion) AS cantidadXCaja
+        ,re.claveProveedor,re.loteEnv,re.fechaCad,
+        IF((IFNULL(i.costoUnidosis,0)) = 0, (m.costo/m.factorTransformacion), IFNULL(i.costoUnidosis,0)) as costo
+         , re.osmolaridad , re.densidad , re.noHorasEstabilidad , re.idFabricante, re.idProveedor
+         , re.calorias
+        FROM reabastoInsumo ri
+        INNER JOIN reabasto r ON r.idReabasto = ri.idReabasto
+        INNER JOIN estructura e ON r.idEstructura = e.idEstructura        
+        INNER JOIN medicamento m ON ri.idInsumo = m.idMedicamento
+        INNER JOIN reabastoEnviado re ON ri.idReabastoInsumo = re.idReabastoInsumo         
+        INNER JOIN presentacionMedicamento pm ON (CASE
+            WHEN e.idTipoAlmacen = 4 THEN pm.idPresentacion = m.idPresentacionSalida
+                ELSE pm.idPresentacion = m.idPresentacionEntrada
+            END)
+        LEFT JOIN  inventario i ON i.idInsumo = ri.idInsumo 
+        WHERE ri.idReabasto = #{idReabasto, jdbcType = VARCHAR}
+        AND ri.cantidadSurtida > 0
+        <if test=" listEstatusReabasto != null ">
+            AND ri.idEstatusReabasto IN
+            <foreach item="item" index="index" collection="listEstatusReabasto" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY ri.idReabastoInsumo
+    </select>
+    
+    <select id="obtenerReabastoInsumoExtendsSurt" resultType="mx.mc.model.ReabastoInsumoExtended" parameterType="Map">
+        SELECT idReabastoInsumo,idReabasto,ri.idInsumo,observaciones,cantidadSolicitada,
+            ri.cantidadComprometida,cantidadSurtida,cantidadRecibida,cantidadIngresada,
+            idEstatusReabasto,ri.insertFecha,ri.insertIdUsuario,ri.updateFecha,
+            ri.updateIdUsuario,m.claveInstitucional,m.nombreCorto,
+            pm.nombrePresentacion,pm.idPresentacion,m.factorTransformacion,m.activo,
+            IFNULL((SELECT sum(i.cantidadActual - IFNULL(vw.cantidadComprometida,0)) as cantidadActual
+                        FROM inventario i
+                        LEFT JOIN vwAlmacenInsumoComprometido vw ON (vw.idInsumo = i.idInsumo AND vw.idEstructuraAlmacen = i.idEstructura)
+                        WHERE i.idInsumo = ri.idInsumo
+                              AND i.idInsumo = m.idMedicamento 
+                              AND i.idEstructura =  #{idEstructura , jdbcType = VARCHAR} 
+                              GROUP BY i.idInsumo,i.idEstructura),0) AS cantidadActual   
+        FROM reabastoInsumo ri 
+        INNER JOIN medicamento m ON ri.idInsumo = m.idMedicamento
+        INNER JOIN presentacionMedicamento pm ON m.idPresentacionEntrada = pm.idPresentacion        
+        WHERE ri.idReabasto = #{idReabasto, jdbcType = VARCHAR}
+        <if test=" listEstatusReabasto != null ">
+            AND ri.idEstatusReabasto IN
+            <foreach item="item" index="index" collection="listEstatusReabasto" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+    
+    <select id="obtenerReabastoInsumoProveedorFarmacia" parameterType="Map" resultType="mx.mc.model.ReabastoInsumoExtended">
+         SELECT e.nombre as almacen,e2.nombre as nombreProveedor,ri.idReabastoInsumo , m.claveInstitucional , m.nombreCorto , pm.nombrePresentacion
+            , m.factorTransformacion , ri.cantidadSolicitada , m.activo , ri.cantidadSurtida , ri.idInsumo, ri.idEstatusReabasto, m.idPresentacionSalida as idPresentacion
+            , pr.nombreProveedor as proveedorCompra , pr.idProveedor
+        FROM reabastoInsumo ri 
+        JOIN medicamento m ON ri.idInsumo = m.idMedicamento
+        JOIN presentacionMedicamento pm ON m.idPresentacionEntrada = pm.idPresentacion
+        JOIN reabasto r on r.idReabasto = ri.idReabasto
+        JOIN estructura e on e.idEstructura = r.idEstructura
+        JOIN estructura e2 on e2.idEstructura = e.idEstructuraPadre
+        LEFT JOIN ordenCompra oc on r.idReabasto = oc.idReabasto
+        LEFT JOIN proveedor pr on  oc.idProveedor = pr.idProveedor
+        WHERE ri.idReabasto = #{ idReabasto , jdbcType = VARCHAR }
+        <if test=" listEstatusReabasto != null ">
+            AND ri.idEstatusReabasto IN
+            <foreach item="item" index="index" collection="listEstatusReabasto" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+    
+    <select id="obtenerValorReabastoInsumoProveedorFarmacia" parameterType="Map" resultType="mx.mc.model.ReabastoInsumoExtended">
+        SELECT ri.idReabastoInsumo , m.claveInstitucional , m.nombreCorto , pm.nombrePresentacion
+            , m.factorTransformacion , ri.cantidadSolicitada , m.activo , ri.cantidadSurtida , ri.idInsumo
+        FROM reabastoInsumo ri 
+        INNER JOIN medicamento m ON ri.idInsumo = m.idMedicamento
+        INNER JOIN presentacionMedicamento pm ON m.idPresentacionEntrada = pm.idPresentacion
+        WHERE ri.idReabasto = #{ idReabasto , jdbcType = VARCHAR }
+        <if test=" listEstatusReabasto != null ">
+            AND ri.idEstatusReabasto IN
+            <foreach item="item" index="index" collection="listEstatusReabasto" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" cadena != null ">
+            AND
+            (
+            m.codigoBarrasAlterno = #{ cadena , jdbcType = VARCHAR } 
+                <if test="activa_autoCompleteInsumos == true">                       
+                    OR m.nombreCorto LIKE '%${ cadena }%'
+                    OR m.nombreLargo LIKE '%${ cadena }%'            
+                    OR m.claveAlterna LIKE '%${ cadena }%'            
+                    OR m.claveInstitucional LIKE '%${ cadena }%'            
+                </if>
+            )            
+        </if>
+    </select>
+    
+    <select id="obtenerCantidadMedicamento" resultType="int" parameterType="Map">
+        SELECT factorTransformacion 
+        FROM medicamento
+        WHERE idMedicamento = #{idMedicamento, jdbcType = VARCHAR};
+    </select>
+    
+    <select id="obtenerListaNormal" resultType="mx.mc.model.ReabastoInsumo" parameterType="Map" >
+        SELECT 
+            pc.idAlmacenPuntosControl,
+            pc.idMedicamento AS idInsumo,
+            m.claveInstitucional AS clave,
+            m.nombreCorto AS nombreComercial,
+            <if test="tipoAlmacen==2 or tipoAlmacen==3 or tipoAlmacen==4">        
+                p.nombrePresentacion AS presentacion,
+            </if>
+            m.factorTransformacion AS piezasCaja,
+            m.nombreLargo AS nombreLargo,
+            m.claveInstitucional as grupo, 
+            IF(IFNULL(c1.cantidadActual, 0) <![CDATA[>]]> pc.reorden,0,(pc.maximo - IFNULL(c1.cantidadActual, 0))) AS cantidadSolicitada,    
+            pc.minimo,
+            pc.reorden,
+            pc.maximo,
+            IFNULL(pc.dotacion, 0) as dotacion,
+            IFNULL(c1.cantidadActual, 0) AS cantidadActual,
+            IFNULL(c1.cantidadPorClave, 0) AS cantidadPorClave,
+            IFNULL(c2.total, 0) as surtido,
+            '0' as nivelSurt
+        FROM    almacenPuntosControl pc
+            INNER JOIN    estructura e ON pc.idAlmacen = e.idEstructura
+            INNER JOIN    medicamento m ON pc.idMedicamento = m.idMedicamento
+            LEFT JOIN    
+                (SELECT 
+                    idEstructura,
+                    idInsumo,
+                    SUM(cantidadActual) AS cantidadActual,
+                    MAX(cantidadPorClave) AS cantidadPorClave
+		FROM   inventario
+		WHERE  activo = 1
+		GROUP BY idEstructura , idInsumo
+            ) AS c1 ON (pc.idAlmacen = c1.idEstructura AND pc.idMedicamento = c1.idInsumo)
+        <if test="tipoAlmacen==4">
+            INNER JOIN    presentacionMedicamento p ON p.idPresentacion = m.idPresentacionSalida
+        </if>
+        <if test="tipoAlmacen==2 or tipoAlmacen==3">
+            INNER JOIN presentacionMedicamento p ON p.idPresentacion = m.idPresentacionEntrada
+        </if>    
+            LEFT JOIN
+		(SELECT 
+                    ri.idInsumo, SUM(ri.cantidadRecibida) AS total
+		FROM	reabasto r
+		INNER JOIN reabastoInsumo ri ON ri.idReabasto = r.idReabasto
+		WHERE   r.idEstructura = #{idEstructura,jdbcType=VARCHAR}
+                    AND DATE_FORMAT(r.fechaSolicitud, '%Y-%m-%d') = CURDATE()
+                GROUP BY ri.idInsumo
+            ) AS c2 ON c2.idInsumo = pc.idMedicamento
+        WHERE pc.idAlmacen=#{idEstructura,jdbcType=VARCHAR}
+            AND e.idEstructuraPadre= #{idEstructuraPadre,jdbcType=VARCHAR}
+            AND pc.activo = 1
+            AND pc.solicitud = 0
+            AND e.activa = 1
+            AND m.activo = 1
+            AND m.tipo = #{tipoInsumo,jdbcType=VARCHAR}
+             order by m.nombreCorto
+                     
+    </select>
+    
+    <select id="obtenerListaNormalTransfer" resultType="mx.mc.model.ReabastoInsumoExtended" parameterType="Map" >
+        SELECT 
+            c1.idInventario as observaciones,    
+            c1.idEstructura,
+            pc2.idAlmacenPuntosControl,
+            pc2.idAlmacen,
+            pc2.idMedicamento as idInsumo,
+            m.claveInstitucional as clave,
+            m.nombreCorto as nombreComercial,
+            p.nombrePresentacion as presentacion,
+            m.factorTransformacion as cantidadXCaja,
+            m.nombreLargo,
+            c1.lote,
+            pc2.minimo,
+            pc2.reorden,
+            pc2.maximo,
+            IFNULL(pc2.dotacion, 0) as dotacion,
+            ifnull(c1.cantidadActual,0) as cantidadActual,
+            (pc2.maximo - IFNULL(c1.cantidadActual, 0)) AS cantidadSolicitada,
+            0 as cantidadSurtida
+        FROM
+            almacenPuntosControl pc1
+                INNER JOIN
+            almacenPuntosControl pc2 ON pc2.idMedicamento = pc1.idMedicamento
+                LEFT JOIN
+            (SELECT 
+                idInventario,
+                idEstructura,
+                idInsumo,
+                lote,
+                SUM(cantidadActual) AS cantidadActual
+            FROM
+                inventario
+            GROUP BY idEstructura , idInsumo) AS c1 ON (c1.idInsumo = pc2.idMedicamento and c1.idEstructura=pc2.idAlmacen)
+            inner join medicamento m on m.idMedicamento=pc2.idMedicamento
+            <if test="tipoAlmacen==4">
+                inner join presentacionMedicamento p on p.idPresentacion = m.idPresentacionSalida
+            </if>
+            <if test="tipoAlmacen==2 or tipoAlmacen==3">
+                inner join presentacionMedicamento p on p.idPresentacion = m.idPresentacionEntrada
+            </if>   
+        WHERE
+                pc1.idAlmacen = #{idOrigen}
+            AND pc2.idAlmacen = #{idDestino}
+            AND pc2.solicitud=0
+            and pc2.activo=1
+            AND m.tipo = 38
+            AND IFNULL(c1.cantidadActual, 0) &lt;= pc2.reorden
+        ;
+    </select>
+    
+    <select id="obtenerInsumosdeReabastoporIdReabasto" resultType="mx.mc.model.ReabastoInsumo" parameterType="Map">
+        SELECT 
+            m.claveInstitucional AS clave,
+            m.nombreCorto AS nombreComercial,
+            m.nombreLargo,
+            p.nombrePresentacion AS presentacion,
+            m.factorTransformacion AS piezasCaja,
+            ri.cantidadSolicitada,
+            ri.cantidadSolicitada AS cantidadDosisUnitaria,
+            ri.cantidadSurtida,
+            ri.idReabastoInsumo,
+            ri.idInsumo,
+            ri.idEstatusReabasto,
+            m.tipo,
+            IFNULL(pc.idAlmacenPuntosControl, 0) AS idAlmacenPuntosControl,
+            IFNULL(pc.minimo, 0) AS minimo,
+            IFNULL(pc.maximo, 0) AS maximo,
+            IFNULL(pc.reorden, 0) AS reorden,
+            IFNULL(pc.dotacion, 0) AS dotacion,
+            IFNULL(c1.cantidadActual, 0) AS cantidadActual,
+            IFNULL(c2.total, 0) AS surtido,
+            folioAlternativo
+        FROM    reabasto r
+            INNER JOIN    estructura e ON r.idEstructura = e.idEstructura
+            INNER JOIN    reabastoInsumo ri ON r.idReabasto = ri.idReabasto
+            LEFT JOIN folioAlternativoFolioMus fa ON ri.idFolioAlternativo = fa.idFolioAlternativo
+            INNER JOIN    medicamento m ON m.idMedicamento = ri.idInsumo
+            INNER JOIN    presentacionMedicamento p ON (CASE
+            WHEN e.idTipoAlmacen = 4 THEN p.idPresentacion = m.idPresentacionSalida
+                ELSE p.idPresentacion = m.idPresentacionEntrada
+            END)
+            INNER JOIN    almacenPuntosControl pc ON (pc.idAlmacen = r.idEstructura  AND pc.idMedicamento = ri.idInsumo)
+            LEFT JOIN
+                (SELECT 
+                    idEstructura,
+                    idInsumo,
+                    SUM(cantidadActual) AS cantidadActual
+                FROM	inventario
+                GROUP BY idEstructura , idInsumo) AS c1 ON (pc.idAlmacen = c1.idEstructura AND pc.idMedicamento = c1.idInsumo)
+            LEFT JOIN 
+                (SELECT                                
+                    ri1.idInsumo,
+                    sum(ri1.cantidadSolicitada) AS total 
+                FROM reabasto r1 
+                    INNER JOIN  reabastoInsumo ri1 ON ri1.idReabasto=r1.idReabasto
+                WHERE date_format(r1.fechaSolicitud,'%Y-%m-%d') = CURDATE()
+                    AND r1.idEstructura=#{idEstructura, jdbcType = VARCHAR}
+                GROUP BY ri1.idInsumo) AS c2 ON c2.idInsumo = pc.idMedicamento
+        WHERE ri.idReabasto = #{idReabasto, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtenerReabastosInsumos" resultType="mx.mc.model.ReabastoInsumo" parameterType="Map">
+        Select 
+              ri.idReabastoInsumo
+            , ri.idInsumo
+            , ri.cantidadSolicitada
+            , ri.idEstatusReabasto
+            , m.nombreCorto as nombreComercial
+            , m.claveInstitucional as clave
+            , m.factorTransformacion as piezasCaja
+            , p.nombrePresentacion as presentacion
+            , m.tipo as reorden        
+            , pc.idAlmacenPuntosControl  
+            , pc.minimo
+            , pc.maximo
+            , pc.reorden
+            , IFNULL(pc.dotacion, 0) AS dotacion
+            , ifnull(c1.cantidadActual,0) as cantidadActual
+        from reabastoInsumo ri
+        inner join medicamento m on m.idMedicamento = ri.idInsumo
+        <if test="tipoAlmacen==4">
+            inner join presentacionMedicamento p on p.idPresentacion = m.idPresentacionSalida
+        </if>
+        <if test="tipoAlmacen==2 or tipoAlmacen==3">
+            inner join presentacionMedicamento p on p.idPresentacion = m.idPresentacionEntrada
+        </if>        
+        inner join reabasto  r on r.idReabasto = ri.idReabasto
+        inner join almacenPuntosControl pc on (pc.idAlmacen = r.idEstructura and pc.idMedicamento=ri.idInsumo)    
+        left join (select idEstructura,idInsumo, sum(cantidadActual) as cantidadActual from inventario group by idEstructura,idInsumo) as c1 on (pc.idAlmacen= c1.idEstructura
+        and pc.idMedicamento = c1.idInsumo)
+        WHERE ri.idReabasto = #{idReabasto, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtenerListaMaxMinReorCantActual" resultType="mx.mc.model.ReabastoInsumoExtended" parameterType="Map">
+        SELECT 
+            pc.reorden,
+            pc.maximo,
+            pc.minimo,
+            m.claveInstitucional,
+            m.nombreCorto,
+            IFNULL(pc.dotacion, 0) as dotacion,
+            IFNULL(c1.cantidadActual, 0) AS cantidadActual,
+            IFNULL(c2.surtido, 0) AS surtido,
+            pc.idAlmacenPuntosControl
+        FROM    almacenPuntosControl pc
+            LEFT JOIN
+                (SELECT 
+                    idEstructura,
+                    idInsumo,
+                    SUM(cantidadActual) AS cantidadActual
+                FROM    inventario
+                GROUP BY idEstructura , idInsumo) AS c1 ON (pc.idAlmacen = c1.idEstructura AND pc.idMedicamento = c1.idInsumo)
+            LEFT JOIN
+                (SELECT 
+                    ri.idInsumo, SUM(ri.cantidadSolicitada) AS surtido
+                FROM    reabasto r
+                    INNER JOIN reabastoInsumo ri ON ri.idReabasto = r.idReabasto
+                WHERE
+                    r.idEstructura = #{ idEstructura , jdbcType = VARCHAR } 
+                    AND DATE_FORMAT(r.fechaSolicitud, '%Y-%m-%d') = CURDATE()
+                GROUP BY idInsumo) AS c2 ON c2.idInsumo = pc.idMedicamento
+            INNER JOIN    medicamento m ON pc.idMedicamento = m.idMedicamento
+            LEFT JOIN claveProveedorBarras cpb on m.claveInstitucional = cpb.claveInstitucional
+        WHERE
+            pc.idAlmacen = #{ idEstructura , jdbcType = VARCHAR }  
+            and (m.claveInstitucional like '%${ cadena }%'
+            or m.nombreCorto like '%${ cadena }%' or cpb.codigoBarras like '%${ cadena }%')        
+    </select>  
+    
+    <select id="obtenerMaxMinReorCantActual" resultType="mx.mc.model.ReabastoInsumo" parameterType="Map">
+        SELECT 
+            pc.reorden,
+            pc.maximo,
+            pc.minimo,            
+            IFNULL(pc.dotacion, 0) as dotacion,
+            IFNULL(c1.cantidadActual, 0) AS cantidadActual,
+            IFNULL(c2.surtido, 0) AS surtido,
+            pc.idAlmacenPuntosControl
+        FROM    almacenPuntosControl pc
+            LEFT JOIN
+                (SELECT 
+                    idEstructura,
+                    idInsumo,
+                    SUM(cantidadActual) AS cantidadActual
+                FROM    inventario
+                WHERE activo = 1
+                GROUP BY idEstructura , idInsumo) AS c1 ON (pc.idAlmacen = c1.idEstructura AND pc.idMedicamento = c1.idInsumo)
+            LEFT JOIN
+                (SELECT 
+                    ri.idInsumo, SUM(ri.cantidadRecibida) AS surtido
+                FROM    reabasto r
+                    INNER JOIN reabastoInsumo ri ON ri.idReabasto = r.idReabasto
+                WHERE
+                    r.idEstructura = #{ idEstructura , jdbcType = VARCHAR } 
+                    AND DATE_FORMAT(r.fechaSolicitud, '%Y-%m-%d') = CURDATE()
+                GROUP BY idInsumo) AS c2 ON c2.idInsumo = pc.idMedicamento
+            INNER JOIN    medicamento m ON pc.idMedicamento = m.idMedicamento
+        WHERE
+            pc.idAlmacen = #{ idEstructura , jdbcType = VARCHAR }  
+            AND m.idMedicamento = #{ idMedicamento , jdbcType = VARCHAR }
+        limit 0,1
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.ReabastoInsumo">
+        INSERT INTO reabastoInsumo (
+        <if test="idReabastoInsumo != null">    idReabastoInsumo</if>
+        <if test="idReabasto != null">          ,idReabasto</if>
+        <if test="idInsumo != null">            ,idInsumo</if>
+        <if test="observaciones != null">       ,observaciones</if>
+        <if test="cantidadSolicitada != null">  ,cantidadSolicitada</if>
+        <if test="cantidadComprometida != null">,cantidadComprometida</if>
+        <if test="cantidadSurtida != null">     ,cantidadSurtida</if>
+        <if test="cantidadRecibida != null">    ,cantidadRecibida</if>
+        <if test="cantidadIngresada != null">   ,cantidadIngresada</if>
+        <if test="idEstatusReabasto != null">   ,idEstatusReabasto</if>
+        <if test="insertFecha != null">         ,insertFecha</if>
+        <if test="insertIdUsuario != null">     ,insertIdUsuario</if>
+        <if test="updateFecha != null">         ,updateFecha</if>
+        <if test="updateIdUsuario != null">     ,updateIdUsuario</if>
+        <if test="transferencia != null">       ,transferencia</if> 
+        <if test="idUsuarioAutoriza != null">       ,idUsuarioAutoriza</if>
+        ) VALUES (
+        <if test="idReabastoInsumo != null">    #{idReabastoInsumo,jdbcType=VARCHAR}</if>
+        <if test="idReabasto != null">          ,#{idReabasto,jdbcType=VARCHAR}</if>
+        <if test="idInsumo != null">            ,#{idInsumo,jdbcType=VARCHAR}</if>
+        <if test="observaciones != null">       ,#{observaciones,jdbcType=VARCHAR}</if>
+        <if test="cantidadSolicitada != null">  ,#{cantidadSolicitada,jdbcType=INTEGER}</if>
+        <if test="cantidadComprometida != null">,#{cantidadComprometida,jdbcType=INTEGER}</if>
+        <if test="cantidadSurtida != null">     ,#{cantidadSurtida,jdbcType=INTEGER}</if>
+        <if test="cantidadRecibida != null">    ,#{cantidadRecibida,jdbcType=INTEGER}</if>
+        <if test="cantidadIngresada != null">   ,#{cantidadIngresada,jdbcType=INTEGER}</if>
+        <if test="idEstatusReabasto != null">   ,#{idEstatusReabasto,jdbcType=INTEGER}</if>
+        <if test="insertFecha != null">         ,#{insertFecha,jdbcType=TIMESTAMP}</if>
+        <if test="insertIdUsuario != null">     ,#{insertIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="updateFecha != null">         ,#{updateFecha,jdbcType=TIMESTAMP}</if>
+        <if test="updateIdUsuario != null">     ,#{updateIdUsuario,jdbcType=VARCHAR}</if>
+        <if test="transferencia != null">       ,#{transferencia}</if>
+        <if test="idUsuarioAutoriza != null">   ,#{idUsuarioAutoriza}</if>
+            );
+    </insert>
+    
+    
+    <insert id="guardarReabastoInsumo"  parameterType="java.util.List" useGeneratedKeys="false"  >
+        <foreach collection="list" item="item" separator=";"> 
+        INSERT INTO reabastoInsumo
+            (
+                idReabastoInsumo ,
+                idReabasto ,
+                idInsumo ,
+                 <if test="item.observaciones != null">observaciones,</if>                 
+                cantidadSolicitada ,
+                cantidadComprometida ,
+                cantidadSurtida ,
+                cantidadRecibida ,
+                cantidadIngresada ,
+                idEstatusReabasto ,
+                insertFecha ,
+                insertIdUsuario 
+                <if test="item.transferencia != null">,transferencia</if>
+                <if test="item.idFolioAlternativo != null">, idFolioAlternativo</if>
+                <if test="item.idUsuarioAutoriza != null">, idUsuarioAutoriza</if>
+            )
+            SELECT            
+                #{ item.idReabastoInsumo }
+                , #{ item.idReabasto }
+                , #{ item.idInsumo }
+                <if test="item.observaciones != null"> , #{ item.observaciones }</if>                
+                , #{ item.cantidadSolicitada }
+                , #{ item.cantidadComprometida }
+                , #{ item.cantidadSurtida }
+                , #{ item.cantidadRecibida }
+                , #{ item.cantidadIngresada }
+                , #{ item.idEstatusReabasto }
+                , #{ item.insertFecha }
+                , #{ item.insertIdUsuario }
+                <if test="item.transferencia != null"> ,#{item.transferencia}</if>
+                <if test="item.idFolioAlternativo != null">,#{item.idFolioAlternativo}</if>    
+                <if test="item.idUsuarioAutoriza != null">,#{item.idUsuarioAutoriza}</if>        
+        FROM DUAL WHERE
+            NOT EXISTS( SELECT 
+                    *
+                FROM 
+                    reabastoInsumo
+                WHERE 
+                    idReabastoInsumo = #{ item.idReabastoInsumo })
+        </foreach>
+    </insert>
+    
+     <update id="actualizar" parameterType="mx.mc.model.ReabastoInsumo">
+        UPDATE reabastoInsumo
+        <set>        
+            updateFecha = #{updateFecha,jdbcType=TIMESTAMP}
+            ,updateIdUsuario = #{updateIdUsuario,jdbcType=VARCHAR}
+            <if test="idReabasto != null">          ,idReabasto = #{idReabasto,jdbcType=VARCHAR}</if>
+            <if test="idInsumo != null">            ,idInsumo = #{idInsumo,jdbcType=VARCHAR}</if>
+            <if test="observaciones != null">       ,observaciones = #{observaciones,jdbcType=VARCHAR}</if>
+            <if test="cantidadSolicitada != null">  ,cantidadSolicitada = #{cantidadSolicitada,jdbcType=INTEGER}</if>
+            <if test="cantidadComprometida != null">,cantidadComprometida = #{cantidadComprometida,jdbcType=INTEGER}</if>
+            <if test="cantidadSurtida != null">     ,cantidadSurtida = #{cantidadSurtida,jdbcType=INTEGER}</if>
+            <if test="cantidadRecibida != null">    ,cantidadRecibida = #{cantidadRecibida,jdbcType=INTEGER}</if>
+            <if test="cantidadIngresada != null">   ,cantidadIngresada = #{cantidadIngresada,jdbcType=INTEGER}</if>
+            <if test="idEstatusReabasto != null">   ,idEstatusReabasto = #{idEstatusReabasto,jdbcType=INTEGER}</if>
+            <if test="insertFecha != null">         ,insertFecha = #{insertFecha,jdbcType=TIMESTAMP}</if>
+            <if test="insertIdUsuario != null">     ,insertIdUsuario = #{insertIdUsuario,jdbcType=VARCHAR}</if>
+            <if test="transferencia != null">       ,transferencia= #{transferencia}</if>    
+            <if test="firmaControlados != null">    ,firmaControlados= #{firmaControlados,jdbcType=VARCHAR}</if>  
+            <if test="idUsuarioAutoriza != null">    ,idUsuarioAutoriza= #{idUsuarioAutoriza,jdbcType=VARCHAR}</if>        
+        </set>
+        WHERE idReabastoInsumo = #{idReabastoInsumo,jdbcType=VARCHAR};
+    </update>
+    
+    <update id="actualizarPorIdReabasto" parameterType="mx.mc.model.ReabastoInsumo" useGeneratedKeys="false" >
+        UPDATE reabastoInsumo
+        <set>        
+            updateFecha = #{updateFecha,jdbcType=TIMESTAMP}
+            ,updateIdUsuario = #{updateIdUsuario,jdbcType=VARCHAR}            
+            <if test="idInsumo != null">            ,idInsumo = #{idInsumo,jdbcType=VARCHAR}</if>
+            <if test="observaciones != null">       ,observaciones = #{observaciones,jdbcType=VARCHAR}</if>
+            <if test="cantidadSolicitada != null">  ,cantidadSolicitada = #{cantidadSolicitada,jdbcType=INTEGER}</if>
+            <if test="cantidadComprometida != null">,cantidadComprometida = #{cantidadComprometida,jdbcType=INTEGER}</if>
+            <if test="cantidadSurtida != null">     ,cantidadSurtida = #{cantidadSurtida,jdbcType=INTEGER}</if>
+            <if test="cantidadRecibida != null">    ,cantidadRecibida = #{cantidadRecibida,jdbcType=INTEGER}</if>
+            <if test="cantidadIngresada != null">   ,cantidadIngresada = #{cantidadIngresada,jdbcType=INTEGER}</if>
+            <if test="idEstatusReabasto != null">   ,idEstatusReabasto = #{idEstatusReabasto,jdbcType=INTEGER}</if>
+            <if test="insertFecha != null">         ,insertFecha = #{insertFecha,jdbcType=TIMESTAMP}</if>
+            <if test="insertIdUsuario != null">     ,insertIdUsuario = #{insertIdUsuario,jdbcType=VARCHAR}</if>        
+            <if test="transferencia != null">       ,transferencia = #{transferencia}</if>
+            <if test="idUsuarioAutoriza != null">   ,idUsuarioAutoriza= #{idUsuarioAutoriza,jdbcType=VARCHAR}</if> 
+        </set>
+        WHERE idReabasto = #{idReabasto,jdbcType=VARCHAR};
+    </update>
+    
+    <update id="actualizarListaReabastoInsumo" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="list" item="item"  index="index"  separator=";">
+            UPDATE reabastoInsumo
+            <set>
+                <if test="item.observaciones != null">
+                    observaciones = #{item.observaciones, jdbcType = VARCHAR },
+                </if>
+                <if test="item.cantidadSurtida != null">
+                    cantidadSurtida = #{item.cantidadSurtida, jdbcType = INTEGER },
+                </if>
+                <if test="item.cantidadRecibida != null">
+                    cantidadRecibida = #{ item.cantidadRecibida, jdbcType = INTEGER },
+                </if>
+                <if test="item.cantidadIngresada != null">
+                    cantidadIngresada = #{ item.cantidadIngresada, jdbcType = INTEGER },
+                </if>
+                <if test="item.idEstatusReabasto != null">
+                    idEstatusReabasto = #{item.idEstatusReabasto, jdbcType = INTEGER },
+                </if>
+                <if test="item.updateFecha != null">
+                    updateFecha = #{item.updateFecha, jdbcType = TIMESTAMP },
+                </if>
+                <if test="item.updateIdUsuario != null">
+                    updateIdUsuario = #{item.updateIdUsuario, jdbcType = VARCHAR },
+                </if>
+                <if test="item.transferencia != null">,transferencia=#{item.transferencia}</if>
+            </set>                  
+            WHERE idReabastoInsumo = #{item.idReabastoInsumo, jdbcType = VARCHAR }
+        </foreach>
+    </update>
+    
+    <update id="actualizarReabastoInsumo" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="list" item="item"  index="index"  separator=";">
+            UPDATE reabastoInsumo
+            <set>
+                <if test="item.idReabasto != null">
+                    idReabasto =  #{ item.idReabasto }
+                </if>
+                <if test="item.idInsumo != null">
+                ,idInsumo =  #{ item.idInsumo }
+                </if>
+                <if test="item.observaciones != null">
+                ,observaciones =  #{ item.observaciones }
+                </if>
+                <if test="item.cantidadSolicitada != null">
+                ,cantidadSolicitada = #{ item.cantidadSolicitada }
+                </if>
+                <if test="item.cantidadComprometida != null">
+                ,cantidadComprometida =  #{ item.cantidadComprometida }
+                </if>
+                <if test="item.cantidadSurtida != null">
+                ,cantidadSurtida =  #{ item.cantidadSurtida }
+                </if>
+                <if test="item.cantidadRecibida != null">
+                ,cantidadRecibida = #{ item.cantidadRecibida }
+                </if>
+                <if test="item.cantidadIngresada != null">
+                ,cantidadIngresada = #{ item.cantidadIngresada }
+                </if>
+                <if test="item.idEstatusReabasto != null">
+                ,idEstatusReabasto = #{ item.idEstatusReabasto }
+                </if>
+                <if test="item.updateFecha != null">
+                ,updateFecha = #{item.updateFecha,jdbcType=TIMESTAMP}
+                </if>
+                <if test="item.updateIdUsuario != null">
+                ,updateIdUsuario =#{item.updateIdUsuario,jdbcType=VARCHAR}                                 
+                </if>
+                <if test="item.transferencia != null">,transferencia=#{item.transferencia}</if>
+                <if test="item.idUsuarioAutoriza != null">,idUsuarioAutoriza=#{item.idUsuarioAutoriza}</if>
+            </set>                  
+            WHERE idReabastoInsumo = #{item.idReabastoInsumo,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    
+    <delete id="eliminarPorIdReabasto" parameterType="Map">
+        DELETE FROM reabastoInsumo WHERE  idReabasto = #{idReabasto,jdbcType=VARCHAR}
+    </delete>
+    
+    <delete id="eliminar" parameterType="mx.mc.model.ReabastoInsumo">
+        DELETE FROM reabastoInsumo WHERE  idReabastoInsumo = #{idReabastoInsumo,jdbcType=VARCHAR}
+    </delete>
+    
+    <delete id="eliminarListaReabastoInsumo" parameterType="java.util.List" >
+        DELETE FROM reabastoInsumo WHERE  idReabastoInsumo IN 
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")" > 
+            #{ item.idReabastoInsumo , jdbcType=VARCHAR }
+        </foreach>
+    </delete>
+    
+    <insert id="insertarListReabastoInsumos" parameterType="map">
+        <foreach collection="listReabastoInsumo" item="item" separator=";">
+            INSERT INTO reabastoInsumo (
+            <if test="item.idReabastoInsumo != null">    idReabastoInsumo</if>
+            <if test="item.idReabasto != null">          ,idReabasto</if>
+            <if test="item.idInsumo != null">            ,idInsumo</if>            
+            <if test="item.observaciones != null">       ,observaciones</if>
+            <if test="item.cantidadSolicitada != null">  ,cantidadSolicitada</if>
+            <if test="item.cantidadComprometida != null">,cantidadComprometida</if>
+            <if test="item.cantidadSurtida != null">     ,cantidadSurtida</if>
+            <if test="item.cantidadRecibida != null">    ,cantidadRecibida</if>
+            <if test="item.cantidadIngresada != null">   ,cantidadIngresada</if>
+            <if test="item.idEstatusReabasto != null">   ,idEstatusReabasto</if>
+            <if test="item.insertFecha != null">         ,insertFecha</if>
+            <if test="item.insertIdUsuario != null">     ,insertIdUsuario</if>
+            <if test="item.updateFecha != null">         ,updateFecha</if>
+            <if test="item.updateIdUsuario != null">     ,updateIdUsuario</if>
+            <if test="item.transferencia != null">      ,transferencia</if>
+            <if test="item.idFolioAlternativo != null"> ,idFolioAlternativo</if>
+            <if test="item.idUsuarioAutoriza != null">      ,idUsuarioAutoriza</if>            
+            ) VALUES (
+            <if test="item.idReabastoInsumo != null">    #{item.idReabastoInsumo,jdbcType=VARCHAR}</if>
+            <if test="item.idReabasto != null">          ,#{item.idReabasto,jdbcType=VARCHAR}</if>
+            <if test="item.idInsumo != null">            ,#{item.idInsumo,jdbcType=VARCHAR}</if>
+            <if test="item.observaciones != null">       ,#{item.observaciones,jdbcType=VARCHAR}</if>
+            <if test="item.cantidadSolicitada != null">  ,#{item.cantidadSolicitada,jdbcType=INTEGER}</if>
+            <if test="item.cantidadComprometida != null">,#{item.cantidadComprometida,jdbcType=INTEGER}</if>
+            <if test="item.cantidadSurtida != null">     ,#{item.cantidadSurtida,jdbcType=INTEGER}</if>
+            <if test="item.cantidadRecibida != null">    ,#{item.cantidadRecibida,jdbcType=INTEGER}</if>
+            <if test="item.cantidadIngresada != null">   ,#{item.cantidadIngresada,jdbcType=INTEGER}</if>
+            <if test="item.idEstatusReabasto != null">   ,#{item.idEstatusReabasto,jdbcType=INTEGER}</if>
+            <if test="item.insertFecha != null">         ,#{item.insertFecha,jdbcType=TIMESTAMP}</if>
+            <if test="item.insertIdUsuario != null">     ,#{item.insertIdUsuario,jdbcType=VARCHAR}</if>
+            <if test="item.updateFecha != null">         ,#{item.updateFecha,jdbcType=TIMESTAMP}</if>
+            <if test="item.updateIdUsuario != null">     ,#{item.updateIdUsuario,jdbcType=VARCHAR}</if>
+            <if test="item.transferencia != null">      ,#{item.transferencia}</if>
+            <if test="item.idFolioAlternativo != null"> ,#{item.idFolioAlternativo,jdbcType=VARCHAR}</if>
+            <if test="item.idUsuarioAutoriza != null">      ,#{item.idUsuarioAutoriza}</if>
+            )
+        </foreach>    
+    </insert>
+    
+        <select id="detalleTransfer" parameterType="Map" resultType="mx.mc.model.ReabastoInsumoExtended">
+        SELECT 
+            t.idReabastoInsumo,
+            t.idReabasto,pm.nombrePresentacion as presentacion,
+            t.idInsumo,
+            t.cantidadSurtida,t.cantidadSolicitada,    
+            i.cantidadXCaja,
+            e.cantidadEnviado,
+            i.fechaCaducidad,
+            (t.cantidadSurtida / i.cantidadXCaja) as cantidadActual,
+            m.claveInstitucional AS clave,
+            m.nombreCorto AS nombreComercial,
+            e.cantidadEnviado,
+            t.idEstatusReabasto,
+            r.nombre,
+            e.loteEnv AS lote,
+            t.insertFecha,
+            t.insertIdUsuario,
+            m.tipo AS tipoInsumo
+         FROM
+            reabastoInsumo t
+                INNER JOIN
+            reabastoEnviado e ON e.idReabastoInsumo = t.idReabastoInsumo
+                INNER JOIN
+            medicamento m ON m.idMedicamento = t.idInsumo
+                INNER JOIN
+            estatusReabasto r ON r.idEstatusReabasto = t.idEstatusReabasto
+            JOIN inventario i on i.idInventario = e.idInventarioSurtido 
+            JOIN presentacionMedicamento pm on pm.idPresentacion = m.idPresentacionEntrada
+         WHERE
+            t.idReabasto = #{idReabasto} 
+            <!--AND transferencia = 1-->
+            ;           
+    </select>
+    
+    <select  id="getReabastoInsumoByFolioClave" parameterType="Map" resultType="mx.mc.model.ReabastoInsumoExtended">
+        SELECT distinct i.lote,i.fechaCaducidad,i.cantidadActual,i.idInventario,r.idReabasto,r.idEstructura,r.idEstructuraPadre,m.nombreCorto,m.claveInstitucional,r.folio,ri.idReabastoInsumo,m.idMedicamento as idInsumo
+        from reabasto r 
+        inner join  reabastoInsumo ri on ri.idReabasto = r.idReabasto
+        inner join medicamento m on ri.idInsumo = m.idMedicamento
+        inner join reabastoEnviado re on re.idReabastoInsumo = ri.idReabastoInsumo
+        inner join inventario i on re.idInventarioSurtido = i.idInventario
+        inner join estructura e on e.idEstructura = r.idEstructura
+        where r.folio = #{folio , jdbcType = VARCHAR} 
+        and m.claveInstitucional = #{claveInstitucional , jdbcType = VARCHAR }
+        and i.lote = #{lote , jdbcType = VARCHAR}        
+        and i.fechaCaducidad = #{fechaCaducidad , jdbcType = TIMESTAMP}
+        and e.claveEstructura = #{claveEstructura, jdbcType = VARCHAR}
+    </select>
+    
+    <select  id="getReabastoInsumoByFolioClaveInv" parameterType="Map" resultType="mx.mc.model.ReabastoInsumoExtended">
+        SELECT distinct e.nombre,i.lote,i.fechaCaducidad,i.cantidadActual,i.idInventario,m.nombreCorto,m.claveInstitucional,m.idMedicamento as idInsumo
+        from  medicamento m         
+        inner join inventario i on i.idInsumo = m.idMedicamento
+        inner join estructura e on e.idEstructura = i.idEstructura
+        where 
+        m.claveInstitucional = #{claveInstitucional , jdbcType = VARCHAR }
+        and i.lote = #{lote , jdbcType = VARCHAR}        
+        and i.fechaCaducidad = #{fechaCaducidad , jdbcType = TIMESTAMP}
+        and e.claveEstructura = #{claveEstructura, jdbcType = VARCHAR}                
+    </select>
+    
+    <select  id="getListReabastoInsumoByFolioClaveInv" parameterType="Map" resultType="mx.mc.model.ReabastoInsumoExtended">
+        SELECT distinct e.nombre,i.lote,i.fechaCaducidad,i.cantidadActual,i.idInventario,m.nombreCorto,m.claveInstitucional,m.idMedicamento as idInsumo
+        from  medicamento m         
+        inner join inventario i on i.idInsumo = m.idMedicamento
+        inner join estructura e on e.idEstructura = i.idEstructura
+        where 
+        m.claveInstitucional = #{claveInstitucional , jdbcType = VARCHAR }
+        and i.lote = #{lote , jdbcType = VARCHAR}        
+        and i.fechaCaducidad = #{fechaCaducidad , jdbcType = TIMESTAMP}
+        and e.claveEstructura = #{claveEstructura, jdbcType = VARCHAR}                
+        and i.claveProveedor is null;
+    </select>    
+    
+    <select id="obtenerDetalleReabasto" parameterType="Map" resultType="mx.mc.model.ReabastoInsumoExtended">
+        SELECT ri.idReabastoInsumo, ri.idReabasto, ri.idInsumo, ri.cantidadSolicitada, ri.cantidadSurtida, ri.cantidadRecibida, m.claveInstitucional AS clave, m.nombreCorto AS nombreComercial,
+            m.factorTransformacion, re.cantidadEnviado, ri.idEstatusReabasto, er.nombre, re.loteEnv AS lote, ri.insertFecha, ri.insertIdUsuario, m.tipo AS tipoInsumo,
+            pm.nombrePresentacion
+         FROM reabastoInsumo ri
+                LEFT JOIN reabastoEnviado re ON re.idReabastoInsumo = ri.idReabastoInsumo
+                INNER JOIN medicamento m ON m.idMedicamento = ri.idInsumo
+                INNER JOIN presentacionMedicamento pm ON m.idPresentacionEntrada = pm.idPresentacion
+                INNER JOIN estatusReabasto er ON er.idEstatusReabasto = ri.idEstatusReabasto
+                INNER JOIN folioAlternativoFolioMus fa ON ri.idFolioAlternativo = fa.idFolioAlternativo
+         WHERE
+            ri.idReabasto = #{ idReabasto, jdbcType = VARCHAR}
+            AND fa.folioAlternativo = #{ folioAlternativo, jdbcType = VARCHAR};
+    </select>
+    
+    <select id="obtenerReabastoInsumo" parameterType="mx.mc.model.ReabastoInsumo" resultType="mx.mc.model.ReabastoInsumo">
+        SELECT idReabastoInsumo, idReabasto, idInsumo, observaciones, cantidadSolicitada, cantidadComprometida, cantidadSurtida, cantidadRecibida, cantidadIngresada, idEstatusReabasto, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario,transferencia 
+        FROM reabastoInsumo
+        WHERE idReabasto = #{ idReabasto, jdbcType = VARCHAR }
+        AND idinsumo = #{ idInsumo, jdbcType = VARCHAR }
+    </select>  
+    
+    <select id="obtenerInsumosEnviadosReabastoByEstructura" parameterType="Map" resultType="mx.mc.model.ReabastoInsumo">
+        SELECT 
+            m.idMedicamento as idInsumo,
+            m.claveInstitucional as clave,
+            m.nombreCorto as nombreComercial,
+            m.nombreLargo,
+            m.factorTransformacion as piezasCaja,
+            IFNULL(SUM(ri.cantidadSurtida), 0) AS cantidadSolicitada,
+            ap.minimo,
+            ap.reorden,
+            ap.maximo,
+            ap.dotacion,
+            ap.maximo - IFNULL(SUM(ri.cantidadSurtida), 0) AS cantidadActual,
+            m.grupo, 
+            ap.idAlmacenPuntosControl,   
+            ap.idAlmacen as idEstructura
+        FROM    reabasto r
+                INNER JOIN    reabastoInsumo ri ON ri.idReabasto = r.idReabasto    
+                INNER JOIN    medicamento m ON m.idMedicamento = ri.idInsumo
+                INNER JOIN    estructura ep ON ep.idEstructura = r.idEstructura
+                INNER JOIN    estatusReabasto es ON es.idEstatusReabasto = ri.idEstatusReabasto
+                LEFT JOIN    estructuraAlmacenServicio ea ON ea.idEstructuraServicio = r.idEstructura
+                LEFT JOIN    almacenPuntosControl ap ON (ap.idMedicamento = ri.idInsumo  AND (ap.idAlmacen = r.idEstructura OR ap.idAlmacen = ea.idEstructuraAlmacen))
+        WHERE  1=1  
+            AND DATE_FORMAT(r.fechaSurtida, '%Y-%m-%d') = DATE_FORMAT(DATE_ADD(#{fechaSolicitud}, INTERVAL - 1 DAY),'%Y-%m-%d')
+            AND ap.idAlmacen = #{ idEstructura , jdbcType = VARCHAR }
+            AND  ap.activo = '1'
+        GROUP BY ri.idInsumo;
+    </select>
+    
+    <select id="obtenerInsumosEnviadosPrescripByEstructura" parameterType="Map" resultType="mx.mc.model.ReabastoInsumo">
+        SELECT 
+            m.idMedicamento as idInsumo,
+            m.claveInstitucional as clave,
+            m.nombreCorto as nombreComercial,
+            m.nombreLargo,
+            m.factorTransformacion as piezasCaja,
+            IFNULL(SUM(si.cantidadEnviada), 0) AS cantidadSolicitada,
+            ap.minimo,
+            ap.reorden,
+            ap.maximo,
+            ap.dotacion,
+            ap.maximo - IFNULL(SUM(si.cantidadEnviada), 0) AS cantidadActual,
+            m.grupo, 
+            ap.idAlmacenPuntosControl,   
+            ap.idAlmacen as idEstructura
+        FROM    prescripcion p
+                INNER JOIN    prescripcionInsumo pi ON pi.idPrescripcion = p.idPrescripcion
+                INNER JOIN    surtimiento s ON s.idPrescripcion = p.idPrescripcion
+                INNER JOIN    surtimientoInsumo si ON (si.idSurtimiento = s.idSurtimiento AND si.idPrescripcionInsumo = pi.idPrescripcionInsumo )
+                INNER JOIN    medicamento m ON m.idMedicamento = pi.idInsumo
+                INNER JOIN    estructura ep ON ep.idEstructura = p.idEstructura
+                inner JOIN    almacenPuntosControl ap ON (ap.idMedicamento = pi.idInsumo  AND ap.idAlmacen = p.idEstructura )  
+            inner join estructura e on e.idEstructura = ap.idAlmacen
+        WHERE    p.tipoConsulta = 'I'
+            AND DATE_FORMAT(si.fechaEnviada, '%Y-%m-%d') = DATE_FORMAT(DATE_ADD(#{fechaSolicitud}, INTERVAL - 1 DAY),'%Y-%m-%d')
+            AND ap.idAlmacen = #{ idEstructura , jdbcType = VARCHAR }
+            AND  ap.activo = '1'
+        GROUP BY pi.idInsumo;
+    </select>
+    
+    <select id="obtenerListaGlobalCEDIME" parameterType="Map" resultType="mx.mc.model.ReabastoInsumo">
+        SELECT 
+            idAlmacenPuntosControl,
+            idInsumo,
+            'CEDIME' AS almacenSolicitante,
+            clave,
+            nombreComercial,
+            factorTransformacion AS piezasCaja,        
+            grupo,
+            0 as minimo,
+            0 as reorden,
+            0 AS maximo,
+            0 as dotacion,
+            presentacion,
+            SUM(consumoPorReabasto) AS consumoPorReabasto,
+            SUM(consumoPorPrescripcion) AS consumoPorPrescripcion,
+            SUM(cantidadActualServicio) AS cantidadServicio,
+            SUM(cantidadActualAlmacen) AS cantidadAlmacen,  
+            0 as cantidadActual,
+            SUM(cantidadRecibida) AS cantidadRecibida,
+            0 AS cantidadSolicitada
+        FROM
+            (SELECT 
+                apc.idAlmacenPuntosControl,
+                m.idMedicamento as idInsumo,
+                e.nombre AS nombreAlmacenServicio,
+                m.claveInstitucional as clave,
+                m.nombreLargo AS nombreComercial,
+                m.factorTransformacion,
+                m.grupo,
+                apc.reorden,
+                apc.maximo,        
+                apc.dotacion,
+                pr.nombrePresentacion as presentacion,
+                IFNULL(cpr.cantidadSurtida, 0) AS consumoPorReabasto,
+                IFNULL(cpp.cantidadEnviada, 0) AS consumoPorPrescripcion,
+                CASE  WHEN e.idTipoAreaEstructura != 2 THEN apc.maximo - IFNULL(cpp.cantidadEnviada, 0) ELSE 0  END AS cantidadActualServicio,
+                CASE  WHEN e.idTipoAreaEstructura = 2 THEN SUM(i.cantidadActual) ELSE 0 END AS cantidadActualAlmacen,
+                IFNULL((SELECT 
+                        cantidadSurtida
+                    FROM    detalleInsumoSiam ds
+                    WHERE   ds.idInsumo = apc.idMedicamento
+                        AND ds.idEstructura = apc.idAlmacen
+                        AND cantidadSurtida > 0
+                    ORDER BY insertFecha DESC
+                    LIMIT 1), 0) AS cantidadRecibida
+            FROM almacenPuntosControl apc
+                JOIN estructura e ON apc.idAlmacen = e.idEstructura
+                JOIN medicamento m ON apc.idMedicamento = m.idMedicamento
+                JOIN presentacionMedicamento pr ON pr.idPresentacion = m.idPresentacionEntrada
+                LEFT JOIN inventario i ON (apc.idAlmacen = i.idEstructura AND apc.idMedicamento = i.idInsumo)
+                LEFT JOIN (SELECT 
+                        r.idEstructura,
+                        ri.idInsumo,
+                        IFNULL(SUM(ri.cantidadSurtida), 0) AS cantidadSurtida
+                    FROM reabasto r
+                        JOIN reabastoInsumo ri ON ri.idReabasto = r.idReabasto
+                    WHERE
+                        DATE_FORMAT(r.fechaSurtida, '%Y-%m-%d') >= DATE_FORMAT(FUNBUSCAULTIMAFECHACOLECTIVASURTIDA(r.idEstructura, ri.idInsumo), '%Y-%m-%d')
+                    GROUP BY r.idEstructura , ri.idInsumo) AS cpr ON (apc.idAlmacen = cpr.idEstructura AND apc.idMedicamento = cpr.idInsumo)
+                LEFT JOIN (SELECT 
+                        p.idEstructura,
+                        pi.idInsumo,
+                        IFNULL(SUM(si.cantidadEnviada), 0) AS cantidadEnviada
+                    FROM  prescripcion p
+                        INNER JOIN prescripcionInsumo pi ON pi.idPrescripcion = p.idPrescripcion
+                        INNER JOIN surtimiento s ON s.idPrescripcion = p.idPrescripcion
+                        INNER JOIN surtimientoInsumo si ON (si.idSurtimiento = s.idSurtimiento AND si.idPrescripcionInsumo = pi.idPrescripcionInsumo)
+                    WHERE p.tipoConsulta = 'I'
+                        AND DATE_FORMAT(si.fechaEnviada, '%Y-%m-%d') >= DATE_FORMAT(FUNBUSCAULTIMAFECHACOLECTIVASURTIDA(p.idEstructura, pi.idInsumo), '%Y-%m-%d')
+                    GROUP BY p.idEstructura , pi.idInsumo) cpp ON (apc.idAlmacen = cpp.idEstructura AND apc.idMedicamento = cpp.idInsumo)
+            WHERE  apc.activo = 1 
+                AND e.activa = 1
+                AND m.activo = 1
+                AND apc.solicitud = 0
+                AND e.idTipoAlmacen IN (1 , 4)
+            GROUP BY e.nombre , m.claveInstitucional , m.nombreCorto , m.factorTransformacion , apc.maximo) AS s1
+        GROUP BY clave , nombreComercial , factorTransformacion
+        ;
+    </select>
+    
+    <select id="obtenerListaInsumoByEstructura" parameterType="Map" resultType="mx.mc.model.ReabastoInsumo">
+        SELECT 	
+            e.nombre AS almacenServicio,
+            m.claveInstitucional AS clave,
+            m.nombreLargo AS nombreComercial,
+            m.factorTransformacion AS piezasCaja,
+            m.grupo,
+            apc.minimo,
+            apc.reorden,
+            apc.maximo,
+            apc.dotacion,
+            apc.solicitud ,    
+            0 AS surtido,
+            IFNULL(cpr.cantidadSurtida, 0) AS consumoReabasto,
+            IFNULL(cpp.cantidadEnviada, 0) AS consumoPrescripcion,
+                (IFNULL((SELECT  cantidadActual
+                    FROM  detalleInsumoSiam
+                    WHERE DATE_FORMAT(fechaRecepcion, '%Y-%m-%d') >= DATE_FORMAT(FUNBUSCAULTIMAFECHACOLECTIVASURTIDA(apc.idAlmacen, apc.idMedicamento),'%Y-%m-%d')
+                        AND idInsumo = apc.idMedicamento
+                        AND idEstructura = apc.idAlmacen
+                        AND cantidadSurtida > 0
+                    ORDER BY fechaRecepcion DESC
+                    LIMIT 1), 0) * m.factorTransformacion) AS cantidadRecibida,
+            CASE  WHEN  e.idTipoAreaEstructura != 2 THEN
+		(IFNULL((SELECT  cantidadActual
+                    FROM  detalleInsumoSiam ds
+                    WHERE DATE_FORMAT(fechaRecepcion, '%Y-%m-%d') >= DATE_FORMAT(FUNBUSCAULTIMAFECHACOLECTIVASURTIDA(apc.idAlmacen, apc.idMedicamento), '%Y-%m-%d')
+                        AND ds.idInsumo = apc.idMedicamento
+                        AND ds.idEstructura = apc.idAlmacen
+                        AND cantidadSurtida > 0
+                    ORDER BY fechaRecepcion DESC
+                    LIMIT 1), 0) * m.factorTransformacion) - (IFNULL(cpp.cantidadEnviada, 0))
+            ELSE 0 END AS cantidadServicio,
+            CASE  WHEN e.idTipoAreaEstructura = 2 THEN IF(SUM(i.cantidadActual)>=0,SUM(i.cantidadActual),0)  ELSE 0 END AS cantidadAlmacen,
+            (IF(e.idTipoAreaEstructura != 2,
+		(IFNULL((SELECT cantidadActual
+                    FROM detalleInsumoSiam
+                    WHERE DATE_FORMAT(fechaRecepcion, '%Y-%m-%d') >= DATE_FORMAT(FUNBUSCAULTIMAFECHACOLECTIVASURTIDA(apc.idAlmacen, apc.idMedicamento),'%Y-%m-%d')
+                        AND idInsumo = apc.idMedicamento
+                        AND idEstructura = apc.idAlmacen
+                        AND cantidadSurtida > 0
+                    ORDER BY fechaRecepcion DESC
+                    LIMIT 1),0) * m.factorTransformacion) - IFNULL(cpp.cantidadEnviada, 0),
+		IF(e.idTipoAreaEstructura = 2,IFNULL(SUM(i.cantidadActual),0),0)) ) AS cantidadActual,
+            IF(apc.maximo-(IF(e.idTipoAreaEstructura != 2,
+		(IFNULL((SELECT cantidadActual
+                    FROM detalleInsumoSiam
+                    WHERE DATE_FORMAT(fechaRecepcion, '%Y-%m-%d') >= DATE_FORMAT(FUNBUSCAULTIMAFECHACOLECTIVASURTIDA(apc.idAlmacen, apc.idMedicamento),'%Y-%m-%d')
+                        AND idInsumo = apc.idMedicamento
+                        AND idEstructura = apc.idAlmacen
+                        AND cantidadSurtida > 0
+                    ORDER BY fechaRecepcion DESC
+                    LIMIT 1),0) * m.factorTransformacion) - IFNULL(cpp.cantidadEnviada, 0),
+		IF(e.idTipoAreaEstructura = 2,IFNULL(SUM(i.cantidadActual),0),0)) )>=0,
+            apc.maximo-(IF(e.idTipoAreaEstructura != 2,
+		(IFNULL((SELECT cantidadActual
+                    FROM detalleInsumoSiam
+                    WHERE DATE_FORMAT(fechaRecepcion, '%Y-%m-%d') >= DATE_FORMAT(FUNBUSCAULTIMAFECHACOLECTIVASURTIDA(apc.idAlmacen, apc.idMedicamento),'%Y-%m-%d')
+                        AND idInsumo = apc.idMedicamento
+                        AND idEstructura = apc.idAlmacen
+                        AND cantidadSurtida > 0
+                    ORDER BY fechaRecepcion DESC
+                    LIMIT 1),0) * m.factorTransformacion) - IFNULL(cpp.cantidadEnviada, 0),
+		IF(e.idTipoAreaEstructura = 2,IFNULL(SUM(i.cantidadActual),0),0)) ),
+            0) AS cantidadSolicitada,
+            apc.idAlmacenPuntosControl,
+            e.idEstructura,
+            m.idMedicamento AS idInsumo
+        FROM    almacenPuntosControl apc
+            JOIN    estructura e ON apc.idAlmacen = e.idEstructura
+            JOIN    medicamento m ON apc.idMedicamento = m.idMedicamento
+            LEFT JOIN    inventario i ON (apc.idAlmacen = i.idEstructura AND apc.idMedicamento = i.idInsumo)
+            LEFT JOIN    (SELECT 
+                    r.idEstructura,
+                    ri.idInsumo,
+                    IFNULL(SUM(ri.cantidadSurtida), 0) AS cantidadSurtida
+		FROM   reabasto r
+                    JOIN reabastoInsumo ri ON ri.idReabasto = r.idReabasto
+		WHERE
+                    DATE_FORMAT(r.fechaSurtida, '%Y-%m-%d') >= DATE_FORMAT(FUNBUSCAULTIMAFECHACOLECTIVASURTIDA(idEstructura, idInsumo), '%Y-%m-%d')
+		GROUP BY r.idEstructura , ri.idInsumo
+            ) AS cpr ON (apc.idAlmacen = cpr.idEstructura AND apc.idMedicamento = cpr.idInsumo)
+            LEFT JOIN  (SELECT 
+                    p.idEstructura,
+                    pi.idInsumo,
+                    IFNULL(SUM(si.cantidadEnviada), 0) AS cantidadEnviada
+		FROM prescripcion p
+                    INNER JOIN prescripcionInsumo pi ON pi.idPrescripcion = p.idPrescripcion
+                    INNER JOIN surtimiento s ON s.idPrescripcion = p.idPrescripcion
+                    INNER JOIN surtimientoInsumo si ON (si.idSurtimiento = s.idSurtimiento AND si.idPrescripcionInsumo = pi.idPrescripcionInsumo)
+		WHERE  p.tipoConsulta = 'I'
+                    AND si.idEstatusSurtimiento NOT IN (1 , 5, 9)
+                    AND DATE_FORMAT(si.fechaEnviada, '%Y-%m-%d') >= DATE_FORMAT(FUNBUSCAULTIMAFECHACOLECTIVASURTIDA(p.idEstructura, pi.idInsumo), '%Y-%m-%d')
+		GROUP BY p.idEstructura , pi.idInsumo
+            ) cpp ON (apc.idAlmacen = cpp.idEstructura AND apc.idMedicamento = cpp.idInsumo)
+        WHERE
+            apc.activo = 1 
+            AND e.activa = 1
+            AND m.activo = 1
+        <if test="solicitud != null"> AND apc.solicitud = 0</if>
+            AND apc.idAlmacen =#{ idEstructura , jdbcType = VARCHAR }
+        <if test="idInsumo != null">
+            AND  apc.idMedicamento = #{idInsumo , jdbcType = VARCHAR }
+        </if>
+        GROUP BY e.nombre , m.claveInstitucional , m.nombreCorto , m.factorTransformacion , apc.maximo
+    </select>
+    
+    <select   id="detalleInsumoByFolioAlternativo" parameterType="Map" resultType="mx.mc.model.ReabastoInsumoExtended">
+        SELECT 
+            fa.folioAlternativo,
+            ds.fechaRecepcion AS fechaEnviada,
+            m.claveInstitucional,
+            ds.cantidadSolicitada,
+            ds.cantidadSurtida AS enviado,
+            cg.nombreCatalogo AS tipoInsumo,
+            e.nombre AS AlmacenServicio
+        FROM    detalleInsumoSiam ds
+                INNER JOIN    folioAlternativoFolioMus fa ON fa.idFolioAlternativo = ds.idFolioAlternativo
+                INNER JOIN    reabasto r ON r.folio = fa.folioMUS
+                INNER JOIN    medicamento m ON m.idMedicamento = ds.idInsumo
+                INNER JOIN    catalogoGeneral cg ON cg.idCatalogoGeneral = m.tipo
+                INNER JOIN    estructura e ON e.idEstructura = ds.idEstructura
+        WHERE   
+            fa.folioAlternativo = #{folioAlternativo, jdbcType = VARCHAR}
+    </select>
+    <select id="obtenerTamañoDetalle" parameterType="Map" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM reabastoInsumo WHERE idReabasto = #{idReabasto}
+    </select>
+    
+    <select id="obtenerReabastoInsumoForSIAM" parameterType="Map" resultType="mx.mc.model.ReabastoInsumo">
+        SELECT ri.idReabastoInsumo, ri.idReabasto, ri.idInsumo, ri.observaciones, ri.cantidadSolicitada, ri.cantidadComprometida, ri.cantidadSurtida, ri.cantidadRecibida, 
+            pc.idAlmacenPuntosControl,m.factorTransformacion as piezasCaja,pc.idAlmacen
+            ,ri.cantidadIngresada, ri.idEstatusReabasto, ri.insertFecha, ri.insertIdUsuario, ri.updateFecha, ri.updateIdUsuario,ri.transferencia 
+        FROM reabastoInsumo ri
+            inner join almacenPuntosControl pc on pc.idAlmacen=#{ idAlmacen, jdbcType = VARCHAR } and pc.idMedicamento = ri.idInsumo 
+            inner join medicamento m on m.idMedicamento = ri.idInsumo
+        WHERE idReabasto = #{ idReabasto, jdbcType = VARCHAR }
+        AND idinsumo = #{ idInsumo, jdbcType = VARCHAR }
+    </select> 
+    
+    <select id="obtenerReabastoInsumoPorIdEstructuraYporIdInsumo" parameterType="Map" resultType="mx.mc.model.ReabastoInsumoExtended">
+        SELECT
+            r.folio 
+                , r.fechaSolicitud 
+                , r.fechaRecepcion 
+                , r.idUsuarioSolicitud 
+                , r.idUsuarioRecepcion 
+                , ri.idReabastoInsumo 
+                , ri.idReabasto 
+                , ri.idInsumo 
+                , ri.observaciones 
+                , ri.cantidadSolicitada 
+                , ri.cantidadSurtida 
+                , ri.cantidadRecibida  
+                , IFNULL(CONCAT(u1.nombre, ' ', u1.apellidoPaterno, ' ', u1.apellidoMaterno), '') AS nombrePersonaSolicita 
+                , IFNULL(CONCAT(u2.nombre, ' ', u2.apellidoPaterno, ' ', u2.apellidoMaterno), '') AS nombrePersonaRecibe 
+                , IFNULL(er.nombre ,'') AS estatusReabasto 
+        FROM reabasto r
+        JOIN reabastoInsumo ri ON r.idReabasto = ri.idReabasto  
+        LEFT JOIN usuarios u1 ON r.idUsuarioSolicitud  = u1.idUsuario
+        LEFT JOIN usuarios u2 ON r.idUsuarioRecepcion  = u2.idUsuario
+        LEFT JOIN estatusReabasto er ON r.idEstatusReabasto = er.idEstatusReabasto 
+        WHERE 1 = 1
+	<if test=" idEstructura != null ">
+            AND r.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInsumo != null ">
+            AND ri.idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+	</if>
+    </select>
+    
+</mapper>   

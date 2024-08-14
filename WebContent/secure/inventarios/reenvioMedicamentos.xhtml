@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>TODO supply a title</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    </h:head>
+    <h:body>        
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel">
+                    <h:form id="mainForm" class="mainForm">
+
+                        <div class="ui-g panel" >
+                            <div class="ui-g-12" >
+
+                                <h3 style="background-color: #DDDDDD;text-align: center; padding-top: 5px; margin-top: 0px; padding-bottom: 0px">Búsqueda de Medicamentos para Reenvío</h3>
+
+                                <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                                    <p:autoUpdate />
+                                </p:messages>
+                                
+                                <div class="ui-g-12 ui-md-6 ui-lg-6" style="text-align: center" columnIndexVar="colIndex">
+                                    <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Cama" />
+                                    <p:inputText value="#{reenvioMedicamentosMB.codigoCama}" placeholder="Código Cama" id="txtCama"/>                                        
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                    <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Prescripción: " />
+                                    <p:inputText value="#{reenvioMedicamentosMB.numPrescripcion}" placeholder="Número Prescripción" id="txtPrescripcion"/> 
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-6" style="text-align: center">
+                                    <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Número Paciente: " />
+                                    <p:inputText value="#{reenvioMedicamentosMB.numPaciente}" placeholder="Número Paciente" id="txtNumpaciente"/> 
+                                </div>
+
+                                <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                    <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Prescripción " />
+                                    <p:calendar id="txtFecha" value="#{reenvioMedicamentosMB.fechaPrescripcion}" 
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                                mindate="" maxdate="#{reenvioMedicamentosMB.fechaActual}"
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                </div>
+                                <div class="ui-g-12" style="margin-top: 0px; text-align: center">    
+
+                                    <p:commandButton 
+                                        icon="fa fa-trash"
+                                        value="Limpiar Búsqueda"
+                                        type="reset"/>    
+                                    <p:commandButton value="Consultar"
+                                                     onclick="PF('statusProcess').show();"
+                                                     actionListener="#{reenvioMedicamentosMB.consultar()}"
+                                                     oncomplete="PF('statusProcess').hide();" 
+                                                     icon="fa fa-check-circle"  
+                                                     style="margin-top: 15px; margin-left: 55px"
+                                                     styleClass="btnMusAzul"
+                                                     update="tableDatos,txtCama,txtPrescripcion,txtNumpaciente,txtFecha,txtMotivos"
+                                                     />                                     
+
+                                    <br/>
+                                    <p:commandButton id="btnReenviar"
+                                                     style="margin-right: 850px"
+                                                     disabled="#{!reenvioMedicamentosMB.band}"                                                     
+                                                     styleClass="btnMusAzul"                                                         
+                                                     update="tableSeleccionados, txtMotivos,txtComent"
+                                                     oncomplete="PF('DialogConfirm').show()"                                                         
+                                                     icon="fa fa-file-o"
+                                                     value="Reenviar"/>
+
+
+                                    <p:dataTable id="tableDatos" var="item"                                                       
+                                                 selectionMode="multiple" 
+                                                 selection="#{reenvioMedicamentosMB.datosSelectedList}"                                                                                          
+                                                 value="#{reenvioMedicamentosMB.datosMedicamentoReenvioList}" 
+                                                 rowKey="#{item.idSurtimientoInsumo}"
+
+                                                 style="margin-bottom:0"
+                                                 emptyMessage="Sin Registros"
+                                                 scrollRows="10" scrollable="true" scrollHeight="350"
+                                                 rowIndexVar="row"
+                                                 reflow="true"
+                                                 paginator="true"
+                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                 rows="10"
+                                                 paginatorPosition="bottom"
+                                                 >
+
+                                        <p:ajax event="rowUnselect" listener="#{reenvioMedicamentosMB.onRowUnselect}" update="mainForm:btnReenviar"  process="@form"/>
+                                        <p:ajax event="rowSelect" listener="#{reenvioMedicamentosMB.onRowSelect}" update="mainForm:btnReenviar" process="@form"/>
+
+                                        <p:column headerText="Cama" style="width: 6%;">
+                                            <h:outputText value="#{item.cama}"  />
+                                        </p:column>
+                                        <p:column headerText="N°Paciente" filterBy="#{item.numeroPaciente}" style="width: 7%;">
+                                            <h:outputText value="#{item.numeroPaciente}" />
+                                        </p:column>
+                                        <p:column headerText="Paciente" filterBy="#{item.paciente}" filterMatchMode="contains" style="width: 10%;">
+                                            <h:outputText value="#{item.paciente} #{item.apellidoPaterno} #{item.apellidoMaterno}" />
+                                        </p:column>
+                                        <p:column headerText="Prescripción" style="width: 9%;text-align: center">
+                                            <h:outputText value="#{item.prescripcion}" />
+                                        </p:column>                                    
+                                        <p:column headerText="Tipo" style="width: 5%;">
+                                            <h:outputText value="#{item.tipo}" />
+                                        </p:column>
+                                        <p:column headerText="Clave Institucional" filterBy="#{item.clave}" style="width: 8%;">
+                                            <h:outputText value="#{item.clave}" />
+                                        </p:column>
+                                        <p:column headerText="Medicamento" filterBy="#{item.medicamento}" style="width: 25%;">
+                                            <h:outputText value="#{item.medicamento}" />
+                                        </p:column>
+                                        <p:column headerText="Cantidad" style="width: 5%;">
+                                            <h:outputText value="#{item.cantidad}" />
+                                        </p:column>
+                                    </p:dataTable>
+
+                                    <p:dialog header="Registros seleccionados" width="800px"  widgetVar="DialogConfirm"
+                                              modal="true" showEffect="fade" 
+                                              hideEffect="fade"
+                                              resizable="false"
+                                              closeOnEscape="true">
+                                        <p:messages id="validaMsgMod" class="validaMsg" globalOnly="true" redisplay="true" closable="true" showDetail="true" >
+                                            <p:autoUpdate />
+                                        </p:messages>
+                                        <p:dataTable id="tableSeleccionados" var="item"                                                       
+                                                     value="#{reenvioMedicamentosMB.datosSelectedList}"                                              
+                                                     style="margin-bottom:0"
+                                                     emptyMessage="Sin Registros"                                                                                          
+                                                     scrollRows="10" scrollable="true" scrollHeight="200"
+                                                     rowIndexVar="row"
+                                                     reflow="true"
+                                                     paginator="true"
+                                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                     rows="10"
+                                                     paginatorPosition="bottom"
+                                                     >                                    
+                                            <p:column headerText="Cama" style="width: 20%;text-align: center">
+                                                <h:outputText value="#{item.cama}" />
+                                            </p:column>
+
+                                            <p:column headerText="Prescripción"  style="width: 20%;text-align: center">
+                                                <h:outputText value="#{item.prescripcion}" />
+                                            </p:column>                                    
+
+                                            <p:column headerText="Clave Medicamento"  style="width: 20%; text-align: center;text-align: center">
+                                                <h:outputText value="#{item.clave}" />
+                                            </p:column>
+                                            <p:column headerText="Cantidad" style="width: 20%;text-align: center">
+                                                <h:outputText value="#{item.cantidad}" />
+                                            </p:column>
+                                        </p:dataTable>
+
+                                        <br/>
+
+                                        <p:outputLabel value="Motivo Reenvío" />
+
+                                        <p:selectOneMenu id="txtMotivos" 
+                                                         value="#{reenvioMedicamentosMB.motivoSelect}" 
+                                                         autoWidth="false"
+                                                         style="width: 332px;">
+                                            <f:selectItem itemLabel="Selecciona un Motivo de Reenvío"/>
+                                            <f:selectItems value="#{reenvioMedicamentosMB.motivoReenvioList}"  
+                                                           var="tipoMotivoReenvio"                                                           
+                                                           itemValue="#{tipoMotivoReenvio.idTipoMotivoReenvio}"
+                                                           itemLabel="#{tipoMotivoReenvio.motivo}"/>                                            
+                                        </p:selectOneMenu>
+
+                                        <h3>Comentario</h3>
+                                        <p:inputTextarea rows="6" id="txtComent" cols="33" value="#{reenvioMedicamentosMB.comentario}" />
+
+
+
+                                        <h4>¿Deseas reenviar la Orden con los Registros Seleccionados?</h4>                                        
+                                        <p:commandButton
+                                            title="Procesar Reenvío"
+                                            actionListener="#{reenvioMedicamentosMB.procesarReenvio()}"
+                                            value="Procesar Reenvío"
+                                            update="mainForm:txtComent,mainForm:txtMotivos"
+                                            icon="fa fa-check-circle"  
+                                            styleClass="btnMusAzul"
+                                            oncomplete="PF('DialogConfirm').hide();"
+                                            />                       
+                                        &nbsp;
+                                        <p:commandButton id="btnCancelar" value="Cerrar"
+                                                         title="Cerrar" icon="ui-icon-trash" 
+                                                         update="@form"                                                 
+                                                         rendered="true" />
+
+                                    </p:dialog>
+                                </div>                                                                     
+                            </div>
+
+                        </div>
+                    </h:form>
+                </div>
+            </ui:define>            
+        </ui:composition>
+    </h:body>
+</html>

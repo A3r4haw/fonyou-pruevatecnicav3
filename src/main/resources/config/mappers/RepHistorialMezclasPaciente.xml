@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http, jdbcType = VARCHAR//mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.RepHistorialMezclasPacienteMapper">
+
+    <select id="consultarHistoricoMezclasPaciente" resultType="mx.mc.model.RepHistoricoMezclasPaciente" parameterType="Map">
+        SELECT so.idSolucion, s.fechaProgramada, s.folio AS folioSurtimiento, ts.clave AS tipoMezcla, est.nombre AS servicio,
+        concat(um.nombre, ' ', um.apellidoPaterno, ' ', um.apellidoMaterno) AS nombreMedico, 
+        concat(pa.nombreCompleto, ' ', pa.apellidoPaterno, ' ', pa.apellidoMaterno) AS nombrePaciente,
+        me.claveInstitucional AS claveMedicamento, me.nombreCorto AS nombreMedicamento, 
+        concat(pi.dosis, ' ', uc.nombreUnidadConcentracion, '/', pi.frecuencia, ' hrs/', pi.duracion, 'd') AS posologia, 
+        es.descripcion AS estatus, p.folio AS folioPrescripcion FROM solucion so 
+        INNER JOIN estatusSolucion es ON so.idEstatusSolucion = es.idEstatusSolucion
+        INNER JOIN surtimiento s ON so.idSurtimiento = s.idSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion
+        INNER JOIN usuarios um ON p.idMedico = um.idUsuario
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN medicamento me ON pi.idInsumo = me.idMedicamento
+        INNER JOIN unidadConcentracion uc ON me.idUnidadConcentracion = uc.idUnidadConcentracion
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        INNER JOIN estructura est ON ps.idEstructura = est.idEstructura
+        WHERE 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND s.fechaProgramada between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND ps.idEstructura = #{paramBusquedaReporte.idEstructura, jdbcType = VARCHAR}
+        </if>
+        <if test=" paramBusquedaReporte.idTipoSolucion != null ">
+            AND p.idTipoSolucion = #{paramBusquedaReporte.idTipoSolucion, jdbcType = VARCHAR}
+        </if>
+        <if test=" paramBusquedaReporte.idMedico != null ">
+            AND p.idMedico = #{paramBusquedaReporte.idMedico, jdbcType = VARCHAR}            
+        </if>
+        <if test=" paramBusquedaReporte.idPaciente != null ">
+            AND pa.idPaciente = #{paramBusquedaReporte.idPaciente, jdbcType = VARCHAR}
+        </if>
+        <if test=" paramBusquedaReporte.folioSurtimiento != null and paramBusquedaReporte.folioSurtimiento != '' ">
+            AND s.folio = #{paramBusquedaReporte.folioSurtimiento, jdbcType = VARCHAR}
+        </if>
+        <if test=" paramBusquedaReporte.folio != null and paramBusquedaReporte.folio != '' ">
+            AND p.folio = #{paramBusquedaReporte.folio, jdbcType = VARCHAR} 
+        </if>
+        ORDER BY s.fechaProgramada DESC       
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+
+    <select id="obtenerTotalRegistros" resultType="Long" parameterType="Map">
+        SELECT COUNT(*) AS total FROM solucion so 
+        INNER JOIN estatusSolucion es ON so.idEstatusSolucion = es.idEstatusSolucion
+        INNER JOIN surtimiento s ON so.idSurtimiento = s.idSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion
+        INNER JOIN usuarios um ON p.idMedico = um.idUsuario
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN medicamento me ON pi.idInsumo = me.idMedicamento
+        INNER JOIN unidadConcentracion uc ON me.idUnidadConcentracion = uc.idUnidadConcentracion
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        INNER JOIN estructura est ON ps.idEstructura = est.idEstructura
+        WHERE 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND s.fechaProgramada between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if>
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND ps.idEstructura = #{paramBusquedaReporte.idEstructura, jdbcType = VARCHAR}
+        </if>
+        <if test=" paramBusquedaReporte.idTipoSolucion != null ">
+            AND p.idTipoSolucion = #{paramBusquedaReporte.idTipoSolucion, jdbcType = VARCHAR}
+        </if>
+        <if test=" paramBusquedaReporte.idMedico != null ">
+            AND p.idMedico = #{paramBusquedaReporte.idMedico, jdbcType = VARCHAR}            
+        </if>
+        <if test=" paramBusquedaReporte.idPaciente != null ">
+            AND pa.idPaciente = #{paramBusquedaReporte.idPaciente, jdbcType = VARCHAR}
+        </if>
+        <if test=" paramBusquedaReporte.folioSurtimiento != null and paramBusquedaReporte.folioSurtimiento != '' ">
+            AND s.folio = #{paramBusquedaReporte.folioSurtimiento, jdbcType = VARCHAR}
+        </if>
+        <if test=" paramBusquedaReporte.folio != null and paramBusquedaReporte.folio != '' ">
+            AND p.folio = #{paramBusquedaReporte.folio, jdbcType = VARCHAR} 
+        </if>
+    </select>
+    
+</mapper>

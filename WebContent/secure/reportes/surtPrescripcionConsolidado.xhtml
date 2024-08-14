@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>PRESCRIPCIÓN DE CONSOLIDADOS</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="movGralesId" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="Reporte Surtimiento Prescripción Consolidado" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Inicio" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" value="#{repSurtPrescConsolidadoMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                                        mindate="" maxdate="#{repSurtPrescConsolidadoMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Fin" />
+                                            <br/>
+                                            <!-- Modificar con la priopiedad onblur 
+                                            el cual siempre que se seleccione una fecha lo inicie con el fin de dia
+                                            -->
+                                            <p:calendar id="txtFechaFin" value="#{repSurtPrescConsolidadoMB.paramBusquedaReporte.fechaFin}"                                                                                                                 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                                        mindate="" maxHour="23" maxMinute="59"                                                        
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade">                                                
+                                                <p:ajax event="dateSelect" listener="#{repSurtPrescConsolidadoMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                                
+                                            </p:calendar>
+                                        </div>        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;" value="Almacén / Sub-Almacén" />
+                                            <br/>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{repSurtPrescConsolidadoMB.estructuraUsuario.nombre}" 
+                                                           rendered="#{!repSurtPrescConsolidadoMB.administrador}"/>
+                                            <p:selectOneMenu id="comboAlmacenSubAlmacen" 
+                                                             value="#{repSurtPrescConsolidadoMB.idEstructura}"
+                                                             disabled="#{!repSurtPrescConsolidadoMB.permiso.puedeVer}"
+                                                             style="vertical-align: middle; margin-right: 10px; width: 250px"
+                                                             rendered="#{repSurtPrescConsolidadoMB.administrador}"
+                                                             filter="true" filterMatchMode="contains" panelStyle="width:300px"> 
+                                                             
+                                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                                <f:selectItems value="#{repSurtPrescConsolidadoMB.listAlmacenesSubAlm}"
+                                                               var="almacen"
+                                                               itemValue="#{almacen.idEstructura}"
+                                                               itemLabel="#{almacen.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+
+                                            <p:menuButton value="Exportar Archivo" style="margin-top: 15px; width: 200px; margin-left: 8px">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{repSurtPrescConsolidadoMB.imprimeReporteConsolidado()}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"
+                                                            />
+
+                                                <p:menuitem value="Formato EXCEL"
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false"
+                                                            actionListener="#{repSurtPrescConsolidadoMB.generaExcelConsolidado()}"
+                                                            />
+                                            </p:menuButton>
+
+                                        </div>
+                                        
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="margin-top: 12px">                                            
+                                            <p:commandButton value="Generar Reporte"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{repSurtPrescConsolidadoMB.consultar}"
+                                                             update=":formTablaMovimientos, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"  
+                                                             
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">                                                                                                                      
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form><br />
+                    <h:form id="formTablaMovimientos" >
+<style type="text/css">
+    .ui-datatable-header {
+        height: 20px
+    }
+</style>
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     value="#{repSurtPrescConsolidadoMB.surtPrescripcionConsolidadoLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="font-size: x-small !important; width: 100% !important;"
+                                     >
+                            <f:facet name="header" >
+                                <p:commandButton rendered="false" id="toggler" type="button" value="Columnas" style="float:right" icon="fa fa-columns" />
+                                <p:columnToggler datasource="resultadosDT" trigger="toggler" />
+                            </f:facet>
+
+                            <p:column class="" headerText="ALMACEN" style="width: 5%; " >
+                                <h:outputText value="#{result.nombreAlmacen}"/>
+                            </p:column>
+                            <p:column class="" headerText="FECHA ENVIADA"  style="width: 5%;">
+                                <h:outputText value="#{result.fechaEnviada}">
+                                <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="TOTAL" style="width: 5%;">
+                                <h:outputText value="#{result.total}"/>
+                            </p:column>
+                            <p:column class="" headerText="COMPLETA" style="width: 5%;">
+                                <h:outputText value="#{result.completa}"/>
+                            </p:column>
+                            <p:column class="" headerText="% COMPLETA" style="width: 5%;">
+                                <h:outputText value="#{result.completaPor}" >                                    
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="" headerText="PARCIAL" style="width: 5%;">
+                                <h:outputText value="#{result.parcial}"/>
+                            </p:column>
+                            <p:column class="" headerText="% PARCIAL" style="width: 5%;" >
+                                <h:outputText value="#{result.parcialPor}">
+                                    <f:convertNumber pattern="#0.0" locale="MX_es" />
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column class="" headerText="EN CERO" style="width: 5%;">
+                                <h:outputText value="#{result.enCeros}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="% En CEROS" style="width: 5%;">
+                                <h:outputText value="#{result.enCerosPor}"/>
+                            </p:column>
+
+                            <p:column class="" headerText="EN NULO" style="width: 5%;">
+                                <h:outputText value="#{result.enNulo}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="% EN NULO" style="width: 5%;">
+                                <h:outputText value="#{result.enNuloPor}"/>
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:form>	
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes" 
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

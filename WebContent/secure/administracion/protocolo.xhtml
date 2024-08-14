@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">                    
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" closeOnEscape="true" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Protocolos de Oncología"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;" />
+                            <p:inputText id="textSearch" style="margin-top:20px;width: 40%!important;" 
+                                         value="#{protocoloOncologicoMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar...." />
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>                                
+                            </i>                            
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{protocoloOncologicoMB.buscarProtocolos}"
+                                             update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();" style=" margin-left: 20px; margin-bottom: 8px;" />
+                        </div>
+                        <p:commandButton class="btnNew" value="Nuevo Protocolo" icon="fa fa-file-o" 
+                                         style=" margin: 5px 0; " styleClass="btnMusAzul"
+                                         rendered="#{protocoloOncologicoMB.permiso.puedeCrear}"
+                                         onclick="PF('statusProcess').show();" 
+                                         actionListener="#{protocoloOncologicoMB.nuevoProtocolo}" 
+                                         oncomplete="PF('statusProcess').hide(); PF('mdlNuevaIndicacion').show();" 
+                                         update=":frmNuevaIndicacion"
+                                         ajax="true" />  &nbsp;&nbsp;
+                        <p:commandButton class="btnNew" value="Cargar Layout" icon="fa fa-plus" 
+                                         style=" margin: 5px 0; " styleClass="btnMusAzul" 
+                                         rendered="#{protocoloOncologicoMB.permiso.puedeProcesar}"
+                                         actionListener="#{protocoloOncologicoMB.nuevoProtocolo}" 
+                                         onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide(); PF('modalLayout').show();"
+                                         ajax="true" update=":frmLayout" 
+                                         tabindex="4"/>
+                        <br/>
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <p:dataTable id="tblIndicacionTerap" widgetVar="tblIndicacionTerap" 
+                                     value="#{protocoloOncologicoMB.protocoloLazy}" var="item" 
+                                     selection="#{protocoloOncologicoMB.protocoloSelect}"
+                                     rowKey="#{item.idProtocolo}" rowIndexVar="row"
+                                     lazy="true" selectionMode="single" 
+                                      scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" 
+                                     reflow="true" paginator="true" paginatorPosition="bottom" 
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     emptyMessage="No se encontraron registros" rows="10" > 
+
+                            <p:column headerText="Tipo" style="text-align: left;" width="10%" 
+                                      sortBy="#{item.idTipoProtocolo}">
+                                <h:outputText value="#{item.idTipoProtocolo}" class="" />
+                            </p:column>
+
+                            <p:column headerText="Clave" style="text-align: left;" width="10%" 
+                                      sortBy="#{item.claveProtocolo}">
+                                <h:outputText value="#{item.claveProtocolo}" class="" />
+                            </p:column>
+                            
+                            <p:column headerText="Descripcion" style="text-align: left;" width="20%"
+                                      sortBy="#{item.descripcionProtocolo}">
+                                <h:outputText value="#{item.descripcionProtocolo}" class="" />
+                            </p:column>
+                            
+                            <p:column headerText="Via Administración" style="text-align: left;" width="20%" 
+                                      sortBy="#{item.idViaAdministracion}">
+                                <h:outputText value="#{item.idViaAdministracion}" class="" />
+                            </p:column>
+                            
+                            <p:column headerText="Diagnóstico" style="text-align: left;" width="20%" 
+                                      sortBy="#{item.idDiagnostico}">
+                                <h:outputText value="#{item.idDiagnostico}" class="" />
+                            </p:column>
+                            
+                            <p:column headerText="Estatus" style="text-align: left;" width="10%" 
+                                      sortBy="#{item.idEstatus}">
+                                <h:outputText value="#{item.idEstatus eq 1 ? 'Activo' : 'Inactivo' }"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;" headerText="Acciones"  width="10%">
+                                <p:commandLink title="Editar"  
+                                               actionListener="#{protocoloOncologicoMB.obtenerProtocolo(item.idProtocolo)}"
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide();PF('mdlNuevaIndicacion').show();" 
+                                               update=":frmNuevaIndicacion" >
+                                        <i class="fa fa-edit" />
+                                    </p:commandLink>&nbsp;&nbsp;
+                                <p:commandLink title="Eliminar" 
+                                               actionListener="#{protocoloOncologicoMB.borrarProtocolo(item.idProtocolo)}"
+                                               rendered="#{protocoloOncologicoMB.permiso.puedeEliminar}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":mainForm:tblIndicacionTerap" >
+                                    <i class="fa fa-trash-o iconMusAzul" />
+                                    <p:confirm header="Confirmación" message="Está seguro que desea eliminar el Protocolo ?" icon="ui-icon-alert"  />
+                                </p:commandLink>&nbsp;
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                  
+                    <p:dialog header="Información de Protocolo"
+                              widgetVar="mdlNuevaIndicacion" 
+                              closeOnEscape="true" modal="true" resizable="false" 
+                              closable="true"
+                              style="font-size:xx-small !important;" width="90%"> 
+                        <h:form id="frmNuevaIndicacion">
+                            <p:messages globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:panelGrid>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Tipo"  class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu style="width: 150px;vertical-align: middle;margin-right: 10px;" 
+                                                         value="#{protocoloOncologicoMB.idEmisor}" 
+                                                         filter="true" filterMatchMode="contains"
+                                                         filterPlaceholder="Seleccione tipo protocolo" >   
+                                            <f:selectItem itemLabel="Seleccione tipo protocolo" itemValue="" />
+                                            <f:selectItems value="#{protocoloOncologicoMB.tipoProtocoloLista}" 
+                                                           var="tipPro" 
+                                                           itemLabel="#{tipPro.nombreTipoProtocolo}" itemValue="#{tipPro.idTipoProtocolo}" /> 
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                
+                                    <p:column>
+                                        <p:outputLabel value="Clave"  class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText id="txtClaveProtocolo"
+                                                     value="#{protocoloOncologicoMB.protocoloSelect.claveProtocolo}"
+                                                     maxlength="10" size="6" />
+                                    </p:column>
+                                
+                                    <p:column>
+                                        <p:outputLabel value="Descripción"  class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText id="txtDescProtocolo" value="#{protocoloOncologicoMB.protocoloSelect.descripcionProtocolo}"
+                                                     maxlength="45" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Fuente"  class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu style="width: 150px;vertical-align: middle;margin-right: 10px;" value="#{protocoloOncologicoMB.idEmisor}" 
+                                                            filter="true" filterPlaceholder="Origen" >   
+                                            <f:selectItem itemLabel="Seleccionar una fuente" itemValue="" />
+                                            <f:selectItems value="#{protocoloOncologicoMB.listaEmisores}" var="emisor" itemLabel="#{emisor.nombreEmisor}" itemValue="#{emisor.idEmisor}" />                                
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Diagnóstico"  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:autoComplete id="txtDiagnostico" 
+                                                        class="autoComplete-InsProtocolo" styleClass="autoComplete-InsProtocolo" 
+                                                        panelStyle="autoComplete-InsProtocolo" inputStyleClass="autoComplete-InsProtocolo" 
+                                                        value="#{protocoloOncologicoMB.diagnostico}" 
+                                                        completeMethod="#{protocoloOncologicoMB.autocompleteDiagnostico}"
+                                                        minQueryLength="4" scrollHeight="350" queryDelay="500" maxResults="50" 
+                                                        forceSelection="true" 
+                                                        cacheTimeout="0" var="diagnos" placeholder="Buscar Diagnostico" cache="false"
+                                                        emptyMessage="No se encontraron registros"
+                                                        itemLabel="#{diagnos.nombre}" itemValue="#{diagnos.idDiagnostico}" 
+                                                        converter="diagnosticoConverter" > 
+                                            <p:column style="width: 20px; font-size: small;" width="50px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave" />
+                                                </f:facet>
+                                                <h:outputText value="#{diagnos.clave}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="width: 600px; font-size: small;" width="600px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{diagnos.nombre}" style=" font-size: x-small;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </p:column>
+                                
+                                    <p:column>
+                                        <p:outputLabel value="Vía de Administración" class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu style="width: 150px;vertical-align: middle;margin-right: 10px;" 
+                                                         value="#{protocoloOncologicoMB.idEmisor}" 
+                                                         filter="true" filterMatchMode="contains"
+                                                         filterPlaceholder="Seleccione vía" >   
+                                            <f:selectItem itemLabel="Seleccione vía" itemValue="" />
+                                            <f:selectItems value="#{protocoloOncologicoMB.listaViasAdmon}" 
+                                                           var="viaAdmon" 
+                                                           itemLabel="#{viaAdmon.nombreViaAdministracion}" itemValue="#{viaAdmon.idViaAdministracion}" /> 
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    
+                                    <p:column>
+                                        <p:outputLabel value="Activa"  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:selectOneButton value="#{protocoloOncologicoMB.protocoloSelect.idEstatus}">
+                                            <f:selectItem itemLabel="Si" itemValue="1" />
+                                            <f:selectItem itemLabel="No" itemValue="0" />
+                                        </p:selectOneButton>
+                                    </p:column>
+                                    
+                                </p:row>
+                            </p:panelGrid>
+                            <br/><br/> 
+                            <p:panelGrid>
+                                
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Insumo"  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:autoComplete size="20" id="insumo"
+                                                        class="autoComplete-InsProtocolo" styleClass="autoComplete-InsProtocolo" 
+                                                        panelStyle="autoComplete-InsProtocolo" inputStyleClass="autoComplete-InsProtocolo" 
+                                                        value="#{protocoloOncologicoMB.medicamento}"  autocomplete="on" 
+                                                        completeMethod="#{protocoloOncologicoMB.autoComplete}"  scrollHeight="350" queryDelay="500"  maxResults="50" 
+                                                        minQueryLength="3"  forceSelection="true" cacheTimeout="0" cache="false"
+                                                        var="insumo" placeholder="Buscar Insumos" emptyMessage="No se encontraron registros"
+                                                        itemValue="#{insumo}" 
+                                                        itemLabel="#{insumo.nombreCorto}"
+                                                        converter="insumoConverter" >
+                                                <p:ajax event="itemSelect" listener="#{protocoloOncologicoMB.handleSelect}" 
+                                                        update=" ">
+                                                </p:ajax>
+                                                <p:ajax event="itemUnselect" listener="#{protocoloOncologicoMB.handleUnSelect}" 
+                                                        update=" ">
+                                                </p:ajax>
+                                                <p:column style="width: 100px;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insumo.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>                                    
+                                                <p:column style="width: 300px;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insumo.nombreCorto}" style=" font-size: small;" />
+                                                </p:column>                                    
+                                        </p:autoComplete>
+                                    </p:column>
+                                    
+                                    <p:column>
+                                        <p:outputLabel value="Dosis"  class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText id="txtDosis"
+                                                     value="#{protocoloOncologicoMB.protocoloSelect.dosis}"
+                                                     maxlength="4" size="6" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Frecuencia"  class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText id="txtFrecue"
+                                                     value="#{protocoloOncologicoMB.protocoloSelect.frecuencia}"
+                                                     maxlength="4" size="6" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Duracion"  class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText id="txtDuracion"
+                                                     value="#{protocoloOncologicoMB.protocoloSelect.periodo}"
+                                                     maxlength="4" size="6" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Ciclos"  class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText id="txtCiclos"
+                                                     value="#{protocoloOncologicoMB.protocoloSelect.ciclos}"
+                                                     maxlength="4" size="6" />
+                                    </p:column>
+                                    
+                                    <p:column>
+                                        <p:commandButton id="btnAdd"   styleClass="btnMusAzul"  tabindex="13"
+                                                 value="Agregar" style="margin:0; width: 100px;"  
+                                                 onclick="PF('statusProcess').show();" />
+                                    </p:column>
+                                </p:row>
+
+                            </p:panelGrid>
+                            <br/>
+                            <br/>
+                            <p:dataTable id="tblInsumosProtocolo" widgetVar="tblInsumosProtocolo" 
+                                         var="item" 
+                                         rowKey="#{item.idProtocolo}" rowIndexVar="row"
+                                         lazy="false" selectionMode="single" 
+                                         scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                         style="margin-bottom:5px; text-align: center;" 
+                                         reflow="true" paginator="true" paginatorPosition="bottom" 
+                                         paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                         currentPageReportTemplate=" "
+                                         emptyMessage="No se encontraron registros" rows="10" > 
+
+                                <p:column headerText="Clave" width="10%" >
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Nombre" width="20%" >
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Dosis" width="10%" >
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Area" width="10%" >
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Peso" width="10%" >
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Frecuencia" width="10%" >
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Periodo" width="10%" >
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Ciclos" width="10%" >
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Días" width="10%" >
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Acciones" width="10%" >
+                                    <h:outputText value="" />
+                                </p:column>
+                                
+                            </p:dataTable>
+                            
+                            <br />
+                            <div class="pnlActions">
+                                <p:commandButton id="btnRegCancel1" class="btnItem" value="Cancelar" style="width: 100px" tabindex="12"
+                                                 ajax="true" onclick="PF('mdlNuevaIndicacion').hide();" 
+                                                 validateClient="false" />&nbsp;&nbsp;
+                                <p:commandButton id="btnRegNew1"   styleClass="btnMusAzul"  tabindex="13"
+                                                 value="Guardar" style="margin:0; width: 100px;"  
+                                                 update=":mainForm:tblIndicacionTerap" 
+                                                 onclick="PF('statusProcess').show();" 
+                                                 actionListener="#{protocoloOncologicoMB.crearProtocolo()}"
+                                                 oncomplete="PF('statusProcess').hide();if(args.estatus){ PF('mdlNuevaIndicacion').hide(); }" />
+                            </div>
+                        </h:form>
+                    </p:dialog> 
+                    <p:dialog header="Carga de datos de forma masiva"
+                              widgetVar="modalLayout"
+                              closeOnEscape="true" modal="true"
+                              style="font-size:xx-small !important; ">
+                        <h:form id="frmLayout" style="padding: 0px;">                         
+                            <p:messages id="msjLayout" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:fileUpload  dragDropSupport="false" uploadLabel="Subir Archivo" cancelLabel="Cancelar" label="Seleccionar Archivo" 
+                                           allowTypes="/(\.|\/)(xlsx|xls)$/" invalidFileMessage="Tipo de archivo invalido"
+                                           fileUploadListener="#{protocoloOncologicoMB.layoutFileUpload}"  mode="advanced" update="frmLayout"  />
+                            <p:outputPanel rendered="#{protocoloOncologicoMB.continuar}" >
+                                <p:dataTable  id="tblNoProcessEstructura"
+                                              var="item" editable="true"  
+                                              value="#{protocoloOncologicoMB.indicacionLayout}"
+                                              styleClass="styleEventosPlanPrestacion" reflow="true"
+                                              style="margin-bottom:5px;" 
+                                              scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" > 
+
+                                    <f:facet name="header" ><h:outputText style="color: #000;" value="Datos No procesados" /></f:facet>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.idDiagnostico}" headerText="Diagnostico" >
+                                        <h:outputText value="#{item.idDiagnostico}" title="#{item.idDiagnostico}" class="altoColumn" />
+                                    </p:column>
+                                    
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.updateIdUsuario}" headerText="Motivo" >
+                                        <h:outputText value="#{item.updateIdUsuario}" title="#{item.updateIdUsuario}" class="altoColumn" />
+                                    </p:column>
+                                    
+                                </p:dataTable>
+                            </p:outputPanel>
+                            <p:panel class="pnlActions">
+                                <p:commandButton class="btnNew" value="Aceptar" style=" margin: 5px 0; " 
+                                                 actionListener="#{protocoloOncologicoMB.actualizarTablaProtocolo}" 
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalLayout').hide();"
+                                                 ajax="true" update=":mainForm:tblIndicacionTerap" />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    
+    <h:head>
+        <title>Monitor de Mensajería</title>
+    </h:head>
+        
+    <h:body>
+    	<ui:composition template="../template/mainLayout.xhtml">
+
+    		<ui:define name="content">                    
+            	<div class="mainPanel">                	
+                        <h:form id="mainForm">
+                        	<p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+							<ui:remove><f:metadata>
+    							<f:viewParam name="movGralesId" />
+							</f:metadata></ui:remove>
+							<p:panelGrid>
+								<div class="ui-g panelGris" >
+                                <p:outputLabel value="Monitor de Mensajería HL7" class="fontCenter"   />
+	                            	<div class="ui-g-12" >
+	                            		<div class="ui-g-12 " style="padding: 0em !important;">
+	                            			<div class="ui-g-12 ui-md-6 ui-lg-3">
+		                                		<p:outputLabel style="margin-right: 10px;" value="Fecha inicio" />
+		                                		<br/>
+		                                        <p:calendar id="txtFechaInicio" value="#{monitorMensajeHL7MB.paramBusquedaReporte.fechaInicio}" 
+		                                                    showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+		                                                    mindate="" maxdate="#{monitorMensajeHL7MB.fechaActual}"
+		                                                    pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+		                                	</div>
+		                                	<div class="ui-g-12 ui-md-6 ui-lg-3">
+		                                		<p:outputLabel style="margin-right: 10px;" value="Fecha Fin" />
+		                                		<br/>
+		                                		<p:calendar id="txtFechaFin" value="#{monitorMensajeHL7MB.paramBusquedaReporte.fechaFin}" 
+		                                                    showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+		                                                    mindate="" maxdate="#{monitorMensajeHL7MB.fechaActual}"
+                                                                    pages="1" mask="true" showButtonPanel="true" effect="fade">
+                                                                <p:ajax event="dateSelect" listener="#{monitorMensajeHL7MB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                                                </p:calendar>
+		                                	</div>
+		                                	<div class="ui-g-12 ui-md-6 ui-lg-3">
+		                                		<p:outputLabel style="margin-right: 10px;" value="Número de Paciente" />
+		                                		<br/>
+		                                		<p:inputText value="#{monitorMensajeHL7MB.paramBusquedaReporte.numeroPaciente}"/>
+		                                	</div>
+		                                	<div class="ui-g-12 ui-md-6 ui-lg-3">
+		                                		<p:outputLabel style="margin-right: 10px;" value="Servicio" />
+		                                		<br/>
+		                                		<p:inputText value="#{monitorMensajeHL7MB.paramBusquedaReporte.servicio}" />
+		                                	</div>		                                	                            	
+	                            		</div>
+	                            		<div class="ui-g-12 " style="padding: 0em !important;">	                            			
+		                                	<div class="ui-g-12 ui-md-6 ui-lg-3">
+		                                		<p:outputLabel style="margin-right: 10px;" value="Cama" />
+		                                		<br/>
+		                                		<p:inputText value="#{monitorMensajeHL7MB.paramBusquedaReporte.cama}" />
+		                                	</div>
+		                                	<div class="ui-g-12 ui-md-6 ui-lg-3">
+		                                		<p:outputLabel style="margin-right: 10px;" value="Tipo de Mensaje" />
+		                                		<br/>
+		                                		<p:selectCheckboxMenu id="comboTipoMensaje" label="Tipos de Mensajes"
+						                                         value="#{monitorMensajeHL7MB.tipoMensajesSelects}"
+						                                         disabled="#{!monitorMensajeHL7MB.permiso.puedeVer}"
+						                                         filter="true" filterMatchMode="startsWith" panelStyle="width:250px">					                                         
+						                        	<f:selectItems value="#{monitorMensajeHL7MB.listaTiposMensaje}"
+						                                           var="tipoMensaje"
+						                                           itemValue="#{tipoMensaje.tipoMensaje}"
+						                                           itemLabel="#{tipoMensaje.tipoMensaje}"/>
+						                        </p:selectCheckboxMenu>
+		                                	</div>
+		                                	<div class="ui-g-12 ui-md-6 ui-lg-3">
+		                                		<p:outputLabel style="margin-right: 10px;" value="Ingreso Mensaje E/S" />
+		                                		<br/>
+		                                		<p:selectOneMenu style="width: 150px;" id="ingresoMensaje" value="#{monitorMensajeHL7MB.ingreso}">
+	            									<f:selectItem itemLabel="Selecciona una opción" itemValue="" />
+	            									<f:selectItems value="#{monitorMensajeHL7MB.listIngresoMensajes}" var="ing" itemLabel="#{ing}" itemValue="#{ing}" />            								
+	        									</p:selectOneMenu>
+		                                	</div>
+		                                	<div class="ui-g-12 ui-md-6 ui-lg-2">
+		                                		<p:commandButton value="Consultar Mensajes"
+	                                			 onclick="PF('statusProcess').show();"
+	                                    		 actionListener="#{monitorMensajeHL7MB.consultar}"
+	                                    		 update=":formTablaMensajesHL7, :mainForm:msg"
+	                                			 oncomplete="PF('statusProcess').hide();" 
+	                                             icon="fa fa-check-circle"  
+	                                             style="float:right;"
+	                                             />    
+		                                	</div>
+	                            		</div>
+	                                </div>
+	                            </div>
+	                       </p:panelGrid>	                                	
+						</h:form><br />
+						<h:form id="formTablaMensajesHL7" >
+                			<p:dataTable id="resultadoMensajes"
+                				 value="#{monitorMensajeHL7MB.monitorMensajeHL7Lazy}" 
+                				 var="result"
+                				 selectionMode="single"
+                                                 style="font-size: x-small !important;"
+                				 selection="#{monitorMensajeHL7MB.mensajeHL7Select}"
+                				 rowKey="#{result.idMensaje}"
+                				 emptyMessage="" rows="10"
+				                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                 currentPageReportTemplate=" "
+                                 paginator="true"                                         
+                                 paginatorPosition="bottom"				                  
+                				 lazy="true" scrollable="true" scrollWidth="98%" scrollHeight="350">
+                                <p:ajax event="rowDblselect" oncomplete="PF('modalDetalleMensaje').show();" 
+                                    update=":formDetalleMensaje" 
+                                    listener="#{monitorMensajeHL7MB.obtenerDetalleMensajeHL7}"/> 
+                                <p:column class="columnLeft20" headerText="Fecha">
+			            <h:outputText value="#{result.fechaRegistro}">
+			              	<f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+			            </h:outputText>
+			        </p:column>
+                                <p:column class="columnLeft15" headerText="Mensaje">
+                                    <h:outputText value="#{result.tipoMensaje}"/>
+                    		</p:column>                                        
+     				<p:column class="columnLeft10" headerText="Paciente">
+                                    <h:outputText value="#{result.idPaciente}"/>
+                    		</p:column>
+                                <p:column class="columnLeft20" headerText="Nombre">
+                                    <h:outputText value="#{result.nombrePaciente}"/>
+                                </p:column>
+                                <p:column class="columnLeft10" headerText="Cama">
+                                    <h:outputText value="#{result.cama == '' ? '-' : result.cama}"/>
+                    		</p:column>
+                    		<p:column class="columnLeft10" headerText="Servicio">
+                                    <h:outputText value="#{result.servicio}"/>
+                    		</p:column>
+                                <p:column class="columnLeft15" headerText="Visita">
+                                    <h:outputText value="#{result.visita == '' ? '-' : result.visita}"/>
+                                </p:column>
+                                <p:column class="columnLeft10" headerText="Tipo">
+                                    <h:outputText value="#{result.tipoMedicacion == '' ? '-' : result.tipoMedicacion}"/>
+                                </p:column>
+                    		<p:column class="columnLeft15" headerText="Prescripción">
+                                    <h:outputText value="#{result.idMedicacion == '' ? '-' : result.idMedicacion}"/>
+                                </p:column>
+                                <p:column class="columnLeft20" headerText="Clave">
+                                    <h:outputText value="#{result.claveInstitucional == '' ? '-' : result.claveInstitucional}"/>
+                                </p:column>
+                    		<p:column class="columnLeft20" headerText="Medicamento">
+                                    <h:outputText value="#{result.nombreCorto == '' ? '-' : result.nombreCorto}"/>
+                                </p:column>
+                                <p:column class="columnLeft10" headerText="Frecuencia">
+                                    <h:outputText value="#{result.frecuencia == '' ? '-' : result.frecuencia}"/>
+                                </p:column>
+                                <p:column class="columnLeft10" headerText="Duración">
+                                    <h:outputText value="#{result.duracion == '' ? '-' : result.duracion}"/>
+                                </p:column>
+                    		<p:column class="columnLeft20" headerText="Concentración">
+                                    <h:outputText value="#{result.concentracion == '' ? '-' : result.concentracion}"/>
+                                </p:column>
+                                <p:column class="columnLeft15" headerText="Multidosis">
+                                    <h:outputText value="#{result.multidosis == '1' ? 'MULTIDOSIS': '-'}"/>
+                                </p:column>
+                    		<p:column class="columnLeft10" headerText="Aditivo">
+                                    <h:outputText value="#{result.aditivo == '' ? '-' : result.aditivo}"/>
+                                </p:column>		                    
+			        <p:column class="columnLeft10" headerText="Estatus">
+			            <h:outputText value="#{result.estatus}"/>
+			        </p:column>			                    
+			              
+			        <p:column class="columnLeft15" headerText="E/S">
+			            <h:outputText value="#{result.ingresoMensaje}"/>
+			        </p:column>                    
+                    
+    			</p:dataTable>
+    					</h:form>
+    					<p:dialog header="Registro de Ordenes Recibir"
+                                    widgetVar="modalDetalleMensaje"
+                          closeOnEscape="false" modal="true"                          
+                          style="font-size:xx-small !important;" width="90%">
+                          	<h:form id="formDetalleMensaje">
+                          		<h:panelGrid width="100%">
+                          			<h:inputTextarea rows="10"  disabled="true" readonly="true" 
+                                                                 style="border: none; width: 100%; background-color:transparent; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;" 
+                                                                 value="#{monitorMensajeHL7MB.mensajeHL7.mensaje}"   />
+                          		</h:panelGrid>
+                          	</h:form>
+                          </p:dialog>
+				</div>
+			</ui:define>
+		</ui:composition>
+	</h:body>
+</html>						

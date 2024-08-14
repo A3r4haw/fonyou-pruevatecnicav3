@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.AlmacenInsumoComprometidoMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.AlmacenInsumoComprometido" parameterType="mx.mc.model.AlmacenInsumoComprometido" >
+        SELECT idEstructura , idInsumo , idPrescripcion , cantidadComprometida
+        FROM almacenInsumoComprometido
+        WHERE 1=1
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInsumo != null ">
+            AND idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        LIMIT 0, 1
+    </select>
+
+        
+    <select id="obtenerLista" resultType="mx.mc.model.AlmacenInsumoComprometido" parameterType="mx.mc.model.AlmacenInsumoComprometido" >
+        SELECT idEstructura , idInsumo , idPrescripcion , cantidadComprometida
+        FROM almacenInsumoComprometido
+        WHERE 1=1
+        <if test=" idEstructura != null ">
+            AND idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInsumo != null ">
+            AND idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    
+    <insert id="insertar" parameterType="mx.mc.model.AlmacenInsumoComprometido" >
+        INSERT INTO almacenInsumoComprometido (
+        idEstructura
+        , idInsumo
+        , idPrescripcion
+        , cantidadComprometida
+        ) VALUES (
+        #{ idEstructura , jdbcType = VARCHAR }
+        , #{ idInsumo , jdbcType = VARCHAR }
+        , #{ idPrescripcion , jdbcType = VARCHAR }
+        , #{ cantidadComprometida , jdbcType = INTEGER }
+        )
+    </insert>
+    
+    
+    <insert id="registarActualizar" parameterType="java.util.List" useGeneratedKeys="false" >
+        INSERT INTO almacenInsumoComprometido (idEstructura, idInsumo, cantidadComprometida)
+        VALUES
+        <foreach collection="list" item="item" separator="," index="index">
+            (
+            #{ item.idEstructura , jdbcType = VARCHAR }
+            , #{ item.idInsumo , jdbcType = VARCHAR }
+            , #{ idPrescripcion , jdbcType = VARCHAR }
+            , #{ item.cantidadComprometida , jdbcType = INTEGER }
+            )
+            ON DUPLICATE KEY UPDATE cantidadComprometida = cantidadComprometida + #{ item.cantidadComprometida , jdbcType = INTEGER }
+        </foreach>
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.AlmacenInsumoComprometido"  >
+        UPDATE almacenInsumoComprometido SET
+        cantidadComprometida = #{ cantidadComprometida , jdbcType = INTEGER }
+        WHERE idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        AND idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+        AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </update>
+    
+    
+    <update id="eliminaComprometidoPorIdPrescripcion" parameterType="mx.mc.model.AlmacenInsumoComprometido"  >
+        <foreach collection="list" item="item" separator="," index="index">
+            UPDATE almacenInsumoComprometido SET
+            cantidadComprometida = cantidadComprometida - #{ item.cantidadComprometida , jdbcType = INTEGER }
+            WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </foreach>
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.AlmacenInsumoComprometido"  >
+        DELETE FROM almacenInsumoComprometido 
+        WHERE 
+        idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        AND idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+        AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </delete>
+    
+</mapper>

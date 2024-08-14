@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TipoEdadPacienteMapper" >
+    
+    <select id="obtenerTodo" resultType="mx.mc.model.TipoEdadPaciente">
+        SELECT idTipoEdadPaciente, descripcion, rangoInf, rangoSup, idEstatus, insertIdUsuario, insertFecha
+            FROM tipoEdadPaciente
+    </select>
+
+    <select id="obtenerTipoPorId" resultType="mx.mc.model.TipoEdadPaciente" parameterType="Map">
+        SELECT idTipoEdadPaciente, descripcion, rangoInf, rangoSup, idEstatus, insertIdUsuario, insertFecha
+            FROM tipoEdadPaciente
+        WHERE idTipoEdadPaciente = #{idTipoEdadPaciente, jdbcType = INTEGER}
+    </select>
+</mapper>

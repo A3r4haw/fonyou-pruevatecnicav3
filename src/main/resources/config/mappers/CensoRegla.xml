@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.CensoReglaMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.CensoRegla" parameterType="mx.mc.model.CensoRegla" >
+        SELECT idCensoRegla, idMedicamento, idDiagnostico, numeroSurtimiento, minimo, maximo, numeroDias,
+                insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM censoRegla
+        WHERE 1=1
+        <if test=" idCensoRegla != null ">
+            AND idCensoRegla = #{ idCensoRegla , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <select id="obtenerRegla" resultType="mx.mc.model.CensoReglaExtended" >
+        SELECT cr.idCensoRegla, cr.idMedicamento, cr.idDiagnostico, m.claveInstitucional, m.nombreCorto AS nombreMedicamento,
+               d.clave as claveDiagnostico, d.nombre as nombreDiagnostico 
+        FROM censoRegla cr 
+             LEFT JOIN medicamento m ON cr.idMedicamento = m.idMedicamento
+             LEFT JOIN diagnostico d ON cr.idDiagnostico = d.idDiagnostico
+        WHERE 1=1
+        <if test=" idMedicamento != null ">
+            AND cr.idMedicamento = '${idMedicamento}'
+        </if>
+        <if test=" idDiagnostico != null ">
+            AND cr.idDiagnostico = '${idDiagnostico}'
+        </if>
+    </select>
+    
+    <select id="obtenerRegistrosPorCriterioDeBusquedaLazy" resultType="mx.mc.model.CensoReglaExtended" parameterType="Map" >
+        SELECT cr.idCensoRegla, cr.idMedicamento, cr.idDiagnostico, m.claveInstitucional, m.nombreCorto AS nombreMedicamento,
+               d.clave as claveDiagnostico, d.nombre as nombreDiagnostico 
+        FROM censoRegla cr 
+             LEFT JOIN medicamento m ON cr.idMedicamento = m.idMedicamento
+             LEFT JOIN diagnostico d ON cr.idDiagnostico = d.idDiagnostico
+        WHERE 1=1
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (m.claveInstitucional LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+              OR m.nombreCorto LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+              OR d.clave LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+              OR d.nombre LIKE '%${paramBusquedaReporte.cadenaBusqueda}%')
+        </if>
+        GROUP BY m.claveInstitucional, d.clave
+        ORDER BY m.claveInstitucional, d.clave
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    <select id="obtenerTotalRegistrosPorCriterioDeBusquedaLazy" resultType="Long" parameterType="Map" >
+        SELECT 
+            count(*)
+        FROM censoRegla cr 
+             LEFT JOIN medicamento m ON cr.idMedicamento = m.idMedicamento
+             LEFT JOIN diagnostico d ON cr.idDiagnostico = d.idDiagnostico
+        WHERE 1=1
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (m.claveInstitucional LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+              OR m.nombreCorto LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+              OR d.clave LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+              OR d.nombre LIKE '%${paramBusquedaReporte.cadenaBusqueda}%')
+        </if>
+    </select>
+    
+    <insert id="insertarCensoRegla" parameterType="mx.mc.model.CensoRegla" >
+        INSERT INTO censoRegla (
+            idCensoRegla, idMedicamento, idDiagnostico, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        ) VALUES (
+            #{ idCensoRegla, jdbcType = VARCHAR }
+            , #{ idMedicamento , jdbcType = VARCHAR }
+            , #{ idDiagnostico , jdbcType = INTEGER }
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        )
+    </insert>
+</mapper>

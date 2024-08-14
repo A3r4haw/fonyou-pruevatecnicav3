@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+    <h:head>
+        <title>REPORTE DE ENTREGA DE EXISTENCIAS</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="inventarioExistenciasId" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="Reporte de Entrega de Existencias" class="fontCenter"   />
+                                <div class="ui-g-12" >	                            		
+                                    <div class="ui-g-12 " style="padding: 0em !important;font-weight: bolder;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" 
+                                             style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            <p:outputLabel style="margin-right: 10px;" value="Insumo" />
+                                            <br/>
+                                            <!-- to do  verificar el tamaño del div para ponerlo en una tabla -->
+                                            <p:autoComplete id="txtInsumo" 
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{repInventarioExistenciasMB.paramBusquedaReporte.listInsumos}"
+                                                            completeMethod="#{repInventarioExistenciasMB.autocompleteInsumo}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="20" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="insum" 
+                                                            placeholder="Filtro Insumos" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{insum.nombreCorto}" itemValue="#{insum}" 
+                                                            converter="musGenericConverter"                                                             
+                                                            disabled="#{!repInventarioExistenciasMB.permiso.puedeEditar}" 
+                                                            scrollHeight = "350" >
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;" value="Almacén / Sub-Almacén"  />
+                                            <br/>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{repInventarioExistenciasMB.estructuraUsuario.nombre}" 
+                                                           rendered="#{!repInventarioExistenciasMB.administrador and !repInventarioExistenciasMB.jefeArea}"/>
+                                            <p:selectOneMenu id="comboAlmacenSubAlmacen" 
+                                                             value="#{repInventarioExistenciasMB.idEstructura}"
+                                                             disabled="#{!repInventarioExistenciasMB.permiso.puedeVer}"
+                                                             style="vertical-align: middle; margin-right: 10px; width: 300px"
+                                                             rendered="#{repInventarioExistenciasMB.administrador or repInventarioExistenciasMB.jefeArea}"
+                                                             filter="true"
+                                                             filterMatchMode="contains" >
+                                                
+                                                <c:if test="#{repInventarioExistenciasMB.administrador}">
+                                                    <f:selectItem itemLabel="Todos" itemValue="" />					                                         
+                                                </c:if>                                                
+                                                <f:selectItems value="#{repInventarioExistenciasMB.listAlmacenesSubAlm}"
+                                                               var="almacen"
+                                                               itemValue="#{almacen.idEstructura}"
+                                                               itemLabel="#{almacen.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" align="center">
+                                            <h:outputText value="Existencia en cero" />  
+                                            <br/>
+                                            <p:selectBooleanCheckbox value="#{repInventarioExistenciasMB.buscaCantidadCero}" >
+                                                <p:ajax update=":mainForm" listener="#{repInventarioExistenciasMB.cambiarBusquedaCantidadCero}"/>
+                                            </p:selectBooleanCheckbox>    
+                                        </div>
+                                        <!--se agrego este div para el reporte de existencias-->
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2" align="center">
+                                            <p:commandButton value="Generar Reporte"
+                                                             rendered="#{repInventarioExistenciasMB.permiso.puedeVer}"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{repInventarioExistenciasMB.consultar}"
+                                                             update=":formTablaInventarioExistencias, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"  
+                                                             
+                                                             class="btnNew" styleClass="btnMusAzul"  />
+                                            <br/>
+                                            <p:menuButton value="Exportar Archivo"
+                                                          style="margin-top: 15px" 
+                                                          rendered="#{repInventarioExistenciasMB.permiso.puedeVer}">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{repInventarioExistenciasMB.imprimeReporteExistencias}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();" 
+                                                            icon="fa fa-file-pdf-o" />
+                                                <p:menuitem value="Formato EXCEL"
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false"
+                                                            actionListener="#{repInventarioExistenciasMB.generaExcelExistencia}" />
+                                            </p:menuButton>
+                                        </div>
+                                        <!--aqui termina el div-->
+
+                                    </div>
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form>
+                    
+                    <p:outputLabel value="No tiene Permiso para esta Transacción"
+                                   rendered="#{!repInventarioExistenciasMB.permiso.puedeVer}" style="color: red; font-weight: bolder;"  />
+
+                    <h:form id="formTablaInventarioExistencias" >
+                        <p:dataTable var="result"  value="#{repInventarioExistenciasMB.reporteInventarioExistenciaLazy}" paginator="true" rows="10"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" " selectionMode="single" id="resultadosIE" lazy="true"
+                                     emptyMessage="" paginatorPosition="bottom" style="font-size: x-small !important;"
+                                     scrollable="true"  scrollHeight="390" disabledTextSelection="false" 
+                                     >
+                            
+                            <p:column class="columnLeft10" headerText="ORIGEN" style="width: 12%;" rendered="#{repInventarioExistenciasMB.mostrarOrigenInsumos}" 
+                                      >
+                                <h:outputText value="#{result.nombreOrigen}"/>
+                            </p:column>                                                        
+                                
+                            <p:column class="columnLeft10" headerText="CLAVE"  sortBy="#{result.claveMedicamento}" style="width: 12%;" 
+                                      >
+                                <h:outputText value="#{result.claveMedicamento}"/>
+                            </p:column>                    
+                            <p:column class="columnLeft30" headerText="NOMBRE"  sortBy="#{result.nombreMedicamento}"  style="width: 37%;" 
+                                      >
+                                <h:outputText value="#{result.nombreMedicamento}"/>
+                            </p:column>
+                            
+                            <p:column class="columnLeft10" headerText="ALMACÉN" style="width: 15%" >
+                                <h:outputText value="#{result.nombreAlmacen}" />
+                            </p:column>
+                            
+                            <p:column class="columnLeft10" headerText="PRESENTACIÓN" style="width: 10%;" >
+                                <h:outputText value="#{result.nombrePresentacion}"/>
+                            </p:column>
+                            
+                            <p:column class="columnLeft10" headerText="UNIDOSIS" style="width: 8%;" rendered="#{repInventarioExistenciasMB.mostrarUnidosis}" >
+                                <h:outputText  value="#{result.presentacionComercial eq 1 ? 'NO':'SI'}"/>
+                            </p:column>
+                            
+                            <p:column class="columnLeft8" headerText="LOTE" style="width: 8%;">
+                                <h:outputText value="#{result.lote}"/>
+                            </p:column>                    				                    
+                            <!--TODO: EN ISSEMYM NO HAY CADUCIDAD-->
+                            <p:column class="columnLeft10" headerText="CADUCIDAD"   style="width: 8%;">
+                                <h:outputText value="#{result.fechaCaducidad}">
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="columnLeft8" headerText="COMPROM." style="width: 6%;" rendered="false">
+                                <h:outputText value="#{result.comprometidas}"/>
+                            </p:column>
+                            <p:column class="columnLeft8" headerText="DOS. UNIT." style="width: 6%;">
+                                <h:outputText value="#{result.cantidadActual}"/>
+                            </p:column>                                                                                 
+                            <p:column class="columnLeft8" headerText="EXIST." style="width: 6%;" rendered="#{repInventarioExistenciasMB.muestraCantidadPorCaja}">
+                                <h:outputText value="#{result.existencias / result.cantidadXCaja}">
+                                    <f:convertNumber pattern="#0.00" locale="MX_es" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="columnLeft8" headerText="COSTO DU" style="width: 6%;">
+                                <h:outputText value="#{result.costoUnidosis}"/>
+                            </p:column>
+                            <p:column class="columnLeft8" headerText="CLAVE PROVEEDOR" style="width: 7%;" rendered="#{repInventarioExistenciasMB.mostrarClaveProveedor}">
+                                <h:outputText value="#{result.claveSap}"/>
+                            </p:column>
+                            <p:column class="columnLeft8" headerText="COSTE POR LOTE" style="width: 8%;" rendered="#{repInventarioExistenciasMB.mostrarCostePorLote}">
+                                <h:outputText value="#{result.costeXLote}"/>
+                            </p:column>                            
+
+                            <p:column class="columnLeft8" headerText="SEMÁFORO" style="width: 8%;" sortBy="#{result.estatusCaducidad}" rendered="#{repInventarioExistenciasMB.parametrosemaforo}">                                
+                                <p:graphicImage name="rojo.PNG" library="img" style="width: 15px; height: 15px" rendered="#{result.estatusCaducidad lt repInventarioExistenciasMB.sem1  ? true : false }"/>
+                                <p:graphicImage name="naranja.PNG" library="img" style="width: 15px; height: 15px" rendered="#{result.estatusCaducidad gt repInventarioExistenciasMB.sem1 and result.estatusCaducidad lt repInventarioExistenciasMB.sem2  ? true : false }"/>
+                                <p:graphicImage name="verde.PNG" library="img" style="width: 15px; height: 15px" rendered="#{result.estatusCaducidad gt repInventarioExistenciasMB.sem2  ? true : false }"/>
+                            </p:column>
+
+                            
+                        </p:dataTable>
+                    </h:form>						
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false"
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TipoAlmacenMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.TipoAlmacen" parameterType="mx.mc.model.TipoAlmacen" >
+        SELECT idTipoAlmacen , nombreTipoAlmacen , estatus , insertIdUsuario , insertFecha ,  updateIdUsuario , updateFecha
+        FROM tipoAlmacen
+        WHERE 1=1
+        <if test=" idTipoAlmacen != null ">
+            AND idTipoAlmacen = #{ idTipoAlmacen , jdbcType = INTEGER }
+        </if>
+        <if test=" nombreTipoAlmacen != null ">
+            AND nombreTipoAlmacen = #{ nombreTipoAlmacen , jdbcType = VARCHAR }
+        </if>        
+        <if test=" estatus != null ">
+            AND estatus = #{ estatus , jdbcType = INTEGER }
+        </if>
+        <if test=" insertIdUsuario != null ">
+        	AND insertIdUsuario = #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertFecha != null ">
+        	AND insertFecha = #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+        	AND updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR}
+        </if>
+        <if test=" updateFecha != null ">
+            AND updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.TipoAlmacen" parameterType="mx.mc.model.TipoAlmacen" >
+        SELECT idTipoAlmacen , nombreTipoAlmacen , estatus , insertIdUsuario , insertFecha ,  updateIdUsuario , updateFecha
+        FROM tipoAlmacen
+        WHERE estatus = 1
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.TipoAlmacen" >
+        INSERT INTO tipoAlmacen (
+        <if test=" nombreTipoAlmacen != null ">
+            , nombreTipoAlmacen
+        </if>
+        <if test=" estatus != null ">
+            , estatus
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>        
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>        
+        ) VALUES (
+        <if test=" nombreTipoAlmacen != null ">
+            #{ nombreTipoAlmacen , jdbcType = VARCHAR }
+        </if>
+        <if test=" estatus != null ">
+            , #{ estatus , jdbcType = INTEGER }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.TipoAlmacen" >
+        UPDATE tipoAlmacen SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" nombreTipoAlmacen != null ">
+            , nombreTipoAlmacen = #{ nombreTipoAlmacen , jdbcType = VARCHAR }
+        </if>
+        <if test=" estatus != null ">
+            , estatus = #{ estatus , jdbcType = INTEGER }
+        </if>
+        WHERE idTipoAlmacen = #{ idTipoAlmacen , jdbcType = INTEGER }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.TipoAlmacen"  >
+        DELETE FROM tipoAlmacen 
+        WHERE idTipoAlmacen = #{ idTipoAlmacen , jdbcType = INTEGER }
+    </delete>
+    
+    <select id="obtenerTiposAlmacen" resultType="mx.mc.model.TipoAlmacen" >
+    	 SELECT idTipoAlmacen , nombreTipoAlmacen , estatus , insertIdUsuario , insertFecha ,  updateIdUsuario , updateFecha
+        FROM tipoAlmacen
+        WHERE 1 = 1        
+        AND estatus = 1
+    </select>
+    <select id="obtenerPorNombre" resultType="mx.mc.model.TipoAlmacen" parameterType="Map" >
+        SELECT idTipoAlmacen , nombreTipoAlmacen , estatus , insertIdUsuario , insertFecha ,  updateIdUsuario , updateFecha
+        FROM tipoAlmacen
+        WHERE  nombreTipoAlmacen = #{nombre}        
+    </select>
+</mapper>

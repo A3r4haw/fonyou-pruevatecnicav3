@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.HorarioEntregaMapper" >
+    
+    <select id="obtenerSiguiente" resultType="Integer">
+        SELECT MAX ( IFNULL ( idHorarioEntrega , 0) + 1) AS idHorarioEntrega FROM horarioEntrega ;
+    </select>
+    
+    <select id="obtener" parameterType="mx.mc.model.HorarioEntrega" resultType="mx.mc.model.HorarioEntrega">
+        SELECT 
+            idHorarioEntrega, nombre, descripcion
+            , CAST(CONCAT(DATE_FORMAT(CURRENT_DATE() , '%Y-%m-%d'), ' ', horaMinimaSolicitud) as datetime)  AS  horaMinimaSolicitud
+            , CAST(CONCAT(DATE_FORMAT(CURRENT_DATE() , '%Y-%m-%d'), ' ', horaMaximaSolicitud) as datetime)  AS  horaMaximaSolicitud 
+            , CAST(CONCAT(DATE_FORMAT(CURRENT_DATE() , '%Y-%m-%d'), ' ', horaEntrega) as datetime)  AS  horaEntrega
+            , CAST(CONCAT(DATE_FORMAT(CURRENT_DATE() , '%Y-%m-%d'), ' ', horaMaximaCancelacion) as datetime)  AS horaMaximaCancelacion
+            , entregaProgramada, entregaMismoDia, diaEntrega, idTipoSolucion, solicitudUrgente
+            , lunes, martes, miercoles, jueves, viernes, sabado, domingo
+            , activa, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM horarioEntrega
+        WHERE 1=1
+        <if test="idHorarioEntrega != null" > 
+            AND idHorarioEntrega = #{ idHorarioEntrega } 
+        </if>
+        <if test="nombre != null" >
+            AND nombre = #{ nombre } </if>
+        <if test="idTipoSolucion != null" >
+            AND idTipoSolucion = #{ idTipoSolucion }
+        </if>
+        <if test="horaEntrega != null" >
+            AND DATE_FORMAT( horaEntrega , '%H:%i:%s') = DATE_FORMAT( #{ horaEntrega } , '%H:%i:%s')
+        </if>
+        <if test="activa != -1" >
+            AND activa = #{ activa }
+        </if>
+        LIMIT 1;
+    </select>
+    
+    <select id="obtenerLista" parameterType="mx.mc.model.HorarioEntrega" resultType="mx.mc.model.HorarioEntrega">
+        SELECT 
+            idHorarioEntrega, nombre, descripcion
+            , CAST(CONCAT(DATE_FORMAT(CURRENT_DATE() , '%Y-%m-%d'), ' ', horaMinimaSolicitud) as datetime)  AS  horaMinimaSolicitud
+            , CAST(CONCAT(DATE_FORMAT(CURRENT_DATE() , '%Y-%m-%d'), ' ', horaMaximaSolicitud) as datetime)  AS  horaMaximaSolicitud 
+            , CAST(CONCAT(DATE_FORMAT(CURRENT_DATE() , '%Y-%m-%d'), ' ', horaEntrega) as datetime)  AS  horaEntrega
+            , CAST(CONCAT(DATE_FORMAT(CURRENT_DATE() , '%Y-%m-%d'), ' ', horaMaximaCancelacion) as datetime)  AS horaMaximaCancelacion
+            , entregaProgramada, entregaMismoDia, diaEntrega, idTipoSolucion, solicitudUrgente
+            , lunes, martes, miercoles, jueves, viernes, sabado, domingo
+            , activa, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM horarioEntrega
+        WHERE 1=1
+        <if test="idHorarioEntrega != null" > 
+            AND idHorarioEntrega = #{ idHorarioEntrega } 
+        </if>
+        <if test="nombre != null" >
+            AND nombre = #{ nombre } </if>
+        <if test="idTipoSolucion != null" >
+            AND idTipoSolucion = #{ idTipoSolucion }
+        </if>
+        <if test="activa != -1" >
+            AND activa = #{ activa }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="Map">
+        INSERT INTO horarioEntrega (
+        <if test="idHorarioEntrega != null" > idHorarioEntrega </if>
+        <if test="nombre != null" > , nombre </if>
+        <if test="descripcion != null" > , descripcion </if>
+        <if test="entregaProgramada != null" > , entregaProgramada </if>
+        <if test="entregaMismoDia != null" > , entregaMismoDia </if>
+        <if test="diaEntrega != null" > , diaEntrega </if>
+        <if test="horaMinimaSolicitud != null" > , horaMinimaSolicitud </if>
+        <if test="horaMaximaSolicitud != null" > , horaMaximaSolicitud </if>
+        <if test="horaEntrega != null" > , horaEntrega </if>
+        <if test="lunes != null" > , lunes </if>
+        <if test="martes != null" > , martes </if>
+        <if test="miercoles != null" > , miercoles </if>
+        <if test="jueves != null" > , jueves </if>
+        <if test="viernes != null" > , viernes </if>
+        <if test="sabado != null" > , sabado </if>
+        <if test="domingo != null" > , domingo </if>
+        <if test="idTipoSolucion != null" > , idTipoSolucion </if>
+        <if test="horaMaximaCancelacion != null" > , horaMaximaCancelacion </if>
+        <if test="solicitudUrgente != null" > , solicitudUrgente </if>
+        <if test="activa != -1" > , activa </if>
+        <if test="insertFecha != null" > , insertFecha </if>
+        <if test="insertIdUsuario != null" > , insertIdUsuario </if>
+        <if test="updateFecha != null" > , updateFecha </if>
+        <if test="updateIdUsuario != null" > , updateIdUsuario </if>
+        ) VALUES (
+        <if test="idHorarioEntrega != null" > #{ idHorarioEntrega } </if>
+        <if test="nombre != null" > , #{ nombre } </if>
+        <if test="descripcion != null" > , #{ descripcion } </if>
+        <if test="entregaProgramada != null" > , #{ entregaProgramada } </if>
+        <if test="entregaMismoDia != null" > , #{ entregaMismoDia } </if>
+        <if test="diaEntrega != null" > , #{ diaEntrega } </if>
+        <if test="horaMinimaSolicitud != null" > , #{ horaMinimaSolicitud } </if>
+        <if test="horaMaximaSolicitud != null" > , #{ horaMaximaSolicitud } </if>
+        <if test="horaEntrega != null" > , #{ horaEntrega } </if>
+        <if test="lunes != null" > , #{ lunes } </if>
+        <if test="martes != null" > , #{ martes } </if>
+        <if test="miercoles != null" > , #{ miercoles } </if>
+        <if test="jueves != null" > , #{ jueves } </if>
+        <if test="viernes != null" > , #{ viernes } </if>
+        <if test="sabado != null" > , #{ sabado } </if>
+        <if test="domingo != null" > , #{ domingo } </if>
+        <if test="idTipoSolucion != null" > , #{ idTipoSolucion } </if>
+        <if test="horaMaximaCancelacion != null" > , #{ horaMaximaCancelacion } </if>
+        <if test="solicitudUrgente != null" > , #{ solicitudUrgente } </if>
+        <if test="activa != -1" > , #{ activa } </if>
+        <if test="insertFecha != null" > , #{ insertFecha } </if>
+        <if test="insertIdUsuario != null" > , #{ insertIdUsuario } </if>
+        <if test="updateFecha != null" > , #{ updateFecha } </if>
+        <if test="updateIdUsuario != null" > , #{ updateIdUsuario } </if>
+        )
+    </insert>
+    
+    <insert id="insertarLista" parameterType="Map">
+        <foreach collection="lista" item="item" separator=";">
+            INSERT INTO horarioEntrega (
+            <if test="item.idHorarioEntrega != null" > idHorarioEntrega </if>
+            <if test="item.nombre != null" > , nombre </if>
+            <if test="item.descripcion != null" > , descripcion </if>
+            <if test="item.entregaProgramada != null" > , entregaProgramada </if>
+            <if test="item.entregaMismoDia != null" > , entregaMismoDia </if>
+            <if test="item.diaEntrega != null" > , diaEntrega </if>
+            <if test="item.horaMinimaSolicitud != null" > , horaMinimaSolicitud </if>
+            <if test="item.horaMaximaSolicitud != null" > , horaMaximaSolicitud </if>
+            <if test="item.horaEntrega != null" > , horaEntrega </if>
+            <if test="item.lunes != null" > , lunes </if>
+            <if test="item.martes != null" > , martes </if>
+            <if test="item.miercoles != null" > , miercoles </if>
+            <if test="item.jueves != null" > , jueves </if>
+            <if test="item.viernes != null" > , viernes </if>
+            <if test="item.sabado != null" > , sabado </if>
+            <if test="item.domingo != null" > , domingo </if>
+            <if test="item.idTipoSolucion != null" > , idTipoSolucion </if>
+            <if test="item.horaMaximaCancelacion != null" > , horaMaximaCancelacion </if>
+            <if test="item.solicitudUrgente != null" > , solicitudUrgente </if>
+            <if test="item.activa != -1 " > , activa </if>
+            <if test="item.insertFecha != null" > , insertFecha </if>
+            <if test="item.insertIdUsuario != null" > , insertIdUsuario </if>
+            <if test="item.updateFecha != null" > , updateFecha </if>
+            <if test="item.updateIdUsuario != null" > , updateIdUsuario </if>
+            ) VALUES (
+            <if test="item.idHorarioEntrega != null" > #{ item.idHorarioEntrega } </if>
+            <if test="item.nombre != null" > , #{ item.nombre } </if>
+            <if test="item.descripcion != null" > , #{ item.descripcion } </if>
+            <if test="item.entregaProgramada != null" > , #{ item.entregaProgramada } </if>
+            <if test="item.entregaMismoDia != null" > , #{ item.entregaMismoDia } </if>
+            <if test="item.diaEntrega != null" > , #{ item.diaEntrega } </if>
+            <if test="item.horaMinimaSolicitud != null" > , #{ item.horaMinimaSolicitud } </if>
+            <if test="item.horaMaximaSolicitud != null" > , #{ item.horaMaximaSolicitud } </if>
+            <if test="item.horaEntrega != null" > , #{ item.horaEntrega } </if>
+            <if test="item.lunes != null" > , #{ item.lunes } </if>
+            <if test="item.martes != null" > , #{ item.martes } </if>
+            <if test="item.miercoles != null" > , #{ item.miercoles } </if>
+            <if test="item.jueves != null" > , #{ item.jueves } </if>
+            <if test="item.viernes != null" > , #{ item.viernes } </if>
+            <if test="item.sabado != null" > , #{ item.sabado } </if>
+            <if test="item.domingo != null" > , #{ item.domingo } </if>
+            <if test="item.idTipoSolucion != null" > , #{ item.idTipoSolucion } </if>
+            <if test="item.horaMaximaCancelacion != null" > , #{ item.horaMaximaCancelacion } </if>
+            <if test="item.solicitudUrgente != null" > , #{ item.solicitudUrgente } </if>
+            <if test="item.activa != -1 " > , #{ item.activa } </if>
+            <if test="item.insertFecha != null" > , #{ item.insertFecha } </if>
+            <if test="item.insertIdUsuario != null" > , #{ item.insertIdUsuario } </if>
+            <if test="item.updateFecha != null" > , #{ item.updateFecha } </if>
+            <if test="item.updateIdUsuario != null" > , #{ item.updateIdUsuario } </if>
+            )
+        </foreach>
+    </insert>
+    
+    <update id="actualizar" parameterType="mx.mc.model.HorarioEntrega"  >
+        UPDATE horarioEntrega
+        <set>
+            updateFecha = #{ updateFecha }
+            , updateIdUsuario = #{ updateIdUsuario }
+            <if test="idHorarioEntrega != null" > idHorarioEntrega = #{ idHorarioEntrega } </if>
+            <if test="nombre != null" > , nombre = #{ nombre } </if>
+            <if test="descripcion != null" > , descripcion = #{ descripcion } </if>
+            <if test="entregaProgramada != null" > , entregaProgramada = #{ entregaProgramada } </if>
+            <if test="entregaMismoDia != null" > , entregaMismoDia = #{ entregaMismoDia } </if>
+            <if test="diaEntrega != null" > , diaEntrega = #{ diaEntrega } </if>
+            <if test="horaMinimaSolicitud != null" > , horaMinimaSolicitud = #{ horaMinimaSolicitud } </if>
+            <if test="horaMaximaSolicitud != null" > , horaMaximaSolicitud = #{ horaMaximaSolicitud } </if>
+            <if test="horaEntrega != null" > , horaEntrega = #{ horaEntrega } </if>
+            <if test="lunes != null" > , lunes = #{ lunes } </if>
+            <if test="martes != null" > , martes = #{ martes } </if>
+            <if test="miercoles != null" > , miercoles = #{ miercoles } </if>
+            <if test="jueves != null" > , jueves = #{ jueves } </if>
+            <if test="viernes != null" > , viernes = #{ viernes } </if>
+            <if test="sabado != null" > , sabado = #{ sabado } </if>
+            <if test="domingo != null" > , domingo = #{ domingo } </if>
+            <if test="idTipoSolucion != null" > , idTipoSolucion = #{ idTipoSolucion } </if>
+            <if test="horaMaximaCancelacion != null" > , horaMaximaCancelacion = #{ horaMaximaCancelacion } </if>
+            <if test="solicitudUrgente != null" > , solicitudUrgente = #{ solicitudUrgente } </if>
+            <if test="activa != -1 " > , activa = #{ activa } </if>
+        </set>
+        WHERE idHorarioEntrega = #{ idHorarioEntrega , jdbcType = INTEGER }
+    </update>
+    
+</mapper>

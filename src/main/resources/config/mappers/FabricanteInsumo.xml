@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.FabricanteInsumoMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.FabricanteInsumo" parameterType="mx.mc.model.FabricanteInsumo" >
+        SELECT idFabricanteInsumo, idFabricante, idInsumo, osmolaridad, densidad, estabilidad, claveProveedor, idEstatus, insertIdUsuario, insertFecha, updateIdUsuario, updateFecha, calorias
+        FROM fabricanteInsumo
+        WHERE 1=1
+        <if test=" idFabricanteInsumo != null ">
+            AND idFabricanteInsumo = #{ idFabricanteInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idFabricante != null ">
+            AND idFabricante = #{ idFabricante , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInsumo != null ">
+            AND idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatus != null ">
+            AND idEstatus = #{ idEstatus , jdbcType = INTEGER }
+        </if>
+        LIMIT 0, 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.FabricanteInsumo" parameterType="mx.mc.model.FabricanteInsumo" >
+        SELECT idFabricanteInsumo, idFabricante, idInsumo, osmolaridad, densidad, estabilidad, claveProveedor, idEstatus, insertIdUsuario, insertFecha, updateIdUsuario, updateFecha, calorias
+        FROM fabricanteInsumo
+        WHERE 1=1
+        <if test=" idFabricanteInsumo != null ">
+            AND idFabricanteInsumo = #{ idFabricanteInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idFabricante != null ">
+            AND idFabricante = #{ idFabricante , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInsumo != null ">
+            AND idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatus != null ">
+            AND idEstatus = #{ idEstatus , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.FabricanteInsumo" >
+        INSERT INTO fabricanteInsumo (
+        <if test=" idFabricanteInsumo != null ">
+            idFabricanteInsumo
+        </if>
+        <if test=" idFabricante != null ">
+            , idFabricante
+        </if>
+        <if test=" idInsumo != null ">
+            , idInsumo
+        </if>
+        <if test=" osmolaridad != null ">
+            , osmolaridad
+        </if>
+        <if test=" densidad != null ">
+            , densidad
+        </if>
+        <if test=" calorias != null ">
+            , calorias
+        </if>
+        <if test=" estabilidad != null ">
+            , estabilidad
+        </if>
+        <if test=" claveProveedor != null ">
+            , claveProveedor
+        </if>
+        <if test=" idEstatus != null ">
+            , idEstatus
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertidUsuario != null ">
+            , insertidUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario
+        </if>
+        ) VALUES (
+        <if test=" idFabricanteInsumo != null ">
+            #{ idFabricanteInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idFabricante != null ">
+            , #{ idFabricante , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInsumo != null ">
+            , #{ idInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" osmolaridad != null ">
+            , #{ osmolaridad , jdbcType = DECIMAL }
+        </if>
+        <if test=" densidad != null ">
+            , #{ densidad , jdbcType = DECIMAL }
+        </if>
+        <if test=" calorias != null ">
+            , #{ calorias , jdbcType = DECIMAL }
+        </if>
+        <if test=" estabilidad != null ">
+            , #{ estabilidad , jdbcType = DECIMAL }
+        </if>
+        <if test=" claveProveedor != null ">
+            , #{ claveProveedor , jdbcType = VARCHAR }
+        </if>        
+        <if test=" idEstatus != null ">
+            , #{ idEstatus , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertidUsuario != null ">
+            , #{ insertidUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.FabricanteInsumo"  >
+        UPDATE fabricanteInsumo SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" idFabricante != null ">
+            , idFabricante = #{ nombreFabricanteInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInsumo != null ">
+            , idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" osmolaridad != null ">
+            , osmolaridad = #{ osmolaridad , jdbcType = DECIMAL }
+        </if>
+        <if test=" densidad != null ">
+            , densidad = #{ densidad , jdbcType = DECIMAL }
+        </if>
+        <if test=" calorias != null ">
+            , calorias = #{ calorias , jdbcType = DECIMAL }
+        </if>
+        <if test=" estabilidad != null ">
+            , estabilidad = #{ estabilidad , jdbcType = DECIMAL }
+        </if>
+        <if test=" claveProveedor != null ">
+            , claveProveedor = #{ claveProveedor , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatus != null ">
+            , idEstatus = #{ idEstatus , jdbcType = INTEGER }
+        </if>
+        WHERE idFabricanteInsumo = #{ idFabricanteInsumo , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.FabricanteInsumo"  >
+        DELETE FROM fabricanteInsumo 
+        WHERE idFabricanteInsumo = #{ idFabricanteInsumo , jdbcType = VARCHAR }
+    </delete>
+    
+</mapper>

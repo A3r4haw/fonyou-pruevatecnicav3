@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.EstudioMapper">
+    <select id="obtenerBusquedaEstudio" resultType="mx.mc.model.Estudio" parameterType="Map" >
+        SELECT e.idEstudio, e.claveEstudio, e.idTipoEstudio, e.descripcion, e.activo, t.descripcion as descTipoEstudio
+        FROM estudio e INNER JOIN tipoEstudio t ON e.idTipoEstudio = t.idTipoEstudio
+        WHERE 1=1
+        <if test="tipoEstudio > 0 "> AND e.idTipoEstudio = #{tipoEstudio, jdbcType=INTEGER} </if>
+        <if test="paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (e.claveEstudio LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR e.descripcion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR t.descripcion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%')
+        </if>
+        <if test=" sortField == null" >
+            ORDER BY e.claveEstudio asc
+        </if>
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'claveEstudio'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY e.claveEstudio asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY e.claveEstudio desc
+                </if>
+            </if>
+            <if test="sortField == 'descripcion'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY e.descripcion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY e.descripcion desc
+                </if>
+            </if>
+            <if test="sortField == 'descTipoEstudio'" >
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY t.descripcion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY t.descripcion desc
+                </if>
+            </if>
+        </if>   
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    <select id="obtenerTotalBusquedaEstudio" resultType="Long" parameterType="Map">
+        SELECT count(*)
+        FROM estudio
+        WHERE 1=1
+        <if test="tipoEstudio > 0 "> AND idTipoEstudio = #{tipoEstudio, jdbcType=INTEGER} </if>
+        <if test="paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (claveEstudio LIKE '%${paramBusquedaReporte.cadenaBusqueda}%'
+            OR descripcion LIKE '%${paramBusquedaReporte.cadenaBusqueda}%')
+        </if>
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Estudio" parameterType="Map" >
+        SELECT e.idEstudio, e.claveEstudio, e.idTipoEstudio, e.descripcion, e.activo, t.descripcion as descTipoEstudio
+        FROM estudio e INNER JOIN tipoEstudio t ON e.idTipoEstudio = t.idTipoEstudio
+        WHERE 1=1
+        <if test="claveEstudio != null "> AND e.claveEstudio = #{claveEstudio, jdbcType = VARCHAR} </if>
+        <if test="idTipoEstudio > 0 "> AND e.idTipoEstudio = #{tipoEstudio, jdbcType = INTEGER} </if>
+        <if test="descripcion != null "> AND e.descripcion = #{descripcion, jdbcType = VARCHAR} </if>
+        <if test="activo > 0 "> AND e.activo = #{activo, jdbcType = INTEGER} </if>
+    </select>
+    
+    <select id="obtenerPorIdEstudio" resultType="mx.mc.model.Estudio" parameterType="Map" >
+        SELECT idEstudio, claveEstudio, idTipoEstudio, descripcion, activo
+        FROM estudio
+        WHERE idEstudio = #{ idEstudio, jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtenerPorClaveEstudio" resultType="mx.mc.model.Estudio" parameterType="Map" >
+        SELECT idEstudio, claveEstudio, idTipoEstudio, descripcion, activo
+        FROM estudio
+        WHERE claveEstudio = #{ claveEstudio, jdbcType = VARCHAR}
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Estudio">
+        INSERT INTO estudio (
+            idEstudio,
+            claveEstudio,
+            idTipoEstudio,
+            descripcion,
+            activo,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario
+        )
+        VALUES 
+        (
+        #{idEstudio, jdbcType=VARCHAR},
+        #{claveEstudio, jdbcType=VARCHAR},
+        #{idTipoEstudio, jdbcType=INTEGER},
+        #{descripcion, jdbcType=VARCHAR},
+        #{activo, jdbcType=INTEGER},
+        #{insertFecha, jdbcType=DATE},
+        #{insertIdUsuario, jdbcType=VARCHAR},
+        #{updateFecha, jdbcType=DATE},
+        #{updateIdUsuario, jdbcType=VARCHAR}
+        )
+    </insert>
+    
+    <update id="actualizar" parameterType="mx.mc.model.Estudio" >
+        UPDATE estudio
+        <set>
+            <if test="claveEstudio != null"> claveEstudio = #{ claveEstudio, jdbcType = VARCHAR}, </if>
+            <if test="idTipoEstudio > 0"> idTipoEstudio = #{idTipoEstudio, jdbcType=INTEGER}, </if>    
+            <if test="descripcion != null"> descripcion = #{descripcion, jdbcType=VARCHAR}, </if>
+            <if test="activo != null"> activo = #{activo, jdbcType=INTEGER}, </if>
+            <if test="updateFecha != null"> updateFecha= #{updateFecha, jdbcType=DATE}, </if>   
+            <if test="updateIdUsuario != null"> updateIdUsuario = #{updateIdUsuario, jdbcType=VARCHAR} </if>
+        </set>
+        WHERE idEstudio = #{ idEstudio, jdbcType = VARCHAR}
+    </update>
+</mapper>

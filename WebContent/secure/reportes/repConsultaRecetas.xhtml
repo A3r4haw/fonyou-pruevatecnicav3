@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>REPORTE DE CONSULTA DE RECETAS</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="movGralesId" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="Reporte de Emisión de Recetas" class="fontCenter"   />
+                                <div class="ui-g-12" >
+
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha inicio" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" value="#{repEmisionRecetasMB.paramBusquedaReporte.fechaInicio}" tabindex="1"
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repEmisionRecetasMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Fecha Fin" />
+                                            <br/>
+                                            <p:calendar id="txtFechaFin" value="#{repEmisionRecetasMB.paramBusquedaReporte.fechaFin}" 
+                                                        tabindex="2"
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repEmisionRecetasMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade">
+                                                <p:ajax event="dateSelect" listener="#{repEmisionRecetasMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                            </p:calendar>
+                                        </div>
+                                        
+                                        
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Tipo Receta" 
+                                                           rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}"
+                                                           />
+                                            <br/>
+                                            <p:selectOneMenu id="prefijo" 
+                                                             tabindex="3"
+                                                             value="#{repEmisionRecetasMB.paramBusquedaReporte.tipoPrescripcion}"
+                                                             rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}"
+                                                             style="width:125px;vertical-align:middle;">
+                                                
+                                                <f:selectItem itemLabel="Colectiva"
+                                                              itemValue=""/>
+                                                <f:selectItem itemLabel="Manual" itemValue="#{repEmisionRecetasMB.recManual}" />
+                                                <f:selectItem itemLabel="Normal" itemValue="#{repEmisionRecetasMB.recNormal}" />
+
+                                                <p:ajax process="@parent" update="EstPre,prescripcion,receta,txtPaciente,comboAlmacenOrigen" 
+                                                        listener="#{repEmisionRecetasMB.desabilitarCamposPorTipoPaciente}" 
+                                                        global="false"/>
+                                            </p:selectOneMenu>
+
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Receta" rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}"/>
+                                            <br/>
+                                            <p:inputText id="receta" tabindex="4" placeholder="Folio Receta" disabled="#{!repEmisionRecetasMB.bandera}" rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}"  value="#{repEmisionRecetasMB.paramBusquedaReporte.folio}"/>
+                                        </div>
+
+
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Nombre de Medicamento" />
+                                            <br/>
+                                            <p:autoComplete id="txtInsumo" 
+                                                            multiple="true"
+                                                            tabindex="5"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            scrollHeight="350"
+                                                            value="#{repEmisionRecetasMB.paramBusquedaReporte.listInsumos}"
+                                                            completeMethod="#{repEmisionRecetasMB.autocompleteInsumo}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="insum" 
+                                                            placeholder="Filtro Medicamentos" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{insum.nombreCorto}" itemValue="#{insum}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="#{!repEmisionRecetasMB.permiso.puedeEditar}" >
+                                            </p:autoComplete>
+                                        </div>
+                                        
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="height:70px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Usuario" />
+                                            
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;" 
+                                                           value="#{repEmisionRecetasMB.usuarioSession.nombre} #{repEmisionRecetasMB.usuarioSession.apellidoPaterno} #{repEmisionRecetasMB.usuarioSession.apellidoMaterno}" 
+                                                           rendered="#{!repEmisionRecetasMB.administrador}"/>
+                                            <br/>
+                                            
+                                            <p:autoComplete id="txtUsuario" 
+                                                            tabindex="6"
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{repEmisionRecetasMB.paramBusquedaReporte.listUsuarios}"
+                                                            completeMethod="#{repEmisionRecetasMB.autocompleteUsuario}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="usr" 
+                                                            placeholder="Filtro Usuarios" 
+                                                            cache="false"
+                                                            scrollHeight="350"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{usr.nombre}" itemValue="#{usr}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="#{!repEmisionRecetasMB.permiso.puedeEditar}" 
+                                                            rendered="#{repEmisionRecetasMB.administrador}">
+                                            </p:autoComplete>
+                                        </div>
+
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:outputLabel style="margin-right: 10px; float: right;font-weight: bolder" value="Almacén / Servicio" />
+                                            <br/>
+                                            <ui:remove><h:outputText style="margin-right: 10px;" class="textoNegrita" value="#{devolucionInsumoMB.almacenOrigen}" /></ui:remove>
+                                            <p:selectOneMenu id="comboAlmacenOrigen" tabindex="7"
+                                                             value="#{repEmisionRecetasMB.idEstructura}"
+                                                             disabled="#{!devolucionInsumoMB.permiso.puedeVer}"
+                                                             style="vertical-align: middle; float: right">                                                
+                                                <f:selectItems value="#{repEmisionRecetasMB.listaEstructuras}"
+                                                               var="estructura"
+                                                               itemValue="#{estructura.idEstructura}"
+                                                               itemLabel="#{estructura.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+
+                                        <!--                     SEGUNDA COLUMNA                        -->
+
+                                    </div>
+                                    
+
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                    
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:outputLabel style="margin-right: 20px;font-weight: bolder;" value="Origen" 
+                                                           rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}" />
+
+                                            <p:selectOneMenu id="prefijo1"  tabindex="8"
+                                                             value="#{repEmisionRecetasMB.paramBusquedaReporte.idTipoOrigen}"
+                                                             rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}"
+                                                             style="width:125px;vertical-align:middle;">
+                                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                                <f:selectItem itemLabel="Administración" itemValue="1" />
+                                                <f:selectItem itemLabel="Compra Directa" itemValue="2" />                                               
+                                                <p:ajax update="" />
+                                            </p:selectOneMenu>
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" id="EstPre" value="Estatus Prescripción"
+                                                           rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}"
+                                                           />
+                                            <p:selectOneMenu id="prescripcion" tabindex="9"
+                                                             value="#{repEmisionRecetasMB.paramBusquedaReporte.idEstatusPrescripcion}"
+                                                             rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}"  
+                                                             disabled="#{!repEmisionRecetasMB.bandera}"
+                                                             style="width:125px;vertical-align:middle;">
+                                                <f:selectItem
+                                                    itemValue=""
+                                                    itemLabel="--Selecciona--"
+                                                    />
+                                                <f:selectItems value="#{repEmisionRecetasMB.lisEstatusPrescripcion}" 
+                                                               rendered="#{repEmisionRecetasMB.bandera}"
+                                                               var="estatusPrescripcion"                                                               
+                                                               itemValue="#{estatusPrescripcion.idEstatusPrescripcion}"
+                                                               itemLabel="#{estatusPrescripcion.estatus}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="height:70px; float: left;  overflow-x:auto; overflow-y: auto;"  >
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Pacientes"  rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}" />
+                                            <br/>
+                                            <p:autoComplete id="txtPaciente" tabindex="10"                                                     
+                                                            rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}"
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{repEmisionRecetasMB.paramBusquedaReporte.pacienteList}"
+                                                            completeMethod="#{repEmisionRecetasMB.autocompletePaciente}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500"                                                             
+                                                            maxResults="50" 
+                                                            scrollHeight="300"
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="paciente" 
+                                                            placeholder="Filtro Pacientes" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" itemValue="#{paciente}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="#{!repEmisionRecetasMB.bandera}" >
+                                            </p:autoComplete>
+                                        </div>
+                                                                                                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:commandButton value="Consultar Reporte" tabindex="11"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{repEmisionRecetasMB.consultar}"
+                                                             update=":formTablaMovimientos, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"  
+                                                             style="margin-top: 15px; float: right"
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                        </div>
+
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2" style="margin-left: 30px">
+
+                                            <p:menuButton value="Exportar Documento" style="margin-top: 15px; margin-left: 8px; float: right">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{repEmisionRecetasMB.imprimeReporteEmisionRecetas()}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                                
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"
+                                                            />
+                                                <p:menuitem value="Formato EXCEL"
+                                                            ajax="false"
+                                                            icon="fa fa-file-excel-o"
+                                                            actionListener="#{repEmisionRecetasMB.generaExcelRecetas}"
+                                                            />                                                
+                                            </p:menuButton>
+
+                                        </div>
+
+                                    
+                                    </div>                                    
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form><br />
+                    <h:form id="formTablaMovimientos" >
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     style="font-size: 8px !important;"
+                                     value="#{repEmisionRecetasMB.reporteRecetasLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true"  scrollHeight="350">
+
+                            <p:column style="width: 4%"  headerText="FOLIO">
+                                <h:outputText value="#{result.folio}"/>
+                            </p:column> 
+
+                            <p:column style="width: 5%"   headerText="FECHA FIRMA">
+                                <h:outputText value="#{result.fechaFirma}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </p:column> 
+
+                            <p:column style="width: 4%" rendered="false" headerText="FOLIO SURTIMIENTO">
+                                <h:outputText value="#{result.folioSurtimiento}"/>
+                            </p:column>                                 
+
+                            <p:column style="width: 4%" headerText="MÉDICO"
+                                      rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}"
+                                      >                           
+                                <h:outputText value="#{result.medico}"/>
+                            </p:column>                                 
+
+                            <p:column style="width: 7%" headerText="PACIENTE"
+                                      rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}">
+                                <h:outputText value="#{result.paciente}"/>
+                            </p:column>          
+
+                            <p:column style="width: 4%" headerText="LOTE"
+                                      rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}">
+                                <h:outputText value="#{result.lote}"/>
+                            </p:column>                                                           
+
+                            <p:column style="width: 5%" headerText="CADUCIDAD" rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}">
+                                <h:outputText value="#{result.fechaCaducidad}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </p:column> 
+
+                            <p:column style="width: 5%" headerText="CLAVE MEDICAMENTO">
+                                <h:outputText value="#{result.claveMedicamento}"/>
+                            </p:column>
+
+                            <p:column style="width: 15%" headerText="NOMBRE">
+                                <h:outputText value="#{result.nombreMedicamento}"/>
+                            </p:column>
+
+                            <p:column style="width: 4%" headerText="CANT. SOLIC." rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}">
+                                <h:outputText value="#{result.insumoSolictado}"/>
+                            </p:column>
+
+                            <p:column style="width: 4%" headerText="CANT. SURT." rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}">
+                                <h:outputText value="#{result.insumoEnviado}"/>
+                            </p:column>
+                            <p:column style="width: 4%" headerText="CANTIDAD D.U.">
+                                <h:outputText value="#{result.insumoCantEnviada}"/>
+                            </p:column>
+
+                            <p:column style="width: 4%" headerText="CANTIDAD CAJA">
+                                <h:outputText value="#{result.insumoCantEnviada/result.cantidadXCaja}" >
+                                    <f:convertNumber pattern="#0.0" locale="MX_es" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="width:10%" headerText="COBERTURA"
+                                      rendered="false"
+                                      >
+                                <h:outputText value="#{result.cobertura}"/>
+                            </p:column>
+
+                            <p:column style="width: 3%" headerText="ESTATUS"
+                                      rendered="false"
+                                      >
+                                <h:outputText value="#{result.estatus}"/>
+                            </p:column>
+
+                            <p:column style="width: 3%" headerText="ORIGEN"
+                                      rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}"
+                                      >
+                                <h:outputText value="#{result.origen}"/>
+                            </p:column>
+
+                            <p:column style="width: 5%" headerText="FECH. SURT/CANC" rendered="#{repEmisionRecetasMB.activaCamposRepEmisionRecetas}">
+                                <h:outputText value="#{result.fechaSurtCanc}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </p:column> 
+
+                        </p:dataTable>
+                    </h:form>	
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes" 
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html> 

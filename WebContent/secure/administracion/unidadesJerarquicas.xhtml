@@ -1,0 +1,777 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Unidades Jerárquicas</title>
+    </h:head>
+
+    <h:body>
+
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">
+
+                <div style="width: 95%; height: 100%; margin:0 auto 0 auto;
+                     border: #0088cc solid 0px; border-radius: 3px; ">
+                    <div style="width:25%; height:550px; float: left; margin-right: 25px;">
+                        <h:form id="mainForm">
+                            <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/> 
+
+                            <div style="width: 100%; align-content: center; padding: 5px;" align="center" class="panelGris">
+                                <h2>
+                                    <h:outputText value="#{unidadesJerarquicasMB.nombreUnidadHospitalaria}" />
+                                </h2>
+                                <br />
+
+                                <p:outputLabel value="Tipo Area: " style="font-weight: bolder;" />
+                                <p:spacer width="20px" height="5px" />
+                                <p:selectOneMenu style="width: 200px;" id="tipoArea" value="#{unidadesJerarquicasMB.tipoArea}">
+                                    <f:selectItem itemLabel="Seleccione una Opción" itemValue="" />
+                                    <f:selectItems value="#{unidadesJerarquicasMB.listTipoAreaEstructura}" var="tipo" itemLabel="#{tipo.nombreArea}" 
+                                                   itemValue="#{tipo.idTipoAreaEstructura}" />
+                                    <p:ajax update=":idArbol, :mainForm, :idCamas" listener="#{unidadesJerarquicasMB.obtenerArbol}" />
+                                </p:selectOneMenu> 
+                                <br/>
+                            </div>
+                            <br />
+                            <p:panel id="panelConsultas" rendered="#{unidadesJerarquicasMB.renderPanelConsulta}">
+                                <h:outputText value="Area: " />
+                                <h:outputText style="font-weight:bold" value="#{unidadesJerarquicasMB.estructura.nombre}" />
+                                <br />
+                                <h:outputText value="Tipo: " />
+                                <h:outputText style="font-weight:bold" value="#{unidadesJerarquicasMB.areaTipo}" />
+                                <br />
+                                <p:outputLabel value="Estado: " />
+                                <h:outputText style="font-weight:bold" value="#{unidadesJerarquicasMB.estructura.activa == 1 ? 'Activo' : 'Inactivo' }" 
+                                              rendered="#{unidadesJerarquicasMB.estructura.nombre eq '' ? false : true }"/>
+                                <br />
+                                <p:outputLabel value="No. de Camas: " rendered="#{unidadesJerarquicasMB.estructura.idEstructuraPadre eq '' ? false : true}" />
+                                <h:outputText style="font-weight:bold"  value="#{unidadesJerarquicasMB.cantidadCamas}" rendered="#{unidadesJerarquicasMB.estructura.idEstructuraPadre eq '' ? false : true}" />
+                                <br />
+                                <p:outputLabel value="Periférico: " />
+                                <h:outputText style="font-weight:bold"  value="#{unidadesJerarquicasMB.nombrePeriferico}" rendered="#{unidadesJerarquicasMB.estructura.idEstructuraPadre eq '' ? false : true}"/>                                
+                                <br /><br />
+                                <h:outputText style="font-weight:bold; font-size: larger;" value="Estructura Hospitalaria" />
+                                <br />
+                                <p:commandButton title="Agregar" class="Agregar" icon="fa fa-plus-square" value="Agregar Unidad"
+                                                 update=":mainForm, :formEditarUnidad" ajax="true" action="#{unidadesJerarquicasMB.nuevaUnidadJerarquica}" 
+                                                 oncomplete="if ( args.estatus3 ){PF('modalUnidad').show();}"
+                                                 rendered="#{unidadesJerarquicasMB.activaUnidad}"
+                                                 style=" margin-bottom: 8px;" disabled="!#{unidadesJerarquicasMB.permiso.puedeCrear}"  />
+                                <p:commandButton title="Editar" class="Editar" icon="fa fa-pencil-square-o" value="Editar"
+                                                 update=":mainForm, :formEditarUnidad" ajax="true" action="#{unidadesJerarquicasMB.obtenerDatos}"
+                                                 style=" margin-left: 0px; margin-bottom: 8px;" oncomplete="if ( args.estatus3 ){ PF('modalUnidad').show();}"
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeEditar}" />
+                                
+                                <p:commandButton title="Agregar Periférico" class="Editar" icon="fa fa-pencil-square-o" value="Agregar Periférico"
+                                                 update=":mainForm, :formEditarPeriferico, :idArbolPeriferico" ajax="true" action="#{unidadesJerarquicasMB.obtenerDatosParaPeriferico()}"
+                                                 rendered="#{unidadesJerarquicasMB.activarAsignaCama}"
+                                                 style=" margin-left: 0px; margin-bottom: 8px;" oncomplete="if ( args.estatus3 ){ PF('modalPeriferico').show();}"
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeEditar}" />
+                                
+                                <p:commandButton title="Quitar Periférico" value="Quitar Periférico"
+                                                 update=":mainForm, :formAsignar" ajax="true" action="#{unidadesJerarquicasMB.eliminarPeriferico()}"
+                                                 rendered="#{unidadesJerarquicasMB.eliminaPeriferico}"
+                                                 style=" margin-left: 0px; margin-bottom: 8px;"  disabled="!#{unidadesJerarquicasMB.permiso.puedeEditar}" />
+                                
+                                <p:commandButton title="Agregar Cama" class="AgregarCama" icon="fa fa-bed" value="Agregar Cama"
+                                                 update=":mainForm, :formCama" ajax="true" action="#{unidadesJerarquicasMB.nuevaCama}"
+                                                 rendered="#{unidadesJerarquicasMB.activarAsignaCama}"
+                                                 style=" margin-left: 0px; margin-bottom: 8px;" oncomplete="if ( args.estatus3 ){PF('modalCama').show();}"
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeCrear}" />
+                                
+                                <p:commandButton title="Desactivar" class="Desactivar" value="Desactivar"
+                                                 update=":formDesactiva" ajax="true" 
+                                                 style=" margin-left: 0px; margin-bottom: 8px;" oncomplete="PF('modalDesactiva').show();" 
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeEliminar}"  rendered="false"/>
+                            </p:panel>
+                            <p:panel id="panelAlmacen" rendered="#{unidadesJerarquicasMB.renderPanelAlmacen}">
+                                <h:outputText value="Almacén: " />
+                                <h:outputText style="font-weight:bold" value="#{unidadesJerarquicasMB.estructura.nombre}" /><br /> 
+                                <h:outputText value="Servicio que Surte: " />
+                                <h:outputText style="font-weight:bold" value="#{unidadesJerarquicasMB.estructuraAsignar.nombre}" />
+                                <br />
+                                <p:outputLabel value="Estado: " />
+                                <h:outputText value="#{unidadesJerarquicasMB.estructura.activa == 1 ? 'Activo' : 'Inactivo' }" style="font-weight: bolder;"
+                                              rendered="#{unidadesJerarquicasMB.estructura.nombre eq '' ? false : true }"/>
+
+                                <br /><br />
+                                <h:outputText style="font-weight:bold" value="Almacenes" />
+                                <br />
+                                <p:commandButton title="Agregar Almacén" class="AgregarAlmacen" icon="fa fa-plus-square" value="Agregar Almacén"
+                                                 update=":formAlmacen" ajax="true" action="#{unidadesJerarquicasMB.nuevaUnidadJerarquica}"
+                                                 style=" margin-left: 0px; margin-bottom: 8px;" oncomplete="PF('modalAlmacen').show();" 
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeCrear}" />
+                                <p:commandButton title="Editar Almacen" class="EditarAlmacen" icon="fa fa-pencil-square-o" value="Editar"
+                                                 update=":mainForm, :formAlmacen" ajax="true" action="#{unidadesJerarquicasMB.obtenerDatos}"
+                                                 style=" margin-left: 0px; margin-bottom: 8px;" oncomplete="if ( args.estatus3 ){ PF('modalAlmacen').show();}" 
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeEditar}" />
+                                <p:commandButton title="puntosControl" class="puntosControl" icon="fa fa-sliders" value="Puntos de Control"
+                                                 update=":mainForm" ajax="false" 
+                                                 style=" margin-left: 0px; margin-bottom: 8px;" disabled="!#{unidadesJerarquicasMB.permiso.puedeCrear}"
+                                                 rendered="false" />
+                                <p:commandButton title="Desactivar" class="Desactivar" value="Desactivar"
+                                                 update=":formDesactiva" ajax="true" 
+                                                 style=" margin-left: 0px; margin-bottom: 8px;" oncomplete="PF('modalDesactiva').show();"
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeEliminar}" rendered="false"/>
+                                <p:commandButton title="Asignar Servicio que Surte" class="Asignar" icon="fa fa-hospital-o" value="Asignar"
+                                                 update=":mainForm, :formAsignar, :idArbolAsignar" ajax="true" action="#{unidadesJerarquicasMB.obtenerDatosAlmacen}"
+                                                 style=" margin-left: 0px; margin-bottom: 8px;" oncomplete="if ( args.estatus3 ){ PF('modalAsignar').show(); }"
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeCrear}" />
+                            </p:panel>                         
+                        </h:form>          
+                        <h:form id="idArbol">
+                            <div style=" width: 100%; height:225px; float: left; margin-right: 5px; overflow-x:hidden; overflow-y: auto;">
+                                <p:tree value="#{unidadesJerarquicasMB.root}" var="node" 
+                                        selectionMode="single" animate="true" 
+                                        selection="#{unidadesJerarquicasMB.selectNode}" 
+                                        style="width:100%;" 
+                                         >
+                                    <p:ajax event="select" update=":mainForm, :idCamas, :formAsignar" listener="#{unidadesJerarquicasMB.onNodeSelect}" />
+                                    <p:treeNode>
+                                        <h:outputText value="#{node}" />
+                                    </p:treeNode>
+                                </p:tree>
+                            </div>
+                        </h:form>                          
+                    </div>
+                    <div style="width:70%; height:550px; float: left; margin-right: 5px; overflow-x:hidden; overflow-y: auto;">
+                        <h:form id="idCamas" >
+                            <br /><br />
+                            <p:dataGrid var="cama" value="#{unidadesJerarquicasMB.listCamas}" columns="3"
+                                        rows="12" paginator="false" id="camas" 
+                                        rendered="#{(unidadesJerarquicasMB.listCamas.size() le 12 ? true : false) and (unidadesJerarquicasMB.renderPanelConsulta) }"
+                                        emptyMessage="No existen registros para mostrar."
+                                         >
+                                <f:facet name="header" class="tituloDatagrid">
+                                    <p:outputLabel style="color:#FFFFFF !important;">Camas</p:outputLabel>
+                                </f:facet>
+                                <p:panel style="width: 250px; ">
+                                    <p:panelGrid>
+                                        <p:row>
+                                            <p:column colspan="2">
+                                                <i class="fa fa-bed" />&nbsp; <h:outputText style="font-weight:bold" value="#{cama.nombreCama}" />
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Tipo:" />
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{cama.nombreTipoCama}" style="font-weight: bolder;"/>
+                                            </p:column>	        									
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Ubicación:" />
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{cama.ubicacion}" style="font-weight: bolder;"/>
+                                            </p:column>	        									
+                                        </p:row>
+                                        <p:row>
+                                            <p:column>
+                                                <p:outputLabel value="Estado:" />
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{cama.nombreEstatusCama}" class="descEstatusLibre" rendered="#{cama.nombreEstatusCama eq 'Disponible'}" />
+                                                <h:outputText value="#{cama.nombreEstatusCama}" class="descEstatusOcupada" rendered="#{cama.nombreEstatusCama ne 'Disponible'}" />
+                                            </p:column>	        									
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="2">
+                                                <p:commandLink title="Editar" update=":idCamas, :formCama" oncomplete="PF('modalCama').show();"
+                                                               actionListener="#{unidadesJerarquicasMB.obtenerCama(cama.idCama)}" disabled="!#{unidadesJerarquicasMB.permiso.puedeEditar}" >
+                                                    <h:outputText styleClass="fa fa-pencil-square-o" 
+                                                                  style="margin:0 auto; float:right; font-size: large; color: #0088cc; font-weight: bolder; " />
+                                                </p:commandLink>
+                                            </p:column>
+                                        </p:row>
+                                    </p:panelGrid>
+                                </p:panel>	                     		
+                            </p:dataGrid>
+
+                            <p:dataTable var="cama" value="#{unidadesJerarquicasMB.listCamas}" style="width: 770px;" 
+                                         rendered="#{(unidadesJerarquicasMB.listCamas.size() gt 12 ? true : false) and (unidadesJerarquicasMB.renderPanelConsulta) }"
+                                         emptyMessage="No existen registros para mostrar." >
+                                <f:facet name="header" class="tituloDatagrid">
+                                    <p:outputLabel style="color:#2185d0 !important;">Camas</p:outputLabel>
+                                </f:facet>
+                                <p:column headerText="Código">
+                                    <h:outputText value="#{cama.nombreCama}" />
+                                </p:column>
+                                <p:column headerText="Tipo">
+                                    <h:outputText value="#{cama.nombreTipoCama}" />
+                                </p:column>
+                                <p:column headerText="Ubicación">
+                                    <h:outputText value="#{cama.ubicacion}" />
+                                </p:column>
+                                <p:column headerText="Estado">
+                                    <h:outputText value="#{cama.nombreEstatusCama}" />
+                                </p:column>
+                                <p:column width="80px;" headerText="">
+                                    <p:commandLink title="Editar" update=":idCamas, :formCama" oncomplete="PF('modalCama').show();"
+                                                   actionListener="#{unidadesJerarquicasMB.obtenerCama(cama.idCama)}" disabled="!#{unidadesJerarquicasMB.permiso.puedeEditar}" >
+                                        <h:outputText styleClass="fa fa-pencil-square-o" style="margin:0 auto;" />
+                                    </p:commandLink>
+                                </p:column>
+                            </p:dataTable>	                     			                     		
+                        </h:form>
+                    </div>
+
+                    <p:dialog header=" Registrar / Actualizar Periférico "
+                              widgetVar="modalPeriferico"
+                              modal="true"
+                              resizable="false"
+                              closeOnEscape="true"
+                              closable="true">
+                        <h:form id="formEditarPeriferico" >                            
+                            <p:messages id="msgValidaUnidad" closable="true" showDetail="false"/>                        	 	                                                              
+                                    <p:outputLabel value="Seleccione Estructura Hospitalaria que Surte " style="font-weight: bolder;" />
+                                    <br></br>
+                                    <p:spacer width="20px" height="5px" />
+                                    <p:selectOneMenu style="width: 200px;" id="tipoArea2" value="#{unidadesJerarquicasMB.tipoAreaServicio}">
+                                        <f:selectItem itemLabel="Seleccione una Opción" itemValue="0" />
+                                        <f:selectItems value="#{unidadesJerarquicasMB.listTipoAreaEstructuraPeriferico}" var="tipo" itemLabel="#{tipo.nombreArea}" 
+                                                       itemValue="#{tipo.idTipoAreaEstructura}" />
+                                        <p:ajax update=":idArbolPeriferico" listener="#{unidadesJerarquicasMB.obtenerArbolPeriferico}" />
+                                    </p:selectOneMenu>                                                                                                                                                           	 	
+                            <br /><br />
+                        </h:form>    
+                        <h:form id="idArbolPeriferico">
+                            <div style=" width: 100%; height:225px; float: left; margin-right: 5px; overflow-x:hidden; overflow-y: auto;">
+                                <p:tree value="#{unidadesJerarquicasMB.rootP1}" var="node" 
+                                    selectionMode="single" animate="true" 
+                                    selection="#{unidadesJerarquicasMB.selectNode1}" >
+                                    <p:ajax event="select" update=":mainForm:panelAlmacen" listener="#{unidadesJerarquicasMB.onNodeSelect2}" />
+                                    <p:treeNode>
+                                        <h:outputText value="#{node}" />
+                                    </p:treeNode>
+                                </p:tree>
+                                <br />
+                            </div>    
+                                <div>
+                                    <p:commandButton id="buttonActualizar" 
+                                                 value="Guardar"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="if ( args.estatus1 ){ PF('modalPeriferico').hide(); } PF('statusProcess').hide(); "
+                                                 update=":mainForm, :formAsignar"
+                                                 style="float: right;margin: 10px;"
+                                                 actionListener ="#{unidadesJerarquicasMB.actualizarAddPeriferico}"                                                  
+                                                 styleClass="btnMusAzul" /> 
+                                </div>                         
+                        </h:form>
+                    </p:dialog>  
+                    
+                    <p:dialog header=" Registrar / Actualizar Estructura Hospitalaria "
+                              widgetVar="modalUnidad"
+                              modal="true"
+                              resizable="false"
+                              closeOnEscape="true"
+                              closable="true">
+                        <h:form id="formEditarUnidad" >
+                            <p:focus context="formEditarUnidad" id="focusController"/>
+                            <p:messages id="msgValidaUnidad" closable="true" showDetail="false"/>                        	 	
+                            <p:panelGrid styleClass="ui-noborder">
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel>
+                                            Nombre Estructura *
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:outputLabel>
+                                            Tipo de Estructura *
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{unidadesJerarquicasMB.estructura.nombre}">
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:selectOneMenu style="width: 250px;" id="tipoEstructura" value="#{unidadesJerarquicasMB.tipoAreaModal}" disabled="#{unidadesJerarquicasMB.tipoArea eq 1 ? true:false}">
+                                            <f:selectItem itemLabel="Selecciona una opción" itemValue="" />
+                                            <f:selectItems value="#{unidadesJerarquicasMB.listTipoArea}" var="tipoAreaModal" itemLabel="#{tipoAreaModal.nombreArea}" itemValue="#{tipoAreaModal.idTipoAreaEstructura}" />            								
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel>
+                                            Clave Unidad
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:outputLabel>
+                                            Clave Presupuestal
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:inputText value="#{unidadesJerarquicasMB.estructura.claveEstructura}"/>                                        
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText value="#{unidadesJerarquicasMB.estructura.clavePresupuestal}"/>                                        
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:selectBooleanCheckbox value="#{unidadesJerarquicasMB.estructuraActivo}" disabled="#{unidadesJerarquicasMB.tipoArea eq 1 ? true:false}"/>
+                                        <p:spacer width="10"/> <h:outputText value=" Activo " />
+
+                                    </p:column>
+                                    <p:column rendered="#{unidadesJerarquicasMB.mostrarComboPadre}">
+                                        <p:outputLabel>
+                                            Estructura Padre
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:row>
+                                <p:row rendered="#{unidadesJerarquicasMB.mostrarComboPadre}">
+                                    <p:column>
+                                        <p:selectBooleanCheckbox value="#{unidadesJerarquicasMB.estructura.mostrarPC}" disabled="#{unidadesJerarquicasMB.tipoArea eq 7 ? true:false}"/>
+                                        <p:spacer width="10"/> <h:outputText value=" Mostrar en puntos de control " />
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu class="sOneMenu" value="#{unidadesJerarquicasMB.estructuraPadreSelect}" >
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                            <f:selectItems value="#{unidadesJerarquicasMB.listaEstructuraPadre}" var="padre" itemLabel="#{padre.nombre}" itemValue="#{padre.idEstructura}" />                                            
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row rendered="false">
+                                    <p:column>
+                                        <p:outputLabel style="color:#dbdbdb">
+                                            Id
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel style="color:#dbdbdb">
+                                            Fecha de Creación
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel style="color:#dbdbdb">
+                                            Fecha de Edición
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:row>
+                                <p:row rendered="false">
+                                    <p:column>
+                                        <p:inputText style="width: 250px;" disabled="true"
+                                                     value="#{unidadesJerarquicasMB.estructura.idEstructura}">
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="#{unidadesJerarquicasMB.estructura.insertFecha}" style="color:#e0e0e0">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="#{unidadesJerarquicasMB.estructura.updateFecha}" style="color:#e0e0e0">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>                         	 	
+                            <br /><br /> 
+                            <div align="right">
+                                <p:commandButton id="buttonActualizar" 
+                                                 value="Guardar" 
+                                                 style="float: right;margin: 10px;"
+                                                 actionListener="#{unidadesJerarquicasMB.actualizarUnidad}" 
+                                                 update=":mainForm, :idArbol, formEditarUnidad:msgValidaUnidad"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="if ( args.estatus1 ){ PF('modalUnidad').hide(); } PF('statusProcess').hide(); "
+                                                 rendered="#{unidadesJerarquicasMB.renderBotonActualizar}"
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeAutorizar}" 
+                                                 styleClass="btnMusAzul" />     
+                                <p:commandButton id="buttonInsertar" 
+                                                 value="Guardar" 
+                                                 style="float: right;margin: 10px;"
+                                                 actionListener="#{unidadesJerarquicasMB.guardarNuevaUnidad}"
+                                                 update=":mainForm, :idArbol, formEditarUnidad:msgValidaUnidad"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="if ( args.estatus1 ){ PF('modalUnidad').hide(); } PF('statusProcess').hide(); "                                                 
+                                                 rendered="#{unidadesJerarquicasMB.renderBotonInsertar}"
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeAutorizar}" 
+                                                 styleClass="btnMusAzul" />                                        
+                            </div>
+
+                        </h:form>
+                    </p:dialog>  
+
+                    <p:dialog header="UNIDAD JERÁRQUICA"
+                              widgetVar="modalDesactiva"
+                              modal="true"
+                              resizable="false"
+                              closeOnEscape="true"
+                              closable="true">
+                        <h:form id="formDesactiva">
+                            <p:panel style="border:0;">
+                                <p:outputLabel value="¿Est´q seguro que desea desactivar : #{unidadesJerarquicasMB.unidadDesactivar} ?" />
+                                <br /><br /> 
+                                <div align="right">
+                                    <p:commandButton id="Desactiva"
+                                                     value="Si"
+                                                     style="float: right;margin: 10px; color:white; background:#21BA45; background-color:#21BA45;"
+                                                     actionListener="#{unidadesJerarquicasMB.desactivarUnidad}"
+                                                     update=":mainForm, :idArbol"
+                                                     oncomplete="PF('modalDesactiva').hide();"
+                                                     disabled="!#{unidadesJerarquicasMB.permiso.puedeAutorizar}"
+                                                     icon="ui-icon-check" />
+                                    <p:commandButton id="cancela"
+                                                     value="No"
+                                                     style="float: right;margin: 10px; color:white; background:#DB2828; background-color:#DB2828;"
+                                                     oncomplete="PF('modalDesactiva').hide();"
+                                                     disabled="!#{unidadesJerarquicasMB.permiso.puedeAutorizar}" />                         	 		
+                                </div>
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+
+                    <p:dialog header=" Registrar / Actualizar Almacén "
+                              widgetVar="modalAlmacen"
+                              modal="true"
+                              resizable="false"
+                              closeOnEscape="true"
+                              closable="true">
+                        <h:form id="formAlmacen" >
+                            <p:messages id="msgValidaAlmacen" closable="true" showDetail="false"/>
+                            <p:panelGrid styleClass="ui-noborder">
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel>
+                                            Nombre Del Almacén *
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel>
+                                            Tipo Almacén *
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{unidadesJerarquicasMB.estructura.nombre}">
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu class="sOneMenu" id="tipoAlmacenes" value="#{unidadesJerarquicasMB.tipoAlmacen}">
+                                            <f:selectItem itemLabel="Selecciona una opción" itemValue="" />
+                                            <f:selectItems value="#{unidadesJerarquicasMB.listTipoAlmacen}" var="almacen" itemLabel="#{almacen.nombreTipoAlmacen}" itemValue="#{almacen.idTipoAlmacen}" />            								
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel>
+                                            Clave de Almacén
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel>
+                                            Clave Presupuestal
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:inputText placeholder="" value="#{unidadesJerarquicasMB.estructura.claveEstructura}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText placeholder="" value="#{unidadesJerarquicasMB.estructura.clavePresupuestal}"/>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                     <p:column >
+                                        <p:selectBooleanCheckbox value="#{unidadesJerarquicasMB.transAutomatica}" /> <p:spacer width="10"/>
+                                        <h:outputText value="Transferencia Automática" />
+                                    </p:column>
+                                    <p:column >
+                                        <p:selectBooleanCheckbox value="#{unidadesJerarquicasMB.estructura.envioHL7}" >
+                                            <ui:remove>  <p:ajax update=":formAlmacen" listener="#{unidadesJerarquicasMB.envioMensajeHl7}"/></ui:remove>
+                                        </p:selectBooleanCheckbox>
+                                        <p:spacer width="10"/>
+                                        <h:outputText value="Envío de mensajes Hl7" />
+                                    </p:column>                                    
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:selectBooleanCheckbox value="#{unidadesJerarquicasMB.estructuraActivo}"/> <p:spacer width="10"/> 
+                                        <h:outputText value=" Activo / Inactivo" />                         	 				 
+                                    </p:column>
+                                    <p:column rendered="#{unidadesJerarquicasMB.mostrarComboPadre}">
+                                        <p:outputLabel>
+                                            Estructura Padre
+                                        </p:outputLabel>
+                                    </p:column>                                    
+                                </p:row>
+                                <p:row rendered="#{unidadesJerarquicasMB.mostrarComboPadre}">
+                                    <p:column></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu class="sOneMenu" value="#{unidadesJerarquicasMB.estructuraPadreSelect}" >
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                            <f:selectItems value="#{unidadesJerarquicasMB.listaEstructuraPadre}" var="padre" itemLabel="#{padre.nombre}" itemValue="#{padre.idEstructura}" />                                            
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <ui:remove>
+                                    <p:row rendered="#{unidadesJerarquicasMB.renderHl7}">
+                                        <p:column>
+                                            <p:outputLabel>
+                                                IP
+                                            </p:outputLabel>
+                                        </p:column>
+                                        <p:column>
+                                            <p:outputLabel>
+                                                Puerto
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:row>
+                                </ui:remove>
+                                <p:row rendered="#{unidadesJerarquicasMB.renderHl7}">
+                                    <p:column>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{unidadesJerarquicasMB.estructura.updateIdUsuario}">
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{unidadesJerarquicasMB.estructura.updateIdUsuario}">
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row>
+                                <p:row rendered="false">
+                                    <p:column>
+                                        <p:outputLabel style="color:#dbdbdb">
+                                            Id Almacén
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel style="color:#dbdbdb">
+                                            Id Almacén Padre
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:row>
+                                <p:row rendered="false">
+                                    <p:column>
+                                        <p:inputText style="width: 250px;" disabled="true"
+                                                     value="#{unidadesJerarquicasMB.estructura.idEstructura}">
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText style="width: 250px;" disabled="true"
+                                                     value="#{unidadesJerarquicasMB.estructura.idEstructuraPadre}">
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row>
+                                
+                            </p:panelGrid>
+                            <br /><br /> 
+                            <div align="right">
+                                <p:commandButton id="buttonActualizarAlmacen" 
+                                                 value="Guardar" 
+                                                 style="float: right;margin: 10px;"
+                                                 actionListener="#{unidadesJerarquicasMB.actualizarUnidad}" 
+                                                 update=":mainForm, :idArbol, formAlmacen:msgValidaAlmacen"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="if ( args.estatus1 ){  PF('modalAlmacen').hide(); } PF('statusProcess').hide();"
+                                                 rendered="#{unidadesJerarquicasMB.renderBotonActualizar}"
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeAutorizar}" 
+                                                 styleClass="btnMusAzul" />    
+                                <p:commandButton id="buttonInsertarAlmacen" 
+                                                 value="Guardar" 
+                                                 style="float: right;margin: 10px;"
+                                                 actionListener="#{unidadesJerarquicasMB.guardarNuevaUnidad}"
+                                                 update=":mainForm, :idArbol, formAlmacen:msgValidaAlmacen"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="if ( args.estatus1 ){  PF('modalAlmacen').hide(); } PF('statusProcess').hide();"
+                                                 rendered="#{unidadesJerarquicasMB.renderBotonInsertar}"
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeAutorizar}"
+                                                 styleClass="btnMusAzul" />                                        
+                            </div>	
+                        </h:form>                     	
+                    </p:dialog>  
+
+                    <p:dialog header="Información de Cama"
+                              widgetVar="modalCama"
+                              modal="true"
+                              resizable="false"
+                              closeOnEscape="true"
+                              closable="true">
+                        <h:form id="formCama" >
+                            <p:focus context="formCama" id="focusController"/>
+                            <p:messages id="msgValidaCama" globalOnly="true" closable="true" showDetail="false"/> 
+                            <p:panelGrid styleClass="ui-noborder">
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel>
+                                            Nombre Cama *
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:outputLabel>
+                                            Ubicación 
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{unidadesJerarquicasMB.camaSelect.nombreCama}">
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:inputText style="width: 350px;" 
+                                                     value="#{unidadesJerarquicasMB.camaSelect.ubicacion}">
+                                        </p:inputText>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel>
+                                            Tipo de Cama *
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:outputLabel>
+                                            Estado de la Cama *
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:selectOneMenu style="width: 330px;" id="tipoCama" value="#{unidadesJerarquicasMB.tipoCama}">
+                                            <f:selectItem itemLabel="Selecciona una opción" itemValue="" />
+                                            <f:selectItems value="#{unidadesJerarquicasMB.listTipoCama}" var="tipoCama" itemLabel="#{tipoCama.nombreTipoCama}" itemValue="#{tipoCama.idTipoCama}" />            								
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column colspan="2">
+                                        <p:selectOneMenu style="width: 330px;" id="tipoEstado" value="#{unidadesJerarquicasMB.tipoEstado}">
+                                            <f:selectItem itemLabel="Selecciona una opción" itemValue="" />
+                                            <f:selectItems value="#{unidadesJerarquicasMB.listEstatusCama}" var="tipoEstatus" itemLabel="#{tipoEstatus.nombreEstatusCama}" itemValue="#{tipoEstatus.idEstatusCama}" />            								
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row rendered="false">
+                                    <p:column>
+                                        <p:outputLabel style="color:#dbdbdb">
+                                            Id
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel style="color:#dbdbdb">
+                                            Fecha de Creación
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel style="color:#dbdbdb">
+                                            Fecha de Edición
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:row>
+                                <p:row rendered="false">
+                                    <p:column>
+                                        <p:inputText style="width: 250px;" disabled="true"
+                                                     value="#{unidadesJerarquicasMB.camaSelect.idCama}">
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="#{unidadesJerarquicasMB.camaSelect.insertFecha}" style="color:#e0e0e0">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputText value="#{unidadesJerarquicasMB.camaSelect.updateFecha}" style="color:#e0e0e0">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            <div align="right">  
+                                <p:commandButton id="buttonInsertarCama" 
+                                                 value="Guardar" 
+                                                 style="float: right;margin: 10px;"
+                                                 actionListener="#{unidadesJerarquicasMB.guardarCama}"
+                                                 update=":mainForm, :idCamas, formCama:msgValidaCama"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="if ( args.estatus2 ){ PF('modalCama').hide(); } PF('statusProcess').hide();" 
+                                                 rendered="#{unidadesJerarquicasMB.renderInsertaCama}"
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeAutorizar}" 
+                                                 styleClass="btnMusAzul" />                                       
+                                <p:commandButton id="buttonActualizaCama" 
+                                                 value="Guardar" 
+                                                 style="float: right;margin: 10px;"
+                                                 actionListener="#{unidadesJerarquicasMB.actualizaCama}"
+                                                 update=":mainForm, :idCamas, formCama:msgValidaCama"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="if ( args.estatus2 ){ PF('modalCama').hide(); } PF('statusProcess').hide();"
+                                                 rendered="#{unidadesJerarquicasMB.renderActualizaCama}"
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeAutorizar}"
+                                                 styleClass="btnMusAzul" />                                        
+                            </div> 
+                        </h:form>		                         
+                    </p:dialog>
+
+                    <p:dialog header=" Asignación de Almacén - Servicio "
+                              widgetVar="modalAsignar"
+                              modal="true"
+                              resizable="false"
+                              closeOnEscape="true"
+                              closable="true">
+                        <h:form id="formAsignar" >
+                            <p:messages id="msgValidaAsignacion" globalOnly="true" closable="true" showDetail="false"/>
+                            <p:outputLabel value="Seleccione Estructuctura Hospitalaria que Surte: " />
+                            <br />
+                            <p:selectOneMenu style="width: 135px; " id="tipoAreaAsignar" value="#{unidadesJerarquicasMB.tipoAreaAlmacen}">
+                                <f:selectItem itemLabel="Selecciona una opción" itemValue="" />
+                                <f:selectItems value="#{unidadesJerarquicasMB.listTipoAreaAsigna}" var="tipoAsig" itemLabel="#{tipoAsig.nombreArea}" itemValue="#{tipoAsig.idTipoAreaEstructura}" />
+                                <p:ajax update=":idArbolAsignar" listener="#{unidadesJerarquicasMB.obtenerArbolAsigna}" />
+                            </p:selectOneMenu> 
+                            <br /><br />                         	 
+                        </h:form>
+                        <h:form id="idArbolAsignar">
+                            <div style=" width: 100%; height:225px; float: left; margin-right: 5px; overflow-x:hidden; overflow-y: auto;">
+                                <p:tree value="#{unidadesJerarquicasMB.root1}" var="node" 
+                                    selectionMode="single" animate="true" 
+                                    selection="#{unidadesJerarquicasMB.selectNode1}" >
+                                    <p:ajax event="select" update=":mainForm:panelAlmacen" listener="#{unidadesJerarquicasMB.onNodeSelect1}" />
+                                    <p:treeNode>
+                                        <h:outputText value="#{node}" />
+                                    </p:treeNode>
+                                </p:tree>
+                                <br />
+                            </div>    
+                            <div>
+                                <p:commandButton id="asiganrUnidad"
+                                                 value="Guardar"
+                                                 style="float: right; margin: 10px"
+                                                 actionListener="#{unidadesJerarquicasMB.guardarAsignacion}"
+                                                 update=":mainForm, formAsignar:msgValidaAsignacion"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="if ( args.estatus3 ){ PF('modalAsignar').hide(); } PF('statusProcess').hide();"
+                                                 disabled="!#{unidadesJerarquicasMB.permiso.puedeAutorizar}"
+                                                 styleClass="btnMusAzul" />
+                            </div>  
+                        </h:form>
+
+                    </p:dialog>	  	     
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

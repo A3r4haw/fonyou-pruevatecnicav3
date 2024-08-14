@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.NutricionParenteralDetalleMapper" >
+
+    <insert id="insertar" parameterType="mx.mc.model.NutricionParenteralDetalle">
+        INSERT INTO nutricionParenteralDetalle (
+        <if test=" idNutricionParenteralDetalle != null ">
+            idNutricionParenteralDetalle
+        </if>
+        <if test=" idNutricionParenteral != null ">
+            ,idNutricionParenteral
+        </if>
+        <if test=" idMedicamento != null ">
+            ,idMedicamento
+        </if>
+        <if test=" volPrescrito != null ">
+            ,volPrescrito
+        </if>
+        <if test=" cantCalculada != null ">
+            ,cantCalculada
+        </if>
+        <if test=" porcentajeConcentracion != null ">
+            ,porcentajeConcentracion
+        </if>
+        <if test=" porcentajeCalculado != null ">
+            ,porcentajeCalculado
+        </if>
+        <if test=" osmolaridad != null ">
+            ,osmolaridad
+        </if>
+        <if test=" densidad != null ">
+            ,densidad
+        </if>
+        <if test=" peso != null ">
+            ,peso
+        </if>
+        <if test=" calorias != null ">
+            ,calorias
+        </if>
+        <if test=" porcentajeEnergia != null ">
+            ,porcentajeEnergia
+        </if>
+        <if test=" nitrogeno != null ">
+            ,nitrogeno
+        </if>
+        <if test=" calculoOsmolaridad != null ">
+            ,calculoOsmolaridad
+        </if>
+        <if test=" remanente != null ">
+            ,remanente
+        </if>
+        <if test=" numPiezas != null ">
+            ,numPiezas
+        </if>
+        <if test=" idInventario != null">
+            ,idInventario
+        </if>
+        <if test=" insertFecha != null ">
+            ,insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            ,insertIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            ,updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            ,updateIdUsuario
+        </if>
+        <if test=" sobrellenado != null ">
+            , sobrellenado
+        </if>
+        ) VALUES (
+        <if test=" idNutricionParenteralDetalle != null ">
+            #{idNutricionParenteralDetalle}
+        </if>
+        <if test=" idNutricionParenteral != null ">
+            ,#{idNutricionParenteral}
+        </if>
+        <if test=" idMedicamento != null ">
+            ,#{idMedicamento}
+        </if>
+        <if test=" volPrescrito != null ">
+            ,#{volPrescrito}
+        </if>
+        <if test=" cantCalculada != null ">
+            ,#{cantCalculada}
+        </if>
+        <if test=" porcentajeConcentracion != null ">
+            ,#{porcentajeConcentracion}
+        </if>
+        <if test=" porcentajeCalculado != null ">
+            ,#{porcentajeCalculado}
+        </if>
+        <if test=" osmolaridad != null ">
+            ,#{osmolaridad}
+        </if>
+        <if test=" densidad != null ">
+            ,#{densidad}
+        </if>
+        <if test=" peso != null ">
+            ,#{peso}
+        </if>
+        <if test=" calorias != null ">
+            ,#{calorias}
+        </if>
+        <if test=" porcentajeEnergia != null ">
+            ,#{porcentajeEnergia}
+        </if>
+        <if test=" nitrogeno != null ">
+            ,#{nitrogeno}
+        </if>
+        <if test=" calculoOsmolaridad != null ">
+            ,#{calculoOsmolaridad}
+        </if>
+        <if test=" remanente != null ">
+            ,#{remanente}
+        </if>
+        <if test=" numPiezas != null ">
+            ,#{numPiezas}
+        </if>
+        <if test=" idInventario != null">
+            ,#{idInventario}
+        </if>
+        <if test = "insertFecha != null">
+            ,#{insertFecha}
+        </if>
+        <if test = "insertIdUsuario != null">
+            ,#{insertIdUsuario}
+        </if>
+        <if test = "updateFecha != null">
+            ,#{updateFecha}
+        </if>
+        <if test = "updateIdUsuario != null">
+            ,#{updateIdUsuario}
+        </if>    
+        <if test = "sobrellenado != null">
+            ,#{ sobrellenado }
+        </if>    
+        );
+    </insert>
+    
+    <insert id="guardarListaNutricionParenteralDetalle"  parameterType="map" >
+        <foreach collection="lista" item="item" separator=";"> 
+        INSERT INTO nutricionParenteralDetalle
+            (
+                idNutricionParenteralDetalle
+                ,idNutricionParenteral
+            <if test="item.idMedicamento  != null">,idMedicamento</if>
+            <if test="item.volPrescrito  != null">    ,volPrescrito </if>
+            <if test="item.cantCalculada  != null">    ,cantCalculada </if>
+            <if test="item.porcentajeConcentracion  != null">    ,porcentajeConcentracion </if>
+            <if test="item.porcentajeCalculado  != null">    ,porcentajeCalculado </if>
+            <if test="item.osmolaridad  != null">    ,osmolaridad </if>
+            <if test="item.densidad  != null">    ,densidad </if>
+            <if test="item.peso  != null">    ,peso </if>
+            <if test="item.calorias  != null">    ,calorias </if>
+            <if test="item.porcentajeEnergia  != null">    ,porcentajeEnergia </if>
+            <if test="item.nitrogeno  != null">    ,nitrogeno </if>
+            <if test="item.calculoOsmolaridad  != null">    ,calculoOsmolaridad </if>
+            <if test="item.remanente != null"> ,remanente </if>
+            <if test="item.numPiezas != null"> ,numPiezas </if>
+            <if test="item.idInventario != null"> ,idInventario </if>
+            <if test="item.insertFecha  != null">    ,insertFecha </if>
+            <if test="item.insertIdUsuario  != null">    ,insertIdUsuario </if>
+            <if test="item.updateFecha != null"> ,updateFecha </if>
+            <if test="item.updateIdUsuario != null"> ,updateIdUsuario </if>
+            <if test="item.sobrellenado != null"> , sobrellenado </if>
+            ) VALUES (    
+                #{item.idNutricionParenteralDetalle,jdbcType=VARCHAR}
+                ,#{item.idNutricionParenteral,jdbcType=VARCHAR}
+            <if test="item.idMedicamento  != null">,#{item.idMedicamento,jdbcType=VARCHAR}</if>
+            <if test="item.volPrescrito  != null">    ,#{item.volPrescrito,jdbcType = DOUBLE} </if>
+            <if test="item.cantCalculada  != null">    ,#{item.cantCalculada,jdbcType = DOUBLE } </if>
+            <if test="item.porcentajeConcentracion  != null">    ,#{item.porcentajeConcentracion,jdbcType = DOUBLE} </if>
+            <if test="item.porcentajeCalculado  != null">    ,#{item.porcentajeCalculado,jdbcType = DOUBLE } </if>
+            <if test="item.osmolaridad  != null">    ,#{item.osmolaridad,jdbcType = DOUBLE } </if>
+            <if test="item.densidad  != null">    ,#{item.densidad, jdbcType = DOUBLE } </if>
+            <if test="item.peso  != null">    ,#{item.peso, jdbcType = DOUBLE } </if>
+            <if test="item.calorias  != null">    ,#{item.calorias,jdbcType = DOUBLE } </if>
+            <if test="item.porcentajeEnergia  != null">    ,#{item.porcentajeEnergia,jdbcType = DOUBLE } </if>
+            <if test="item.nitrogeno  != null">    ,#{item.nitrogeno,jdbcType = DOUBLE } </if>
+            <if test="item.calculoOsmolaridad  != null">    ,#{item.calculoOsmolaridad,jdbcType = DOUBLE } </if>
+            <if test="item.remanente != null"> ,#{item.remanente,jdbcType=INTEGER} </if>
+            <if test="item.numPiezas != null"> ,#{item.numPiezas,jdbcType=INTEGER} </if>
+            <if test="item.idInventario != null"> ,#{item.idInventario,jdbcType=VARCHAR} </if>
+            <if test="item.insertFecha  != null">    ,#{item.insertFecha,jdbcType=TIMESTAMP} </if>
+            <if test="item.insertIdUsuario  != null">    ,#{item.insertIdUsuario,jdbcType=VARCHAR} </if>
+            <if test="item.updateFecha != null"> ,#{item.updateFecha,jdbcType=TIMESTAMP} </if>
+            <if test="item.updateIdUsuario != null"> ,#{item.updateIdUsuario,jdbcType=VARCHAR} </if>
+            <if test="item.sobrellenado != null"> ,#{item.sobrellenado,jdbcType=DECIMAL} </if>
+            )
+        </foreach>
+    </insert>
+        
+    <update id="actualizarListaNutricionParenteralDetalle" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="lista" item="item"  index="index"  separator=";">
+            UPDATE nutricionParenteralDetalle
+            <set> 
+                <if test="item.idMedicamento  != null">idMedicamento = #{item.idMedicamento,jdbcType=VARCHAR}</if>
+                <if test="item.volPrescrito  != null"> ,volPrescrito = #{item.volPrescrito,jdbcType = DOUBLE} </if>
+                <if test="item.cantCalculada  != null"> ,cantCalculada = #{item.cantCalculada,jdbcType = DOUBLE } </if>
+                <if test="item.porcentajeConcentracion  != null"> ,porcentajeConcentracion = #{item.porcentajeConcentracion,jdbcType = DOUBLE} </if>
+                <if test="item.porcentajeCalculado  != null"> ,porcentajeCalculado = #{item.porcentajeCalculado,jdbcType = DOUBLE } </if>
+                <if test="item.osmolaridad  != null"> ,osmolaridad = #{item.osmolaridad,jdbcType = DOUBLE } </if>
+                <if test="item.densidad  != null"> ,densidad = #{item.densidad, jdbcType = DOUBLE } </if>
+                <if test="item.peso  != null"> ,peso = #{item.peso, jdbcType = DOUBLE } </if>
+                <if test="item.calorias  != null"> ,calorias = #{item.calorias,jdbcType = DOUBLE } </if>
+                <if test="item.porcentajeEnergia  != null"> ,porcentajeEnergia = #{item.porcentajeEnergia,jdbcType = DOUBLE } </if>
+                <if test="item.nitrogeno  != null"> ,nitrogeno = #{item.nitrogeno,jdbcType = DOUBLE } </if>
+                <if test="item.calculoOsmolaridad  != null"> ,calculoOsmolaridad = #{item.calculoOsmolaridad,jdbcType = DOUBLE } </if>
+                <if test="item.remanente != null"> ,remanente = #{item.remanente,jdbcType=INTEGER} </if>
+                <if test="item.numPiezas != null"> ,numPiezas = #{item.numPiezas,jdbcType=INTEGER} </if> 
+                <if test="item.idInventario != null"> ,idInventario = #{item.idInventario, jdbcType=VARCHAR} </if>               
+                <if test="item.updateFecha != null"> ,updateFecha = #{item.updateFecha,jdbcType=TIMESTAMP} </if>
+                <if test="item.updateIdUsuario != null"> ,updateIdUsuario = #{item.updateIdUsuario,jdbcType=VARCHAR} </if>
+                <if test="item.sobrellenado != null"> ,updateIdUsuario = #{item.sobrellenado,jdbcType=DECIMAL} </if>
+            </set>
+            WHERE idNutricionParenteralDetalle =  #{item.idNutricionParenteralDetalle,jdbcType=VARCHAR}    
+        </foreach>
+    </update>
+    
+    <select id="obtenerNutricionParenteralDetalleById" parameterType="Map" resultType="mx.mc.model.NutricionParenteralDetalleExtended">
+        SELECT npd.*, m.idMedicamento, m.claveInstitucional as claveMedicamento, m.nombreCorto, m.nombreLargo, m.concentRacion, pm.nombrePresentacion AS nombrePresentacion,
+        va.nombreViaAdministracion AS viaAdministracion, m.calculoMezcla  
+        , uc.nombreUnidadConcentracion 
+        FROM nutricionParenteralDetalle npd 
+        INNER JOIN medicamento m ON npd.idMedicamento = m.idMedicamento
+        INNER JOIN presentacionMedicamento pm ON m.idPresentacionEntrada = pm.idPresentacion
+        INNER JOIN viaAdministracion va ON m.idViaAdministracion = va.idViaAdministracion
+        LEFT JOIN unidadConcentracion uc ON m.idUnidadConcentracion = uc.idUnidadConcentracion
+        WHERE idNutricionParenteral = #{idNutricionParenteral, jdbcType=VARCHAR}
+        ORDER BY m.ordenAdicion ASC;
+    </select>
+    
+    <delete id="borrarListaNutricionParanDetalle" parameterType="java.util.List">
+        <foreach collection="lista" item="item" separator=";" index="index" >
+            DELETE FROM nutricionParenteralDetalle
+                WHERE idNutricionParenteralDetalle = #{item.idNutricionParenteralDetalle, jdbcType = VARCHAR }
+        </foreach>
+    </delete>
+            
+</mapper>    

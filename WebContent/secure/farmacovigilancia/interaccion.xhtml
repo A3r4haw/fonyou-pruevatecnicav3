@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">                    
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" closeOnEscape="true" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Interacciones Medicamentosas"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;" />
+                            <p:outputLabel value="Tipo:"  style="color: #FFFFFF;font-size: medium !important;font-weight: bold;margin-right: 10px;" />                            
+                            <p:selectOneMenu style="width: 150px;vertical-align: middle;margin-right: 10px;" value="#{interaccionMB.idTipoInteraccion}" 
+                                              filter="true" filterPlaceholder="Tipo Interacción" >
+                                <p:ajax listener="#{interaccionMB.buscarInteracciones}" 
+                                        update=":mainForm:tblInteraccionesMedi" />
+                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                <f:selectItems value="#{interaccionMB.listaTipoInteraccion}" var="tipo" itemLabel="#{tipo.tipoInteraccion}" itemValue="#{tipo.idTipoInteraccion}" />                                
+
+                            </p:selectOneMenu>
+                            <p:inputText id="textSearch" style="margin-top:20px;width: 40%!important;" 
+                                         value="#{interaccionMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar...." />
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>                                
+                            </i>                            
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{interaccionMB.buscarInteracciones()}"
+                                             update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();" style=" margin-left: 20px; margin-bottom: 8px;" />
+                        </div>
+                        <p:commandButton class="btnNew" value="Nueva Interacción" icon="fa fa-file-o" rendered="#{interaccionMB.permiso.puedeCrear}"
+                                         onclick="PF('statusProcess').show();" actionListener="#{interaccionMB.nuevaInteraccion()}" 
+                                         oncomplete="PF('statusProcess').hide(); PF('mdlNuevaInteraccion').show();" update=":frmNuevaInteraccion"
+                                         ajax="true"  style=" margin: 5px 0; " styleClass="btnMusAzul" />  &nbsp;&nbsp;
+                        <p:commandButton class="btnNew" value="Cargar Layout" icon="fa fa-plus" rendered="#{interaccionMB.permiso.puedeProcesar}"
+                                         actionListener="#{interaccionMB.nuevaInteraccion()}" onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide(); PF('modalLayout').show();"
+                                         ajax="true" update=":frmLayout"  style=" margin: 5px 0; " styleClass="btnMusAzul" 
+                                         />
+                        <br/>
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <p:dataTable emptyMessage="No se encontraron registros" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"  reflow="true"                                       
+                                     paginatorPosition="bottom" widgetVar="tblInteraccionesMedi" 
+                                     value="#{interaccionMB.interaccionLazy}" var="item" 
+                                     lazy="true" id="tblInteraccionesMedi" scrollable="true" scrollWidth="100%" scrollHeight="465"
+                                     style="margin-bottom:5px; text-align: center;" selectionMode="single" 
+                                     selection="#{interaccionMB.interaccionSelect}"
+                                     rowKey="#{item.idInteraccion}" rowIndexVar="row">                          
+
+                            <p:column style="text-align: left;"  headerText="Fecha"  width="12%" sortBy="#{item.fecha}">
+                                <h:outputText value="#{item.fecha}" class="" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align: left !important; "  headerText="Medicamento"  width="12%" sortBy="#{item.medicamento}">
+                                <h:outputText value="#{item.medicamento}"   class="" />
+                            </p:column>                            
+
+                            <p:column style="text-align: left;"  headerText="Medicamento"  width="12%" sortBy="#{item.medicamentoInteraccion}">
+                                <h:outputText value="#{item.medicamentoInteraccion}" class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Tipo"  width="12%" sortBy="#{item.tipoInteraccion}">
+                                <h:outputText value="#{item.tipoInteraccion}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Reacción"  width="35%" sortBy="#{item.notas}">
+                                <h:outputText value="#{item.notas}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Origén"  width="7%" sortBy="#{item.nombreEmisor}">
+                                <h:outputText value="#{item.nombreEmisor}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Riesgo"  width="6%" sortBy="#{item.riesgo}">
+                                <h:outputText value="#{item.riesgo}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;" headerText="Acciones"  width="5%">
+                                <p:commandLink title="Editar"  actionListener="#{interaccionMB.obtenerInteraccion(item.idInteraccion)}"
+                                                          onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();PF('mdlNuevaInteraccion').show();" 
+                                                          update=":frmNuevaInteraccion" >
+                                        <i class="fa fa-edit" />
+                                    </p:commandLink>&nbsp;&nbsp;
+                                <p:commandLink title="Eliminar"  actionListener="#{interaccionMB.deleteInteraccion(item.idInteraccion)}"
+                                               rendered="#{interaccionMB.permiso.puedeEliminar}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":mainForm:tblInteraccionesMedi" >
+                                    <i class="fa fa-trash-o iconMusAzul" />
+                                    <p:confirm header="Eliminación de Interacción" message="Está seguro que desea eliminar la interacción ?" icon="ui-icon-alert"  />
+                                </p:commandLink>&nbsp;
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                  
+                    <p:dialog header="Registro de interacción medicamentosa"
+                              widgetVar="mdlNuevaInteraccion" 
+                              closeOnEscape="true" modal="true" resizable="false" 
+                              closable="true"
+                              style="font-size:xx-small !important;" width="45%">                        
+                        <h:form id="frmNuevaInteraccion">
+                            <p:messages globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:panelGrid>
+                                <p:row>
+                                     <p:column>
+                                        <p:outputLabel value="Fecha: "   />
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:calendar tabindex="1" id="txtFecha" value="#{interaccionMB.interaccionSelect.fecha}" disabled="#{interaccionMB.editar}"                                                                                                                
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="#{interaccionMB.fechaActual}"                                                         
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade" />  
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Tipo: "  />        
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:selectOneMenu tabindex="2" style="width: 150px;vertical-align: middle;margin-right: 10px;" value="#{interaccionMB.idTipoInteraccion1}" 
+                                                        filter="true" filterPlaceholder="Tipo Interacción" >
+                                            <f:selectItem itemLabel="Seleccionar un tipo" itemValue="" />
+                                            <f:selectItems value="#{interaccionMB.listaTipoInteraccion}" var="tipo" itemLabel="#{tipo.tipoInteraccion}" itemValue="#{tipo.idTipoInteraccion}" />                                
+
+                                        </p:selectOneMenu>
+                                    </p:column>                                   
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Medicamento: " /> &nbsp;&nbsp;
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:autoComplete tabindex="3" id="txtInsumo" 
+                                                        class="autoComplete-Sum" 
+                                                        styleClass="autoComplete-Sum" 
+                                                        panelStyle="autoComplete-Sum" 
+                                                        inputStyleClass="autoComplete-Sum" 
+                                                        value="#{interaccionMB.medicamento}"
+                                                        completeMethod="#{interaccionMB.autoComplete}"
+                                                        minQueryLength="4" scrollHeight="350" 
+                                                        queryDelay="500" 
+                                                        maxResults="50" 
+                                                        forceSelection="true" 
+                                                        cacheTimeout="0" 
+                                                        var="insumo" 
+                                                        placeholder="Buscar Insumos" 
+                                                        cache="false"
+                                                        emptyMessage="No se encontraron registros"
+                                                        itemLabel="#{insumo.sustanciaActiva}" itemValue="#{insumo}" 
+                                                        converter="insumoConverter">
+                                            <p:ajax event="itemSelect" listener="#{interaccionMB.handleSelect}" ></p:ajax>
+                                            <p:ajax event="itemUnselect" listener="#{interaccionMB.handleUnSelect}" ></p:ajax>                                            
+                                            <p:column style="width: 350px; font-size: small;" width="350px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.sustanciaActiva}" style=" font-size: x-small;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </p:column>
+                                </p:row>
+                                <p:row>    
+                                    <p:column>
+                                        <p:outputLabel value="Medicamento: " /> &nbsp;&nbsp;
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:autoComplete tabindex="4" id="txtInsumo1" 
+                                                        class="autoComplete-Sum" 
+                                                        styleClass="autoComplete-Sum" 
+                                                        panelStyle="autoComplete-Sum" 
+                                                        inputStyleClass="autoComplete-Sum" 
+                                                        value="#{interaccionMB.medicamento1}"
+                                                        completeMethod="#{interaccionMB.autoComplete}"
+                                                        minQueryLength="4" scrollHeight="350" 
+                                                        queryDelay="500" 
+                                                        maxResults="50" 
+                                                        forceSelection="true" 
+                                                        cacheTimeout="0" 
+                                                        var="insumo1" 
+                                                        placeholder="Buscar Insumos" 
+                                                        cache="false"
+                                                        emptyMessage="No se encontraron registros"
+                                                        itemLabel="#{insumo1.sustanciaActiva}" itemValue="#{insumo1}" 
+                                                        converter="insumoConverter" >
+                                            <p:ajax event="itemSelect" listener="#{interaccionMB.handleSelect}" ></p:ajax>
+                                            <p:ajax event="itemUnselect" listener="#{interaccionMB.handleUnSelect}" ></p:ajax>                                            
+                                            <p:column style="width: 350px; font-size: small;" width="350px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo1.sustanciaActiva}" style=" font-size: x-small;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Comentarios: "/> &nbsp;&nbsp;
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:inputTextarea tabindex="5" rows="7" cols="45" counter="notas" maxlength="1000"
+                                            counterTemplate="{0} Caracteres que faltan." autoResize="false"
+                                            value="#{interaccionMB.interaccionSelect.notas}"/>
+                                        <p:outputLabel value=""/>
+                                        <h:outputText id="notas" class="p-d-block" /> 
+                                    </p:column>
+                                </p:row>
+                                <p:row>    
+                                    <p:column>
+                                        <p:outputLabel value="Origen: " /> &nbsp;&nbsp;
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu tabindex="6" style="width: 150px;vertical-align: middle;margin-right: 10px;" value="#{interaccionMB.idEmisor}" 
+                                                            filter="true" filterPlaceholder="Origen" >   
+                                            <f:selectItem itemLabel="Seleccionar un emisor" itemValue="" />
+                                            <f:selectItems value="#{interaccionMB.listaEmisores}" var="emisor" itemLabel="#{emisor.nombreEmisor}" itemValue="#{emisor.idEmisor}" />                                
+                                          </p:selectOneMenu>
+                                    </p:column>                                    
+                                    <p:column>
+                                        <p:outputLabel value="Riesgo: " />
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu style="width: 150px;vertical-align: middle;margin-right: 10px;" value="#{interaccionMB.interaccionSelect.riesgo}" 
+                                                            filter="true" filterPlaceholder="Riesgo" >   
+                                            <f:selectItem itemLabel="Seleccionar un riesgo" itemValue="" />
+                                            <f:selectItems value="#{interaccionMB.riesgosReaccion}" var="riesgo" itemLabel="#{riesgo}" itemValue="#{riesgo}" />                                
+                                          </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>                                 
+                            </p:panelGrid>
+                            <br />
+                            <div class="pnlActions">
+                                <p:commandButton tabindex="9" id="btnRegCancel1" class="btnItem" value="Cancelar" style="width: 100px"
+                                                 ajax="true" onclick="PF('mdlNuevaInteraccion').hide();" validateClient="false" />&nbsp;&nbsp;
+                                <p:commandButton tabindex="8" id="btnRegNew1"   styleClass="btnMusAzul"
+                                                 value="Guardar" style="margin:0; width: 100px;"  update=":mainForm:tblInteraccionesMedi"                                      
+                                                 onclick="PF('statusProcess').show();" actionListener="#{interaccionMB.crearInteraccion}"
+                                                 oncomplete="PF('statusProcess').hide();if(args.estatus){ PF('mdlNuevaInteraccion').hide(); }" />
+                            </div>
+                        </h:form>
+                    </p:dialog> 
+                    <p:dialog header="Carga de datos de forma masiva"
+                              widgetVar="modalLayout"
+                              closeOnEscape="true" modal="true"
+                              style="font-size:xx-small !important; ">
+                        <h:form id="frmLayout" style="padding: 0px;">                         
+                            <p:messages id="msjLayout" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:fileUpload  dragDropSupport="false" uploadLabel="Subir Archivo" cancelLabel="Cancelar" label="Seleccionar Archivo" 
+                                           allowTypes="/(\.|\/)(xlsx|xls)$/" invalidFileMessage="Tipo de archivo invalido"
+                                           fileUploadListener="#{interaccionMB.layoutFileUpload}"  mode="advanced" update="frmLayout"  />
+                            <p:outputPanel rendered="#{interaccionMB.continuar}" >
+                                <p:dataTable  id="tblNoProcessEstructura"
+                                              var="item" editable="true"  
+                                              value="#{interaccionMB.interaccionLayout}"
+                                              styleClass="styleEventosPlanPrestacion" reflow="true"
+                                              style="margin-bottom:5px;" 
+                                              scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" > 
+
+                                    <f:facet name="header" ><h:outputText style="color: #000;" value="Datos NO procesados" /></f:facet>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.fecha}" headerText="Fecha" >
+                                        <h:outputText value="#{item.fecha}" title="#{item.fecha}" class="altoColumn" >
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm a" />
+                                        </h:outputText>    
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.medicamento}" headerText="Sustancia Uno" >
+                                        <h:outputText value="#{item.medicamento}" title="#{item.medicamento}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.medicamentoInteraccion}" headerText="Sustancia Dos" >
+                                        <h:outputText value="#{item.medicamentoInteraccion}" title="#{item.medicamentoInteraccion}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.tipoInteraccion}" headerText="Tipo Interacción" >
+                                        <h:outputText value="#{item.tipoInteraccion}" title="#{item.tipoInteraccion}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.nombreEmisor}" headerText="Origen" >
+                                        <h:outputText value="#{item.nombreEmisor}" title="#{item.nombreEmisor}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 100px;" sortBy="#{item.updateIdUsuario}" headerText="Motivo" >
+                                        <h:outputText value="#{item.updateIdUsuario}" title="#{item.updateIdUsuario}" class="altoColumn" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:outputPanel>
+                            <p:panel class="pnlActions">
+                                <p:commandButton class="btnNew" value="Aceptar"
+                                                 actionListener="#{interaccionMB.actualizarTablaInteracciones()}" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalLayout').hide();"
+                                                 ajax="true" update=":mainForm:tblInteraccionesMedi"  style=" margin: 5px 0; "  />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

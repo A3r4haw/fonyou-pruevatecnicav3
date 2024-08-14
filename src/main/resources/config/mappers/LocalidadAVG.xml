@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.LocalidadAVGMapper" >
+
+    <insert id="insertar" parameterType="mx.mc.model.LocalidadAVG">
+        INSERT INTO localidadAVG (
+        <if test=" idLocalidadAVG != null ">
+            idLocalidadAVG
+        </if>
+        <if test=" localidad != null ">
+            , localidad
+        </if>
+        <if test=" estatus != null ">
+            , estatus
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , updateIdUsuario
+        </if>
+        ) values (
+        <if test=" idLocalidadAVG != null ">
+            #{ idLocalidadAVG , jdbcType = VARCHAR }
+        </if>
+        <if test=" localidad != null ">
+            , #{ localidad , jdbcType = VARCHAR }
+        </if>
+        <if test=" estatus != null ">
+            , #{ estatus , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType =  TIMESTAMP}
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+    </insert>
+    
+     <update id="actualizar" parameterType="mx.mc.model.LocalidadAVG">
+        UPDATE localidadAVG
+        <set> 
+            updateFecha = #{updateFecha, jdbcType = TIMESTAMP }
+            ,updateIdUsuario = #{updateIdUsuario, jdbcType = VARCHAR }
+            <if test=" localidad != null ">,localidad = #{localidad , jdbcType = VARCHAR }</if>
+            <if test="estatus != null">,estatus = #{estatus , jdbcType = INTEGER }</if>
+        </set>
+        WHERE idLocalidadAVG = #{idLocalidadAVG, jdbcType = VARCHAR}
+     </update>         
+     
+     <select id="obtenerTodo" resultType="mx.mc.model.LocalidadAVG" parameterType="mx.mc.model.LocalidadAVG">
+        SELECT idLocalidadAVG, localidad, estatus 
+        FROM localidadAVG
+        WHERE 1=1
+    </select>
+    
+</mapper>

@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <head>
+        <title>TODO supply a title</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    </head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanelAmplio" >
+                    <h:form id="mainForm">
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+<ui:remove>
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value=" Reimpresión / Cancelación de Surtimientos"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+                            
+                            <p:selectCheckboxMenu id="menu" value="#{cancelarSurtimientoIntMB.tipoPrescripcionSelectedList}" label="Tipo"
+                                                  filter="true" filterMatchMode="startsWith" panelStyle="width:110px" style="width: 110px;">
+                              
+                                <f:selectItem value="#{N}" itemLabel="Normal" itemValue="N" />
+                                <f:selectItem value="#{U}" itemLabel="Urgente" itemValue="U" />
+                                <f:selectItem value="#{D}" itemLabel="Dosis Única" itemValue="D" />
+                            </p:selectCheckboxMenu>
+                            
+                            <p:spacer width="10px;" />
+                            <p:inputText id="busquedaa" 
+                                         value="#{cancelarSurtimientoIntMB.cadenaBusqueda}" 
+                                         class="textSearch"
+                                         style="width: 50% !important;" 
+                                         placeholder="Buscar..." />
+                            <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />
+                            <p:spacer width="12px" />
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); "
+                                             actionListener="#{cancelarSurtimientoIntMB.obtenerSurtimientos}"
+                                             update=":mainForm"  />
+                        </div>
+</ui:remove>
+                        <p:toolbar rendered="false">
+                            <p:toolbarGroup id="toolbar"  >
+                                <p:commandButton id="btnModificar" value="Modificar"
+                                                 title="Modificar Rol" icon="ui-icon-pencil"
+                                                 onclick="PF('statusProcess').show()"
+                                                 oncomplete="PF('statusProcess').hide(); "                                                 
+                                                 disabled="#{!cancelarSurtimientoIntMB.permiso.puedeEditar or !cancelarSurtimientoIntMB.elementoSeleccionado}"
+                                                 rendered="false" />
+                                <p:commandButton id="btnCancelar" value="Cancelar"
+                                                 title="Cancelar Surtimiento Prescripción" icon="ui-icon-trash" 
+                                                 update="@form"
+                                                 disabled="#{!cancelarSurtimientoIntMB.permiso.puedeEliminar or !cancelarSurtimientoIntMB.elementoSeleccionado}"
+                                                 rendered="false" />
+
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:messages id="validaMsg" globalOnly="true" showSummary="true" closable="true" showDetail="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <p:panel id="dataTable">
+                            <p:dataTable id="tblSurtimientos" 
+                                         widgetVar="tblSurtimientos" 
+                                         value="#{cancelarSurtimientoIntMB.surtimientoExtendedList}"
+                                         selection="#{cancelarSurtimientoIntMB.surtimientoExtendedSelected}"
+                                         filteredValue="#{cancelarSurtimientoIntMB.filterSurtimientoList}"
+                                         var="item" 
+                                         rowKey="#{item.idSurtimiento}"
+                                         rowIndexVar="row"
+                                         selectionMode="single"
+                                         style="margin-bottom:5px;"
+                                         styleClass="mystyle"
+                                         scrollRows="10" scrollable="true" scrollHeight="350"
+                                         emptyMessage="No se encontraron Registros"
+                                         reflow="true"
+                                         paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                         currentPageReportTemplate=" "
+                                         paginator="true"
+                                         rows="10"
+                                         disabledTextSelection="false" 
+                                         paginatorPosition="bottom"
+                                         rendered="#{cancelarSurtimientoIntMB.sizeSurtimientoExtendList ne 100}"
+                                         rowStyleClass="#{item.tipoPrescripcion eq 'U' ? 'urgente' : item.tipoPrescripcion eq 'D' ? 'unica': null}" >
+
+                                <f:facet name="header" >
+                                    <p:outputPanel style="align-content: left;" class="headerSearch"   >
+                                        <p:outputLabel value="Reimpresión / Cancelación de surtimientos:"  style="color: #FFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+                                        <p:inputText id="globalFilter" onkeyup="PF('tblSurtimientos').filter()" style="width:40%" value="#{cancelarSurtimientoIntMB.folio}" placeholder="Buscar..." rendered="#{!cancelarSurtimientoIntMB.permiteCancelarSurtimiento}"/>                        
+                                        
+                                        <p:inputText id="busquedaa" 
+                                                     value="#{cancelarSurtimientoIntMB.cadenaBusqueda}" 
+                                                     class="textSearch"
+                                                     style="width: 50% !important;" 
+                                                     rendered="#{cancelarSurtimientoIntMB.permiteCancelarSurtimiento}"
+                                                     placeholder="Buscar..." />
+                                        <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />
+                                    <p:spacer width="12px" />
+                                    <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); "
+                                             actionListener="#{cancelarSurtimientoIntMB.obtenerSurtimientos}"
+                                             update=":mainForm"  />
+                                    </p:outputPanel>
+                                </f:facet>
+                                <f:facet name="{Records}">
+                                    <div style="float:left;">
+                                        <p:outputLabel class="footerLabel" value="  Recetas Surtidas #{cancelarSurtimientoIntMB.sizeSurtimientoExtendList}" rendered="true" />
+                                    </div>
+                                </f:facet>
+
+                                <f:facet name="{Exporters}">
+                                    <div style="float:right">
+                                        <h:commandLink >
+                                            <img src="#{request.contextPath}/resources/img/btnxls.png" style="height: 25px !important; margin-left: 5px !important;" title="Exportar" />
+                                            <p:dataExporter type="xls" target="tblSurtimientos" fileName="pacientes" />
+                                        </h:commandLink>
+                                        <h:commandLink>
+                                            <img src="#{request.contextPath}/resources/img/btnpdf.png" style="height: 25px !important; margin-left: 5px !important;" title="Exportar" />
+                                            <p:dataExporter type="pdf" target="tblSurtimientos" fileName="pacientes"/>
+                                        </h:commandLink>
+                                    </div>
+                                </f:facet>
+
+                                <p:column style="text-align: left; width: 1% "
+                                          sortBy="#{item.tipoPrescripcion}" exportable="false" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="" />
+                                    </f:facet>
+                                    <p:outputPanel rendered="#{item.tipoPrescripcion eq 'N'}" >
+                                        <img src="#{request.contextPath}/resources/img/cpnormal.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                    </p:outputPanel>
+                                    <p:outputPanel rendered="#{item.tipoPrescripcion eq 'U'}" >
+                                        <img src="#{request.contextPath}/resources/img/cpurgente.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                    </p:outputPanel>
+                                    <p:outputPanel rendered="#{item.tipoPrescripcion eq 'D'}" >
+                                        <img src="#{request.contextPath}/resources/img/cpunica.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                    </p:outputPanel>
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 20% " filterBy="#{item.folioPrescripcion}" filterStyle=" display: none; visibility: hidden; position: absolute; "
+                                          sortBy="#{item.folioPrescripcion}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Folio Receta" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.folioPrescripcion}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10% "
+                                          sortBy="#{item.fechaProgramada}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Fecha" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.fechaProgramada}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <ui:remove>
+                                <p:column style="text-align: left; width: 10% "
+                                          sortBy="#{item.tipoPrescripcion}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Tipo" />
+                                    </f:facet>
+                                    <h:outputText value="Normal" rendered="#{item.tipoPrescripcion eq 'N'}" />
+                                    <h:outputText value="Dosis Única" rendered="#{item.tipoPrescripcion eq 'D'}" />
+                                    <h:outputText value="Urgente" rendered="#{item.tipoPrescripcion eq 'U'}" />
+                                </p:column>
+                                </ui:remove>
+
+                                <p:column style="text-align: left; width: 20% "
+                                          sortBy="#{item.nombrePaciente}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Paciente" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombrePaciente}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10% " 
+                                          sortBy="#{item.nombreEstructura}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Estatus" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.estatusPrescripcion}" />
+                                </p:column>
+
+                                <ui:remove>
+                                <p:column style="text-align: left; width: 5% "
+                                          sortBy="#{item.cama}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Cama" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.cama}" />
+                                </p:column>
+                                </ui:remove>
+
+                                <p:column style="text-align: left; width: 20% " 
+                                          sortBy="#{item.nombreMedico}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Médico" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombreMedico}" />
+                                </p:column>
+                                
+                                <p:column style="text-align: left;width: 90px;" headerText="Acciones" >
+                                     <p:commandLink title="Reimprimir" 
+                                                   actionListener="#{cancelarSurtimientoIntMB.imprimirTcketChiconcuac(item)}" 
+                                                   onclick="PF('statusProcess').show();" update=":mainForm,:formPDF"
+                                                   oncomplete="PF('statusProcess').hide();if(args.estatus){PF('mdlReport').show();}" 
+                                                   rendered="#{cancelarSurtimientoIntMB.permiteCancelarSurtimiento}">
+                                         <i class="fa fa-print iconMusAzul" />
+                                     </p:commandLink> &nbsp;
+                                     <p:commandLink id="linkCancelar"
+                                                    title="Cancelar surtimiento"
+                                                    actionListener="#{cancelarSurtimientoIntMB.validaCancelarPrescripcion(item.idPrescripcion)}"
+                                                    onclick="PF('statusProcess').show();"
+                                                    oncomplete="PF('statusProcess').hide();"
+                                                    style="margin: 5px;text-decoration: none;"
+                                                    styleClass="iconMusAzul"
+                                                    rendered="#{cancelarSurtimientoIntMB.permiteCancelarSurtimiento}"
+                                                    update=":mainForm:tblSurtimientos">
+                                         <p:confirm header="Confirmación" message="Desea cancelar la receta ?" icon="ui-icon-alert" />
+                                         <i class="fa fa-ban" />
+                                     </p:commandLink>
+                                </p:column>
+                            </p:dataTable>
+
+                        </p:panel>
+
+                    </h:form>
+                </div>
+                
+                <p:dialog widgetVar="mdlReport" width="820px" height="600px"  header="Ticket"
+                          closeOnEscape="true" modal="true"                          
+                          style="font-size:xx-small !important;" >
+                    <h:form id="formPDF"   >                       
+                        <p:media id="vpdf" value="#{cancelarSurtimientoIntMB.archivo}" player="pdf" width="800px" height="600px" cache="false"  class="vpdf"  />
+                    </h:form>                    
+                </p:dialog>
+                
+            </ui:define>        
+        </ui:composition>
+    </h:body>
+</html>

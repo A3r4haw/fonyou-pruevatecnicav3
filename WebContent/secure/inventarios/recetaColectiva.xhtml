@@ -1,0 +1,601 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" > 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="padding: 10px;">
+                    <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+                    <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                        <p:graphicImage name="/img/cargando.gif" />
+                    </p:dialog>
+                    <h:form id="formOrdenesReabasto">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="true"/>
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                            <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+
+                        <div style="background: #808080;padding: 10px;">
+
+                            <p:outputLabel value="Receta Colectiva" 
+                                           styleClass="labelDisabled" />
+                            <p:spacer width="10"/>
+                            <p:outputLabel value="Unidad de Salud:" 
+                                           styleClass="labelDisabled" />
+
+                            <p:inputText value="#{recetaColectivaMB.entidad.nombre}" 
+                                         styleClass="textDisabled" 
+                                         readonly="true" size="60" />
+                            <p:spacer width="20"/>
+                            <p:outputLabel value="Usuario " 
+                                           styleClass="labelDisabled" />
+                            <p:inputText value="#{recetaColectivaMB.usuarioSession.nombre} #{recetaColectivaMB.usuarioSession.apellidoPaterno} #{recetaColectivaMB.usuarioSession.apellidoMaterno}" 
+                                         styleClass="textDisabled"
+                                         readonly="true" size="40" />
+                            <br/>
+                            <br/>
+                            <p:outputLabel value="Almacén / Servicio:" 
+                                           styleClass="labelDisabled" />
+                           
+                            <p:selectOneMenu id="comboAlmacen" 
+                                             value="#{recetaColectivaMB.idEstructura}"
+                                             disabled="#{!recetaColectivaMB.permiso.puedeVer}"
+                                             style="vertical-align: middle;"
+                                             rendered="true"
+                                             filter="true"
+                                             filterMatchMode="contains" 
+                                             styleClass="customComboWidth" 
+
+                                             >
+                               <p:ajax listener="#{recetaColectivaMB.obtenerOrdenesReabasto}" 
+                                        update="tablaOrdenReabasto" />
+                                <f:selectItems value="#{recetaColectivaMB.listaEstructuras}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+                            <p:inputText id="busqueda" 
+                                         value="#{recetaColectivaMB.textoBusqueda}" 
+                                         style="width: 42%!important;border-radius:10px!important;margin-left: 30px;" 
+                                         placeholder="Buscar por folio..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15" style=""/>
+                            </i>
+                            <p:commandButton value="Buscar" 
+                                             actionListener="#{recetaColectivaMB.buscarRegistros}"
+                                             update="tablaOrdenReabasto formDetalleSurtimiento"
+                                             icon="fa fa-search" 
+                                             style="margin-left: 20px;"
+                                             oncomplete="if(args.estatusModal){ PF('modalSurtimineto').show(); }">
+                            </p:commandButton>
+                        </div>
+                                                                
+                        <p:toolbar rendered="true">
+                            <p:toolbarGroup id="toolbar"  >
+                                <p:commandButton id="btnCrear" value="Crear"
+                                                 title="Crear Nueva"
+                                                 icon="ui-icon-document"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('mdlTipoReabasto').show();"
+                                                 ajax="true"
+                                                 styleClass="btnMusAzul"
+                                                 disabled="#{!recetaColectivaMB.permiso.puedeCrear}"
+                                                 rendered="#{recetaColectivaMB.crearReceta}" />
+
+                                <p:commandButton id="btnModificar" value="Modificar"
+                                                 title="Modificar" icon="ui-icon-pencil"
+                                                 onclick="PF('statusProcess').show()"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalListaPrescripciones').show();"
+                                                 actionListener="#{prescripcionMB.editaRegistro}" 
+
+                                                 disabled="#{!recetaColectivaMB.permiso.puedeEditar}"
+                                                 rendered="false" />
+
+                                <p:commandButton id="btnEliminar" value="Cancelar"
+                                                 title="Cancelar" icon="ui-icon-trash" 
+                                                 update="tablaOrdenReabasto"
+                                                 disabled="#{!recetaColectivaMB.permiso.puedeEliminar}"
+                                                 rendered="#{recetaColectivaMB.crearReceta}" />
+
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:dataTable id="tablaOrdenReabasto"
+                                     var="ordenReabasto"
+                                     value="#{recetaColectivaMB.listaReabasto}"
+                                     style="text-align: center;"
+                                     emptyMessage="No existen registros para mostrar."
+                                     selectionMode="single"
+                                     scrollable="true" 
+                                     scrollHeight="350"
+                                     selection="#{recetaColectivaMB.reabastoSelect}"
+                                     rowKey="#{ordenReabasto.idReabasto}">
+
+                            <p:ajax event="rowDblselect" oncomplete="if(args.mostrarModalInsumos){ PF('modalSurtimineto').show(); }" 
+                                    update="formDetalleSurtimiento, formOrdenesReabasto"
+                                    listener="#{recetaColectivaMB.mostrarModalSurtimiento}"/>
+
+                            <p:column headerText="Folio" style="width: 10%">
+                                <h:outputText value="#{ordenReabasto.folio}" />
+                            </p:column>
+
+                            <p:column headerText="Fecha" sortBy="#{ordenReabasto.fechaSolicitud}"  style="width: 10%">
+                                <h:outputLabel value="#{ordenReabasto.fechaSolicitud}">
+                                    <f:convertDateTime type="date" pattern="dd/MM/yy HH:mm" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Almacén / Servicio Solicitante" sortBy="#{ordenReabasto.nombreEstructura}"  style="width: 30%">
+                                <h:outputText value="#{ordenReabasto.nombreEstructura}" />
+                            </p:column>
+
+                            <p:column headerText="Tipo Reabasto" sortBy="#{ordenReabasto.nombreTipoOrden}" style="width: 10%">
+                                <p:outputLabel value="#{ordenReabasto.nombreTipoOrden}" />
+                            </p:column>
+
+                            <p:column headerText="Estatus" sortBy="#{ordenReabasto.nombreEstatus}" style="width: 10%">
+                                <p:outputLabel value="#{ordenReabasto.nombreEstatus}" />
+                            </p:column>
+
+                            <p:column headerText="Solicitante" sortBy="#{ordenReabasto.nombreUsrSolicitane}" style="width: 20%">
+                                <p:outputLabel value="#{ordenReabasto.nombreUsrSolicitane}" />
+                            </p:column>
+
+                            <p:column style="width: 10%" headerText="Acciones">
+                                <p:tooltip for="linkCancelar" value="Cancelar" position="top"/>
+                                <p:commandLink id="linkCancelar"
+                                               actionListener="#{recetaColectivaMB.cancelarOrdenReabasto(ordenReabasto)}"
+                                               update="tablaOrdenReabasto"
+                                               style="margin: 5px;text-decoration: none;"
+                                               disabled="#{!recetaColectivaMB.permiso.puedeEliminar}"
+                                               rendered="#{ordenReabasto.idEstatusReabasto ne 7 ? 'true' : 'false'}"
+                                               >
+                                    <p:confirm header="Confirmación" message="Desea cancelar la Orden ?" icon="ui-icon-alert" />
+                                    <i class="fa fa-ban" />
+                                </p:commandLink>
+                            </p:column>
+                            <f:facet name="footer">
+                                <p:outputLabel> </p:outputLabel>
+                            </f:facet>
+                        </p:dataTable>
+                    </h:form>
+
+                    <p:dialog header="Seleccione Tipo de Receta"
+                              widgetVar="mdlTipoReabasto"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important; " >
+                        <h:form id="frmTipoReabasto">
+                            <p:messages id="validaMsg1" globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:fieldset  legend="Tipo" >
+                                <p:selectOneRadio id="tipoReabasto" layout="pageDirection" value="#{recetaColectivaMB.tipoOrden}" 
+                                                  required="true" requiredMessage="Debe seleccionar un tipo" >
+                                    <f:selectItem itemLabel="Normal" itemValue="1"  />
+                                    <f:selectItem itemLabel="Extraordinaria" itemValue="2" />
+                                    <f:ajax render="frmTipoReabasto" execute="tipo" />
+                                </p:selectOneRadio>
+                            </p:fieldset> <br />
+                            <p:outputLabel value="Tipo de Insumo" /> &nbsp;&nbsp;
+                            <p:selectOneMenu style="width: 120px;" value="#{recetaColectivaMB.tipoInsumo}"  >
+                                <f:selectItems value="#{recetaColectivaMB.tipoInsumoList}" 
+                                               var="tipo" itemLabel="#{tipo.nombreCatalogo}" itemValue="#{tipo.idCatalogoGeneral}" />
+
+                            </p:selectOneMenu>
+                            <p:panel class="pnlActions">
+                                <p:commandButton id="btnTipCancel" value="Cancelar"
+                                                 styleClass="btnMusRed" style="width: 100px;"
+                                                 ajax="true" onclick="PF('mdlTipoReabasto').hide();"  
+                                                 validateClient="false" />
+                                
+                                <p:commandButton id="btnTipNew" value="Crear" 
+                                                 styleClass="btnMusAzul" style="margin:0; width: 100px; "
+                                                 actionListener="#{recetaColectivaMB.createOrdenReabasto}"
+                                                 onclick="PF('statusProcess').show();"
+                                                 update="formDetalleSurtimiento"
+                                                 oncomplete="if(args.estatus){ PF('mdlTipoReabasto').hide(); PF('modalSurtimineto').show();}PF('statusProcess').hide();"
+                                                 />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+
+                    
+                    <p:dialog header="Surtimiento de Receta Colectiva" 
+                              widgetVar="modalSurtimineto"
+                              modal="true"
+                              closeOnEscape="true"
+                              closable="true"
+                              resizable="false"
+                              width="90%" 
+                              focus="formDetalleSurtimiento:autoCMedicamento">
+                        <h:form id="formDetalleSurtimiento">
+                            <p:messages id="msgModal" closable="true" showDetail="true"/>
+                            <div class="ui-g panelGris" >
+                                <div class="ui-g-12 " style="padding: 0em !important;">
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel style="margin-right: 10px; font-weight: bolder;">Folio</p:outputLabel>
+                                        <p:inputText value="#{recetaColectivaMB.reabastoSelect.folio}" 
+                                                     disabled="false"
+                                                     style="margin-right: 10px;"
+                                                     tabindex="1" 
+                                                     size="12">
+                                        </p:inputText>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 10px; font-weight: bolder;">Médico</p:outputLabel>
+                                        <p:selectOneMenu id="comboMedico" 
+                                                         value="#{recetaColectivaMB.idMedico}"
+                                                         disabled="false"
+                                                         style="margin-right: 10px;vertical-align: middle;" 
+                                                         filter="true" filterMatchMode="contains"
+                                                         tabindex="2" >
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" />
+                                            <f:selectItems value="#{recetaColectivaMB.listaMedicos}"
+                                                           var="medico"
+                                                           itemValue="#{medico.idUsuario}"
+                                                           itemLabel="#{medico.nombre} #{medico.apellidoPaterno} #{medico.apellidoMaterno}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 10px; font-weight: bolder;">Almacén</p:outputLabel>
+                                        <p:selectOneMenu id="comboAlmacen" 
+                                                         value="#{recetaColectivaMB.idEstructura}"
+                                                         disabled="true"
+                                                         style="margin-right: 10px;vertical-align: middle;">
+                                            <f:selectItems value="#{recetaColectivaMB.listaEstructuras}"
+                                                           var="estructura"
+                                                           itemValue="#{estructura.idEstructura}"
+                                                           itemLabel="#{estructura.nombre}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel style="margin-right: 10px;font-weight: bolder;">Fecha</p:outputLabel>
+                                        <p:calendar id="txtFecha" value="#{recetaColectivaMB.reabastoSelect.fechaSolicitud}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{ordenReabasto.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"/>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12 " style="padding: 0em !important;">
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel style="margin-right: 10px; font-weight: bolder;" rendered="false" >Borrar</p:outputLabel>
+                                        <p:selectBooleanCheckbox style="margin-right: 10px;" value="#{recetaColectivaMB.eliminarCodigo}" id="checkEliminar" rendered="false" />
+                                        <p:outputLabel style="margin-right: 10px; font-weight: bolder;">Cantidad Solicitada</p:outputLabel>
+                                        <p:inputText id="cantSolicitada" 
+                                                     value="#{recetaColectivaMB.cantidadSolicitada}" 
+                                                     size="4"
+                                                     maxlength="5"
+                                                     style="margin-right: 10px;"
+                                                     onkeypress="if (event.keyCode === 13) { ingresarCantidad(); return false; }"
+                                                     onblur="ingresarCantidad(); return false;"
+                                                     tabindex="4" > 
+                                             <p:remoteCommand name="ingresarCantidad"
+                                                                         actionListener="#{recetaColectivaMB.insertaCantidadSurtida()}"
+                                                                         update="cantSurtida"
+                                                                         process="@form"
+                                                                         global="false"
+                                                                         />
+                                            <p:keyFilter regEx="/[0-9]/i"/>
+                                        </p:inputText>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 10px; font-weight: bolder;">Insumo</p:outputLabel>
+                                        <p:autoComplete id="autoCMedicamento" 
+                                                            value="#{recetaColectivaMB.skuSap}" 
+                                                            autocomplete="on" 
+                                                            completeMethod="#{recetaColectivaMB.autocompleteMedicamento}"
+                                                            minQueryLength="4" 
+                                                            forceSelection="true"
+                                                            var="skuSap" 
+                                                            itemValue="#{skuSap.idInventario}" 
+                                                            itemLabel="#{skuSap.nombreLargo}"
+                                                            converter="skuSapConverter" tabindex="5"
+                                                            placeholder="Buscar / Escanear Insumo"
+                                                            emptyMessage="Insumo desconocido." 
+                                                            style="margin-left: 10px; margin-right: 10px;"
+                                                            size="50" 
+                                                            scrollHeight="200" >
+                                            <p:ajax event="itemSelect" update="cantSurtida"
+                                                        listener="#{recetaColectivaMB.handleSelectMedicamento}" 
+                                                        ></p:ajax>
+                                                <p:ajax event="itemUnselect" 
+                                                        listener="#{recetaColectivaMB.handleUnSelectMedicamento}" 
+                                                        ></p:ajax>
+
+                                                <p:column style="width: 20px; font-size: small !important;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave"  />
+                                                    </f:facet>
+                                                    <h:outputText value="#{skuSap.claveInstitucional}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                                <p:column style="width: 20px; font-size: small !important;" width="20px" rendered="false">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave Proveedor" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{skuSap.lote}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small !important;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{skuSap.nombreLargo}" style=" font-size: x-small;" />
+                                                </p:column>
+                                                <p:column style="width: 10px; font-size: small !important; align-content: center; " width="10px" >
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Unidosis" />
+                                                    </f:facet>
+                                                    <h:outputText value="NO" rendered="#{skuSap.presentacionComercial eq 1}" style=" font-size: small; font-weight: bolder;" />
+                                                    <h:outputText value="SI" rendered="#{skuSap.presentacionComercial ne 1}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                                <p:column style="width: 20px; font-size: small !important; " >
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Lote" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{skuSap.lote}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                                <p:column style="width: 20px; font-size: small !important; " >
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Caducidad" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{skuSap.fechaCaducidad}" style=" font-size: small; font-weight: bolder;" >
+                                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column style="width: 15px; font-size: small !important; " >
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Existencia&nbsp;DU" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{skuSap.calculoCajaUnidosis}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                                <p:column style="width: 10px; font-size: small !important; "  >
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Existencia&nbsp;Cajas" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{skuSap.cantidadActual / skuSap.cantidadXCaja}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                                <p:column style="width: 10px; font-size: small !important; " rendered="false" >
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Existencia&nbsp;Cajas" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{skuSap.cantidadActual / skuSap.cantidadXCaja}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                                <p:column style="width: 10px; font-size: small !important; "  >
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Presentación" />
+                                                    </f:facet>
+                                                    <h:outputText value="Dosis Unitaria" rendered="#{skuSap.presentacionComercial ne 1}" style=" font-size: small; font-weight: bolder;" />
+                                                    <h:outputText value="Presentación Comercial" rendered="#{skuSap.presentacionComercial eq 1}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 10px; font-weight: bolder;">Notas</p:outputLabel>
+                                        <p:inputTextarea id="txtComentarios"
+                                                             cols="50" 
+                                                             rows="2" 
+                                                             style="margin-right: 10px;vertical-align: middle;" 
+                                                             value="#{recetaColectivaMB.comentarios}"
+                                                             tabindex="6" />
+                                    </div>
+
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <label>Generar Reporte</label>
+                                        <p:selectBooleanCheckbox value="#{recetaColectivaMB.generaReporte}" >
+                                            <p:ajax  />
+                                        </p:selectBooleanCheckbox>
+                                    </div>
+                            
+                                </div>
+                                <div class="ui-g-12 " style="padding: 0em !important;">
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel style="margin-right: 10px; font-weight: bolder;">Cantidad Surtida&nbsp;&nbsp;&nbsp;&nbsp;</p:outputLabel>
+                                        <p:inputText id="cantSurtida" 
+                                                     value="#{recetaColectivaMB.cantidadSurtida}" 
+                                                     size="4"
+                                                     maxlength="5"
+                                                     style="margin-right: 10px;"
+                                                     disabled="#{recetaColectivaMB.bandera}"
+                                                     tabindex="7" >
+                                            <p:keyFilter regEx="/[0-9]/i"/>
+
+                                        </p:inputText>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:commandButton id="btnAdd"  tabindex="10"
+                                        value="Agregar" style="margin:0; width:100px;"
+                                        actionListener="#{recetaColectivaMB.addMedicamento}"
+                                        onclick="PF('statusProcess').show();"  update="formDetalleSurtimiento,cantSurtida"                                       
+                                        oncomplete="PF('statusProcess').hide();"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <br/>
+                            <p:dataTable id="tablaDetalleSurt"
+                                         widgetVar="tablaDetalleSurt"                                         
+                                         value="#{recetaColectivaMB.listaReabastoInsumo}"
+                                         selection="#{recetaColectivaMB.reabastoInsumoExtend}"
+                                         var="insumo"
+                                         rowKey="#{insumo.idInsumo}"
+                                         rowIndexVar="rowI"
+                                         selectionMode="single"
+                                         style="margin-bottom: 10px; margin-top: 5px;"
+                                         reflow="true"                                          
+                                         scrollRows="5" scrollable="true" scrollHeight="350"
+                                         emptyMessage="No se encontraron Registros"
+                                         paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+                                         currentPageReportTemplate=" "
+                                         paginator="true"
+                                         rows="5"
+                                         paginatorPosition="bottom" >                                
+                                 <f:facet name="{Records}">
+                                    <div style="float:left;">
+                                        <p:outputLabel class="footerLabel" value=" Insumos Registrados #{recetaColectivaMB.listaReabastoInsumo.size()}" /> 
+                                    </div>
+                                </f:facet>                                
+                                <p:ajax event="rowToggle" global="false"/>
+                                <p:column style="width:4%">
+                                    <p:rowToggler />
+                                </p:column>
+                                <p:column headerText="Clave" style="width: 10%;">
+                                    <h:outputText value="#{insumo.claveInstitucional}" />
+                                </p:column>
+                                <p:column headerText="Medicamento" style="width: 30%;">
+                                    <h:outputLabel value="#{insumo.nombreCorto}" />
+                                </p:column>
+                                <p:column headerText="Presentación" style="width: 8%;">
+                                    <h:outputText value="#{insumo.nombrePresentacion}" />
+                                </p:column>
+                                <p:column headerText="Pieza x Caja" style="width: 6%;">
+                                    <p:outputLabel value="#{insumo.factorTransformacion}" />
+                                </p:column>
+                                <p:column headerText="Cant Solicitada" style="width: 8%;">
+                                    <p:outputLabel value="#{insumo.cantidadSolicitada}" />
+                                </p:column>
+                                <ui:remove >
+                                    <p:column headerText="Cant Comprometida">
+                                        <p:outputLabel value="#{insumo.cantidadComprometida}" />
+                                    </p:column>
+                                </ui:remove>    
+                                <p:column headerText="Cant Surtida" style="width: 8%;">
+                                    <div class="ui-fluid">
+                                        <p:spinner value="#{insumo.cantidadSurtida}"
+                                                   min="0" 
+                                                   max="#{insumo.cantidadSurtida}" 
+                                                   readonly="true"
+                                                   disabled="true"/>
+                                    </div>
+                                </p:column>
+                                <p:column headerText="Existencias" style="width: 6%;">
+                                    <p:outputLabel value="#{insumo.cantidadActual}" />
+                                </p:column>
+                                <p:column headerText="Notas" style="width: 10%;">
+                                    <p:inputText    value="#{insumo.observaciones}" 
+                                                    style="width: 100%" />
+                                </p:column>
+                                <p:column headerText="Activo" style="width: 4%;">
+                                    <p:outputLabel value="#{insumo.activo eq 0 ? 'No' : 'Si'}" 
+                                                   style="#{insumo.activo eq 0 ? 'font-weight:bold;color:#DB2828;' : 'font-weight:normal;color:#00CB00;'}"/>
+                                </p:column>                                
+                                <p:rowExpansion>
+                                    <p:dataTable var="insumoDetalle"
+                                                 value="#{insumo.listaDetalleReabIns}"
+                                                 scrollable="true" 
+                                                 scrollHeight="100"
+                                                 emptyMessage="No se encontraron Registros" >
+                                        <p:column headerText="Lote">
+                                            <h:outputText value="#{insumoDetalle.lote}" />
+                                        </p:column>
+                                        <p:column headerText="Cantidad">
+                                            <h:outputLabel value="#{insumoDetalle.cantidadEnviado}" />
+                                        </p:column>
+                                        <p:column headerText="Fecha de caducidad">
+                                            <h:outputLabel value="#{insumoDetalle.fechaCaducidad}" >
+                                                <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                            </h:outputLabel>
+                                        </p:column>                                        
+                                    </p:dataTable>
+                                </p:rowExpansion>
+                                <p:column style="text-align: left; width: 5%;" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="" />
+                                    </f:facet>
+                                    <p:commandLink title="Eliminar Insumo"  
+                                            onclick="PF('statusProcess').show();" 
+                                            oncomplete="PF('statusProcess').hide();"
+                                            actionListener="#{recetaColectivaMB.eliminarInsumo(insumo.idInsumo)}"
+                                            update="tablaDetalleSurt">
+                                        <i class="fa fa-trash iconElimina" style="font-size: large" />
+                                    </p:commandLink>
+                                </p:column>
+                            </p:dataTable>
+                            <br/>
+                            <p:commandButton value="Imprimir" rendered="false"
+                                             update=":formOrdenesReabasto, :formPDF"
+                                             onclick="PF('statusProcess').show()"
+                                             oncomplete="PF('statusProcess').hide(); PF('mdlReport').show(); "
+                                             actionListener="#{recetaColectivaMB.imprimir}"
+                                             icon="fa fa-print"
+                                             style="margin-right: 10px;float: right;"
+                                             disabled="#{!recetaColectivaMB.permiso.puedeEditar}"
+                                             />
+                            <p:commandButton value="Cancelar" 
+                                             icon="fa fa-times-circle"
+                                             actionListener="#{recetaColectivaMB.limpiar()}"
+                                             update="formOrdenesReabasto"
+                                             style="margin-right: 10px;float: right;"
+                                             oncomplete="PF('modalSurtimineto').hide();"                                             
+                                             />
+                            <p:commandButton value="Surtir" 
+                                             actionListener="#{recetaColectivaMB.surtirReabastoInsumo}"
+                                             update="formOrdenesReabasto,msgModal,formImpresion,formPDF2"
+                                             oncomplete="if (args.errorSurtir) {PF('modalSurtimineto').hide();PF('modalImpresion').show(); if(args.generaReporte) PF('mdlReport1').show(); }"
+                                             icon="fa fa-check-circle" 
+                                             style="margin-right: 10px;float: right;"
+                                             styleClass="btnMusAzul"
+                                             disabled="#{!recetaColectivaMB.permiso.puedeProcesar}"
+                                             > 
+                                <p:confirm header="Confirmación" message="Desea surtir la Orden ?" icon="ui-icon-alert" />
+                            </p:commandButton>
+                            <p:commandButton value="Guardar" 
+                                             accesskey="" icon="fa fa-floppy-o" 
+                                             style="margin-right: 10px;float: right;"
+                                             actionListener="#{recetaColectivaMB.guardarRegistros}"
+                                             update="formOrdenesReabasto,msgModal"
+                                              oncomplete="if (args.errorSurtir) {PF('modalSurtimineto').hide();}"
+                                             />
+                        </h:form>
+                    </p:dialog>
+                    <p:dialog header="Impresión de Orden"
+                              widgetVar="modalImpresion"
+                              closeOnEscape="false" modal="true"
+                              style="font-size:xx-small !important;" width="40%">
+                        <h:form id="formImpresion">
+                            <p:outputLabel value="¿Desea imprimir la orden de surtimiento?"/>
+                            <p:commandButton value="Si"
+                                             update=":formOrdenesReabasto, :formPDF"
+                                             onclick="PF('statusProcess').show()"
+                                             oncomplete="PF('statusProcess').hide(); PF('modalImpresion').hide(); PF('mdlReport').show();  "
+                                             actionListener="#{recetaColectivaMB.imprimirArchivos}"
+                                             icon="fa fa-print"
+                                             style="margin-right: 10px;float: right;"
+                                             disabled="#{!recetaColectivaMB.permiso.puedeEditar}"
+                                             />
+                            <p:commandButton value="No" 
+                                             icon="fa fa-times-circle" 
+                                             style="margin-right: 10px;float: right;"
+                                             oncomplete="PF('modalImpresion').hide();"
+                                             />   				 
+
+                        </h:form>                
+                    </p:dialog>
+                    <p:dialog widgetVar="mdlReport" width="820px" height="600px"
+                              closeOnEscape="false" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">
+                            <p:media value="/Reportes" player="pdf" width="800px" height="600px" cache="false" />
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                    <p:dialog widgetVar="mdlReport1" width="820px" height="600px"
+                              closeOnEscape="false" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF2">
+                            <p:media value="/Reportes" player="pdf" width="800px" height="600px" cache="false" />
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>
+
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

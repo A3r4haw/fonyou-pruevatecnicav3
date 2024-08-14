@@ -1,0 +1,360 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">                    
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <div class="ui-g-12 " style="border: #0088cc solid 1px; border-radius: 5px;" >
+
+                            <div id="busqueda" style="padding-bottom: 0px; padding-top: 5px;">
+                                <div class="A" style=" width: 13%; margin: 0px !important;  padding: 15px 0px 0px  0px !important;">
+                                    <p:outputLabel value="Puntos de Control"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin: 0px; padding: 0px;" />                                     
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-2" style="margin:0px; padding: 0px;  width: 15% !important;" >
+                                    <p:outputLabel value="Almacén" style="color:#FFFFFF; font-weight: bold; "
+                                                   rendered="#{almacenControlMB.permiso.puedeCrear}" /><br/>
+                                    <p:selectOneMenu style="width: 70%;" value="#{almacenControlMB.almacenCtrlSelect.idAlmacen}"
+                                                     filter="true" filterMatchMode="contains"
+                                                     rendered="#{almacenControlMB.permiso.puedeCrear}" >
+                                        <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}" />
+                                        <f:selectItems value="#{almacenControlMB.estructuraList}" var="tipo"
+                                                       itemLabel="#{tipo.nombre}" itemValue="#{tipo.idEstructura}" />
+                                        <p:ajax event="change" listener="#{almacenControlMB.searchAlmacen}" update="mainForm:tblAlmacenCtrl" />
+                                    </p:selectOneMenu>                                
+                                </div>
+
+                                <div class="ui-g-12 ui-md-6 ui-lg-3" style="margin:0px; padding: 0px; width: 30% !important;" >
+                                    <p:outputLabel value="Insumo"  style="color:#FFFFFF; font-weight: bold; "
+                                                   rendered="#{almacenControlMB.permiso.puedeCrear}" /><br/>
+                                    <p:autoComplete  size="45" id="insumo"
+                                                     value="#{almacenControlMB.medicamento}"  autocomplete="on" 
+                                                     completeMethod="#{almacenControlMB.autoComplete}"  
+                                                     minQueryLength="3"  forceSelection="true" 
+                                                     var="insumo"  required="true" requiredMessage="El Insumo es requerido"
+                                                     itemValue="#{insumo.idMedicamento}" 
+                                                     itemLabel="#{insumo.nombreCorto}"
+                                                     converter="medicamentoConverter" tabindex="2"
+                                                     rendered="#{almacenControlMB.permiso.puedeCrear}" >
+
+                                        <p:ajax event="itemSelect" listener="#{almacenControlMB.handleSelect}" update="btnAdd" ></p:ajax>
+                                        <p:ajax event="itemUnselect" listener="#{almacenControlMB.handleUnSelect}" update="btnAdd" ></p:ajax>
+
+                                        <p:column style="width: 20px; font-size: small;" width="50px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Clave Institucional" />
+                                            </f:facet>
+                                            <h:outputText value="#{insumo.claveInstitucional}" style=" font-size: small;" />
+                                        </p:column>
+
+                                        <p:column style="width: 600px;" width="600px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Medicamento" />
+                                            </f:facet>
+                                            <h:outputText value="#{insumo.nombreCorto}" style=" font-size: small;" />
+                                        </p:column>                                    
+
+
+                                    </p:autoComplete>
+                                </div>
+
+                                <div class="ui-g-12 ui-md-6 ui-lg-1" style="margin:0px; padding: 0px; width: 8% !important; " >
+                                    <p:outputPanel  rendered="#{almacenControlMB.pointCtrl and almacenControlMB.permiso.puedeCrear}">
+                                        <p:outputLabel value="Mínimo"  style="color:#FFFFFF; font-weight: bold; " /><br/>
+                                        <p:spinner id="minimo" placeholder="Mínimo" min="0" tabindex="3" disabled="#{!almacenControlMB.pointCtrl}" value="#{almacenControlMB.minimo}" size="5" >
+                                            <p:keyFilter regEx="#{almacenControlMB.regexNumber}"  />
+                                            <p:ajax listener="#{almacenControlMB.valdMinimo}" update="btnAdd" />
+                                        </p:spinner>
+                                    </p:outputPanel>
+                                </div>
+
+                                <div class="ui-g-12 ui-md-6 ui-lg-1" style="margin:0px; padding: 0px; width: 8% !important;" >
+                                    <p:outputPanel  rendered="#{almacenControlMB.pointCtrl and almacenControlMB.permiso.puedeCrear}">
+                                        <p:outputLabel value="Reorder"  style="color:#FFFFFF; font-weight: bold; "/><br/>
+                                        <p:spinner id="reorder" placeholder="Reorder" min="0" tabindex="4"  disabled="#{!almacenControlMB.pointCtrl}" size="5" value="#{almacenControlMB.reorden}" >
+                                            <p:keyFilter regEx="#{almacenControlMB.regexNumber}"  />
+                                            <p:ajax listener="#{almacenControlMB.valdReorden}" update="btnAdd" />
+                                        </p:spinner>
+                                    </p:outputPanel>
+                                </div>
+
+                                <div class="ui-g-12 ui-md-6 ui-lg-1" style="margin:0px; padding: 0px; width: 8% !important;" >
+                                    <p:outputPanel  rendered="#{almacenControlMB.pointCtrl and almacenControlMB.permiso.puedeCrear}">
+                                        <p:outputLabel value="Máximo"  style="color:#FFFFFF; font-weight: bold; "/><br/>
+                                        <p:spinner id="maximo" placeholder="Máximo" min="0" tabindex="5"  size="5" value="#{almacenControlMB.maximo}" >
+                                            <p:keyFilter regEx="#{almacenControlMB.regexNumber}"  />
+                                            <p:ajax listener="#{almacenControlMB.valdMaximo}" update="btnAdd" />
+                                        </p:spinner>
+                                    </p:outputPanel>
+                                </div>
+
+                                <div class="ui-g-12 ui-md-6 ui-lg-1" style="margin:0px; padding: 0px; width: 8% !important;" >
+                                    <p:outputPanel rendered="#{almacenControlMB.dotacionDiaria and almacenControlMB.permiso.puedeCrear}">
+                                        <p:outputLabel value="Dotación"  style="color:#FFFFFF; font-weight: bold; "/><br/>
+                                        <p:spinner id="dotacion" placeholder="Dotación" min="0" tabindex="5" size="5" value="#{almacenControlMB.dotacion}" >
+                                            <p:keyFilter regEx="#{almacenControlMB.regexNumber}"  />
+                                            <p:ajax listener="#{almacenControlMB.valdDotacion}" update="btnAdd" />
+                                        </p:spinner>
+                                    </p:outputPanel>
+                                </div>
+
+                                <div class="ui-g-12 ui-md-6 ui-lg-1" style="margin:0px; padding: 0px; width: 8% !important; " >
+                                    <p:outputLabel value="Acción"  style="color:#FFFFFF; font-weight: bold; "
+                                                    rendered="#{almacenControlMB.permiso.isPuedeCrear()}" /><br/>
+                                    <p:commandButton class="btnNew" value="Agregar" disabled="#{!almacenControlMB.btnNew}" icon="fa fa-plus" rendered="#{almacenControlMB.permiso.isPuedeCrear()}"
+                                                     actionListener="#{almacenControlMB.crearAlmacenControl}" onclick="PF('statusProcess').show();" 
+                                                     id="btnAdd"    oncomplete="PF('statusProcess').hide();" update="mainForm:insumo,mainForm:minimo,mainForm:reorder,mainForm:maximo,mainForm:dotacion,mainForm:tblAlmacenCtrl,mainForm:btnAdd" 
+                                                     tabindex="6" styleClass="btnMusAzul"
+                                                     ajax="true" style=" margin: 5px 0; "  />
+                                </div>
+                            </div>
+                            <p:commandButton class="btnNew" value="Registrar Layout" disabled="#{almacenControlMB.btnNew}" icon="fa fa-plus" 
+                                             actionListener="#{almacenControlMB.agregarPuntosCtrl}" onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); PF('mdlLayout').show();"  rendered="#{almacenControlMB.permiso.isPuedeProcesar()}"
+                                             ajax="true" update=":formLayout"  style=" margin: 5px 0;" styleClass="btnMusAzul" />
+                            <div class="ui-g-12">
+
+                                <p:outputLabel value="No tiene permiso de visualización de esta transacción." 
+                                               style="font-size: 18px !important; font-weight: bold; color: red;"
+                                               rendered="#{!almacenControlMB.permiso.puedeVer}" /> 
+                                
+                                <p:dataTable id="tblAlmacenCtrl"
+                                             var="item" editable="true" 
+                                             value="#{almacenControlMB.almacenCtrlList}"
+                                             styleClass="styleEventosPlanPrestacion" reflow="true"
+                                             emptyMessage="No se econtraron Registros"
+                                             style="margin-bottom:5px;" 
+                                             scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350"
+                                             rendered="#{almacenControlMB.permiso.puedeVer}" >
+                                    <p:ajax event="rowEdit" listener="#{almacenControlMB.onRowEdit}" update="tblAlmacenCtrl" />
+                                    <p:ajax event="rowEditCancel" listener="#{almacenControlMB.onRowCancel}"  update="tblAlmacenCtrl" />
+                                    <p:ajax event="rowEditInit" listener="#{almacenControlMB.onRowEditInit}" />
+
+                                    <p:column style="text-align: left;width: 15%;" sortBy="#{item.idAlmacen}"  headerText="Almacén">                                
+                                        <h:outputText value="#{item.almacen}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 10%;" 
+                                              sortBy="#{item.claveInstitucional}" filterBy="#{item.claveInstitucional}" filterMatchMode="contains"
+                                              headerText="Clave">                                
+                                        <h:outputText value="#{item.claveInstitucional}" title="#{item.claveInstitucional}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 45%;" 
+                                              sortBy="#{item.insumo}" filterBy="#{item.insumo}" filterMatchMode="contains"
+                                              headerText="Medicamento" >
+                                        <h:outputText value="#{item.insumo}" title="#{item.insumo}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left !important;width: 5%; padding-left: 10px!important; " sortBy="#{item.minimo}" headerText="Mínimo" rendered="#{almacenControlMB.pointCtrl}" >
+                                        <p:cellEditor>
+                                            <f:facet name="output"><h:outputText value="#{item.minimo}"   class="altoColumn" /></f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText value="#{item.minimo}"  size="6" >
+                                                    <p:keyFilter regEx="#{almacenControlMB.regexNumber}"  />
+                                                    <p:ajax listener="#{almacenControlMB.valdMinimoRow(item.minimo)}" />                                            
+                                                </p:inputText>
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 6%; padding-left: 10px!important;" sortBy="#{item.reorden}" headerText="Reorden" rendered="#{almacenControlMB.pointCtrl}" >
+                                        <p:cellEditor>
+                                            <f:facet name="output"><h:outputText value="#{item.reorden}"  class="altoColumn" /></f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText value="#{item.reorden}" size="6">
+                                                    <p:keyFilter regEx="#{almacenControlMB.regexNumber}"  /> 
+                                                    <p:ajax listener="#{almacenControlMB.valdReordenRow(item.reorden)}" />                                        
+                                                </p:inputText>
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 5%; padding-left: 10px!important;" headerText="Máximo" sortBy="#{item.maximo}" rendered="#{almacenControlMB.pointCtrl}" >
+                                        <p:cellEditor>
+                                            <f:facet name="output"><h:outputText value="#{item.maximo}" class="altoColumn" /></f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{item.maximo}"   size="6" >
+                                                    <p:keyFilter regEx="#{almacenControlMB.regexNumber}"  />
+                                                    <p:ajax listener="#{almacenControlMB.valdMaximoRow(item.maximo)}" /> 
+                                                </p:inputText>
+                                            </f:facet>
+                                        </p:cellEditor>                                            
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 5%; padding-left: 10px!important;" headerText="Dotación" sortBy="#{item.dotacion}" rendered="#{almacenControlMB.dotacionDiaria}" >
+                                        <p:cellEditor>
+                                            <f:facet name="output"><h:outputText value="#{item.dotacion}" class="altoColumn" /></f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{item.dotacion}"   size="6" >
+                                                    <p:keyFilter regEx="#{almacenControlMB.regexNumber}"  />
+                                                </p:inputText>
+                                            </f:facet>
+                                        </p:cellEditor>                                            
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 5%;" id="act" headerText="Activo" sortBy="#{item.activo}">
+                                        <p:cellEditor>
+                                            <f:facet  name="output"><h:outputText value="#{item.activo ? 'Si' : 'No' }" class="altoColumn" /></f:facet>
+                                            <f:facet name="input"> 
+                                                <p:selectOneButton value="#{item.activo}" >
+                                                    <f:selectItem itemLabel="Si" itemValue="true" />
+                                                    <f:selectItem itemLabel="No" itemValue="false" />
+                                                </p:selectOneButton>
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 2%;">
+                                        <p:rowEditor style="width: 30px" styleClass="iconMusAzul"/>                                                                               
+                                    </p:column>
+                                    <p:column style="text-align: left;width: 2%;">
+                                        <p:commandLink title="#{item.activo ? 'Desactivar' : 'Activar'}" id="btnStatus"
+                                                       actionListener="#{almacenControlMB.cambiarStatusAlmContrl(item.idAlmacenPuntosControl, item.activo)}" 
+                                                       rendered="#{almacenControlMB.permiso.puedeProcesar}"
+                                                       onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update="tblAlmacenCtrl" >
+                                            <i class="#{item.activo ? 'fa fa-toggle-on' : 'fa fa-toggle-off'} iconMusAzul" />
+                                        </p:commandLink> 
+                                    </p:column>
+                                    
+                                    <p:column style="text-align: left; width: 4%">
+                                        <f:facet name="header">
+                                            <h:outputText value="Eliminar" />
+                                        </f:facet>
+                                        <p:commandLink title="Eliminar" onclick="PF('statusProcess').show()"
+                                                       oncomplete="PF('statusProcess').hide();"
+                                                       actionListener="#{almacenControlMB.eliminaInsumoDeLista(item.idAlmacenPuntosControl)}"
+                                                       update="tblAlmacenCtrl" rendered="#{almacenControlMB.permiso.puedeEliminar}">
+                                            <i class="fa fa-trash iconMusRojo" />
+                                        </p:commandLink>
+                                    </p:column>
+                                    
+                                    <f:facet name="footer" >
+                                        <p:outputLabel style="font-size: 1em !important; color: #000;">
+                                            #{almacenControlMB.numeroRegistros} Insumos han sido encontrados
+                                        </p:outputLabel> 
+                                    </f:facet>
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </h:form>
+
+                    <p:dialog header="REGISTRAR PUNTOS DE CONTROL DE FORMA MASIVA"
+                              widgetVar="mdlLayout"
+                              closeOnEscape="true" width="72%"
+                              closable="true"   styleClass="autoWidthDialog"                     
+                              modal="true" responsive="true"  >                             
+                        <h:form id="formLayout" style="padding: 0px;"> 
+                            <p:messages id="msjLayout" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:fileUpload  dragDropSupport="false" uploadLabel="Subir Archivo" cancelLabel="Cancelar" label="Seleccionar Archivo" 
+                                           allowTypes="/(\.|\/)(xlsx|xls)$/" invalidFileMessage="Tipo de archivo invalido" onstart="PF('statusProcess').show();" 
+                                           oncomplete="PF('statusProcess').hide();"
+                                           fileUploadListener="#{almacenControlMB.layoutFileUpload}"  mode="advanced" update="formLayout"  />
+                            <p:outputPanel rendered="#{almacenControlMB.noProcess}" >
+                                <p:dataTable  id="tblNoProcessEstructura"
+                                              var="item" editable="true"  reflow="true"
+                                              emptyMessage="Sin registros"
+                                              value="#{almacenControlMB.almacenCtrlLayoutList}"
+                                              styleClass="styleEventosPlanPrestacion" 
+                                              style="margin-bottom:5px;" 
+                                              scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" > 
+
+                                    <f:facet name="header" ><h:outputText style="color: #000;" value="Resumén de datos Procesados" /></f:facet>
+
+                                    <p:column style="width:2%">
+                                        <p:rowToggler rendered="#{item.list}" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 13%"  headerText="Almacén" >
+                                        <h:outputText value="#{item.almacen}" title="#{item.almacen}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 9%" headerText="Clave" >                                        
+                                        <h:outputText value="#{item.claveInstitucional}" title="#{item.claveInstitucional}" class="altoColumn"  /> 
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 20%"  headerText="Descripción" >
+                                        <h:outputText value="#{item.insumo}" title="#{item.insumo}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 5%;"  headerText="Mínimo"  rendered="#{almacenControlMB.pointCtrl}">
+                                        <h:outputText value="#{item.minimo}" title="#{item.minimo}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 5%;"  headerText="Reorden"  rendered="#{almacenControlMB.pointCtrl}">
+                                        <h:outputText value="#{item.reorden}" title="#{item.reorden}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 5%;"  headerText="Máximo"  rendered="#{almacenControlMB.pointCtrl}">
+                                        <h:outputText value="#{item.maximo}" title="#{item.maximo}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 5%;"  headerText="Dotación"  rendered="#{!almacenControlMB.pointCtrl}">
+                                        <h:outputText value="#{item.dotacion}" title="#{item.dotacion}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 15%;" headerText="Motivo" >
+                                        <h:outputText value="#{item.motivo}" title="#{item.motivo}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 5%;" headerText="Estatus" >
+                                        <p:outputPanel rendered="#{item.process}" > <i class="fa fa-check" style="font-size: 2em"></i></p:outputPanel>
+                                        <p:outputPanel rendered="#{!item.process}" > <i class="fa fa-times" style="font-size: 2em"></i></p:outputPanel>
+                                    </p:column>
+
+                                    <p:rowExpansion rendered="#{item.list}">
+                                        <p:dataTable var="env" id="tblInsumoList"
+                                                     value="#{item.insumosList}"
+                                                     scrollable="true" 
+                                                     emptyMessage="" >
+
+                                            <p:column headerText="Clave " style="width: 25%">
+                                                <h:outputText value="#{env.claveInstitucional}" />
+                                            </p:column>
+
+                                            <p:column headerText="Insumo" style="width:25%" rendered="true">
+                                                <h:outputLabel value="#{env.nombreCorto}" >
+                                                </h:outputLabel>
+                                            </p:column> 
+
+                                        </p:dataTable>
+                                    </p:rowExpansion>
+                                </p:dataTable>
+                            </p:outputPanel>
+                            <p:panel class="pnlActions">
+                                <p:commandButton class="btnNew" value="Cerrar" 
+                                                 actionListener="#{almacenControlMB.searchAlmacen}" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('mdlLayout').hide();" 
+                                                 ajax="true" update="mainForm:tblAlmacenCtrl"  style=" margin: 5px 0; "  />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>  
+
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>
+

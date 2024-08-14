@@ -1,0 +1,761 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="FichaPrevencionContaminacion4" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty" uuid="cd4db910-956a-4a55-87ac-1b848dc087dc">
+	<property name="ireport.zoom" value="1.6500000000000001"/>
+	<property name="ireport.x" value="173"/>
+	<property name="ireport.y" value="140"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter"/>
+	<property name="ireport.callouts" value="callouts.1.fg=0,0,0\n callouts.1.bg=255,255,0\n "/>
+	<style name="table">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 4_CH" mode="Opaque" backcolor="#F2F2F2">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 4_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<subDataset name="mezclas" whenResourceMissingType="Empty" uuid="e923e94d-0972-4527-98a5-efb1d3cc09e7">
+		<parameter name="IDNOTADISPENCOLEC" class="java.lang.String"/>
+		<queryString>
+			<![CDATA[SELECT CONCAT(pa.nombreCompleto, ' ', pa.apellidoPaterno ,' ', pa.apellidoMaterno ) AS nombrePaciente
+  , ndcd.comentarios
+  , su.folio AS folioMezcla
+  , s.loteMezcla
+  , DATE_FORMAT(s.fechaPrepara, '%d/%m/%y %H:%i:%s') AS fechaPrepara
+  , DATE_FORMAT(s.caducidadMezcla , '%d/%m/%y %H:%i:%s') AS fechaCaducidad
+  , ndc.folio
+  , ec.descripcion  AS nombreContenedor
+  , ndcd.numeroMezcla
+  , obtieneDescMezcla(su.idSurtimiento) AS descripcionMezcla
+  , 1 AS cantidad
+FROM solucion s
+  JOIN surtimiento su ON s.idSurtimiento = su.idSurtimiento
+  JOIN prescripcion p ON su.idPrescripcion = p.idPrescripcion
+  JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+  JOIN visita v ON ps.idVisita = v.idVisita
+  JOIN paciente pa ON v.idPaciente = pa.idPaciente
+  JOIN notaDispenColectDetalle ndcd ON su.idSurtimiento = ndcd.idSurtimiento
+  JOIN notaDispenColect ndc ON ndcd.idNotaDispenColect = ndc.idNotaDispenColect
+  LEFT JOIN envaseContenedor ec ON s.idEnvaseContenedor = ec.idEnvaseContenedor
+WHERE ndc.idNotaDispenColect = $P{IDNOTADISPENCOLEC}
+ORDER BY numeroMezcla ASC]]>
+		</queryString>
+		<field name="nombrePaciente" class="java.lang.String">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="comentarios" class="java.lang.String">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="folioMezcla" class="java.lang.String"/>
+		<field name="loteMezcla" class="java.lang.String">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="fechaPrepara" class="java.lang.String">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="fechaCaducidad" class="java.lang.String">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="folio" class="java.lang.String">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="nombreContenedor" class="java.lang.String"/>
+		<field name="numeroMezcla" class="java.lang.Integer">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="descripcionMezcla" class="java.lang.String"/>
+		<field name="cantidad" class="java.lang.Integer">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<variable name="NUM_ROW" class="java.lang.Integer" incrementType="Report" calculation="Count"/>
+	</subDataset>
+	<parameter name="LOGO1" class="java.lang.String"/>
+	<parameter name="LOGO2" class="java.lang.String"/>
+	<parameter name="LOGO3" class="java.lang.String"/>
+	<parameter name="TITULO1" class="java.lang.String"/>
+	<parameter name="TITULO2" class="java.lang.String"/>
+	<parameter name="DIRECCION1" class="java.lang.String"/>
+	<parameter name="TITULO3" class="java.lang.String"/>
+	<parameter name="TITULO4" class="java.lang.String"/>
+	<parameter name="FOLIO" class="java.lang.String"/>
+	<parameter name="FECHA" class="java.util.Date"/>
+	<parameter name="ESTATUS" class="java.lang.String"/>
+	<parameter name="AREA" class="java.lang.String"/>
+	<parameter name="TURNO" class="java.lang.String"/>
+	<parameter name="COMENTARIOS_ENTREGA" class="java.lang.String"/>
+	<parameter name="FECHA_ENTREGA" class="java.lang.String"/>
+	<parameter name="USUARIO_ENTREGA" class="java.lang.String"/>
+	<parameter name="FECHA_DISPENSA" class="java.lang.String"/>
+	<parameter name="USUARIO_DISPENSA" class="java.lang.String"/>
+	<parameter name="FECHA_RECIBE" class="java.lang.String"/>
+	<parameter name="USUARIO_RECIBE" class="java.lang.String"/>
+	<parameter name="NUM_TOTAL_MEZCLAS" class="java.lang.String"/>
+	<parameter name="CODIGO_DOCUMENTO" class="java.lang.String"/>
+	<parameter name="NOMBRE_DOCUMENTO" class="java.lang.String"/>
+	<parameter name="LICENCIA_SANITARIA" class="java.lang.String"/>
+	<parameter name="IDNOTADISPENCOLEC" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select 1]]>
+	</queryString>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="83" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="117" y="1" width="353" height="16" uuid="b88e4e9b-c01a-4ccd-aa66-eabf17066451"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{TITULO1}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="117" y="16" width="353" height="16" uuid="c456a9fd-5391-4801-8141-23560a527e65"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{TITULO2}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="117" y="63" width="353" height="17" isPrintWhenDetailOverflows="true" uuid="622d73c1-2213-4970-802a-d7ce6cb69836"/>
+				<textElement textAlignment="Center">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{DIRECCION1}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="635" y="45" width="54" height="14" uuid="0cee83b9-c196-479e-b1d5-71cbc597aa23"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[FOLIO:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="635" y="60" width="54" height="14" uuid="c27f1ece-e0de-4bfa-91b4-7b7c1606159e"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[FECHA:]]></text>
+			</staticText>
+			<textField pattern="dd MM yyyy" isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="690" y="60" width="112" height="14" backcolor="#F5F5F5" uuid="52bd39e2-f22d-47c6-9d19-93e75c72f249"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy").format($P{FECHA})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="690" y="45" width="112" height="14" backcolor="#F5F5F5" uuid="2594ca38-7f0d-4b3a-9542-4fa1e0f1db76"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{FOLIO}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement mode="Transparent" x="689" y="19" width="113" height="26" uuid="08a4be11-4d6e-43e1-ad99-aa76bee3aae3"/>
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code39" drawText="true" checksumRequired="true">
+					<jr:codeExpression><![CDATA[$P{FOLIO}]]></jr:codeExpression>
+				</jr:barbecue>
+			</componentElement>
+			<image>
+				<reportElement x="1" y="1" width="80" height="80" uuid="72f6e3e2-243d-44b5-8e34-1c897c063590"/>
+				<imageExpression><![CDATA[$P{LOGO1}]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement mode="Opaque" x="635" y="1" width="167" height="15" backcolor="#F5F5F5" uuid="fb416b88-8b01-49c4-9c73-e5ea2c711c27"/>
+				<textElement textAlignment="Center">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{NOMBRE_DOCUMENTO}]]></textFieldExpression>
+			</textField>
+			<image>
+				<reportElement x="490" y="1" width="80" height="80" uuid="466361a8-6646-4ea8-aa43-af07ec7a5ff6"/>
+				<imageExpression><![CDATA[$P{LOGO2}]]></imageExpression>
+			</image>
+			<textField isBlankWhenNull="true">
+				<reportElement x="117" y="31" width="353" height="17" uuid="dfcb3788-cdf1-4f7c-9235-10c19c3c1606"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{TITULO3}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="117" y="48" width="353" height="17" uuid="13b50b45-915b-4d9d-bedc-aeff8d960c8f"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{TITULO4}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="24">
+			<staticText>
+				<reportElement x="0" y="3" width="51" height="14" isPrintWhenDetailOverflows="true" uuid="ad80902a-a717-40d4-8903-c90cb4142f06"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SERVICIO:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToTallestObject" mode="Opaque" x="51" y="3" width="160" height="14" isPrintWhenDetailOverflows="true" forecolor="#010101" backcolor="#F5F6F7" uuid="fbbb4d00-6644-4817-b165-c174670cc2a9"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{AREA}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="3" y="-2" width="799" height="1" uuid="03443d25-b683-451d-8909-360473e471fe"/>
+				<graphicElement>
+					<pen lineColor="#B7B7B7"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement stretchType="RelativeToTallestObject" x="220" y="3" width="45" height="14" isPrintWhenDetailOverflows="true" uuid="fd4aa3c6-a8db-4daf-bb08-a047942a31e6"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TURNO:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="265" y="3" width="90" height="14" isPrintWhenDetailOverflows="true" backcolor="#F5F5F5" uuid="8b1fe952-1be8-4f45-8793-bcefe1c1e29f"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{TURNO}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="365" y="3" width="70" height="14" isPrintWhenDetailOverflows="true" uuid="32bbdae2-2c2e-4b1b-9d76-fdf3d1eaa95e"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[COMENTARIOS:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="435" y="3" width="367" height="14" isPrintWhenDetailOverflows="true" backcolor="#F5F5F5" uuid="71f3b6a7-7973-4350-aad1-567b56c51a3d"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{COMENTARIOS_ENTREGA}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="138" splitType="Stretch">
+			<componentElement>
+				<reportElement stretchType="RelativeToTallestObject" isPrintRepeatedValues="false" x="0" y="3" width="802" height="108" forecolor="#C0C0C0" uuid="2ca9d4dd-a615-4a8f-8e2b-38acc276443e"/>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" whenNoDataType="AllSectionsNoDetail">
+					<datasetRun subDataset="mezclas" uuid="02893300-9c4b-4058-9389-ee5d35c8950b">
+						<datasetParameter name="IDNOTADISPENCOLEC">
+							<datasetParameterExpression><![CDATA[$P{IDNOTADISPENCOLEC}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:column width="30" uuid="c87f5477-01bf-4c1a-8c70-e1cee9ca364d">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<jr:columnHeader style="Table 4_CH" height="30" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<staticText>
+								<reportElement x="2" y="0" width="26" height="30" uuid="b6dc15df-2b42-47df-b252-3e806fd869ea"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="Arial" size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[NÚM.]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="Table 4_TD" height="19" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<textField>
+								<reportElement stretchType="RelativeToTallestObject" x="2" y="0" width="26" height="14" uuid="a0db5e63-469b-41c7-9620-4fd3a2affe45"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{numeroMezcla}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="27" uuid="f3dfd16e-543d-454d-b458-be401a5ce4c3">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+						<jr:columnHeader style="Table 4_CH" height="30" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<staticText>
+								<reportElement x="2" y="0" width="24" height="30" uuid="02f1bec9-7226-4e45-92bf-0bf219cc1b12"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="Arial" size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[CANT]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="Table 4_TD" height="19" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+								<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="27" height="14" isPrintWhenDetailOverflows="true" uuid="32639ae0-702e-43a8-9891-54f3692e1297"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="132" uuid="c4f5f34f-630e-49c2-b4af-5a53f094e03c">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
+						<jr:columnHeader style="Table 4_CH" height="30" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<staticText>
+								<reportElement x="1" y="0" width="128" height="30" uuid="80874238-0cb7-48a7-831e-9b0826f04c89"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="Arial" size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[NOMBRE DE PACIENTE]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="Table 4_TD" height="19" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+								<reportElement stretchType="RelativeToTallestObject" x="2" y="0" width="127" height="14" isPrintWhenDetailOverflows="true" uuid="c3fa828d-464a-4177-806e-077c1cee13ee"/>
+								<textElement verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{nombrePaciente}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="68" uuid="cb9cebae-b24d-433f-b1ae-08a4fb6b8688">
+						<jr:columnHeader style="Table 4_CH" height="30" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<staticText>
+								<reportElement x="2" y="0" width="64" height="30" uuid="502654aa-6305-4503-9538-feb4ce01dfcf"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="Arial" size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[FOLIO
+MEZCLA]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="Table 4_TD" height="19" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+								<reportElement stretchType="RelativeToTallestObject" x="2" y="0" width="64" height="14" isPrintWhenDetailOverflows="true" uuid="c8fb78c3-31cc-46ab-93a2-878a4e96cedd"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{folioMezcla}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="260" uuid="946a09d0-f0a8-46b7-b45b-e6ef97309b27">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
+						<jr:columnHeader style="Table 4_CH" height="30" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<staticText>
+								<reportElement x="1" y="0" width="259" height="30" uuid="a72b37de-d68e-4220-b8bf-bc2e71dee890"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="Arial" size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[DESCRIPCIÓN MEZCLA]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="Table 4_TD" height="19" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+								<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="260" height="14" isPrintWhenDetailOverflows="true" uuid="8a04a060-28e7-4cd1-abfb-9c4576830925"/>
+								<textElement verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{descripcionMezcla}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="1" uuid="91bc4727-259e-4712-a681-7d4fb0f37855">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column5"/>
+						<jr:columnHeader style="Table 4_CH" height="30" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+						</jr:columnHeader>
+						<jr:detailCell style="Table 4_TD" height="19" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="60" uuid="ab99ef80-7c4f-4d59-a0c7-33b8b3be34e3">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column6"/>
+						<jr:columnHeader style="Table 4_CH" height="30" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="55" height="30" uuid="1791e262-0d27-4795-80a7-b69faed0328f"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="Arial" size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[LOTE]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="Table 4_TD" height="19" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+								<reportElement stretchType="RelativeToTallestObject" x="2" y="0" width="55" height="14" isPrintWhenDetailOverflows="true" uuid="61ff58cf-211e-48ce-9294-b8c5cb5cab06"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{loteMezcla}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="74" uuid="80d06f3a-23e9-4354-a82a-4368668c19ea">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column7"/>
+						<jr:columnHeader style="Table 4_CH" height="30" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="69" height="30" uuid="8284acfc-e385-4bbb-a778-477f0a887164"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="Arial" size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[FECHA DE PREPARACIÓN]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="Table 4_TD" height="19" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+								<reportElement stretchType="RelativeToTallestObject" x="1" y="0" width="72" height="14" isPrintWhenDetailOverflows="true" uuid="0904886e-2eeb-4565-be0e-e78fd5ee1d5b"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{fechaPrepara}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="74" uuid="7586fce6-9404-4358-8efd-749c440c5876">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column8"/>
+						<jr:columnHeader style="Table 4_CH" height="30" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="74" height="30" uuid="35035821-5bc5-4625-a0e0-15fac577873a"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="Arial" size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[FECHA LÍMITE DE ADMINISTRACIÓN]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="Table 4_TD" height="19" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+								<reportElement stretchType="RelativeToTallestObject" x="1" y="0" width="72" height="14" isPrintWhenDetailOverflows="true" uuid="f6174e34-0958-4abe-879a-675c7866fe7b"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{fechaCaducidad}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="77" uuid="a3cb7772-404f-473e-92c1-11460c751f37">
+						<jr:columnHeader style="Table 4_CH" height="30" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="75" height="30" uuid="3e545d15-d65b-4784-8e43-50110e85dff0"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="Arial" size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[COMENTARIOS]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="Table 4_TD" height="19" rowSpan="1">
+							<box>
+								<pen lineColor="#CCCCCC"/>
+								<topPen lineColor="#CCCCCC"/>
+								<leftPen lineColor="#CCCCCC"/>
+								<bottomPen lineColor="#CCCCCC"/>
+								<rightPen lineColor="#CCCCCC"/>
+							</box>
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+								<reportElement stretchType="RelativeToTallestObject" x="1" y="1" width="74" height="14" isPrintWhenDetailOverflows="true" uuid="e057779d-27b7-481c-aedf-385af33e10fb"/>
+								<textElement verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{comentarios}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="50" splitType="Stretch">
+			<line>
+				<reportElement x="9" y="16" width="175" height="1" forecolor="#CCCCCC" uuid="c30dd10a-8244-4257-bb5b-75ab8c286354"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="397" y="16" width="200" height="14" uuid="3c3ddbc8-7d94-46c7-adb7-cb089a5d7b6a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{USUARIO_RECIBE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="260" y="30" width="119" height="14" backcolor="#FFFFFF" uuid="ed5b8645-0c7a-405a-89ef-9b3bb13b40de"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{FECHA_DISPENSA}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="410" y="15" width="176" height="1" forecolor="#CCCCCC" uuid="b915c298-7e8b-40ba-b1f6-972cb8f4b813"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4" y="17" width="180" height="14" uuid="ae9963f1-e9d4-41a6-b34e-6a06555e205b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{USUARIO_ENTREGA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="62" y="29" width="114" height="14" forecolor="#010101" backcolor="#FFFFFF" uuid="9fc3cfff-0279-4a98-b90c-5e4b4311b10d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{FECHA_ENTREGA}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="471" y="28" width="110" height="14" uuid="53f12a59-6b2e-42b0-8179-f4f25ff1b339"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{FECHA_RECIBE}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="202" y="17" width="180" height="14" backcolor="#FFFFFF" uuid="9f51c01f-47d4-4852-93fd-606d1660d4fc"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{USUARIO_DISPENSA}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="9" y="29" width="53" height="14" forecolor="#010101" backcolor="#FEFEFE" uuid="cb404803-0357-4b0c-80ff-962f82fe5d40"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ENTREGA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="413" y="29" width="41" height="14" backcolor="#FEFEFE" uuid="86b7e48d-65e2-45e1-86f4-d201cf61fd3a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[RECIBE]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="751" y="13" width="47" height="16" backcolor="#DCDCDC" uuid="dd18317b-f7b1-4f87-81b6-abcbe4ff5748"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{NUM_TOTAL_MEZCLAS}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="610" y="13" width="141" height="16" backcolor="#AFAFAF" uuid="84f97ecb-73d3-468e-876b-b1ad6f9f1858"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NÚM. TOTAL DE MEZCLAS:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="206" y="30" width="53" height="14" backcolor="#FFFFFF" uuid="f0e5e534-e4b5-4b6b-b65f-173d520d6ea6"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="SansSerif" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[DISPENSA]]></text>
+			</staticText>
+			<line>
+				<reportElement x="206" y="15" width="173" height="1" forecolor="#CCCCCC" uuid="ecc0c1e0-e14f-4b8e-99f0-e6e6a9dabc3b"/>
+			</line>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="29" splitType="Stretch">
+			<staticText>
+				<reportElement x="514" y="5" width="54" height="20" uuid="4561464e-0861-476a-ae4d-95265fdfebbf"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[Impresión:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="303" y="8" width="189" height="12" uuid="cb4cae57-29a4-4735-8610-dd39a5668792"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[LICENCIA SANITARIA NO: 09 007 14 0001]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="711" y="5" width="26" height="20" uuid="ce2ee07f-568b-494d-b521-cf6a5d079b36"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy HH.mm.ss">
+				<reportElement x="569" y="5" width="100" height="20" uuid="aca6fac9-931c-4cc4-ae3e-ae145fc980d0"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="740" y="5" width="58" height="20" uuid="09345285-2e18-4d97-85d4-2aa2b66e04a6"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="681" y="5" width="29" height="20" uuid="2264b981-be29-4165-9080-74e555edaacb"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<text><![CDATA[PAG]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="18" splitType="Stretch"/>
+	</summary>
+</jasperReport>

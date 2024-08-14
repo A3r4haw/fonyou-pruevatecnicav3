@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+        <h:outputScript library="primefaces" name="jquery/jquery.js" target="body" />
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <p:messages id="msg" globalOnly="false" closable="true" showDetail="false"  >
+                                <p:autoUpdate />
+                        </p:messages>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Dispensación de Material de Curación "  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 10px;" />
+                            
+                            <p:outputLabel value="Servicio:" 
+                                           style="margin-right: 10px;margin-left: 10px;color: #FFF;font-size: 14px;font-weight: bold;"/>
+                            <p:outputLabel value="#{dispensacionMaterialMB.estructuraList.get(0).nombre}"
+                                               style="margin-right: 10px;color: #FFF;font-size: 16px  !important;font-weight: bold;"
+                                               rendered="#{!dispensacionMaterialMB.isAdmin and !dispensacionMaterialMB.isJefeArea ? true:false}"/>
+                            <p:selectOneMenu id="comboAlmacen" 
+                                             value="#{dispensacionMaterialMB.idEstructura}"
+                                             disabled="#{!dispensacionMaterialMB.permiso.puedeVer}"
+                                             style="vertical-align: middle; margin-right: 10px;"
+                                             rendered="#{dispensacionMaterialMB.isAdmin or dispensacionMaterialMB.isJefeArea ? true:false}">
+                                <p:ajax listener="#{dispensacionMaterialMB.obtenerDispensaciones}" 
+                                             update="tblDispMaterial" />              
+                                    <f:selectItems value="#{dispensacionMaterialMB.estructuraList}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+                            
+                            <p:inputText id="busqueda" 
+                                         value="#{dispensacionMaterialMB.cadenaBusqueda}" 
+                                         style="width: 30%!important;border-radius:10px!important;" 
+                                         placeholder="Buscar por nombre del paciente o por cama..." />
+                            
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15" style=""/>
+                            </i>
+                            <p:commandButton value="Buscar" 
+                                             actionListener="#{dispensacionMaterialMB.obtenerDispensaciones}"
+                                             icon="fa fa-search" 
+                                             style="margin-left: 20px;"
+                                             global="false"
+                                             update="tblDispMaterial"
+                                             styleClass="btnMusAzul"
+                                             disabled="#{!dispensacionMaterialMB.permiso.puedeVer}" />
+                        </div>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:commandButton class="btnNew" value="Nueva Dispensación" icon="fa fa-plus" rendered="#{dispensacionMaterialMB.permiso.puedeCrear}"
+                                         actionListener="#{dispensacionMaterialMB.crearDispensacion}" onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                                         oncomplete="PF('statusProcess').hide(); PF('modalDispMaterial').show();"
+                                         ajax="true"  style=" margin: 5px 0; " update=":frmNewDispensacion" />
+                        </div>
+                        <p:dataTable emptyMessage="" rows="10" 
+                                 paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                 currentPageReportTemplate=" " 
+                                 paginator="true" reflow="true"
+                                 paginatorPosition="bottom" widgetVar="tblOrdenRecibir" 
+                                 lazy="true" id="tblDispMaterial" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                 style="margin-bottom:5px;" rendered="#{dispensacionMaterialMB.permiso.puedeVer}"
+                                 value="#{dispensacionMaterialMB.dispensacionMaterialLazy}" var="item">
+                            
+                            <p:column style="text-align: left;width: 15%;" sortBy="#{item.folio}"  headerText="Folio">
+                                <h:outputText value="#{item.folio}" class="altoColumn" title="#{item.folio}" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 15%;" sortBy="#{item.fechaDispensacion}"  headerText="Fecha">
+                                <h:outputText value="#{item.fechaDispensacion}" class="altoColumn" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy hh:mm" />
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 15%;" sortBy="#{item.servicio}"  headerText="Servicio">
+                                <h:outputText value="#{item.servicio}" class="altoColumn" title="#{item.servicio}" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 10%;" sortBy="#{item.cama}"  headerText="Cama">
+                                <h:outputText value="#{item.cama eq null ? 'Sin asignar' : item.cama}" class="altoColumn" title="#{item.cama}" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 25%;" sortBy="#{item.paciente}"  headerText="Paciente">
+                                <h:outputText value="#{item.paciente}" class="altoColumn" title="#{item.paciente}" />
+                            </p:column>                                                        
+                                                        
+                            <p:column style="text-align: left;width: 15%;" sortBy="#{item.usuario}"  headerText="Usuario">
+                                <h:outputText value="#{item.usuario}" class="altoColumn" />
+                            </p:column>
+                            
+                            <p:column headerText="Detalle" style="width: 75px;" >
+                                <p:commandLink title="Detalle"  actionListener="#{dispensacionMaterialMB.obtenerDetalle(item)}" 
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('detalleDispensa').show();" 
+                                               update="dlgDetalleDispensa">
+                                    <i class="fa fa-eye  iconMusAzul" />
+                                </p:commandLink> &nbsp;
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                   
+                    <p:dialog header="Dispensación de Material de Curación"
+                          widgetVar="modalDispMaterial" 
+                          closeOnEscape="true" modal="true"                          
+                          style="font-size:xx-small !important;" width="60%">
+                        <h:form id="frmNewDispensacion" onkeypress="if (event.keyCode === 13) return false;">                            
+                            <p:messages id="msgModal" closable="true" showDetail="false" />
+                            <p:panelGrid columns="2" layout="tabular"  style="width:100%;">
+                                
+                                <p:outputLabel value="Cama:" style="width:150px;" />
+                                <p:selectOneMenu id="cama" value="#{dispensacionMaterialMB.idPaciente}">
+                                    <f:selectItem itemLabel="Sin cama asignada" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItems value="#{dispensacionMaterialMB.listaPacienteCama}"
+                                               var="pacienteExtended"
+                                               itemValue="#{pacienteExtended.idPaciente}"
+                                               itemLabel="#{pacienteExtended.nombreCama}"/>
+                                    <p:ajax event="itemSelect" listener="#{dispensacionMaterialMB.seleccionaCama}" process="@this autoCPaciente" update="@this autoCPaciente"/>
+                                </p:selectOneMenu>
+                                
+                                <p:outputLabel value="Paciente:"  style="width:150px;" />
+                                <p:autoComplete id="autoCPaciente"
+                                            value="#{dispensacionMaterialMB.pacienteExtended}" 
+                                            autocomplete="on" 
+                                            completeMethod="#{dispensacionMaterialMB.autoCompletePacientes}" 
+                                            minQueryLength="3" 
+                                            forceSelection="false"
+                                            var="paciente"
+                                            itemValue="#{paciente.idPaciente}"
+                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}"
+                                            converter="pacienteConverter" 
+                                            placeholder="Buscar Paciente..."
+                                            emptyMessage="Búsqueda sin resultados"                                             
+                                            size="40"                                            
+                                            scrollHeight="200">
+
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Número de Paciente" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.pacienteNumero}" style=" font-size: small;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave DerechoHabiencia" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.claveDerechohabiencia}" style=" font-size: small;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Nombre" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.nombreCompleto}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Apellido Paterno" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Apellido Materno" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Cama" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.nombreCama}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    
+                                    <p:ajax event="itemSelect" listener="#{dispensacionMaterialMB.seleccionaPaciente}" update="cama" process="@this cama"/>
+                                </p:autoComplete>
+                                
+                                <p:outputLabel value="Médico:"  style="width:150px;"  />
+                                <p:autoComplete id="autoCMedico" 
+                                            value="#{dispensacionMaterialMB.medico}" 
+                                            autocomplete="on" 
+                                            completeMethod="#{dispensacionMaterialMB.autoCompleteMedicos}" 
+                                            minQueryLength="3" 
+                                            forceSelection="true"
+                                            var="medico" 
+                                            itemValue="#{medico.idUsuario}" 
+                                            itemLabel="#{medico.nombre} #{medico.apellidoPaterno} #{medico.apellidoMaterno}"
+                                            converter="medicoConverter" 
+                                            placeholder="Buscar Médico..."
+                                            emptyMessage="Búsqueda sin resultados"                                             
+                                            size="40" 
+                                            scrollHeight="200">
+
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Cédula Profesional" />
+                                        </f:facet>
+                                        <h:outputText value="#{medico.cedProfesional}" style=" font-size: small;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Nombre" />
+                                        </f:facet>
+                                        <h:outputText value="#{medico.nombre}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Apellido Paterno" />
+                                        </f:facet>
+                                        <h:outputText value="#{medico.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Apellido Materno" />
+                                        </f:facet>
+                                        <h:outputText value="#{medico.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                   
+                                </p:autoComplete>
+                            
+                                <p:outputLabel value="INSUMOS: " style="font-weight: bold;"/>
+                                <p:spacer/>
+                                
+                                <p:outputLabel value="Material"  style="width:150px;"  />
+                                <p:autoComplete id="autoCMedicamento"
+                                            value="#{dispensacionMaterialMB.dispensacionMaterialInsumo}"
+                                            autocomplete="on" 
+                                            completeMethod="#{dispensacionMaterialMB.autocompleteInsumo}"
+                                            minQueryLength="3" 
+                                            forceSelection="true"
+                                            autoHighlight="true"
+                                            autoSelection="true"
+                                            var="insum"
+                                            itemValue="#{insum}"
+                                            itemLabel="#{insum.nombreCorto}"
+                                            converter="musGenericConverter"
+                                            placeholder="Buscar Insumo..."
+                                            emptyMessage="Búsqueda sin resultados"                                             
+                                            size="40"
+                                            onselect="PF('btnConfSend').focus()"
+                                            disabled="#{!dispensacionMaterialMB.permiso.puedeEditar}"
+                                            scrollHeight="200">
+
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave" />
+                                        </f:facet>
+                                        <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Descripción" />
+                                        </f:facet>
+                                        <h:outputText value="#{insum.nombreCorto}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Lote" />
+                                        </f:facet>
+                                        <h:outputText value="#{insum.lote}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="F. Caducidad" />
+                                        </f:facet>
+                                        <h:outputText value="#{insum.fechaCaducidad}" style=" font-size: small; font-weight: bolder;">
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:ajax event="itemSelect" listener="#{dispensacionMaterialMB.seleccionaInsumo}" update="autoCMedicamento tblDispMaterialInsumo"/>
+                                </p:autoComplete>
+                            </p:panelGrid>
+                            
+                            <p:dataTable emptyMessage="" paginator="false" reflow="true" editable="true" editMode="cell"
+                                        id="tblDispMaterialInsumo" style="width: 90%;" 
+                                        rowIndexVar="index"
+                                        value="#{dispensacionMaterialMB.listaDispensacionInsumo}" var="item"
+                                        scrollable="true" scrollWidth="100%" scrollHeight="300">
+
+                                    <p:column style="text-align: left;width: 20%;" headerText="Clave">
+                                        <h:outputText value="#{item.claveInstitucional}" class="altoColumn" title="#{item.claveInstitucional}" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 25%;" headerText="Descripción">
+                                        <h:outputText value="#{item.nombreCorto}" class="altoColumn" title="#{item.nombreCorto}" />
+                                    </p:column>
+
+                                    <p:column style="text-align: center;width: 12%;" headerText="Lote">
+                                        <h:outputText value="#{item.lote}" class="altoColumn" title="#{item.lote}" />
+                                    </p:column>
+                                
+                                    <p:column style="text-align: center;width: 10%;" headerText="Cantidad">
+                                        <h:outputText value="#{item.cantidad}" class="altoColumn" title="#{item.cantidad}" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 25%;" headerText="Notas">
+                                        <p:cellEditor>
+                                            <f:facet name="output"><h:outputText value="#{item.notas}" class="altoColumn" title="#{item.notas}"/></f:facet>
+                                            <f:facet name="input"><p:inputText value="#{item.notas}" size="20" /></f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+                                
+                                    <p:column headerText="Acciones" style="width: 8%;" >
+                                        <p:commandLink title="Eliminar" actionListener="#{dispensacionMaterialMB.eliminaInsumo(index)}"
+                                                       update="tblDispMaterialInsumo" >
+                                            <i class="fa fa-remove textoRojo" />
+                                        </p:commandLink> &nbsp;
+                                    </p:column>
+                            </p:dataTable>
+                            <br />
+                            
+                           <div class="pnlActions">
+                                <p:commandButton id="btnConfCancel" class="btnItem" value="Cancelar" style="width: 100px;"        
+                                                 ajax="true" onclick="PF('modalDispMaterial').hide();"  tabindex="4"/>&nbsp;&nbsp;
+                                
+                                <p:commandButton id="btnConfSend" widgetVar="btnConfSend" tabindex="5" styleClass="btnMusAzul"
+                                            value="Guardar" style="margin:0; width: 100px;"
+                                            actionListener="#{dispensacionMaterialMB.guardarDispensacion()}"
+                                            ajax="true"
+                                            onclick="PF('statusProcess').show();"  update=":mainForm, :frmNewDispensacion:msgModal"     
+                                            oncomplete="if ( args.estatus ){ PF('modalDispMaterial').hide(); } PF('statusProcess').hide(); " 
+                                            />
+                            </div>
+                        </h:form>
+                    </p:dialog>
+                    <p:dialog header="Detalle de la Dispensación" widgetVar="detalleDispensa" closeOnEscape="true" width="75%" height="auto"
+                              closable="true" modal="true" responsive="true" id="dlgDetalleDispensa">
+                        
+                        <p:panelGrid columns="6">
+                            <p:outputLabel value="Folio:" title="Folio de la Dispensación" style="font-weight: bold;"/>
+                            <h:outputText value="#{dispensacionMaterialMB.dispensacionSelected.folio}"/>
+                            <p:outputLabel value="Fecha:" title="Fecha de la Dispensación" style="font-weight: bold;"/>
+                            <h:outputText value="#{dispensacionMaterialMB.dispensacionSelected.fechaDispensacion}">
+                                <f:convertDateTime type="date" pattern="dd/MM/yyyy hh:mm" />
+                            </h:outputText>
+                            <p:outputLabel value="Servicio:" title="Servicio en que se realiza la Dispensación" style="font-weight: bold;"/>
+                            <h:outputText value="#{dispensacionMaterialMB.dispensacionSelected.servicio}"/>
+                            <p:outputLabel value="Cama:" title="Cama para la que se realiza la Dispensación" style="font-weight: bold;"/>
+                            <h:outputText value="#{dispensacionMaterialMB.dispensacionSelected.cama eq null ? 'Sin asignar' : dispensacionMaterialMB.dispensacionSelected.cama}"/>
+                            <p:outputLabel value="Paciente:" title="Paciente para el que se realiza la Dispensación" style="font-weight: bold;"/>
+                            <h:outputText value="#{dispensacionMaterialMB.dispensacionSelected.paciente}"/>
+                            <p:outputLabel value="Médico:" title="Médico que atiende al paciente" style="font-weight: bold;"/>
+                            <h:outputText value="#{dispensacionMaterialMB.dispensacionSelected.medico}"/>
+                            <p:outputLabel value="Usuario:" title="Usuario que realizó la Dispensación" style="font-weight: bold;"/>
+                            <h:outputText value="#{dispensacionMaterialMB.dispensacionSelected.usuario}"/>
+                        </p:panelGrid>
+                        <br/>
+                        <p:outputLabel value="INSUMOS DISPENSADOS:" style="font-weight: bold;"/>
+                        <p:dataTable emptyMessage="" paginator="false" reflow="true" editable="true" editMode="cell" style="width: 100%;"
+                                    id="detalleMaterialInsumo" value="#{dispensacionMaterialMB.listaDispensacionInsumo}" var="item"
+                                    scrollable="true">
+
+                            <p:column style="text-align: left;width: 20%;" headerText="Clave">
+                                <h:outputText value="#{item.claveInstitucional}" class="altoColumn" title="#{item.claveInstitucional}" />
+                            </p:column>
+
+                            <p:column style="text-align: left;width: 28%;" headerText="Descripción">
+                                <h:outputText value="#{item.nombreCorto}" class="altoColumn" title="#{item.nombreCorto}" />
+                            </p:column>
+
+                            <p:column style="text-align: center;width: 15%;" headerText="Lote">
+                                <h:outputText value="#{item.lote}" class="altoColumn" title="#{item.lote}" />
+                            </p:column>
+                                
+                            <p:column style="text-align: center;width: 10%;" headerText="Cantidad">
+                                <h:outputText value="#{item.cantidad}" class="altoColumn" title="#{item.cantidad}" />
+                            </p:column>
+
+                            <p:column style="text-align: left;width: 25%;" headerText="Notas">
+                                <h:outputText value="#{item.notas}" class="altoColumn" title="#{item.notas}"/>
+                            </p:column>
+                        </p:dataTable>
+                        <br/>
+                    </p:dialog>
+                </div>                
+            </ui:define>
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

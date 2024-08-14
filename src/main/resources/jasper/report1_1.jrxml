@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="200" pageHeight="802" columnWidth="200" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="821bcd0f-56f2-4e45-998d-788e0a855234">
+	<property name="ireport.zoom" value="4.594972986357224"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<subDataset name="data" uuid="28594362-fc19-4d2c-994d-c26448c1ab88">
+		<parameter name="folioReceta" class="java.lang.String"/>
+		<parameter name="idInventario" class="java.lang.String"/>
+		<parameter name="lote" class="java.lang.String"/>
+		<parameter name="claveInstitucional" class="java.lang.String"/>
+		<queryString>
+			<![CDATA[select  i.idInventario,m.nombreCorto,r.folio,m.claveInstitucional,re.cantidadEnviado,re.cantidadXCaja,re.loteEnv,i.idTipoOrigen,i.fechaCaducidad
+ from reabasto r
+inner join reabastoInsumo ri on r.idReabasto = ri.idReabasto
+inner join medicamento m on m.idMedicamento = ri.idInsumo
+inner join reabastoEnviado re on re.idReabastoInsumo = ri.idReabastoInsumo
+inner join inventario i on re.idInventarioSurtido = i.idInventario
+where r.folio = $P{folioReceta}
+and m.claveInstitucional = $P{claveInstitucional}
+group by re.loteEnv;]]>
+		</queryString>
+		<field name="idInventario" class="java.lang.String">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="nombreCorto" class="java.lang.String">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="folio" class="java.lang.String">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="claveInstitucional" class="java.lang.String">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="cantidadEnviado" class="java.lang.Integer">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="cantidadXCaja" class="java.lang.Integer">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="loteEnv" class="java.lang.String">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="idTipoOrigen" class="java.lang.Integer">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="fechaCaducidad" class="java.sql.Timestamp">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<group name="loteEnv">
+			<groupExpression><![CDATA[$F{loteEnv}]]></groupExpression>
+		</group>
+	</subDataset>
+	<parameter name="folioReceta" class="java.lang.String"/>
+	<parameter name="idInventario" class="java.lang.String"/>
+	<parameter name="lote" class="java.lang.String"/>
+	<parameter name="claveInstitucional" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select  i.idInventario,m.nombreCorto,r.folio,m.claveInstitucional,re.cantidadEnviado,re.cantidadXCaja,re.loteEnv,i.idTipoOrigen,i.fechaCaducidad
+ from reabasto r
+inner join reabastoInsumo ri on r.idReabasto = ri.idReabasto
+inner join medicamento m on m.idMedicamento = ri.idInsumo
+inner join reabastoEnviado re on re.idReabastoInsumo = ri.idReabastoInsumo
+inner join inventario i on re.idInventarioSurtido = i.idInventario
+where r.folio = $P{folioReceta}
+and m.claveInstitucional = $P{claveInstitucional}
+group by re.loteEnv;]]>
+	</queryString>
+	<field name="idInventario" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="nombreCorto" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="folio" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="claveInstitucional" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cantidadEnviado" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="cantidadXCaja" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="loteEnv" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="idTipoOrigen" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="fechaCaducidad" class="java.sql.Timestamp">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="8" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="48" height="8" uuid="777e2cad-1aea-4b9a-960e-2bfdea8a1016"/>
+				<textElement textAlignment="Center">
+					<font size="4" isBold="true"/>
+				</textElement>
+				<text><![CDATA[LOTE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="48" y="0" width="55" height="8" uuid="5fab4e38-b90a-492f-8e11-44e62d8281c1"/>
+				<textElement textAlignment="Center">
+					<font size="4" isBold="true"/>
+				</textElement>
+				<text><![CDATA[CADUCIDAD]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="103" y="0" width="55" height="8" uuid="f523db12-a305-4393-b07d-2e3dbefd4c81"/>
+				<textElement textAlignment="Center">
+					<font size="4" isBold="true"/>
+				</textElement>
+				<text><![CDATA[CANT. SURT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="158" y="0" width="44" height="8" uuid="28715d98-bf54-4ade-865e-d9d615025101"/>
+				<textElement textAlignment="Center">
+					<font size="4" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ORIGEN]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="8" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="48" height="8" uuid="c071b407-6124-4b9a-8791-503cc5f8b945"/>
+				<textElement textAlignment="Center">
+					<font size="4"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{loteEnv}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd-MMM-yyyy">
+				<reportElement x="48" y="0" width="55" height="8" uuid="7c460d4b-3d9a-4c2d-8d3a-828e7a0b299b"/>
+				<textElement textAlignment="Center">
+					<font size="4"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fechaCaducidad}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="103" y="0" width="55" height="8" uuid="e5091478-85df-462a-b7d1-de5b70c44c33"/>
+				<textElement textAlignment="Center">
+					<font size="4"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cantidadEnviado}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="158" y="0" width="44" height="8" uuid="8ee0c688-f9e5-4f78-b27d-4e0cf44bc016"/>
+				<textElement textAlignment="Center">
+					<font size="4"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{idTipoOrigen}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="2" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="1" width="200" height="1" uuid="3701eeba-2025-454f-8c37-cb42956ca446"/>
+			</line>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    
+    <h:head>
+        <title>Unidades Jerárquicas</title>
+    </h:head>
+        
+    <h:body>
+        
+    	<ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">
+                <div class="mainPanel">
+                    <h:form id="mainForm"><br/>
+                        
+                        <p:outputLabel value="No tiene permiso de visualización de esta transacción." 
+                               style="font-size: 18px !important; font-weight: bold; color: red;"
+                               rendered="#{!cargaMasivaMB.permiso.puedeVer}" />
+                        
+                        <p:wizard flowListener="#{cargaMasivaMB.onFlowProcess}" nextLabel="Siguiente" backLabel="Atrás"
+                                  rendered="#{cargaMasivaMB.permiso.puedeVer}" >
+                            <p:tab id="estructura" title="Estructura del Hospital" titleStyle="font-size: 13px">
+                                <p:panel header="Carga masiva para la Estructura" >
+                                    <p:messages id="msjEstructura" showDetail="false" globalOnly="true" closable="true" >
+                                        <p:autoUpdate />
+                                    </p:messages>
+                                    
+                                    <p:fileUpload dragDropSupport="false" uploadLabel="Subir Archivo" cancelLabel="Cancelar" label="Seleccionar Archivo" 
+                                        allowTypes="/(\.|\/)(xlsx|xls)$/" invalidFileMessage="Tipo de archivo invalido"
+                                        fileUploadListener="#{cargaMasivaMB.estructuraFileUpload}" mode="advanced"  update=":mainForm"  />
+                                    <p:outputPanel rendered="#{cargaMasivaMB.noProcessExtr}" >
+                                        <p:dataTable  id="tblNoProcessEstructura"
+                                         var="item" editable="true"  
+                                         value="#{cargaMasivaMB.estructuraList}"
+                                         styleClass="styleEventosPlanPrestacion" reflow="true"
+                                         style="margin-bottom:5px;" 
+                                         scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" > 
+                                            
+                                            <f:facet name="header" ><h:outputText style="color: #000;" value="Datos NO procesados" /></f:facet>
+                                            
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.nombrePadre}" headerText="Estructura Padre" >
+                                                <h:outputText value="#{item.nombrePadre}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.nombre}" headerText="Nombre Estructura" >
+                                                <h:outputText value="#{item.nombre}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.descripcion}" headerText="Descripción" >
+                                                <h:outputText value="#{item.descripcion}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.tipoAreaEstructura}" headerText="Tipo Estructura" >
+                                                <h:outputText value="#{item.tipoAreaEstructura}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.tipoAlmacen}" headerText="Tipo Almacen" >
+                                                <h:outputText value="#{item.tipoAlmacen}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.estatus}" headerText="Estatus" >
+                                                <h:outputText value="#{item.estatus}" class="altoColumn" />
+                                            </p:column>
+                                            
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.motivo}" headerText="Motivo" >
+                                                <h:outputText value="#{item.motivo}" title="#{item.motivo}" class="altoColumn" />
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:outputPanel>
+                                </p:panel>
+                            </p:tab>
+                            <p:tab id="camas" title="Camas / consultorios" titleStyle="font-size: 13px; font-family: 'Open Sans',sans-serif !important;" >
+                                <p:panel header="Carga masiva para las Camas">
+                                    <p:messages id="msjCamas" showDetail="false" globalOnly="false" closable="true" >
+                                        <p:autoUpdate />
+                                    </p:messages>
+                                    <p:outputLabel value="Seleccion un archivo" />
+                                    <br/>
+                                    <p:fileUpload  dragDropSupport="false" uploadLabel="Subir Archivo" cancelLabel="Cancelar" label="Seleccionar Archivo" style="font-family: 'Open Sans',sans-serif !important;"
+                                                   allowTypes="/(\.|\/)(xlsx|xls)$/" invalidFileMessage="Tipo de archivo invalido"
+                                                   fileUploadListener="#{cargaMasivaMB.camaFileUpload}"  mode="advanced" update=":mainForm"  />
+                                    <p:outputPanel rendered="#{cargaMasivaMB.noProcess}" >                                        
+                                        <p:dataTable  id="tblNoProcess"
+                                         var="item" editable="true"  
+                                         value="#{cargaMasivaMB.camaList}"
+                                         styleClass="styleEventosPlanPrestacion" reflow="true"
+                                         style="margin-bottom:5px;" 
+                                         scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" > 
+                                            
+                                            <f:facet name="header" ><h:outputText style="color: #000;" value="Datos NO procesados" /></f:facet>
+                                            
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.area}" headerText="Area" >
+                                                <h:outputText value="#{item.area}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.servicio}" headerText="Servicio" >
+                                                <h:outputText value="#{item.servicio}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.ubicacion}" headerText="Pabellón" >
+                                                <h:outputText value="#{item.ubicacion}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.nombreCama}" headerText="Nombre Cama" >
+                                                <h:outputText value="#{item.nombreCama}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.tipoCama}" headerText="Tipo Cama" >
+                                                <h:outputText value="#{item.tipoCama}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.estatus}" headerText="Estatus" >
+                                                <h:outputText value="#{item.estatus}" class="altoColumn" />
+                                            </p:column>
+                                            
+                                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.razon}" headerText="Motivo" >
+                                                <h:outputText value="#{item.razon}" title="#{item.razon}" class="altoColumn" />
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:outputPanel>
+                                </p:panel>
+                            </p:tab>
+                        </p:wizard>
+                    </h:form>
+                </div>
+            </ui:define>
+            
+            <ui:define name="footer">
+    			
+            </ui:define>        
+        </ui:composition>
+    </h:body>
+</html>
+    

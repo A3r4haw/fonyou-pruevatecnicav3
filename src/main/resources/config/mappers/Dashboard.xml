@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http, jdbcType = VARCHAR//mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DashboardMapper">
+	
+	<select id="getIndicadoresGenerales" resultType="mx.mc.model.DashboardResult" >
+		SELECT SUM(cantidad) AS cantidad, es.estatus AS estatus
+		FROM surtimientoMinistrado sm
+		INNER JOIN estatusSurtimiento es ON sm.idEstatusSurtimiento = es.idEstatusSurtimiento
+		WHERE sm.idEstatusSurtimiento = 4
+		UNION
+		SELECT  SUM(se.cantidadEnviado) AS cantidad, es.estatus AS estatus
+		FROM surtimientoEnviado se
+		INNER JOIN estatusSurtimiento es ON se.idEstatusSurtimiento = es.idEstatusSurtimiento
+		WHERE se.idEstatusSurtimiento = 2
+		UNION
+		SELECT COUNT(*) AS cantidad, 'Registrado' AS estatus
+		FROM paciente pa
+		UNION
+		SELECT COUNT(*) AS cantidad, mpm.nombreMotivoPacienteMovimiento AS estatus
+		FROM paciente pa
+		INNER JOIN visita vi ON pa.idPaciente = vi.idPaciente
+		INNER JOIN pacienteServicio ps ON  vi.idVisita = ps.idVisita
+		INNER JOIN motivoPacienteMovimiento mpm ON ps.idMotivoPacienteMovimiento = mpm.idmotivoPacienteMovimiento
+		WHERE ps.idMotivoPacienteMovimiento IN (4,5)
+		GROUP BY ps.idMotivoPacienteMovimiento;
+	</select>
+	
+	<select id="getTopTenMedicaments" resultType="mx.mc.model.DashboardResult" >
+		SELECT  me.claveInstitucional AS claveMedicamento, me.nombreCorto, SUM(se.cantidadEnviado) AS cantidad 
+		FROM surtimientoEnviado se
+		INNER JOIN surtimientoInsumo si ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+		INNER JOIN prescripcionInsumo pi ON si.idPrescripcionInsumo = pi.idPrescripcionInsumo
+		INNER JOIN medicamento me ON pi.idInsumo = me.idMedicamento
+		WHERE se.idEstatusSurtimiento = 2
+		GROUP BY me.claveInstitucional, me.nombreCorto ORDER BY cantidad DESC LIMIT 10;
+	</select>
+	
+	<select id="getPrescripciones" resultType="mx.mc.model.DashboardResult" >
+		SELECT COUNT(*) AS cantidad, ep.estatus AS estatus
+		FROM prescripcion pr
+		INNER JOIN estatusPrescripcion ep ON pr.idEstatusPrescripcion = ep.idEstatusPrescripcion
+		GROUP BY ep.idEstatusPrescripcion;
+	</select>
+        
+        <select id="getTopMedicos" resultType="mx.mc.model.DashboardResult" >
+		SELECT clave, nombre, numero AS cantidad
+                FROM viewTopMedico
+                ORDER BY numero DESC
+	</select>
+        
+        <select id="getTopPacientes" resultType="mx.mc.model.DashboardResult" >
+            SELECT clave, nombre, numero AS cantidad
+                FROM viewTopPaciente
+                ORDER BY numero DESC
+	</select>
+        
+        <select id="getTopServicios" resultType="mx.mc.model.DashboardResult" >
+            SELECT clave, nombre, numero AS cantidad
+                FROM viewTopServicio
+                ORDER BY numero DESC
+	</select>
+        
+        <select id="getTopNivel" resultType="mx.mc.model.DashboardResult" >
+            SELECT clave, nombre, numero AS cantidad
+                FROM viewTopNivel
+                ORDER BY numero DESC
+	</select>
+</mapper>

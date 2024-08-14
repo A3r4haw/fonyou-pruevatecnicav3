@@ -1,0 +1,1583 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanelAmplio" >
+                    <h:form id="mainForm">
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <p:focus context="mainForm"/>
+
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value="Validación de Órdenes de Solución"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+                            <p:selectCheckboxMenu id="menu" value="#{validarSolucion.tipoPrescripcionSelectedList}" label="Tipo" title="Filtro por tipo de Prescripción"
+                                                  filter="true" filterMatchMode="startsWith" panelStyle="width:110px" style="width: 110px;">
+                                <f:selectItem value="#{N}" itemLabel="Normal" itemValue="N" />
+                                <f:selectItem value="#{U}" itemLabel="Urgente" itemValue="U" />
+                                <f:selectItem value="#{D}" itemLabel="Dosis Única" itemValue="D" />
+                            </p:selectCheckboxMenu>
+                            <p:spacer width="10px;" />
+                            <p:inputText id="busqueda" 
+                                         value="#{validarSolucion.cadenaBusqueda}" 
+                                         class="textSearch"
+                                         style="width: 50% !important;" 
+                                         placeholder="Buscar..." title="Buscar por Número de Cama, Paciente o Servicio" />
+                            <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />
+                            <p:spacer width="12px" />
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();}"
+                                             actionListener="#{validarSolucion.obtenerSurtimientos}"
+                                             update="@form"  />
+                        </div>
+
+                        <p:commandButton title="Crear Nueva Orden" value="Nueva Orden" styleClass="btnMusAzul"
+                                         onclick="PF('statusProcess').show();" style="margin-top: 5px; margin-bottom: 5px;"
+                                         oncomplete="PF('statusProcess').hide(); PF('modalNuevaOrden').show();"
+                                         update=":formNuevaOrden" actionListener="#{validarSolucion.setNuevaOrden}"
+                                         rendered="false">
+                            <p:resetInput target="formNuevaOrden"/>
+                        </p:commandButton>
+
+                        <p:toolbar rendered="false">
+                            <p:toolbarGroup id="toolbar"  >
+                                <p:commandButton id="btnModificar" value="Modificar"
+                                                 title="Modificar Rol" icon="ui-icon-pencil"
+                                                 onclick="PF('statusProcess').show()"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalSurtimiento').show();"
+                                                 update=":formSurtimientoDetail"
+                                                 disabled="#{!validarSolucion.permiso.puedeEditar or !validarSolucion.elementoSeleccionado}"
+                                                 rendered="false" />
+                            </p:toolbarGroup>
+                        </p:toolbar>
+ 
+                        <p:tabView>
+                            <p:ajax 
+                                event="tabChange" 
+                                process="@this" 
+                                update="mainForm:tblSurtimientos"
+                                listener="#{validarSolucion.onTabChange}"/>                            
+                            <p:tab title="Programadas" id="#{validarSolucion.porValidar}" >
+                            </p:tab>
+                            <p:tab title="Validadas" id="#{validarSolucion.validada}" >                                
+                            </p:tab>                            
+                            <p:tab title="Rechazadas" id="#{validarSolucion.rechazada}" >                                
+                            </p:tab>                            
+                        </p:tabView> 
+
+                        <p:panel id="dataTable">
+                            <p:dataTable id="tblSurtimientos" 
+                                         widgetVar="tblSurtimientos"         
+                                         value="#{validarSolucion.dispensacionSolucionLazy}"
+                                         lazy="true"
+                                         selection="#{validarSolucion.surtimientoExtendedSelected}"
+                                         var="item" 
+                                         rowKey="#{item.idSurtimiento}"
+                                         rowIndexVar="row"
+                                         selectionMode="single"
+                                         style="margin-bottom:5px;"
+                                         styleClass="mystyle"
+                                         scrollRows="10" scrollable="true" scrollHeight="350"
+                                         emptyMessage="No se encontraron Registros"
+                                         reflow="true"
+                                         paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                         currentPageReportTemplate=" "
+                                         paginator="true"
+                                         rows="10"
+                                         paginatorPosition="bottom"
+                                         rowStyleClass="#{item.tipoPrescripcion eq 'U' ? 'urgente' : item.tipoPrescripcion eq 'D' ? 'unica': null}" >
+                                <p:ajax event="rowDblselect" listener="#{validarSolucion.verSurtimiento}" update=":formEditarOrden"
+                                        onstart="PF('statusProcess').show()"
+                                        oncomplete="PF('statusProcess').hide(); PF('modalEditarOrden').show();" />
+
+                                <f:facet name="{Exporters}">
+                                    <div style="float:right">
+                                        <h:commandLink >
+                                            <img src="#{request.contextPath}/resources/img/btnxls.png" style="height: 25px !important; margin-left: 5px !important;" title="Exportar" />
+                                            <p:dataExporter type="xls" target="tblSurtimientos" fileName="prescripcionesPorValidar" />
+                                        </h:commandLink>
+                                    </div>
+                                </f:facet>
+
+                                <p:column style="text-align: left; width: 8% "
+                                          sortBy="#{item.tipoPrescripcion}" exportable="false" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Tipo" />
+                                    </f:facet>
+                                    <p:outputPanel rendered="#{item.tipoPrescripcion eq 'N'}" >
+                                        <img src="#{request.contextPath}/resources/img/cpnormal.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                        <p:spacer width="8px"/>
+                                        <h:outputText value="Normal"/>
+                                    </p:outputPanel>
+                                    <p:outputPanel rendered="#{item.tipoPrescripcion eq 'U'}" >
+                                        <img src="#{request.contextPath}/resources/img/cpurgente.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                        <p:spacer width="8px"/>
+                                        <h:outputText value="Urgente"/>
+                                    </p:outputPanel>
+                                    <p:outputPanel rendered="#{item.tipoPrescripcion eq 'D'}" >
+                                        <img src="#{request.contextPath}/resources/img/cpunica.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                        <p:spacer width="8px"/>
+                                        <h:outputText value="Dosis Única"/>
+                                    </p:outputPanel>
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 8% "
+                                          sortBy="#{item.tipoSolucion}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Solución" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.tipoSolucion}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 12% "
+                                          sortBy="#{item.fechaProgramada}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Fecha" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.fechaProgramada}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10% "
+                                          sortBy="#{item.folio}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Folio" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.folio}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 18% " sortBy="#{item.nombrePaciente}">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Paciente" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombrePaciente}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 14% " sortBy="#{item.nombreEstructura}">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Ubicación " />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombreEstructura}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 6% ">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Cama" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.cama}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 18% " 
+                                          sortBy="#{item.nombreMedico}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Médico" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombreMedico}" />
+                                </p:column>
+                                <p:column style="text-align: left; width: 6% " exportable="false">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Acciones" />
+                                    </f:facet>
+                                    <p:commandLink title="Modificar" onclick="PF('statusProcess').show()"
+                                                   oncomplete="PF('statusProcess').hide(); PF('modalEditarOrden').show();"
+                                                   action="#{validarSolucion.verSurtimiento}"
+                                                   update=":formEditarOrden"
+                                                   disabled="#{!validarSolucion.permiso.puedeEditar}">
+                                        <f:actionListener binding="#{validarSolucion.setSurtimientoExtendedSelected(item)}" />
+                                        <i class="fa fa-eye iconMusAzul" style="font-size: large" />
+                                    </p:commandLink>
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:contextMenu for="tblSurtimientos">
+                                <p:menuitem id="btnModificarContext" value="Modificar"
+                                            onclick="PF('statusProcess').show()"
+                                            oncomplete="PF('statusProcess').hide(); PF('modalEditarOrden').show();"
+                                            actionListener="#{validarSolucion.verSurtimiento}"
+                                            update=":formEditarOrden"
+                                            icon="ui-icon-pencil"
+                                            disabled="#{!validarSolucion.permiso.puedeEditar}" />
+                            </p:contextMenu>
+
+                        </p:panel>
+
+                    </h:form>
+                </div>
+                
+                <p:dialog header="ADVERTENCIA" id="idWarning"
+                          widgetVar="modalWarning"
+                          closeOnEscape="false"  resizable="false"
+                          closable="false" 
+                          modal="true" style="align-content: center" >
+                    <h:form id="formWarning">
+                        <div style="height: 50px" align="center" >
+                            <h:outputText id="msjWarning" value="#{validarSolucion.msjWarning}" escape="false" />
+                        </div>
+                        <hr/>
+                        <p:commandButton value="Cerrar" icon="fa fa-times-circle" onclick="PF('modalWarning').hide()"
+                                 style="margin-right: 10px;float: right;" />  
+                    </h:form>
+                </p:dialog>
+                
+                <p:dialog header="NUEVA ORDEN DE MEZCLA"
+                          widgetVar="modalNuevaOrden"
+                          closeOnEscape="true"
+                          closable="true"
+                          width="95%"
+                          position="30,10"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important;">
+                    <p:scrollPanel mode="native" style="max-height: 650px">
+                        <h:form id="formNuevaOrden">
+                            <p:messages id="msgValidaRegistro" globalOnly="false" showDetail="false" closable="true" rendered="#{validarSolucion.msjMdlSurtimiento}" />
+                            <div class="ui-g">
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel style="margin-right: 5px;">Folio Surtimiento:</p:outputLabel>
+                                        <p:outputLabel id="folioSurt" value="#{validarSolucion.surtimientoExtendedSelected.folio}"></p:outputLabel>
+                                    </div>
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel style="margin-right: 5px;">Fecha Registro:</p:outputLabel>
+                                        <p:outputLabel id="fechaRegistro" value="#{validarSolucion.surtimientoExtendedSelected.insertFecha}" title="Fecha de Registro">
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm"/>
+                                        </p:outputLabel>
+                                    </div>
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel style="margin-right: 5px;">Estatus:</p:outputLabel>
+                                        <p:outputLabel id="estatusSurtimiento" value="#{validarSolucion.surtimientoExtendedSelected.estatusSurtimiento}" title="Estatus del Surtimiento"></p:outputLabel>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="txtFolioPrescripcion" style="margin-right: 5px;">Folio Prescripción:</p:outputLabel>
+                                        <p:inputText id="txtFolioPrescripcion" value="#{validarSolucion.surtimientoExtendedSelected.folioPrescripcion}"
+                                                     widgetVar="txtFolioPrescripcion"
+                                                     size="22" maxlength="20" required="true"
+                                                     requiredMessage="Debe ingresar el Folio de la Prescripción"
+                                                     placeholder="Folio de Prescripción"
+                                                     title="Folio de Prescripción">
+                                            <p:ajax event="change" listener="#{validarSolucion.obtenDatosSurtimiento('')}" onstart="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();"
+                                                    update=":formNuevaOrden"/>
+                                        </p:inputText>
+                                    </div>
+                                    
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel for="fechaProgramada" style="margin-right: 5px;">Programada:</p:outputLabel>
+                                        <p:calendar id="fechaProgramada" value="#{validarSolucion.surtimientoExtendedSelected.fechaProgramada}"
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                title="Fecha Programada" mindate="#{validarSolucion.fechaActual}"
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade" required="true"
+                                                requiredMessage="Debe ingresar la Fecha Programada"/>
+                                    </div>
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="tipoPrescripcion" style="margin-right: 5px;">Tipo Prescripción:</p:outputLabel>
+                                        <p:selectOneMenu id="tipoPrescripcion" value="#{validarSolucion.surtimientoExtendedSelected.tipoPrescripcion}" label="Tipo de Prescripción"
+                                                         title="Tipo de Prescripción" autoWidth="true" style="vertical-align: middle;" disabled="#{validarSolucion.existePrescripcion}"
+                                                         required="true" requiredMessage="Debe seleccionar un Tipo de Prescripción">
+                                            <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                            <f:selectItem itemLabel="Normal" itemValue="N" />
+                                            <f:selectItem itemLabel="Urgente" itemValue="U" />
+                                            <f:selectItem itemLabel="Dosis Única" itemValue="D" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="comboServicios" style="margin-right: 5px;">Área/Servicio:</p:outputLabel>
+                                        <p:selectOneMenu id="comboServicios" title="Área o Servicio"
+                                                         value="#{validarSolucion.surtimientoExtendedSelected.idEstructura}"
+                                                         autoWidth="true" required="true"
+                                                         requiredMessage="Debe seleccionar el Área o Servicio"
+                                                         filter="true" filterMatchMode="contains"
+                                                         disabled="#{validarSolucion.existePrescripcion}"
+                                                         style="vertical-align: middle; ">
+                                            <f:selectItem itemLabel="Seleccione Área" itemValue="#{null}"/>
+                                            <f:selectItems value="#{validarSolucion.listServiciosQueSurte}"
+                                                           var="servicio"
+                                                           itemValue="#{servicio.idEstructura}"
+                                                           itemLabel="#{servicio.descripcion}"
+                                                           />
+                                            <p:ajax event="itemSelect" listener="#{validarSolucion.obtenerCamas}" update="comboCamas"></p:ajax>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel for="comboCamas" style="margin-right: 5px;">Cama:</p:outputLabel>
+                                        <p:selectOneMenu id="comboCamas" title="Cama del Paciente"
+                                                         value="#{validarSolucion.surtimientoExtendedSelected.cama}"
+                                                         autoWidth="true"
+                                                         filter="true" filterMatchMode="contains"
+                                                         disabled="#{validarSolucion.existePrescripcion}"
+                                                         style="vertical-align: middle; ">
+                                            <p:ajax event="itemSelect" listener="#{validarSolucion.seleccionaCama}" ></p:ajax>
+                                            <f:selectItem itemLabel="Seleccione Cama" itemValue="#{null}"/>
+                                            <f:selectItems value="#{validarSolucion.listaCamas}"
+                                                           var="cama"
+                                                           itemValue="#{cama.idCama}"
+                                                           itemLabel="#{cama.nombreCama}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="autoCompleteMedico" style="margin-right: 5px;">Médico Solicitante:</p:outputLabel>
+                                        <p:autoComplete id="autoCompleteMedico" 
+                                                value="#{validarSolucion.medico}" 
+                                                required="true"
+                                                requiredMessage="Debe seleccionar el Médico"
+                                                completeMethod="#{validarSolucion.autoCompleteMedicos}" 
+                                                minQueryLength="3" 
+                                                forceSelection="true"
+                                                var="medico" 
+                                                itemValue="#{medico.idUsuario}" 
+                                                itemLabel="#{medico.nombre} #{medico.apellidoPaterno} #{medico.apellidoMaterno}"
+                                                converter="medicoConverter" 
+                                                placeholder="Buscar Médico..."
+                                                emptyMessage="Búsqueda sin resultados" 
+                                                size="28" title="Médico Solicitante"
+                                                disabled="#{validarSolucion.existePrescripcion}"
+                                                scrollHeight="200">
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Cédula Profesional" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.cedProfesional}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Nombre" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.nombre}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Paterno" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Materno" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:commandButton id="agregaMedico" title="Agregar" value="+" 
+                                            actionListener="#{validarSolucion.mostrarModalAgregarMedico}"
+                                            onclick="PF('statusProcess').show();"
+                                            oncomplete="PF('statusProcess').hide();PF('modalAgregarMedico').show();"
+                                            update=":formAgregarMedico:turnoMedico"
+                                            disabled="true" >
+                                            <p:resetInput target="formAgregarMedico"/>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="autoCompletePaciente" style="margin-right: 5px;">Paciente:</p:outputLabel>
+                                        <p:autoComplete id="autoCompletePaciente" 
+                                                value="#{validarSolucion.pacienteExtended}" 
+                                                completeMethod="#{validarSolucion.autoCompletePacientes}" 
+                                                minQueryLength="3" required="true"
+                                                requiredMessage="Debe seleccionar el Paciente"
+                                                forceSelection="true"
+                                                var="paciente"  
+                                                itemValue="#{paciente}"
+                                                itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}"
+                                                converter="pacienteConverter" 
+                                                placeholder="Buscar Paciente..."
+                                                emptyMessage="Búsqueda sin resultados" 
+                                                title="Nombre del Paciente"
+                                                disabled="#{validarSolucion.existePrescripcion}"
+                                                size="35" scrollHeight="200">
+                                            <p:ajax event="itemSelect" listener="#{validarSolucion.selectPaciente}" process="@this" 
+                                                    update="txtNumPaciente, txtDiagnosticos, txtEdadPaciente, txtPesoPaciente, txtTallaPaciente, txtAreaPaciente, chkDiabetes, chkHipertension, chkProRenales, chkPadeCronico"></p:ajax>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Número de Paciente" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.pacienteNumero}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave DerechoHabiencia" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.claveDerechohabiencia}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Nombre" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.nombreCompleto}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Paterno" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Materno" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:commandButton id="agregaPaciente" title="Agregar" value="+" 
+                                                         onclick="PF('statusProcess').show();" immediate="true"
+                                            actionListener="#{validarSolucion.mostrarModalAgregarPaciente}"
+                                            oncomplete="PF('statusProcess').hide();PF('modalAgregarPaciente').show();"
+                                            update="formAgregarPaciente"
+                                            disabled="true" >
+                                            <p:resetInput target="formAgregarPaciente"/>
+                                        </p:commandButton>
+                                    </div>
+
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel style="margin-right: 5px;">Número Paciente:</p:outputLabel>
+                                        <p:outputLabel id="txtNumPaciente" value="#{validarSolucion.pacienteExtended.pacienteNumero}" title="Número del Paciente">
+                                        </p:outputLabel>
+                                    </div>
+                                    
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="tipoConsulta" style="margin-right: 5px;">Tipo Consulta:</p:outputLabel>
+                                        <p:selectOneMenu id="tipoConsulta" value="#{validarSolucion.surtimientoExtendedSelected.tipoConsulta}" title="Tipo de la Consulta" autoWidth="true" 
+                                                         style="vertical-align: middle;" disabled="#{validarSolucion.existePrescripcion}" required="true" requiredMessage="Debe seleccionar el Tipo de Consulta">
+                                            <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                            <f:selectItem value="#{I}" itemLabel="Interna" itemValue="I" />
+                                            <f:selectItem value="#{E}" itemLabel="Externa" itemValue="E" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin:0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Edad" />
+                                        <p:inputText id="txtEdadPaciente" value="#{validarSolucion.surtimientoExtendedSelected.edadPaciente}"  
+                                                     size="1"
+                                                     disabled="true">
+                                            <p:keyFilter mask="num" regEx="/[\d{1,3}\.\d{0,2}]/i" />
+                                        </p:inputText>años
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin: 5px 0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Peso:"  />
+                                        <p:inputText id="txtPesoPaciente" value="#{validarSolucion.surtimientoExtendedSelected.pesoPaciente}"  size="1" >
+                                            <p:keyFilter mask="num" />
+                                        </p:inputText>kg
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin: 5px 0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Estatura:"  />
+                                        <p:inputText id="txtTallaPaciente" value="#{validarSolucion.surtimientoExtendedSelected.tallaPaciente}"  size="1" >
+                                            <p:keyFilter mask="num" />
+                                        </p:inputText>mts
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin: 5px 0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Área:"  />
+                                        <p:inputText id="txtAreaPaciente" value="#{validarSolucion.surtimientoExtendedSelected.areaCorporal}"  size="1" >
+                                            <p:keyFilter mask="num" />
+                                        </p:inputText>m²
+                                    </div>
+                                </div>
+                                
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin:0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Problemas Glucosa:" />
+                                        <p:selectBooleanCheckbox value="#{validarSolucion.surtimientoExtendedSelected.diabetes}" 
+                                                                 id="chkDiabetes"
+                                                                 disabled="#{validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento!=10}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin:0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Problemas Hipertensión:" />
+                                        <p:selectBooleanCheckbox value="#{validarSolucion.surtimientoExtendedSelected.hipertension}" 
+                                                                 id="chkHipertension"  
+                                                                 disabled="#{validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento!=10}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2" style="margin:0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Problemas Renales" />
+                                        <p:selectBooleanCheckbox value="#{validarSolucion.surtimientoExtendedSelected.problemasRenales}" 
+                                                                 id="chkProRenales"
+                                                                 disabled="#{validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento!=10}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin:0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Padecimiento crónico:"  rendered="false" />
+                                        <p:selectBooleanCheckbox value="#{validarSolucion.surtimientoExtendedSelected.padecimientoCronico}" 
+                                                                 id="chkPadeCronico"  rendered="false"
+                                                                 disabled="#{validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento!=10}" />
+                                    </div>
+                                </div>
+
+                                <p:outputLabel value="INFORMACIÓN DE LA SOLUCIÓN"  class="plabel ui-g-12" />
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <p:outputLabel value="Diagnósticos: * " style="margin-right: 5px; vertical-align: top; "/>
+                                    <p:autoComplete id="txtDiagnosticos"
+                                            styleClass="autocomplete-multiple-hiper"
+                                            multiple="true" required="true" requiredMessage="Se requiere al menos un diagnóstico"
+                                            placeholder="Agregar Diagnósticos" 
+                                            value="#{validarSolucion.listaDiagnosticos}"
+                                            completeMethod="#{validarSolucion.autocompleteDiagnosticos}"
+                                            minQueryLength="4"                                                       
+                                            forceSelection="true"
+                                            var="diagnos" 
+                                            itemLabel="#{diagnos.nombre}" itemValue="#{diagnos}" 
+                                            converter="musGenericConverter" >
+                                        <p:ajax event="itemSelect" update="txtDiagnosticos" process="txtDiagnosticos"></p:ajax>
+                                        <p:column style="width: 20px; font-size: small;" width="50px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Clave" />
+                                            </f:facet>
+                                            <h:outputText value="#{diagnos.clave}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width: 600px; font-size: small;" width="600px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Descripción" />
+                                            </f:facet>
+                                            <h:outputText value="#{diagnos.nombre}" style=" font-size: x-small;" />
+                                        </p:column>
+                                    </p:autoComplete>
+                                </div>
+
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="tipoSolucion" style="margin-right: 5px;">Tipo Solución:</p:outputLabel>
+                                        <p:selectOneMenu id="tipoSolucion" widgetVar="tipoSolucion" value="#{validarSolucion.idTipoSolucion}" label="Tipo de Solución"
+                                                         title="Tipo de Solución" autoWidth="true" style="vertical-align: middle;" required="true" requiredMessage="Debe seleccionar el Tipo de Solución">
+                                            <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                            <f:selectItems value="#{validarSolucion.tipoSolucionList}" var="tipoSol"
+                                                           itemLabel="#{tipoSol.clave}" itemValue="#{tipoSol.idTipoSolucion}"/>
+                                            <p:ajax event="itemSelect" update="protocolo txtDiagnostico"
+                                                listener="#{validarSolucion.validaDiagnosticoProtocolo}">
+                                            </p:ajax>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel for="viaAdministracion" style="margin-right: 5px;">Vía Administración:</p:outputLabel>
+                                        <p:selectOneMenu id="viaAdministracion" value="#{validarSolucion.viaAdministracion.idViaAdministracion}"
+                                                         label="Vía de Administración" title="Vía de Administración" autoWidth="true" style="vertical-align: middle; " 
+                                                         required="true" requiredMessage="Debe seleccionar una Vía de Administración" filter="true" filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Seleccione Vía" itemValue="#{null}"/>
+                                            <f:selectItems value="#{validarSolucion.viaAdministracionList}" var="via"
+                                                           itemLabel="#{via.nombreViaAdministracion}" itemValue="#{via.idViaAdministracion}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3" style="margin: 5px 0px; padding: 0px; " >
+                                        <p:outputLabel style="margin-right: 10px;" value="Contenedor: " />
+                                        <p:selectOneMenu id="cmbIdContenedor" value="#{validarSolucion.surtimientoExtendedSelected.idContenedor}"  >
+                                            <f:selectItem itemValue="#{null}" itemLabel="Seleccione una opción" />
+                                            <f:selectItem itemValue="1" itemLabel="Jeringa 2ml" />
+                                            <f:selectItem itemValue="2" itemLabel="Jeringa 5ml" />
+                                            <f:selectItem itemValue="3" itemLabel="Bolo 1" />
+                                            <f:selectItem itemValue="4" itemLabel="Bolo 2" />
+                                            
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="chkPerfucionContinua" style="margin-right: 5px;">Perfusión Continua:</p:outputLabel>
+                                        <p:selectBooleanCheckbox id="chkPerfucionContinua" value="#{validarSolucion.surtimientoExtendedSelected.perfusionContinua}" >
+                                            <p:ajax event="change" update="txtVelocidad txtRitmo" listener="#{validarSolucion.activaPerfusion}" />
+                                        </p:selectBooleanCheckbox>
+                                    </div>
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="txtVelocidad" style="margin-right: 5px;">Velocidad:</p:outputLabel>
+                                        <p:inputNumber id="txtVelocidad" value="#{validarSolucion.surtimientoExtendedSelected.velocidad}" minValue="0" decimalSeparator="." thousandSeparator="," decimalPlaces="2" size="10" 
+                                                       title="Velocidad de Administración" 
+                                                       disabled="#{!validarSolucion.surtimientoExtendedSelected.perfusionContinua}" />
+                                        ml/h
+                                    </div>
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel for="txtRitmo" style="margin-right: 5px;">Ritmo:</p:outputLabel>
+                                        <p:inputNumber id="txtRitmo" value="#{validarSolucion.surtimientoExtendedSelected.ritmo}" minValue="0" decimalSeparator="." thousandSeparator="," decimalPlaces="2" size="10" 
+                                                       title="Ritmo de Administración" 
+                                                       disabled="#{!validarSolucion.surtimientoExtendedSelected.perfusionContinua}" />
+                                        cm³/min
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel for="protocolo" style="margin-right: 5px;">Protocolo:</p:outputLabel>
+                                        <p:selectOneMenu id="protocolo" value="#{validarSolucion.claveProtocolo}" label="Protocolo" filter="true" filterMatchMode="contains"
+                                                         title="Tipo de Protocolo" autoWidth="true" style="vertical-align: middle;" disabled="#{!validarSolucion.isOncologica}">
+                                            <f:selectItem itemLabel="Seleccione Protocolo" itemValue="#{0}"/>
+                                            <f:selectItems value="#{validarSolucion.listaProtocolos}" var="proto" itemValue="#{proto.claveProtocolo}" itemLabel="#{proto.claveProtocolo}"></f:selectItems>
+                                            <p:ajax event="itemSelect" update="formWarning:msjWarning"
+                                                listener="#{validarSolucion.validaDiagnosticoProtocolo}">
+                                            </p:ajax>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <p:outputLabel for="txtDiagnostico" style="margin-right: 5px;">Diagnóstico:</p:outputLabel>
+                                    <p:autoComplete id="txtDiagnostico"
+                                            styleClass="autocomplete-multiple-hiper"
+                                            multiple="false"
+                                            placeholder="Buscar Diagnóstico" 
+                                            value="#{validarSolucion.diagnosticoSelected}"
+                                            completeMethod="#{validarSolucion.autocompleteDiagnostico}"
+                                            minQueryLength="4"                                                       
+                                            forceSelection="true"                                                         
+                                            var="diagnos" size ="80"
+                                            itemLabel="#{diagnos.nombre}" itemValue="#{diagnos}" 
+                                            converter="musGenericConverter" 
+                                            disabled="#{!validarSolucion.isOncologica}">
+                                        <p:column style="width: 20px; font-size: small;" width="50px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Clave" />
+                                            </f:facet>
+                                            <h:outputText value="#{diagnos.clave}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width: 600px; font-size: small;" width="600px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Descripción" />
+                                            </f:facet>
+                                            <h:outputText value="#{diagnos.nombre}" style=" font-size: x-small;" />
+                                        </p:column>
+                                        <p:ajax event="itemSelect" update="formWarning:msjWarning"
+                                            listener="#{validarSolucion.validaDiagnosticoProtocolo}">
+                                        </p:ajax>
+                                    </p:autoComplete>
+                                </div>
+
+                                <div class="ui-g-12" style="padding: 10px 5px; background-color: #bfbfbf; margin-right:20px;">
+                                    <div style="width: 5%; float:left;">
+                                        <p:inputText id="xcantidad"
+                                                    value="#{validarSolucion.xcantidad}"
+                                                    size="3" rendered="false"
+                                                    title="Cantidad de medicamentos">
+                                        <p:keyFilter regEx="/[0-9]{1,4}/i" />
+                                            <p:ajax event="keyup" update="@this" />
+                                        </p:inputText>
+                                    </div>
+                                    <div style="width: 40%; float:left;">
+                                        <p:autoComplete id="txtInsumo" 
+                                                    value="#{validarSolucion.medicamento}" 
+                                                    completeMethod="#{validarSolucion.autoCompleteMedicamentos}"
+                                                    minQueryLength="4" 
+                                                    forceSelection="true"
+                                                    var="insumo" 
+                                                    itemLabel="#{insumo.nombreCorto}" 
+                                                    itemValue="#{insumo}" 
+                                                    converter="medicamentoExtHashConverter"
+                                                    placeholder="Buscar Insumo"
+                                                    emptyMessage="No se encontro registro."
+                                                    size="65">
+                                                <p:ajax event="itemSelect" process="txtInsumo, lblUnidad" update="txtInsumo, lblUnidad"></p:ajax>
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave Institucional" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insumo.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insumo.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                    <div style="width: 15%; float:left;">
+                                        <p:outputLabel for="dosis" style="margin-right: 5px;">Cant/Dosis:</p:outputLabel>
+                                        <p:inputNumber id="dosis" style="margin-right: 5px;" value="#{validarSolucion.dosis}" minValue="0" decimalSeparator="." thousandSeparator="," decimalPlaces="2" size="6" title="Cant/Dosis"></p:inputNumber>
+                                        <p:outputLabel id="lblUnidad">#{validarSolucion.medicamento.nombreUnidadConcentracion}</p:outputLabel>
+                                    </div>
+                                    <div style="width: 20%; float:left;">
+                                        <p:outputLabel for="frecuencia" style="margin-right: 5px;">Frecuencia:</p:outputLabel>
+                                        <p:selectOneMenu id="frecuencia" value="#{validarSolucion.frecuencia}" label="Frecuencia" filter="true" filterMatchMode="contains"
+                                                         title="Frecuencia" autoWidth="true" style="vertical-align: middle;">
+                                            <f:selectItem itemLabel="Seleccione Frecuencia" itemValue="#{null}"/>
+                                            <f:selectItems value="#{validarSolucion.listaFrecuencias}" var="frec" itemValue="#{frec.frecuencia}" itemLabel="#{frec.nombre} - #{frec.frecuencia} hr(s)"></f:selectItems>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div style="width: 13%; float:left;">
+                                        <p:outputLabel for="duracion" style="margin-right: 5px;">Duración:</p:outputLabel>
+                                        <p:inputNumber id="duracion" value="#{validarSolucion.duracion}" minValue="0" maxValue="90" decimalPlaces="0" size="4" title="Duración"></p:inputNumber>
+                                        días
+                                    </div>
+                                    <div style="width: 7%; float: right;">
+                                        <p:commandButton value="Agregar"
+                                             style="float: right;"
+                                             actionListener="#{validarSolucion.agregarMedicamento}"
+                                             update="msgValidaRegistro, txtInsumo, dosis, frecuencia, duracion, tblInsumos"
+                                             styleClass="btnMusAzul" />
+                                    </div>
+                                </div>
+
+                                <p:dataTable id="tblInsumos"
+                                             widgetVar="tblInsumos" 
+                                             value="#{validarSolucion.surtimientoInsumoExtendedList}"                                   
+                                             var="item"
+                                             rowIndexVar="row"
+                                             style="margin-top:0px; margin-bottom:5px; width:98%;"
+                                             styleClass="mystyle"
+                                             scrollable="true" scrollHeight="120"
+                                             emptyMessage="No hay insumos capturados"
+                                             reflow="true"
+                                             paginator="false"
+                                             rows="0"
+                                             disabledSelection="true">
+                                    <p:column style="text-align: left;" width="11"
+                                              sortBy="#{item.claveInstitucional}" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.claveInstitucional}" class="textoNegrita" />
+                                    </p:column>
+                                    <p:column style="text-align: left;" width="68"
+                                              sortBy="#{item.nombreCorto}" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Insumo" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.nombreCorto}" />
+                                    </p:column>
+                                    <p:column style="text-align: left;" width="4">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Dosis" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.dosis} #{item.unidadConcentracion}" />
+                                    </p:column>
+                                    <p:column style="text-align: left;" width="5">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Frecuencia" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.frecuencia}" />
+                                    </p:column>
+                                    <p:column style="text-align: left;" width="4">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Duración" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.duracion}" />
+                                    </p:column>
+                                    <p:column style="text-align: left;" width="4" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Cant Req" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.cantidadSolicitada}" class="textoNegrita" />
+                                    </p:column>
+                                    <p:column style="text-align: left;" width="4" >
+                                        <f:facet name="header">
+                                            <h:outputText value="Eliminar" />
+                                        </f:facet>
+                                        <p:commandLink title="Eliminar" onclick="PF('statusProcess').show()"
+                                                oncomplete="PF('statusProcess').hide();"
+                                                actionListener="#{validarSolucion.eliminaInsumoDeLista(item)}"
+                                                update="formNuevaOrden:tblInsumos">
+                                            <i class="fa fa-trash iconMusRojo" />
+                                        </p:commandLink>
+                                    </p:column>
+                                </p:dataTable>
+                                <br/>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:40%; float:left;">
+                                        <p:spacer width="5"/>
+                                        <p:outputLabel style="margin-right: 10px; font-weight: bold;" value="Instrucciones de Preparación:" /><br/>
+                                        <p:inputTextarea id="txtInstruccionesPrep"  value="#{validarSolucion.surtimientoExtendedSelected.instruccionPreparacion}" rows="4" cols="80"  />
+                                    </div>
+                                    <div style="width:10%; float:left;">
+                                        <p:spacer width="10"/>
+                                    </div>
+                                    <div style="width:40%; float:left;">
+                                        <p:outputLabel style="margin-right: 10px; font-weight: bold;" value="Observaciones:" /><br/>
+                                        <p:inputTextarea id="txtCondicionesConser" value="#{validarSolucion.surtimientoExtendedSelected.observaciones}" rows="4" cols="80" style="margin-bottom: 5px;"  />
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:80%; float:left;">
+                                        <p:selectBooleanCheckbox id="chkTemRefrigeracion" value="#{validarSolucion.surtimientoExtendedSelected.tempRefrigeracion}" itemLabel="Temp. Refrigeración" />
+                                        <p:selectBooleanCheckbox id="chkTemAmbiente" value="#{validarSolucion.surtimientoExtendedSelected.tempAmbiente}" itemLabel="Temp. Ambiente" />
+                                        <p:selectBooleanCheckbox id="chkProteccionLuz" value="#{validarSolucion.surtimientoExtendedSelected.proteccionLuz}" itemLabel="Protección de Luz" />
+                                        <p:selectBooleanCheckbox id="chkNoAgitar" value="#{validarSolucion.surtimientoExtendedSelected.noAgitar}" itemLabel="No agitar" />
+                                    </div>
+                                    <div style="width:10%; float:left;">
+                                        <p:spacer width="10"/>
+                                    </div>
+                                </div>
+                                    
+                                <div class="ui-g-12">
+                                    <p:commandButton value="Registrar"
+                                             icon="fa fa-check-circle" style="margin-right: 10px;float: right;"
+                                             onclick="PF('statusProcess').show()"
+                                             oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('modalNuevaOrden').hide();}"
+                                             actionListener="#{validarSolucion.registrarOrden}" 
+                                             styleClass="btnMusAzul" 
+                                             update=":mainForm:tblSurtimientos, :formNuevaOrden:msgValidaRegistro" /> 
+                                    <p:commandButton value="Cancelar" immediate="true"
+                                                     styleClass="btnMusRed" 
+                                                     icon="fa fa-times-circle" 
+                                                     onmousedown ="$('#formNuevaOrden\\:txtFolioPrescripcion').removeAttr('onblur');"
+                                                     onclick="PF('modalNuevaOrden').hide();"
+                                                     style="margin-right: 10px; float: right;" />
+                                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                        <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                    </p:confirmDialog>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:scrollPanel>
+                </p:dialog>
+                
+                <p:dialog header="MODIFICAR ORDEN DE MEZCLA"
+                          widgetVar="modalEditarOrden"
+                          closeOnEscape="true"
+                          closable="true"
+                          width="95%"
+                          position="30,10"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          onShow="PF('modalEditarOrden').initPosition()"
+                          style="font-size:xx-small !important;">
+                    <p:scrollPanel mode="native" style="max-height: 650px">
+                        <h:form id="formEditarOrden">
+                            <p:messages id="msgValidaEdicion" globalOnly="false" showDetail="false" closable="true" rendered="#{validarSolucion.msjMdlSurtimiento}" />
+                            <div class="ui-g">
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel style="margin-right: 5px;">Folio Surtimiento:</p:outputLabel>
+                                        <p:outputLabel id="folioSurt" value="#{validarSolucion.surtimientoExtendedSelected.folio}"></p:outputLabel>
+                                    </div>
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel style="margin-right: 5px;">Fecha Registro:</p:outputLabel>
+                                        <p:outputLabel id="fechaRegistro" value="#{validarSolucion.surtimientoExtendedSelected.insertFecha}" title="Fecha de Registro">
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm"/>
+                                        </p:outputLabel>
+                                    </div>
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel style="margin-right: 5px;">Estatus:</p:outputLabel>
+                                        <p:outputLabel id="estatusSurtimiento" value="#{validarSolucion.surtimientoExtendedSelected.estatusSurtimiento}" title="Estatus del Surtimiento"></p:outputLabel>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel style="margin-right: 5px;">Folio Prescripción:</p:outputLabel>
+                                        <p:outputLabel id="txtFolioPrescripcion" value="#{validarSolucion.surtimientoExtendedSelected.folioPrescripcion}" title="Folio de Prescripción"></p:outputLabel>
+                                    </div>
+                                    
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel for="fechaProgramada" style="margin-right: 5px;">Programada:</p:outputLabel>
+                                        <p:calendar id="fechaProgramada" value="#{validarSolucion.surtimientoExtendedSelected.fechaProgramada}"
+                                                showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                title="Fecha Programada"
+                                                pages="1" mask="true" showButtonPanel="true" effect="fade" required="true"
+                                                requiredMessage="Debe ingresar la Fecha Programada"/>
+                                    </div>
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="tipoPrescripcion" style="margin-right: 5px;">Tipo Prescripción:</p:outputLabel>
+                                        <p:selectOneMenu id="tipoPrescripcion" value="#{validarSolucion.surtimientoExtendedSelected.tipoPrescripcion}" label="Tipo de Prescripción"
+                                                         title="Tipo de Prescripción" autoWidth="true" style="vertical-align: middle;"
+                                                         required="true" requiredMessage="Debe seleccionar un Tipo de Prescripción">
+                                            <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                            <f:selectItem value="#{N}" itemLabel="Normal" itemValue="N" />
+                                            <f:selectItem value="#{U}" itemLabel="Urgente" itemValue="U" />
+                                            <f:selectItem value="#{D}" itemLabel="Dosis Única" itemValue="D" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="comboServicios" style="margin-right: 5px;">Área/Servicio:</p:outputLabel>
+                                        <p:selectOneMenu id="comboServicios" title="Área o Servicio"
+                                                         value="#{validarSolucion.surtimientoExtendedSelected.idEstructura}"
+                                                         autoWidth="true" required="true"
+                                                         requiredMessage="Debe seleccionar el Área o Servicio"
+                                                         filter="true" filterMatchMode="contains"
+                                                         style="vertical-align: middle; ">
+                                            <f:selectItem itemLabel="Seleccione Área" itemValue="#{null}"/>
+                                            <f:selectItems value="#{validarSolucion.listServiciosQueSurte}"
+                                                           var="servicio"
+                                                           itemValue="#{servicio.idEstructura}"
+                                                           itemLabel="#{servicio.descripcion}"
+                                                           />
+                                            <p:ajax event="itemSelect" listener="#{validarSolucion.obtenerCamas}" update="comboCamas"></p:ajax>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel for="comboCamas" style="margin-right: 5px;">Cama:</p:outputLabel>
+                                        <p:selectOneMenu id="comboCamas" title="Cama del Paciente"
+                                                         value="#{validarSolucion.surtimientoExtendedSelected.cama}"
+                                                         autoWidth="true"
+                                                         filter="true" filterMatchMode="contains"
+                                                         style="vertical-align: middle; ">
+                                            <f:selectItem itemLabel="Seleccione Cama" itemValue="#{null}"/>
+                                            <f:selectItems value="#{validarSolucion.listaCamas}"
+                                                           var="cama"
+                                                           itemValue="#{cama.idCama}"
+                                                           itemLabel="#{cama.nombreCama}"
+                                                           />
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="autoCompleteMedico" style="margin-right: 5px;">Médico Solicitante:</p:outputLabel>
+                                        <p:autoComplete id="autoCompleteMedico" 
+                                                value="#{validarSolucion.medico}" 
+                                                required="true"
+                                                requiredMessage="Debe seleccionar el Médico"
+                                                completeMethod="#{validarSolucion.autoCompleteMedicos}" 
+                                                minQueryLength="3" 
+                                                forceSelection="true"
+                                                var="medico" 
+                                                itemValue="#{medico.idUsuario}" 
+                                                itemLabel="#{medico.nombre} #{medico.apellidoPaterno} #{medico.apellidoMaterno}"
+                                                converter="medicoConverter" 
+                                                placeholder="Buscar Médico..."
+                                                emptyMessage="Búsqueda sin resultados" 
+                                                size="28" title="Médico Solicitante"
+                                                scrollHeight="200">
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Cédula Profesional" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.cedProfesional}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Nombre" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.nombre}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Paterno" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Materno" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:commandButton id="agregaMedico" title="Agregar" value="+" 
+                                            actionListener="#{validarSolucion.mostrarModalAgregarMedico}"
+                                            onclick="PF('statusProcess').show();"
+                                            oncomplete="PF('statusProcess').hide();PF('modalAgregarMedico').show();"
+                                            update=":formAgregarMedico:turnoMedico"
+                                            disabled="#{validarSolucion.existePrescripcion}">
+                                            <p:resetInput target="formAgregarMedico"/>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="autoCompletePaciente" style="margin-right: 5px;">Paciente:</p:outputLabel>
+                                        <p:autoComplete id="autoCompletePaciente" 
+                                                value="#{validarSolucion.pacienteExtended}" 
+                                                completeMethod="#{validarSolucion.autoCompletePacientes}" 
+                                                minQueryLength="3" required="true"
+                                                requiredMessage="Debe seleccionar el Paciente"
+                                                forceSelection="true"
+                                                var="paciente"  
+                                                itemValue="#{paciente}"
+                                                itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}"
+                                                converter="pacienteConverter" 
+                                                placeholder="Buscar Paciente..."
+                                                emptyMessage="Búsqueda sin resultados" 
+                                                title="Nombre del Paciente"
+                                                size="35" scrollHeight="200">
+                                            <p:ajax event="itemSelect" listener="#{validarSolucion.selectPaciente}" 
+                                                    update="txtNumPaciente, txtDiagnosticos, txtEdadPaciente, txtPesoPaciente, txtTallaPaciente, txtAreaPaciente, chkDiabetes, chkHipertension, chkProRenales, chkPadeCronico">
+                                            </p:ajax>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Número de Paciente" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.pacienteNumero}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave DerechoHabiencia" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.claveDerechohabiencia}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Nombre" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.nombreCompleto}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Paterno" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Materno" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:commandButton id="agregaPaciente" title="Agregar" value="+" 
+                                            onclick="PF('statusProcess').show();" immediate="true"
+                                            actionListener="#{validarSolucion.mostrarModalAgregarPaciente}"
+                                            oncomplete="PF('statusProcess').hide();PF('modalAgregarPaciente').show();"
+                                            update="formAgregarPaciente">
+                                            <p:resetInput target="formAgregarPaciente"/>
+                                        </p:commandButton>
+                                    </div>
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel style="margin-right: 5px;">Número Paciente:</p:outputLabel>
+                                        <p:outputLabel id="txtNumPaciente" value="#{validarSolucion.pacienteExtended.pacienteNumero}" title="Número del Paciente">
+                                        </p:outputLabel>
+                                    </div>
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="tipoConsulta" style="margin-right: 5px;">Tipo Consulta:</p:outputLabel>
+                                        <p:selectOneMenu id="tipoConsulta" value="#{validarSolucion.surtimientoExtendedSelected.tipoConsulta}" title="Tipo de la Consulta" autoWidth="true" 
+                                                         style="vertical-align: middle;" required="true" requiredMessage="Debe seleccionar el Tipo de Consulta">
+                                            <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                            <f:selectItem value="#{I}" itemLabel="Interna" itemValue="I" />
+                                            <f:selectItem value="#{E}" itemLabel="Externa" itemValue="E" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin:0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Edad" />
+                                        <p:inputText id="txtEdadPaciente" size="1" maxlength="5" 
+                                                     value="#{validarSolucion.surtimientoExtendedSelected.edadPaciente}" >
+                                            <p:keyFilter regEx="/[\d\.]/i" />
+                                        </p:inputText>años
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin: 5px 0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Peso:"  />
+                                        <p:inputText id="txtPesoPaciente"  size="1" maxlength="4"
+                                                     value="#{validarSolucion.surtimientoExtendedSelected.pesoPaciente}" >
+                                            <p:keyFilter regEx="/[\d\.]/i" />
+                                        </p:inputText>kg
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin: 5px 0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Estatura:"  />
+                                        <p:inputText id="txtTallaPaciente" size="1" maxlength="4"
+                                                     value="#{validarSolucion.surtimientoExtendedSelected.tallaPaciente}" >
+                                            <p:keyFilter regEx="/[\d\.]/i" />
+                                        </p:inputText>mts
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin: 5px 0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Área:"  />
+                                        <p:inputText id="txtAreaPaciente"  size="1" maxlength="4"
+                                                     value="#{validarSolucion.surtimientoExtendedSelected.areaCorporal}"  >
+                                            <p:keyFilter regEx="/[\d\.]/i" />
+                                        </p:inputText>m²
+                                    </div>
+                                </div>
+                                
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin:0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Problemas Glucosa:" />
+                                        <p:selectBooleanCheckbox value="#{validarSolucion.surtimientoExtendedSelected.diabetes}" 
+                                                                 id="chkDiabetes"
+                                                                 disabled="#{validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento!=10}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin:0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Problemas Hipertensión:" />
+                                        <p:selectBooleanCheckbox value="#{validarSolucion.surtimientoExtendedSelected.hipertension}" 
+                                                                 id="chkHipertension"  
+                                                                 disabled="#{validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento!=10}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2" style="margin:0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Problemas Renales" />
+                                        <p:selectBooleanCheckbox value="#{validarSolucion.surtimientoExtendedSelected.problemasRenales}" 
+                                                                 id="chkProRenales"
+                                                                 disabled="#{validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento!=10}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2"  style="margin:0px; padding: 0px; ">
+                                        <p:outputLabel style="margin-right: 10px;" value="Padecimiento crónico:"  rendered="false" />
+                                        <p:selectBooleanCheckbox value="#{validarSolucion.surtimientoExtendedSelected.padecimientoCronico}" 
+                                                                 id="chkPadeCronico"  rendered="false"
+                                                                 disabled="#{validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento!=10}" />
+                                    </div>
+                                </div>
+
+                                <p:outputLabel value="INFORMACIÓN DE LA SOLUCIÓN"  class="plabel ui-g-12" />
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <p:outputLabel value="Diagnósticos: * " style="margin-right: 5px; vertical-align: top; "/>
+                                    <p:autoComplete id="txtDiagnosticos"
+                                            styleClass="autocomplete-multiple-hiper"
+                                            multiple="true" required="true" requiredMessage="Se requiere al menos un Diagnóstico"
+                                            placeholder="Agregar Diagnósticos" 
+                                            value="#{validarSolucion.listaDiagnosticos}"
+                                            completeMethod="#{validarSolucion.autocompleteDiagnosticos}"
+                                            minQueryLength="4"
+                                            forceSelection="true"
+                                            var="diagnos"
+                                            itemLabel="#{diagnos.nombre}" itemValue="#{diagnos}" 
+                                            converter="musGenericConverter" >
+                                        <p:ajax event="itemSelect" update="txtDiagnosticos"></p:ajax>
+                                        <p:column style="width: 20px; font-size: small;" width="50px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Clave" />
+                                            </f:facet>
+                                            <h:outputText value="#{diagnos.clave}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width: 600px; font-size: small;" width="600px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Descripción" />
+                                            </f:facet>
+                                            <h:outputText value="#{diagnos.nombre}" style=" font-size: x-small;" />
+                                        </p:column>
+                                    </p:autoComplete>
+                                </div>
+
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="tipoSolucion" style="margin-right: 5px;">Tipo Solución:</p:outputLabel>
+                                        <p:selectOneMenu id="tipoSolucion" widgetVar="tipoSolucion" value="#{validarSolucion.idTipoSolucion}" label="Tipo de Solución"
+                                                         title="Tipo de Solución" autoWidth="true" style="vertical-align: middle;" required="true" requiredMessage="Debe seleccionar el Tipo de Solución">
+                                            <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                            <f:selectItems value="#{validarSolucion.tipoSolucionList}" var="tipoSol"
+                                                           itemLabel="#{tipoSol.clave}" itemValue="#{tipoSol.idTipoSolucion}"/>
+                                            <p:ajax event="itemSelect" update="protocolo txtDiagnostico"
+                                                listener="#{validarSolucion.validaDiagnosticoProtocolo}">
+                                            </p:ajax>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel for="viaAdministracion" style="margin-right: 5px;">Vía Administración:</p:outputLabel>
+                                        <p:selectOneMenu id="viaAdministracion" value="#{validarSolucion.viaAdministracion.idViaAdministracion}"
+                                                         label="Vía de Administración" title="Vía de Administración" autoWidth="true" style="vertical-align: middle; " 
+                                                         required="true" requiredMessage="Debe seleccionar una Vía de Administración" filter="true" filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Seleccione Vía" itemValue="#{null}"/>
+                                            <f:selectItems value="#{validarSolucion.viaAdministracionList}" var="via"
+                                                           itemLabel="#{via.nombreViaAdministracion}" itemValue="#{via.idViaAdministracion}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3" style="margin: 5px 0px; padding: 0px; " >
+                                        <p:outputLabel style="margin-right: 10px;" value="Contenedor: " />
+                                        <p:selectOneMenu id="cmbIdContenedor" value="#{validarSolucion.surtimientoExtendedSelected.idContenedor}"  >
+                                            <f:selectItem itemValue="#{null}" itemLabel="Seleccione una opción" />
+                                            <f:selectItem itemValue="1" itemLabel="Jeringa 2ml" />
+                                            <f:selectItem itemValue="2" itemLabel="Jeringa 5ml" />
+                                            <f:selectItem itemValue="3" itemLabel="Bolo 1" />
+                                            <f:selectItem itemValue="4" itemLabel="Bolo 2" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="chkPerfucionContinua" style="margin-right: 5px;">Perfusión Continua:</p:outputLabel>
+                                        <p:selectBooleanCheckbox id="chkPerfucionContinua" value="#{validarSolucion.perfusionContinua}" />
+                                    </div>
+                                    <div style="width:35%; float:left;">
+                                        <p:outputLabel for="velocidad" style="margin-right: 5px;">Velocidad:</p:outputLabel>
+                                        <p:inputNumber id="velocidad" value="#{validarSolucion.surtimientoExtendedSelected.velocidad}" minValue="0" decimalSeparator="." thousandSeparator="," decimalPlaces="2" size="10" 
+                                                       title="Velocidad de Administración" required="false" requiredMessage="Debe ingresar la Velocidad"
+                                                       disabled="#{!validarSolucion.surtimientoExtendedSelected.perfusionContinua}"
+                                                       />
+                                        ml/h
+                                    </div>
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel for="ritmo" style="margin-right: 5px;">Ritmo:</p:outputLabel>
+                                        <p:inputNumber id="ritmo" value="#{validarSolucion.surtimientoExtendedSelected.ritmo}" minValue="0" decimalSeparator="." thousandSeparator="," decimalPlaces="2" size="10" 
+                                                       title="Ritmo de Administración" required="false" requiredMessage="Debe ingresar el Ritmo"
+                                                       disabled="#{!validarSolucion.surtimientoExtendedSelected.perfusionContinua}"
+                                                       />
+                                        cm3/min
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:30%; float:left;">
+                                        <p:outputLabel for="protocolo" style="margin-right: 5px;">Protocolo:</p:outputLabel>
+                                        <p:selectOneMenu id="protocolo" value="#{validarSolucion.claveProtocolo}" label="Protocolo" filter="true" filterMatchMode="contains"
+                                                         title="Tipo de Protocolo" autoWidth="true" style="vertical-align: middle;" disabled="#{!validarSolucion.isOncologica}">
+                                            <f:selectItem itemLabel="Seleccione Protocolo" itemValue="#{null}"/>
+                                            <f:selectItems value="#{validarSolucion.listaProtocolos}" var="proto" itemValue="#{proto.claveProtocolo}" itemLabel="#{proto.claveProtocolo}"></f:selectItems>
+                                            <p:ajax event="itemSelect" update="formWarning:msjWarning"
+                                                listener="#{validarSolucion.validaDiagnosticoProtocolo}">
+                                            </p:ajax>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <p:outputLabel for="txtDiagnostico" style="margin-right: 5px;">Diagnóstico:</p:outputLabel>
+                                    <p:autoComplete id="txtDiagnostico"
+                                            styleClass="autocomplete-multiple-hiper"
+                                            multiple="false"
+                                            placeholder="Buscar Diagnóstico" 
+                                            value="#{validarSolucion.diagnosticoSelected}"
+                                            completeMethod="#{validarSolucion.autocompleteDiagnostico}"
+                                            minQueryLength="4"                                                       
+                                            forceSelection="true"                                                         
+                                            var="diagnos" size ="80"
+                                            itemLabel="#{diagnos.nombre}" itemValue="#{diagnos}" 
+                                            converter="musGenericConverter" 
+                                            disabled="#{!validarSolucion.isOncologica}">
+                                        <p:column style="width: 20px; font-size: small;" width="50px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Clave" />
+                                            </f:facet>
+                                            <h:outputText value="#{diagnos.clave}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width: 600px; font-size: small;" width="600px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Descripción" />
+                                            </f:facet>
+                                            <h:outputText value="#{diagnos.nombre}" style=" font-size: x-small;" />
+                                        </p:column>
+                                        <p:ajax event="itemSelect" update="formWarning:msjWarning"
+                                            listener="#{validarSolucion.validaDiagnosticoProtocolo}">
+                                        </p:ajax>
+                                    </p:autoComplete>
+                                </div>
+
+                                <div class="ui-g-12" style="padding: 10px 5px; background-color: #bfbfbf; margin-right:20px;">
+                                    <div style="width: 5%; float:left;">
+                                        <p:inputText id="xcantidad"
+                                                    value="#{validarSolucion.xcantidad}"
+                                                    size="3" rendered="false"
+                                                    title="Cantidad de medicamentos">
+                                        <p:keyFilter regEx="/[0-9]{1,4}/i" />
+                                            <p:ajax event="keyup" update="@this" />
+                                        </p:inputText>
+                                    </div>
+                                    <div style="width: 40%; float:left;">
+                                        <p:autoComplete id="txtInsumo" 
+                                                    value="#{validarSolucion.medicamento}" 
+                                                    completeMethod="#{validarSolucion.autoCompleteMedicamentos}"
+                                                    minQueryLength="4" 
+                                                    forceSelection="true"
+                                                    var="insumo" 
+                                                    itemLabel="#{insumo.nombreCorto}" 
+                                                    itemValue="#{insumo}" 
+                                                    converter="medicamentoExtHashConverter"
+                                                    placeholder="Buscar Insumo"
+                                                    emptyMessage="No se encontro registro."
+                                                    size="65">
+                                            <p:ajax event="itemSelect" process="txtInsumo, lblUnidad" update="txtInsumo, lblUnidad"></p:ajax>
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave Institucional" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insumo.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insumo.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                                
+                                            </p:autoComplete>
+                                        </div>
+                                    <div style="width: 15%; float:left;">
+                                        <p:outputLabel for="dosis" style="margin-right: 5px;">Cant/Dosis:</p:outputLabel>
+                                        <p:inputNumber id="dosis" style="margin-right: 5px;" value="#{validarSolucion.dosis}" minValue="0" decimalSeparator="." thousandSeparator="," decimalPlaces="2" size="6" title="Dosis"></p:inputNumber>
+                                        <p:outputLabel id="lblUnidad">#{validarSolucion.medicamento.nombreUnidadConcentracion}</p:outputLabel>
+                                    </div>
+                                    <div style="width: 20%; float:left;">
+                                        <p:outputLabel for="frecuencia" style="margin-right: 5px;">Frecuencia:</p:outputLabel>
+                                        <p:selectOneMenu id="frecuencia" value="#{validarSolucion.frecuencia}" label="Frecuencia" filter="true" filterMatchMode="contains"
+                                                         title="Frecuencia" autoWidth="true" style="vertical-align: middle;">
+                                            <f:selectItem itemLabel="Seleccione Frecuencia" itemValue="#{null}"/>
+                                            <f:selectItems value="#{validarSolucion.listaFrecuencias}" var="frec" itemValue="#{frec.frecuencia}" itemLabel="#{frec.nombre} - #{frec.frecuencia} hr(s)"></f:selectItems>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div style="width: 13%; float:left;">
+                                        <p:outputLabel for="duracion" style="margin-right: 5px;">Duración:</p:outputLabel>
+                                        <p:inputNumber id="duracion" value="#{validarSolucion.duracion}" minValue="0" maxValue="90" decimalPlaces="0" size="4" title="Duración"></p:inputNumber>
+                                    </div>
+                                    <div style="width: 7%; float: right;">
+                                        <p:commandButton value="Agregar"
+                                             style="float: right;"
+                                             actionListener="#{validarSolucion.agregarMedicamento}"
+                                             update="msgValidaEdicion, txtInsumo, dosis, frecuencia, duracion, tblInsumos"
+                                             rendered="#{validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento eq 1 or validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento eq 10}"
+                                             styleClass="btnMusAzul" />
+                                    </div>
+                                </div>
+
+                                <p:dataTable id="tblInsumos"
+                                             widgetVar="tblInsumos" 
+                                             value="#{validarSolucion.surtimientoInsumoExtendedList}"                                   
+                                             var="item"
+                                             rowIndexVar="row"
+                                             style="margin-top:0px; margin-bottom:5px; width:98%;"
+                                             styleClass="mystyle"
+                                             scrollable="true" scrollHeight="120"
+                                             emptyMessage="No hay insumos capturados"
+                                             reflow="true"
+                                             paginator="false"
+                                             rows="0"
+                                             disabledSelection="true">
+                                    <p:column style="text-align: left;" width="11"
+                                              sortBy="#{item.claveInstitucional}" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.claveInstitucional}" class="textoNegrita" />
+                                    </p:column>
+                                    <p:column style="text-align: left;" width="68"
+                                              sortBy="#{item.nombreCorto}" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Insumo" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.nombreCorto}" />
+                                    </p:column>
+                                    <p:column style="text-align: left;" width="4">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Dosis" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.dosis} #{item.unidadConcentracion}" />
+                                    </p:column>
+                                    <p:column style="text-align: left;" width="5">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Frecuencia" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.frecuencia}" />
+                                    </p:column>
+                                    <p:column style="text-align: left;" width="4">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Duración" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.duracion}" />
+                                    </p:column>
+                                    <p:column style="text-align: left;" width="4" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Cant Req" />
+                                        </f:facet>
+                                        <h:outputText value="#{item.cantidadSolicitada}" class="textoNegrita" />
+                                    </p:column>
+                                    <p:column style="text-align: left;" width="4" >
+                                        <f:facet name="header">
+                                            <h:outputText value="Eliminar" />
+                                        </f:facet>
+                                        <p:commandLink title="Eliminar" onclick="PF('statusProcess').show()"
+                                                oncomplete="PF('statusProcess').hide();"
+                                                actionListener="#{validarSolucion.eliminaInsumoDeLista(item)}"
+                                                update="formEditarOrden:tblInsumos"
+                                                rendered="#{validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento eq 1 or validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento eq 10}"
+                                                >
+                                            <i class="fa fa-trash iconMusRojo" />
+                                        </p:commandLink>
+                                    </p:column>
+                                </p:dataTable>
+                                
+                                <br/>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:40%; float:left;">
+                                        <p:spacer width="5"/>
+                                        <p:outputLabel style="margin-right: 10px; font-weight: bold;" value="Instrucciones de Preparación:" /><br/>
+                                        <p:inputTextarea id="txtInstruccionesPrep"  value="#{validarSolucion.surtimientoExtendedSelected.instruccionPreparacion}" rows="4" cols="80"  />
+                                    </div>
+                                    <div style="width:10%; float:left;">
+                                        <p:spacer width="10"/>
+                                    </div>
+                                    <div style="width:40%; float:left;">
+                                        <p:outputLabel style="margin-right: 10px; font-weight: bold;" value="Observaciones:" /><br/>
+                                        <p:inputTextarea id="txtCondicionesConser" value="#{validarSolucion.surtimientoExtendedSelected.observaciones}" rows="4" cols="80" style="margin-bottom: 5px;"  />
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" style="padding-top: 0px; padding-bottom: 10px;">
+                                    <div style="width:80%; float:left;">
+                                        <p:selectBooleanCheckbox value="#{validarSolucion.surtimientoExtendedSelected.tempRefrigeracion}" itemLabel="Temp. Refrigeración" />
+                                        <p:selectBooleanCheckbox value="#{validarSolucion.surtimientoExtendedSelected.tempAmbiente}" itemLabel="Temp. Ambiente" />
+                                        <p:selectBooleanCheckbox value="#{validarSolucion.surtimientoExtendedSelected.proteccionLuz}" itemLabel="Protección de Luz" />
+                                        <p:selectBooleanCheckbox value="#{validarSolucion.surtimientoExtendedSelected.noAgitar}" itemLabel="No agitar" />
+                                    </div>
+                                    <div style="width:10%; float:left;">
+                                        <p:spacer width="10"/>
+                                    </div>
+                                </div>
+                                                                
+                                <div class="ui-g-12">
+                                    <p:commandButton value="Modificar"
+                                             icon="fa fa-check-circle" style="margin-right: 10px;float: right;"
+                                             onclick="PF('statusProcess').show()"
+                                             oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('modalEditarOrden').hide();}"
+                                             actionListener="#{validarSolucion.modificarOrden}" 
+                                             styleClass="btnMusAzul" 
+                                             update=":mainForm:tblSurtimientos, :formEditarOrden:msgValidaEdicion"
+                                             rendered="#{validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento eq 1 or validarSolucion.surtimientoExtendedSelected.idEstatusSurtimiento eq 10}"
+                                             /> 
+                                    <p:commandButton value="Cancelar" immediate="true"
+                                                     styleClass="btnMusRed" 
+                                                     icon="fa fa-times-circle" 
+                                                     onclick="PF('modalEditarOrden').hide();"
+                                                     style="margin-right: 10px; float: right;" />
+                                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                        <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                    </p:confirmDialog>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:scrollPanel>
+                </p:dialog>
+                
+                <p:dialog header="AGREGAR PACIENTE"
+                          widgetVar="modalAgregarPaciente"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          width="450px" 
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formAgregarPaciente" >
+                        <p:messages id="msgModalAddUsuario" globalOnly="false" showDetail="false" closable="true" />
+
+                        <p:outputLabel value="Tipo de paciente :" style="display: inline-block;width: 180px;"
+                                       rendered="false" />
+                        <p:selectOneMenu id="tipoPaciente" 
+                                         value="#{validarSolucion.paciente.idTipoPaciente}"
+                                         autoWidth="false"
+                                         style="width: 152px;"
+                                         rendered="false" >
+                            <f:selectItems value="#{validarSolucion.listaTipoPacientes}"
+                                           var="tipoPaciente"
+                                           itemValue="#{tipoPaciente.idCatalogoGeneral}"
+                                           itemLabel="#{tipoPaciente.nombreCatalogo}"/>
+                        </p:selectOneMenu>
+                        <br/>
+                        <p:outputLabel value="Clave de Paciente :" style="display: inline-block;width: 180px;margin-bottom: 10px;" for="txtPacClavePaciente" />
+                        <p:inputText id="txtPacClavePaciente" value="#{validarSolucion.paciente.claveDerechohabiencia}" required="true" />
+                        <br/>
+                        <p:outputLabel value="Nombre :" style="display: inline-block;width: 180px;margin-bottom: 10px;" for="txtPacNombrePaciente" />
+                        <p:inputText id="txtPacNombrePaciente" value="#{validarSolucion.paciente.nombreCompleto}" required="true"/>
+                        <br/>
+                        <p:outputLabel value="Apellido Paterno :" style="display: inline-block;width: 180px;margin-bottom: 10px;" for="txtPacApePatPaciente" />
+                        <p:inputText id="txtPacApePatPaciente" value="#{validarSolucion.paciente.apellidoPaterno}" required="true"/>
+                        <br/>
+                        <p:outputLabel value="Apellido Materno :" style="display: inline-block;width: 180px;margin-bottom: 10px;"/>
+                        <p:inputText value="#{validarSolucion.paciente.apellidoMaterno}"/>
+                        <br/>
+                        <p:outputLabel value="Sexo :" style="display: inline-block;width: 180px;margin-bottom: 10px;" for="txtPacSexoPaciente" />
+                        <p:selectOneButton id="txtPacSexoPaciente" value="#{validarSolucion.paciente.sexo}">
+                            <f:selectItem itemLabel="Masculino" itemValue="M" />
+                            <f:selectItem itemLabel="Femenino" itemValue="F" />
+                        </p:selectOneButton>
+                        <br/>
+                        <p:outputLabel value="Fecha Nacimiento :" style="display: inline-block;width: 180px;margin-bottom: 10px;" for="txtFechaInicio" />
+                        <p:calendar id="txtFechaInicio" 
+                                    required="true" 
+                                    value="#{validarSolucion.paciente.fechaNacimiento}" 
+                                    showOn="button" 
+                                    locale="es_MX" 
+                                    navigator="true" 
+                                    yearRange="c-100:c"
+                                    pattern="dd/MM/yyyy"
+                                    maxdate="#{validarSolucion.fechaActual}"
+                                    pages="1" 
+                                    mask="true" />
+                        <br/>                       
+<!--                        <br/>
+                        <br/>-->
+                        <p:selectCheckboxMenu id="turno"
+                                              label="Turnos"
+                                              value="#{validarSolucion.listaIdTurnos}" 
+                                              rendered="false"
+                                              >
+                            <f:selectItems value="#{validarSolucion.listaTurnos}"
+                                           var="turno"
+                                           rendered="false"
+                                           itemValue="#{turno.idTurno.toString()}"
+                                           itemLabel="#{turno.nombre}"/>
+                        </p:selectCheckboxMenu>
+                        <br/>
+                        <br/>
+                        <p:commandButton title="Guardar paciente" value="Agregar" 
+                                         onclick="PF('statusProcess').show();"
+                                         actionListener="#{validarSolucion.agregarPaciente}"
+                                         oncomplete="PF('statusProcess').hide();if(!args.error){PF('modalAgregarPaciente').hide()};"
+                                         update=":formNuevaOrden:msgValidaRegistro msgModalAddUsuario" />
+
+                        <p:commandButton title="Agregar" value="Cancelar" 
+                                         oncomplete="PF('modalAgregarPaciente').hide();"
+                                         />
+
+                        <p:confirmDialog global="true" 
+                                         showEffect="fade" 
+                                         hideEffect="fade">
+                            <p:commandButton value="Si" 
+                                             type="button" 
+                                             styleClass="ui-confirmdialog-yes" 
+                                             icon="ui-icon-check" />
+                            <p:commandButton value="No" 
+                                             type="button" 
+                                             styleClass="ui-confirmdialog-no" 
+                                             icon="ui-icon-close" />
+                        </p:confirmDialog>
+
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="AGREGAR MÉDICO"
+                          widgetVar="modalAgregarMedico"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formAgregarMedico" >
+                        <p:messages id="msgModalAddMedico" globalOnly="false" showDetail="false" closable="true" />
+                        <p:panelGrid columns="2" >
+                            <p:outputLabel value="Nombre" for="txtNombre" />
+                            <p:inputText id="txtNombre" style="width: 300px !important;"  label="Nombre" 
+                                         maxlength="20"
+                                         required="true" 
+                                         value="#{validarSolucion.medicoExtended.nombre}"  >
+                            </p:inputText>
+
+                            <p:outputLabel value="Apellido Paterno" for="txtNombrePaterno" />
+                            <p:inputText id="txtNombrePaterno" style="width: 300px !important;"   maxlength="20"
+                                         label="Apellido Paterno"  
+                                         required="true" 
+                                         value="#{validarSolucion.medicoExtended.apellidoPaterno}"  >
+                            </p:inputText>
+
+                            <p:outputLabel value="Apellido Materno" />
+                            <p:inputText id="txtApellidoMaterno" style="width: 300px !important;" label="Apellido Materno" maxlength="20"
+                                         value="#{validarSolucion.medicoExtended.apellidoMaterno}"   >
+                            </p:inputText>
+
+                            <p:outputLabel value="Cedula Profesional:" for="cedProf" />
+                            <p:inputText id="cedProf" style="width: 200px !important;" value="#{validarSolucion.medicoExtended.cedProfesional}"
+                                         required="true" />
+
+                            <p:outputLabel value="Cedula Especialidad:" />
+                            <p:inputText id="cedEsp"  style="width: 200px !important;" value="#{validarSolucion.medicoExtended.cedEspecialidad}"/>
+
+                            <p:outputLabel value="Turnos:" rendered="false" />
+                            <p:selectCheckboxMenu id="turnoMedico"
+                                                  label="Turnos"
+                                                  class="sOneMenu"
+                                                  rendered="false"
+                                                  value="#{validarSolucion.listaIdTurnos}" 
+                                                  >
+                                <f:selectItems value="#{validarSolucion.listaTurnos}"
+                                               var="turno"
+                                               itemValue="#{turno.idTurno.toString()}"
+                                               itemLabel="#{turno.nombre}"/>
+                            </p:selectCheckboxMenu>
+
+                        </p:panelGrid>
+                        <br/>                                                         
+
+                        <p:commandButton id="btnSave1"
+                                         actionListener="#{validarSolucion.agregarMedicos}"
+                                         styleClass="btnMusAzul" 
+                                         value="Guardar" 
+                                         style="float: right;"
+                                         onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide();if(!args.errorModalMedicos){PF('modalAgregarMedico').hide();}"
+                                         update=":formNuevaOrden:msgValidaRegistro msgModalAddMedico"
+                                         />
+
+
+                    </h:form>
+                </p:dialog>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+
+</html>

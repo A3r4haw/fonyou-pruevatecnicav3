@@ -1,0 +1,852 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <inceptionYear>2020-2025</inceptionYear>
+    <name>eMotion - Healthcare software ®${project.inceptionYear}</name>
+    <version>2.2</version>
+    <artifactId>emotion</artifactId>
+    <groupId>mx.com.motioncorp.emotion</groupId>
+    <organization>
+        <name>Motion Corp, S.A. de C.V.</name>
+    </organization>
+
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>war</packaging>
+        
+    <profiles>
+        <profile>
+            <id>HJM</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources/perfil-hjm</directory>
+                        <includes>
+                            <include>config/*</include>
+                        </includes>
+                    </resource>                
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <excludes>
+                            <exclude>perfil-*/**</exclude>
+                            <exclude>quartz.properties</exclude>
+                            <exclude>config/mappers2/**</exclude>
+                            <exclude>config/mappers/Dimesa*.xml</exclude>
+                            <exclude>config/appCxt-Cxf.xml</exclude>
+                            <exclude>config/appCxt-QuartzScheduler.xml</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.1</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/mx/com/avg/**</exclude>
+                                <exclude>**/mx/mc/service/DoveTrackService*</exclude>
+                                <exclude>**/mx/mc/magedbean/DoveTrackMB.java</exclude>
+                                <exclude>**/mx/mc/init/CxfConfig.java</exclude>
+                                
+                                <!-- Dependen de mx.mx.enums.EstatusDimesaRegistroConsumo_Enum -->
+                                <exclude>**/mx/mc/magedbean/CancelarSurtimientoIntMB.java</exclude>
+                                <exclude>**/mx/mc/magedbean/CancelarSurtimientoMB.java</exclude>
+                                <exclude>**/mx/mc/enums/EstatusDimesaRegistroConsumo_Enum.java</exclude>
+                                
+                                <!-- Depende de mx.mx.model.DimesaUsuario -->
+                                <exclude>**/mx/mc/magedbean/OrdenReabastoAutomaticoMB.java</exclude>
+                                
+                                <exclude>**/mx/mc/mapper/Dimesa*</exclude>
+                                <exclude>**/mx/mc/mode*</exclude>
+                                <exclude>**/mx/mc/quartz/**</exclude>
+                                <exclude>**/mx/mc/service/Dimesa*</exclude>
+                                <exclude>**/mx/mc/service/WsDimesa*</exclude>
+                                <exclude>**/mx/com/dimesa/**</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>ISSSTE</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources/perfil-issste</directory>
+                        <includes>
+                            <include>config/*</include>
+                        </includes>
+                    </resource>                
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <excludes>
+                            <exclude>perfil-*/**</exclude>
+                            <exclude>quartz.properties</exclude>
+                            <exclude>config/mappers2/**</exclude>
+                            <exclude>config/mappers/Dimesa*.xml</exclude>
+                            <exclude>config/appCxt-Cxf.xml</exclude>
+                            <exclude>config/appCxt-QuartzScheduler.xml</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.1</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/mx/com/avg/**</exclude>
+                                <exclude>**/mx/mc/service/DoveTrackService*</exclude>
+                                <exclude>**/mx/mc/magedbean/DoveTrackMB.java</exclude>
+                                <exclude>**/mx/mc/init/CxfConfig.java</exclude>
+                                
+                                <!-- Dependen de mx.mx.enums.EstatusDimesaRegistroConsumo_Enum -->
+                                <exclude>**/mx/mc/magedbean/CancelarSurtimientoIntMB.java</exclude>
+                                <exclude>**/mx/mc/magedbean/CancelarSurtimientoMB.java</exclude>
+                                <exclude>**/mx/mc/enums/EstatusDimesaRegistroConsumo_Enum.java</exclude>
+                                
+                                <!-- Depende de mx.mx.model.DimesaUsuario -->
+                                <exclude>**/mx/mc/magedbean/OrdenReabastoAutomaticoMB.java</exclude>
+                                
+                                <exclude>**/mx/mc/mapper/Dimesa*</exclude>
+                                <exclude>**/mx/mc/model/Dimesa*</exclude>
+                                <exclude>**/mx/mc/quartz/**</exclude>
+                                <exclude>**/mx/mc/service/Dimesa*</exclude>
+                                <exclude>**/mx/mc/service/WsDimesa*</exclude>
+                                <exclude>**/mx/com/dimesa/**</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>ISSEMYM</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources/perfil-issemym</directory>
+                        <includes>
+                            <include>config/*</include>
+                        </includes>
+                    </resource>                
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <excludes>
+                            <exclude>perfil-*/**</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>IMSS</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources/perfil-imss</directory>
+                        <includes>
+                            <include>config/*</include>
+                        </includes>
+                    </resource>                
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <excludes>
+                            <exclude>perfil-*/**</exclude>
+                            <exclude>quartz.properties</exclude>
+                            <exclude>config/mappers2/**</exclude>
+                            <exclude>config/mappers/Dimesa*.xml</exclude>
+                            <exclude>config/appCxt-Cxf.xml</exclude>
+                            <exclude>config/appCxt-QuartzScheduler.xml</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.1</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/mx/com/avg/**</exclude>
+                                <exclude>**/mx/mc/service/DoveTrackService*</exclude>
+                                <exclude>**/mx/mc/magedbean/DoveTrackMB.java</exclude>
+                                <exclude>**/mx/mc/init/CxfConfig.java</exclude>
+                                
+                                <!-- Dependen de mx.mx.enums.EstatusDimesaRegistroConsumo_Enum -->
+                                <exclude>**/mx/mc/magedbean/CancelarSurtimientoIntMB.java</exclude>
+                                <exclude>**/mx/mc/magedbean/CancelarSurtimientoMB.java</exclude>
+                                <exclude>**/mx/mc/enums/EstatusDimesaRegistroConsumo_Enum.java</exclude>
+                                
+                                <!-- Depende de mx.mx.model.DimesaUsuario -->
+                                <exclude>**/mx/mc/magedbean/OrdenReabastoAutomaticoMB.java</exclude>
+                                
+                                <exclude>**/mx/mc/mapper/Dimesa*</exclude>
+                                <exclude>**/mx/mc/mode*</exclude>
+                                <exclude>**/mx/mc/quartz/**</exclude>
+                                <exclude>**/mx/mc/service/Dimesa*</exclude>
+                                <exclude>**/mx/mc/service/WsDimesa*</exclude>
+                                <exclude>**/mx/com/dimesa/**</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    
+    <scm>
+        <connection>scm:svn:https://52.23.158.174/repos/${project.artifactId}</connection>
+        <developerConnection>scm:svn:https://52.23.158.174/repos/${project.artifactId}</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://52.23.158.174/repos/${project.artifactId}</url>
+    </scm>
+
+    <properties>
+        <!-- Generic properties -->
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Spring -->
+        <spring-framework.version>5.2.0.RELEASE</spring-framework.version>
+        <spring-security-version>5.2.0.RELEASE</spring-security-version>
+        <spring-security-taglibs-version>5.2.0.RELEASE</spring-security-taglibs-version>
+        
+        <!-- ASPECT -->
+        <aspectj.version>1.9.4</aspectj.version>
+        
+        <!-- Mybatis -->
+        <mybatis.version>3.5.2</mybatis.version>
+        
+        <!-- Mybatis Spring -->
+        <mybatis-spring.version>2.0.2</mybatis-spring.version>
+
+        <!-- PrimeFaces Version -->
+        <primefaces.version>7.0</primefaces.version>
+        <!--<primefaces.version>11.0.0</primefaces.version>-->
+        
+        <!-- PrimeNG Version -->
+        <!--primeng.version>6.1.4</primeng.version-->
+         
+        <!-- SQL Server Version-->
+        <sqlserver.version>4.0</sqlserver.version>
+         
+        <!-- Informix Version-->
+        <!--<informix.version>9.1</informix.version>-->
+         
+        <!-- Quartz -->
+        <quartz.version>2.3.1</quartz.version>
+        
+        <!-- Apache POI Version -->
+        <apache.poi.version>4.1.0</apache.poi.version>
+        
+        <sonar.projectName>MUS_Web</sonar.projectName>  
+        <sonar.projectKey>MUS_Web</sonar.projectKey>
+        <!--sonar.projectVersion>1.0</sonar.projectVersion-->
+        <sonar.host.url>http://192.168.20.75:9000/sonar</sonar.host.url>
+        <sonar.login>4571d6fdec8b1f5bd8e0ec79a86d6f1261e54371</sonar.login>
+        <sonar.language>java</sonar.language>
+        <sonar.exclusions>src/main/java/com/microsoft/**/*</sonar.exclusions>
+        <sonar.scm.provider>svn</sonar.scm.provider>
+    </properties>
+
+    <dependencies>
+        <!--jakarta (JSF 3.0 - JSF 4.0)-->
+        <!--
+        <dependency>
+            <groupId>org.primefaces</groupId>
+            <artifactId>primefaces</artifactId>
+            <version>11.0.0</version>
+            <classifier>jakarta</classifier>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20180130</version>
+        </dependency>
+        -->
+<!--        
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        
+        -->
+        <!--Validador Apache-->
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>1.7</version>
+        </dependency>
+
+        <!-- Apache POI for Excel 2003 -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>${apache.poi.version}</version>
+        </dependency>
+
+        <!-- Apache POI for Excel 2007 -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${apache.poi.version}</version>
+        </dependency>
+
+        <!-- Spring Framework Mvc Core -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${spring-framework.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring-framework.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring-framework.version}</version>
+        </dependency>
+        
+        <!-- Spring security -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>${spring-security-version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+            <version>${spring-security-version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+            <version>${spring-security-version}</version>
+        </dependency>
+        
+        <!-- Spring ORM support -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${spring-framework.version}</version>
+        </dependency>
+        
+        <!-- Spring TX -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${spring-framework.version}</version>
+        </dependency>
+
+        <!-- Spring Quartz -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring-framework.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>${spring-framework.version}</version>
+        </dependency>
+        
+        <dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-expression</artifactId>
+	  <version>${spring-framework.version}</version>
+	</dependency>
+
+        <dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-beans</artifactId>
+	  <version>${spring-framework.version}</version>
+	</dependency>
+
+        <dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-test</artifactId>
+	  <version>${spring-framework.version}</version>
+	  <scope>test</scope>
+	</dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-taglibs</artifactId>
+            <version>${spring-security-taglibs-version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+	</dependency>
+        
+        <!-- Quartz -->
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>${quartz.version}</version>
+        </dependency>
+        
+        <!-- AspectJ -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>${aspectj.version}</version>
+        </dependency>
+
+        <!-- MyBatis -->
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis-spring</artifactId>
+            <version>${mybatis-spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>${mybatis.version}</version>
+        </dependency>
+        
+        <!--MariaDB-->
+        <dependency> 
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>2.6.0</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <!--SQL Server-->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>sqljdbc4</artifactId>
+            <version>${sqlserver.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--LOG-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.0-alpha1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>2.0.0-alpha1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.4</version>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom2</artifactId>
+            <version>2.0.6</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.2</version>
+            <type>jar</type>
+        </dependency>
+        
+        <!--        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>6.0</version>
+            <type>jar</type>
+        </dependency>-->
+        
+        <!--        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>8.0.1</version>
+            <scope>provided</scope>
+        </dependency>-->
+        
+        <!--PrimeFaces-->
+        <dependency>
+            <groupId>org.primefaces</groupId>
+            <artifactId>primefaces</artifactId>
+            <version>${primefaces.version}</version>
+            <type>jar</type>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.primefaces.themes</groupId>
+            <artifactId>all-themes</artifactId>
+            <version>1.0.10</version>
+        </dependency>
+        
+        <!--Informix-->
+<!--        <dependency>
+            <groupId>com.informix.jdbc</groupId>
+            <artifactId>com.springsource.com.informix.jdbc</artifactId>
+            <version>3.0.0.JC3</version>
+            <scope>provided</scope>
+        </dependency>-->
+        <!-- https://mvnrepository.com/artifact/com.ibm.informix/jdbc -->
+<!--        <dependency>
+            <groupId>com.ibm.informix</groupId>
+            <artifactId>jdbc</artifactId>
+            <version>4.10.6.20151104</version>
+            <scope>provided</scope>
+        </dependency>-->
+        
+        <dependency>
+            <groupId>com.ibm.icu</groupId>
+            <artifactId>icu4j</artifactId>
+            <version>4.6</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.9</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-collections</groupId>
+                    <artifactId>commons-collections</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>6.10.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.lowagie</groupId>
+                    <artifactId>itext</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-beanutils</groupId>
+                    <artifactId>commons-beanutils</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-functions</artifactId>
+            <version>6.10.0</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-core</artifactId>
+            <version>RELEASE150</version>
+        </dependency>
+
+        
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.64</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxws</artifactId>
+            <version>3.3.3</version>
+        </dependency>
+        
+        <!-- APK PARSE-->
+        <dependency>
+            <groupId>net.dongliu</groupId>
+            <artifactId>apk-parser</artifactId>
+            <version>2.6.9</version>
+        </dependency>
+
+    <!--dependencia para el codigo de barras-->
+        <dependency>
+             <groupId>net.sourceforge.barbecue</groupId>
+             <artifactId>barbecue</artifactId>
+             <version>1.5-beta1</version>
+        </dependency>
+        
+      <!--itext para unir dos o mas archivos PDFs -->
+        <dependency>
+            <groupId>com.lowagie</groupId>
+            <artifactId>itext</artifactId>
+            <version>2.1.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcprov-jdk14</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcmail-jdk14</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bctsp-jdk14</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Apache PDFBox -->        
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.17</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.cups4j</groupId>
+                <artifactId>cups4j</artifactId>
+            <version>0.7.6</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.11.2</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.2</version>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <!--JAVA MAIL-->
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>javax.mail-api</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+        <dependency>
+		<groupId>com.sun.mail</groupId>
+		<artifactId>javax.mail</artifactId>
+		<version>1.6.2</version>
+	</dependency>
+                
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+            <version>2.2</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>2.2</version>
+        </dependency>
+        
+        <!--        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>2.28</version>
+        </dependency>-->
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>8.0.1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>6.0</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+    
+    <repositories>
+        <repository>
+            <id>com.springsource.repository.bundles.release</id>
+            <name>SpringSource Enterprise Bundle Repository - SpringSource Bundle Releases</name>
+            <url>http://repository.springsource.com/maven/bundles/release</url>
+        </repository>
+
+        <repository>
+            <id>com.springsource.repository.bundles.external</id>
+            <name>SpringSource Enterprise Bundle Repository - External Bundle Releases</name>
+            <url>http://repository.springsource.com/maven/bundles/external</url>
+        </repository>
+        
+        <repository>
+            <id>jaspersoft-third-party</id>
+            <url>https://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts/</url> 
+        </repository>
+        
+        <repository>
+            <id>prime-repo</id>
+            <name>PrimeFaces Maven Repository</name>
+            <url>https://repository.primefaces.org</url>
+            <layout>default</layout>
+        </repository>
+
+        <repository>
+            <id>clojars-repo</id>
+            <name>Clojars Repository</name>
+            <url>https://clojars.org/repo</url>
+        </repository>
+    </repositories>
+
+    <build>        
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                  <execution>
+                    <phase>validate</phase>
+                    <goals>
+                      <goal>create</goal>
+                    </goals>
+                  </execution>
+                </executions>
+                <configuration>
+                  <doCheck>false</doCheck>
+                  <doUpdate>false</doUpdate>
+                </configuration>
+            </plugin> 
+            
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <testSource>1.8</testSource>
+                    <compilerArgs>
+                        <arg>-verbose</arg>
+                        <arg>-Xlint:all,-options,-path</arg>
+                    </compilerArgs>
+                    <debug>true</debug>
+                    <showDeprecation>true</showDeprecation>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/WebContent</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>**/*.css</include>
+                                        <include>**/*.js</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+              
+            <plugin>
+                <groupId>org.primefaces.extensions</groupId>
+                <artifactId>resources-optimizer-maven-plugin</artifactId>
+                <version>2.3.2</version>
+                <executions>
+                    <execution>
+                        <id>optimize</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>optimize</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <languageIn>ECMASCRIPT_2015</languageIn>
+                    <languageOut>ECMASCRIPT_2015</languageOut>
+                    <resourcesSets>
+                        <resourcesSet>
+                            <inputDir>${project.build.directory}/generated-resources</inputDir>
+                        </resourcesSet>
+                    </resourcesSets>
+                </configuration>
+            </plugin>
+              
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>war</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>war</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Implementation-Build>${buildNumber}</Implementation-Build>
+                        </manifestEntries>
+                    </archive>
+                    <includeEmptyDirectories>true</includeEmptyDirectories>
+                    <webappDirectory>${project.build.directory}/webapp</webappDirectory>
+                    <warSourceDirectory>${project.basedir}/WebContent</warSourceDirectory>
+                    <warSourceExcludes>**/resources/**/*.css,**/resources/**/*.js</warSourceExcludes>
+                    <webResources>
+                        <resource>
+                            <directory>${project.build.directory}/generated-resources</directory>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+        </plugins>
+        
+        <finalName>${project.artifactId}</finalName>
+        
+    </build>
+</project>

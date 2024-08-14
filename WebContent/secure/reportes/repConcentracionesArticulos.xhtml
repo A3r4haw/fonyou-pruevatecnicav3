@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>REPORTE DE CONCENTRACIONES DE ARTICULOS</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="estatusId" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="REPORTE DE CONCENTRACIONES DE ARTICULOS #{reporteConcentracionArticuloMB.estateInsumo}" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-6" style="height:100%; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto;">
+                                            
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;"  value="Insumos" />
+                                            <br/>
+                                            <p:autoComplete id="txtInsumos"                                                             
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{reporteConcentracionArticuloMB.paramBusquedaReporte.listInsumos}"
+                                                            completeMethod="#{reporteConcentracionArticuloMB.autocompleteInsumo}"
+                                                            minQueryLength="4"
+                                                            queryDelay="500" 
+                                                            maxResults="50" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="insum" 
+                                                            placeholder="Filtro Insumos" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{insum.nombreCorto}" itemValue="#{insum}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="#{!reporteConcentracionArticuloMB.permiso.puedeEditar}"
+                                                            style="width: 90% !important"
+                                                            scrollHeight = "350" >
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel  value="Estatus Insumo" style="font-weight: bolder;"/>
+                                            <br/>
+                                            <p:selectOneMenu id="ministrado" value="#{reporteConcentracionArticuloMB.estateInsumo}" style="width:100%">
+                                                <f:selectItem itemLabel="DISPONIBLES" itemValue="#{reporteConcentracionArticuloMB.disponible}" /> 
+                                                <f:selectItem itemLabel="CADUCOS" itemValue="#{reporteConcentracionArticuloMB.caducado}" />
+                                                <f:selectItem itemLabel="DETERIORADOS" itemValue="#{reporteConcentracionArticuloMB.deteriorado}" />  
+                                                <f:selectItem itemLabel="SUSPENDIDOS" itemValue="#{reporteConcentracionArticuloMB.suspendido}" />    
+                                            </p:selectOneMenu>
+                                        </div>
+                                        
+                                        
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;" value="Almacén / Sub-Almacén" />
+                                            <br/>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{reporteConcentracionArticuloMB.estructuraUsuario.nombre}" 
+                                                           rendered="#{!reporteConcentracionArticuloMB.administrador}"/>
+                                            
+                                            <p:selectOneMenu id="comboAlmacenSubAlmacen" 
+                                                             value="#{reporteConcentracionArticuloMB.idEstructura}"
+                                                             disabled="#{!reporteConcentracionArticuloMB.permiso.puedeVer}"
+                                                             style="vertical-align: middle; margin-right: 10px; width: 200px"
+                                                             rendered="#{reporteConcentracionArticuloMB.administrador}"
+                                                             filter="true" filterMatchMode="contains" panelStyle="width:250px"> 
+                                                             
+                                                
+                                                <f:selectItems value="#{reporteConcentracionArticuloMB.listaAuxiliar}"
+                                                               var="almacen"
+                                                               itemValue="#{almacen.idEstructura}"
+                                                               itemLabel="#{almacen.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4">
+
+                                            <p:menuButton value="Exportar Archivo" style="margin-top: 15px; width: 200px; margin-left: 8px;">
+                                                <p:menuitem value="Formato PDF"
+                                                            actionListener="#{reporteConcentracionArticuloMB.imprimeReporteConcentracionArticulos()}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"
+                                                            />
+
+                                                <p:menuitem value="Formato EXCEL"
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false"
+                                                            actionListener="#{reporteConcentracionArticuloMB.generaExcelConcentracionArticulos()}"
+                                                            />
+                                            </p:menuButton>
+
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2" style="margin-top: 0px; ">                                            
+                                            <p:commandButton value="Generar Reporte" style="margin-left: 25%; margin-top: 15px"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{reporteConcentracionArticuloMB.consultar}"
+                                                             update="formTablaEstatusInsumos, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"                                                               
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                        </div>
+                                        
+                                        
+                                    </div>
+
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form><br />
+                    <h:form id="formTablaEstatusInsumos" >
+<style type="text/css">
+    .ui-datatable-header {
+        height: 20px
+    }
+</style>
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     value="#{reporteConcentracionArticuloMB.reporteConcentracionLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="font-size: x-small !important; width: 120% !important;"
+                                     >
+                            <f:facet name="header">
+                                <p:commandButton id="toggler" type="button" value="Columnas" style="float:right" icon="fa fa-columns" />
+                                <p:columnToggler datasource="resultadosDT" trigger="toggler" />
+                            </f:facet>
+
+                            <p:column class="" headerText="GEN." style="width: 1%; " >
+                                <h:outputText value="#{result.gen}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="ESP." style="width: 1%; " >
+                                <h:outputText value="#{result.esp}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="DIF" style="width: 1%;">
+                                <h:outputText value="#{result.dif}"/>
+                            </p:column>                            
+                            
+                            <p:column class="" headerText="VAR" style="width: 1%; " >
+                                <h:outputText value="#{result.var}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="DESCRIPCIÓN"  style="width: 18%;">
+                                <h:outputText value="#{result.nombreCorto}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="CANTIDAD"  style="width: 3%;">
+                                <h:outputText value="#{result.cantidad}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="PRECIO UNIT." style="width: 3%;">
+                                <h:outputText value="$ #{result.precioUnitario}"/>
+                            </p:column>
+                            
+                            <p:column class="" headerText="IMPORTE" style="width: 3%;">
+                                <h:outputText value="$ #{result.importe}"/>
+                            </p:column>
+
+                        </p:dataTable>
+                    </h:form>	
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

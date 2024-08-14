@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.OrdenCompraMapper" >
+
+    <select id="obtener" parameterType="String" resultType="mx.mc.model.OrdenCompra_Extended">
+        SELECT *
+        FROM ordenCompra
+        WHERE 1=1
+        <if test=" idOrdenCompra != null " >
+            AND idOrdenCompra = #{ idOrdenCompra , jdbcType = VARCHAR }
+        </if>
+        <if test=" idReabasto != null " >
+            AND idReabasto = #{ idReabasto , jdbcType = VARCHAR }
+        </if>
+        LIMIT 1;
+    </select>
+    
+    <select id="obtenerLista" parameterType="String" resultType="mx.mc.model.OrdenCompra_Extended">
+        SELECT *
+        FROM ordenCompra
+        WHERE 1=1
+        <if test=" idOrdenCompra != null " >
+            AND idOrdenCompra = #{ idOrdenCompra , jdbcType = VARCHAR }
+        </if>
+        <if test=" idReabasto != null " >
+            AND idReabasto = #{ idReabasto , jdbcType = VARCHAR }
+        </if>
+    </select>
+     
+    <select id="obtenerUltimosRegistrosOrdenCompra" resultType="mx.mc.model.OrdenCompra_Extended" parameterType="Map" >
+       SELECT idOrdenCompra,oc.idReabasto,folioOrdenCompra,oc.idProveedor
+              ,oc.idEstatusOrdenCompra,oc.insertFecha,oc.insertIdUsuario
+              ,oc.updateFecha,oc.updateIdUsuario,p.nombreProveedor,eoc.nombreEstatus, 
+              e.nombre as nombreEstructura, r.folio as folioReabasto
+        FROM (ordenCompra oc INNER JOIN proveedor p
+        ON oc.idProveedor = p.idProveedor) INNER JOIN estatusOrdenCompra eoc
+        ON eoc.idEstatusOrdenCompra  = oc.idEstatusOrdenCompra
+        INNER JOIN estructura e on oc.idEstructura = e.idEstructura
+        LEFT JOIN reabasto r on oc.idReabasto = r.idReabasto
+        WHERE 1=1
+        ORDER BY insertFecha
+        LIMIT #{numRegistros , jdbcType = INTEGER};
+    </select>
+    
+    <select id="obtenerRegistrosPorCriterioDeBusqueda" resultType="mx.mc.model.OrdenCompra_Extended" parameterType="Map" >
+        SELECT idOrdenCompra,idReabasto,folioOrdenCompra,oc.idProveedor
+              ,oc.idEstatusOrdenCompra,oc.insertFecha,oc.insertIdUsuario
+              ,oc.updateFecha,oc.updateIdUsuario,p.nombreProveedor,eoc.nombreEstatus
+        FROM (ordenCompra oc INNER JOIN proveedor p
+        ON oc.idProveedor = p.idProveedor) INNER JOIN estatusOrdenCompra eoc
+        ON eoc.idEstatusOrdenCompra  = oc.idEstatusOrdenCompra
+        WHERE 1=1
+        AND  p.nombreProveedor LIKE '%${criterioBusqueda}%'
+        OR folioOrdenCompra LIKE '%${criterioBusqueda}%'
+        ORDER BY insertFecha
+        LIMIT #{numRegistros , jdbcType = INTEGER}; 
+    </select>
+    
+    <update id="actualizar" parameterType="mx.mc.model.OrdenCompra">
+        UPDATE ordenCompra
+        SET
+        <if test="updateFecha != null">
+            updateFecha = #{updateFecha,  jdbcType = TIMESTAMP}
+        </if>
+        <if test="updateIdUsuario != null">
+            ,updateIdUsuario = #{updateIdUsuario, jdbcType = VARCHAR}
+        </if>
+        <if test="idEstatusOrdenCompra != 0">
+            ,idEstatusOrdenCompra = #{idEstatusOrdenCompra,  jdbcType = INTEGER}
+        </if>
+        <if test="idProveedor != null">
+            ,idProveedor = #{idProveedor,  jdbcType = VARCHAR}
+        </if>
+        WHERE idOrdenCompra = #{idOrdenCompra, jdbcType = VARCHAR}
+    </update>
+    
+    <insert id="insertar" parameterType="mx.mc.model.OrdenCompra">
+        INSERT INTO ordenCompra (
+            <if test="idOrdenCompra != null">          idOrdenCompra</if>
+            <if test="idReabasto != null">        ,idReabasto</if>
+            <if test="folioOrdenCompra != null">   ,folioOrdenCompra</if>
+            <if test="idProveedor != null">         ,idProveedor</if>
+            <if test="idEstatusOrdenCompra != null">               ,idEstatusOrdenCompra</if>
+            <if test="fecha != null">      ,fecha</if>
+            <if test="idEstructura != null">  ,idEstructura</if>
+            <if test="idTipoOrigen != null">        ,idTipoOrigen</if>
+            <if test="insertFecha != null">         ,insertFecha</if>
+            <if test="insertIdUsuario != null">     ,insertIdUsuario</if>
+            ) VALUES (
+            <if test="idOrdenCompra != null">          #{idOrdenCompra,jdbcType=VARCHAR}</if>
+            <if test="idReabasto != null">        ,#{idReabasto,jdbcType=VARCHAR}</if>
+            <if test="folioOrdenCompra != null">   ,#{folioOrdenCompra,jdbcType=VARCHAR}</if>
+            <if test="idProveedor != null">         ,#{idProveedor,jdbcType=INTEGER}</if>
+            <if test="idEstatusOrdenCompra != null">               ,#{idEstatusOrdenCompra,jdbcType=INTEGER}</if>
+            <if test="fecha != null">      ,#{fecha,jdbcType=TIMESTAMP}</if>
+            <if test="idEstructura != null">  ,#{idEstructura,jdbcType=VARCHAR}</if>
+            <if test="idTipoOrigen != null">        ,#{idTipoOrigen,jdbcType=INTEGER}</if>
+            <if test="insertFecha != null">         ,#{insertFecha,jdbcType=TIMESTAMP}</if>
+            <if test="insertIdUsuario != null">     ,#{insertIdUsuario,jdbcType=VARCHAR}</if>);
+    </insert>
+    
+    <select id="obtenerOrdenCompra" parameterType="String" resultType="mx.mc.model.OrdenCompra_Extended">
+        SELECT idOrdenCompra, idReabasto, folioOrdenCompra, idProveedor, idEstatusOrdenCompra, 
+                fecha, idEstructura, idTipoOrigen, insertFecha, insertIdUsuario
+        FROM ordenCompra
+        WHERE idOrdenCompra = #{idOrdenCompra,jdbcType=VARCHAR};
+    </select>
+   
+   <update id="actualizarOrdenCompra" parameterType="mx.mc.model.OrdenCompra_Extended">
+        UPDATE ordenCompra
+        SET
+           <if test="idEstatusOrdenCompra != 0">
+            idEstatusOrdenCompra = #{idEstatusOrdenCompra,  jdbcType = INTEGER}
+        </if>        
+        <if test="updateFecha != null">
+            ,updateFecha = #{updateFecha,  jdbcType = TIMESTAMP}
+        </if>
+        <if test="updateIdUsuario != null">
+            ,updateIdUsuario = #{updateIdUsuario, jdbcType = VARCHAR}
+        </if>
+        <if test="idReabasto != null">
+            ,idReabasto = #{idReabasto,  jdbcType = VARCHAR}
+        </if>
+        WHERE idOrdenCompra = #{idOrdenCompra, jdbcType = VARCHAR}
+    </update>
+    
+    <select id="obtenerOrdenesCompraLazzy" parameterType="Map" resultType="mx.mc.model.OrdenCompra_Extended" >
+       SELECT idOrdenCompra,oc.idReabasto,folioOrdenCompra,oc.idProveedor
+              ,oc.idEstatusOrdenCompra,oc.fecha,oc.insertFecha,oc.insertIdUsuario
+              ,oc.updateFecha,oc.updateIdUsuario,p.nombreProveedor,eoc.nombreEstatus, 
+              e.nombre as nombreEstructura, r.folio as folioReabasto
+        FROM ordenCompra oc 
+        INNER JOIN proveedor p ON oc.idProveedor = p.idProveedor 
+        INNER JOIN estatusOrdenCompra eoc ON eoc.idEstatusOrdenCompra  = oc.idEstatusOrdenCompra
+        INNER JOIN estructura e on oc.idEstructura = e.idEstructura
+        LEFT JOIN reabasto r on oc.idReabasto = r.idReabasto
+        WHERE 1=1
+        <if test="idEstructura != null">
+            AND e.idEstructura = #{idEstructura,jdbcType=VARCHAR}
+        </if>
+        <if test="cadenaBusqueda != null">
+            AND ( oc.idOrdenCompra  LIKE '%${cadenaBusqueda}%'
+            OR folioOrdenCompra LIKE '%${cadenaBusqueda}%'
+            OR r.folio LIKE '%${cadenaBusqueda}%'
+            )
+        </if>
+        <if test="sortField == null">
+            ORDER BY oc.fecha desc            
+        </if>
+        <if test="sortOrder != null" >
+            <if test="sortField == 'folioOrdenCompra'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY folioOrdenCompra asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY folioOrdenCompra desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'folioReabasto'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY r.folio asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY r.folio desc
+                </if>                                    
+            </if>
+             <if test="sortField == 'fecha'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY oc.fecha asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY oc.fecha desc
+                </if>                                    
+            </if>
+        </if>
+    </select>  
+    
+    <select id="obtenerBusquedaTotalLazy" parameterType="Map" resultType="Long">
+        SELECT COUNT(*) AS total
+        FROM ordenCompra oc 
+        INNER JOIN proveedor p ON oc.idProveedor = p.idProveedor 
+        INNER JOIN estatusOrdenCompra eoc ON eoc.idEstatusOrdenCompra  = oc.idEstatusOrdenCompra
+        INNER JOIN estructura e on oc.idEstructura = e.idEstructura
+        LEFT JOIN reabasto r on oc.idReabasto = r.idReabasto
+        WHERE 1=1
+        <if test="idEstructura != null">
+            AND e.idEstructura = #{idEstructura,jdbcType=VARCHAR}
+        </if>
+        <if test="cadenaBusqueda != null">
+            AND ( oc.idOrdenCompra  LIKE '%${cadenaBusqueda}%'
+            OR folioOrdenCompra LIKE '%${cadenaBusqueda}%'
+            OR r.folio LIKE '%${cadenaBusqueda}%'
+            )
+        </if>
+    </select>    
+   
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http, jdbcType = VARCHAR//mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.RepCostPerCapServMapper">
+
+    <select id="obtenerDatosRepCostPerCapServ" resultType="mx.mc.model.DataResultReport" parameterType="Map">
+        SELECT montoPorServicio , nombre , oth , pacientesAtendidos , montoPorServicio / pacientesAtendidos AS costoPerCapita 
+        FROM (
+            SELECT SUM(cantidadEnviado * costoUnidosis) AS montoPorServicio , nombre , idEstructura AS oth , 
+            (
+                SELECT COUNT(vi1.idPaciente) AS numero
+                FROM prescripcion pr1
+                INNER JOIN prescripcionInsumo pri1 ON pri1.idPrescripcion = pr1.idPrescripcion
+                INNER JOIN estructura es1 ON es1.idEstructura = pr1.idEstructura
+                INNER JOIN surtimiento su1 ON su1.idPrescripcion = pr1.idPrescripcion
+                INNER JOIN surtimientoInsumo sui1 ON sui1.idSurtimiento = su1.idSurtimiento
+                INNER JOIN surtimientoEnviado sue1 ON sue1.idSurtimientoInsumo = sui1.idSurtimientoInsumo
+                INNER JOIN pacienteServicio ps1 ON ps1.idPacienteServicio = pr1.idPacienteServicio
+                INNER JOIN visita vi1 ON vi1.idVisita = ps1.idVisita
+                INNER JOIN inventario inv1 ON inv1.idInventario = sue1.idInventarioSurtido
+                WHERE es1.idEstructura = oth
+                AND su1.fechaProgramada BETWEEN #{ fechaInicio , jdbcType = TIMESTAMP } AND #{ fechaFin , jdbcType = TIMESTAMP }
+            ) AS pacientesAtendidos
+            FROM (
+                SELECT es.idEstructura , es.nombre , inv.idInventario , inv.costoUnidosis , sue.cantidadEnviado
+                FROM prescripcion pr
+                INNER JOIN prescripcionInsumo pri ON pri.idPrescripcion = pr.idPrescripcion
+                INNER JOIN estructura es ON es.idEstructura = pr.idEstructura
+                INNER JOIN surtimiento su ON su.idPrescripcion = pr.idPrescripcion
+                INNER JOIN surtimientoInsumo sui ON sui.idSurtimiento = su.idSurtimiento
+                INNER JOIN surtimientoEnviado sue ON sue.idSurtimientoInsumo = sui.idSurtimientoInsumo
+                INNER JOIN inventario inv ON inv.idInventario = sue.idInventarioSurtido
+                WHERE es.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+                AND su.fechaProgramada BETWEEN #{ fechaInicio , jdbcType = TIMESTAMP } AND #{ fechaFin , jdbcType = TIMESTAMP }
+            ) AS tabla1 group BY idEstructura
+        ) AS tabla2 order BY nombre ASC 
+     
+    </select>
+	
+</mapper>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.BitacoraAccionUsuarioMapper" >
+    
+    <select id="consultarAccionesUsuario" resultType="mx.mc.model.BitacoraAccionesUsuario" parameterType="Map">
+        SELECT fechaEvento AS fecha, nombreUsuario AS usuario, accion, tabla AS entidad, campo, valorActual AS valorAnterior, valorNuevo, idActual, idNuevo FROM bitacora.logss
+        WHERE 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND fechaEvento  between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if> 
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND nombreUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.nombreUsuario}
+            </foreach>
+        </if>
+        ORDER BY fechaEvento DESC       
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+
+    <select id="obtenerTotalRegistros" resultType="Long" parameterType="Map">
+        SELECT COUNT(*) AS total FROM bitacora.logss WHERE 1 = 1
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            AND fechaEvento  between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }
+        </if> 
+        <if test=" paramBusquedaReporte.listUsuarios != null ">
+            AND nombreUsuario IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listUsuarios" open="(" separator="," close=")">
+                #{item.nombreUsuario}
+            </foreach>
+        </if>
+    </select>
+</mapper>

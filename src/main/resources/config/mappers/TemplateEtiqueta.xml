@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TemplateEtiquetaMapper" >
+    
+    <select id="obtener" resultType="mx.mc.model.TemplateEtiqueta" parameterType="mx.mc.model.TemplateEtiqueta" >
+        SELECT 
+            idTemplate,
+            nombre,
+            descripcion,
+            tipo,
+            contenido,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario, 
+            activa,
+            idtipoSolucion,
+            tipoSurtimiento
+        FROM
+            templateEtiqueta 
+        WHERE 1=1
+        <if test=" idTemplate != null  "> AND idTemplate = #{ idTemplate } </if>
+        <if test=" nombre != null ">  AND idTemplate = #{ nombre } </if>
+        <if test=" tipo, != null ">  AND tipo = #{ tipo } </if>
+        <if test=" activa != -1 ">  AND activa = #{ activa } </if>
+        LIMIT 1;
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.TemplateEtiqueta" parameterType="mx.mc.model.TemplateEtiqueta" >
+        SELECT 
+            idTemplate,
+            nombre,
+            descripcion,
+            tipo,
+            contenido,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario, 
+            activa,
+            idtipoSolucion,
+            tipoSurtimiento
+        FROM
+            templateEtiqueta 
+        WHERE 1=1
+        <if test=" idTemplate != null "> AND idTemplate = #{ idTemplate } </if>
+        <if test=" nombre != null ">  AND idTemplate = #{ nombre } </if>
+        <if test=" tipo != null ">  AND tipo = #{ tipo } </if>
+        <if test=" activa != -1 ">  AND activa = #{ activa } </if>
+    </select>
+    
+    <select id="obtenerById" resultType="mx.mc.model.TemplateEtiqueta" parameterType="Map" >
+        SELECT 
+            idTemplate,
+            nombre,
+            descripcion,
+            tipo,
+            contenido,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario, 
+            activa,
+            idtipoSolucion,
+            tipoSurtimiento
+        FROM
+            templateEtiqueta 
+        WHERE
+            idTemplate = #{idTemplate}
+        LIMIT 1;
+    </select>
+    
+    
+    <select id="obtenerListaAll" resultType="mx.mc.model.TemplateEtiqueta" parameterType="Map" >
+        SELECT 
+            idTemplate,
+            nombre,
+            descripcion,
+            tipo,
+            contenido,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario,
+            activa,
+            idtipoSolucion,
+            tipoSurtimiento
+        FROM
+            templateEtiqueta;
+    </select>
+    
+    <select id="obtenerListaTipo" resultType="mx.mc.model.TemplateEtiqueta" parameterType="Map" >
+        SELECT 
+            idTemplate,
+            nombre,
+            descripcion,
+            tipo,
+            contenido,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario,
+            activa,
+            idtipoSolucion,
+            tipoSurtimiento
+        FROM
+            templateEtiqueta
+        WHERE
+            tipo = #{tipo};
+    </select>
+    
+    <select id="obtenerTemplateName" resultType="mx.mc.model.TemplateEtiqueta" parameterType="Map" >
+        SELECT 
+            idTemplate,
+            nombre,
+            descripcion,
+            tipo,
+            contenido,            
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario,
+            activa,
+            idtipoSolucion,
+            tipoSurtimiento
+        FROM
+            templateEtiqueta
+        WHERE 1=1
+        <if test="nombre != ''">
+            AND nombre like '%${ nombre }%'
+        </if>
+        ;
+    </select> 
+    <update id="actualizar" parameterType="mx.mc.model.TemplateEtiqueta" >
+        UPDATE templateEtiqueta
+        SET
+            idTemplate = #{idTemplate},
+            nombre = #{nombre},
+            descripcion = #{descripcion },
+            tipo = #{tipo },
+            contenido = #{contenido },
+            updateFecha = #{updateFecha},
+            updateIdUsuario = #{updateIdUsuario }
+        WHERE 
+            idTemplate = #{idTemplate};
+    </update>
+    
+    
+    <insert id="insertar" parameterType="mx.mc.model.TemplateEtiqueta" >
+        INSERT INTO templateEtiqueta (
+            <if test="idTemplate != null" > idTemplate, </if>
+            <if test="nombre != null" > nombre, </if>
+            <if test="descripcion != null" > descripcion, </if>
+            <if test="tipo != null" > tipo, </if>
+            <if test="contenido != null" > contenido, </if>
+            <if test="insertFecha != null" > insertFecha, </if>
+            <if test="insertIdUsuario != null" > insertIdUsuario </if>
+        ) VALUES (
+            <if test="idTemplate != null" > #{idTemplate}, </if>
+            <if test="nombre != null" > #{nombre}, </if>
+            <if test="descripcion != null" > #{descripcion}, </if>
+            <if test="tipo != null" > #{tipo}, </if>
+            <if test="contenido != null" > #{contenido}, </if>
+            <if test="insertFecha != null" > #{insertFecha}, </if>
+            <if test="insertIdUsuario != null" > #{insertIdUsuario} </if>
+        )
+    </insert>
+    
+    <delete id="delete" parameterType="Map" >
+        DELETE FROM templateEtiqueta
+        WHERE idTemplate = #{idTemplate};
+    </delete>
+</mapper>

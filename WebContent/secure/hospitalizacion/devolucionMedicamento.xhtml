@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Devolución de Medicamentos</title>
+        <h:outputScript library="primefaces" name="jquery/jquery.js" target="body" />
+        <h:outputScript library="primefaces" name="core.js" target="body" />
+        <h:outputScript library="primefaces" name="components.js" target="body" />
+        <h:outputScript library="primefaces" name="inputnumber/inputnumber.js" target="body" />
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <p:messages globalOnly="true" closable="true" showDetail="false" rendered="#{devolucionMedicamentoMB.showMjs}" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Devolución de Medicamentos Por Prescripción:"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 10px;" />                                                        
+                            <p:inputText id="textSearch" style="margin-top:0px; width: 50% !important;" 
+                                         value="#{devolucionMedicamentoMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar surtimiento de Prescripción..." />
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>
+                            </i>
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{devolucionMedicamentoMB.obtenerSutimientoEnviado()}"
+                                 update=":frmNewTransfer,mainForm" ajax="true" validateClient="true" onclick="PF('statusProcess').show();"
+                                 oncomplete="PF('statusProcess').hide();if(args.estatus){PF('mdlDetalleDevolucion').show();}" style=" margin-left: 15px; margin-bottom: 8px;" />
+                        </div>
+                        
+                        <p:commandButton id="btnConfSend"  tabindex="5" value="Crear Devolución" style="margin:5px 0px; width: 180px;" icon="fa fa-file-o"                                    
+                                         onclick="PF('mdlBusquedaFolio').show();" styleClass="btnMusAzul" update=":frmSearchFolio" />
+                        
+                        <p:dataTable widgetVar="tblMedEnv" id="tblMedEnv" emptyMessage="No se encontraron registros" rows="10" 
+                                paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                currentPageReportTemplate=" " paginator="true" reflow="true" style="margin-bottom:5px; padding: 5px;" 
+                                paginatorPosition="bottom" lazy="true" scrollWidth="100%" scrollHeight="350"
+                                value="#{devolucionMedicamentoMB.devolucionMinistracionLazy}" var="item"
+                                rowKey="#{item.idDevolucionMinistracion}" rowIndexVar="row"    
+                            >
+                            <p:autoUpdate />
+                            <p:column style="text-align: left;width: 10%;" sortBy="#{item.folio}"  headerText="Folio">
+                                <h:outputText value="#{item.folio}" class="altoColumn" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 25%;" sortBy="#{item.nombreCompleto}"  headerText="Paciente">
+                                <h:outputText value="#{item.nombreCompleto} #{item.apellidoPaterno} #{item.apellidoMaterno}" class="altoColumn" title="#{item.nombreCompleto} #{item.apellidoPaterno} #{item.apellidoMaterno}" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 10%;" sortBy="#{item.nombreCama}"  headerText="Cama">
+                                <h:outputText value="#{item.nombreCama}" class="altoColumn" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 25%;" sortBy="#{item.servicio}"  headerText="Servicio">
+                                <h:outputText value="#{item.servicio}" class="altoColumn" title="#{item.servicio}" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 10%;" sortBy="#{item.fechaDevolucion}"  headerText="Fecha y Hora">
+                                <h:outputText value="#{item.fechaDevolucion}" class="altoColumn" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 10%;" sortBy="#{item.estatusDevolicion}"  headerText="Estatus">
+                                <h:outputText value="#{item.estatusDevolicion}" class="altoColumn" />
+                            </p:column>
+                            
+                            <p:column style="text-align: left;width: 10%;"  headerText="Acciones">
+                                <p:commandLink title="Detalle"  actionListener="#{devolucionMedicamentoMB.obtenerDetalleSurtimiento(item)}"
+                                                       onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();PF('mdlDetalleDevolucion').show();" 
+                                                       update=":frmNewTransfer" >
+                                        <i class="fa fa-edit iconMusAzul" />
+                                    </p:commandLink>
+                            </p:column>                           
+                        </p:dataTable>
+                    </h:form>
+                    
+                    <p:dialog  header="Buscar..." widgetVar="mdlBusquedaFolio" closeOnEscape="false" modal="true" style="font-size:xx-small !important;" width="527px">   
+                        <h:form id="frmSearchFolio" >
+                            <p:messages globalOnly="false" closable="true" showDetail="false" rendered="#{devolucionMedicamentoMB.showMjsSearch}">
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:outputLabel value="Buscar por:" style="margin: 5px;"/>
+                            <p:outputLabel id="textFilter" value="" style="margin: 5px 5px 5px 103px;"/>
+                            <div style="width: 100%;">
+                                <p:selectOneMenu  id="filterSearchDevolucion" class="sOneMenu" required="true" tabindex="1" requiredMessage="Elija una opción de filtrado " value="#{devolucionMedicamentoMB.filter}" style="width: 140px !important; margin: 5px;" >
+                                    <f:selectItem itemLabel="Seleccione una opción" itemValue="op" noSelectionOption="true"/>
+                                    <f:selectItem itemLabel="Folio" itemValue="Folio" />
+                                    <f:selectItem itemLabel="Paciente" itemValue="Paciente" />
+                                </p:selectOneMenu>
+                            <p:inputText id="txtFolio" placeholder="Filtro Folio"  class="folioInputDisplay" value="#{devolucionMedicamentoMB.codigoBarras}" style="height: 20px !important; width: 300px;  margin: 5px;" tabindex="1"/>
+                            <p:autoComplete id="txtPaciente"  
+                                            class="autoComplete-Sum" 
+                                            styleClass="autoComplete-Sum" 
+                                            panelStyle="autoComplete-Sum" 
+                                            inputStyleClass="autoComplete-Sum" 
+                                            value="#{devolucionMedicamentoMB.pacienteExtended}"
+                                            completeMethod="#{devolucionMedicamentoMB.autoCompletePacientes}"
+                                            minQueryLength="4"
+                                            queryDelay="500"                                                             
+                                            maxResults="50" 
+                                            forceSelection="true" 
+                                            cacheTimeout="0" 
+                                            var="paciente" 
+                                            placeholder="Filtro Pacientes" 
+                                            cache="false"
+                                            emptyMessage="No se encontraron registros"
+                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" itemValue="#{paciente}" 
+                                            converter="musGenericConverter"
+                                            style="height: 20px !important; width: 300px;  margin: 5px;"
+                                            >
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Número de Paciente" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.pacienteNumero}" style=" font-size: small;" />
+                                    </p:column>                                                
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Nombre" />
+                                        </f:facet>
+                                        <h:outputText value="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                </p:autoComplete>
+                            </div>
+                            <script>
+                                $('#frmSearchFolio\\:txtFolio').attr('style', 'display: none ;');
+                                $('#frmSearchFolio\\:txtPaciente').attr('style', 'display: none ;');
+                                $('#frmSearchFolio\\:txtPaciente').val('null');
+                                $('#frmSearchFolio\\:btnFolio').attr('style', 'display: none ;');
+                                $('#frmSearchFolio\\:btnPaciente').attr('style', 'display: none ;');
+                                $('#frmSearchFolio\\:filterSearchDevolucion_0').on('click',function(){
+                                    $('#frmSearchFolio\\:txtFolio').attr('style', 'display: none !important;');
+                                        $('#frmSearchFolio\\:txtFolio').attr('style', 'display: none ;');
+                                        $('#frmSearchFolio\\:txtPaciente').attr('style', 'display: none ;');
+                                        $('#frmSearchFolio\\:txtPaciente').val('null');
+                                        $('#frmSearchFolio\\:textFilter').text('');
+                                        $('#frmSearchFolio\\:btnFolio').attr('style', 'display: none ;');
+                                        $('#frmSearchFolio\\:btnPaciente').attr('style', 'display: none ;');
+                                });
+                                $('#frmSearchFolio\\:filterSearchDevolucion_2').on('click',function(){
+                                    $('#frmSearchFolio\\:txtFolio').attr('style', 'display: none !important;');
+                                        $('#frmSearchFolio\\:txtPaciente').attr('style', 'display: inline-block ; ');
+                                        $('#frmSearchFolio\\:txtPaciente_input').attr('style', 'display: inline-block ; height: 20px !important; width: 300px !important; margin: 5px;');
+                                        $('#frmSearchFolio\\:textFilter').text('Paciente');
+                                        $('#frmSearchFolio\\:btnFolio').attr('style', 'display: none ;');
+                                        $('#frmSearchFolio\\:btnPaciente').attr('style', 'display:inline-block ; margin: 0px 0px 0px 5px;');
+                                });
+                                $('#frmSearchFolio\\:filterSearchDevolucion_1').on('click',function(){
+                                        $('#frmSearchFolio\\:txtPaciente').attr('style', 'display: none ;');
+                                        $('#frmSearchFolio\\:txtFolio').attr('style', 'display: inline-block ; height: 20px !important; width: 300px; margin: 5px;');
+                                        $('#frmSearchFolio\\:textFilter').text('Folio');
+                                        $('#frmSearchFolio\\:btnFolio').attr('style', 'display:inline-block ; margin: 0px 0px 0px 5px;');
+                                        $('#frmSearchFolio\\:btnPaciente').attr('style', 'display: none ;');
+                                });
+                            </script>
+                            <p:commandButton id="btnPaciente" value="Buscar" actionListener="#{devolucionMedicamentoMB.buscarFoliorPaciente}" 
+                                             update="txtPaciente,:frmNewTransfer, :listFolios,:frmSearchFolio"   styleClass="btnMusAzul"
+                                             oncomplete="if(args.estatus){PF('carDialog').show(); PF('mdlBusquedaFolio').hide()}" style="margin-right: 5px; float: right; padding: 3px;">
+                            </p:commandButton>
+                             <p:commandButton id="btnFolio" value="Buscar" actionListener="#{devolucionMedicamentoMB.newDevolucion}" 
+                                                update=":frmNewTransfer,:frmSearchFolio"   
+                                                styleClass="btnMusAzul"
+                                                oncomplete="if(args.estatus){PF('mdlBusquedaFolio').hide();}" 
+                                                style="margin-right: 5px; float: right; padding: 3px;">
+                            </p:commandButton>
+                        </h:form>
+                    </p:dialog>
+                    <style>
+                        #foliosModal{
+                            width: 65% !important;
+                        }
+                        .ui-inputgroup-addon-checkbox{
+                            display: inline;
+                        }
+                       
+                    </style>
+                    <p:dialog header="Folios" id="foliosModal" widgetVar="carDialog" modal="true" showEffect="blind" hideEffect="explode" resizable="false" style="">
+                        <p:outputPanel id="carDetail"  >
+                            <p:dataTable id="listFolios" widgetVar="tblMedEnv"  var="item"
+                                     styleClass="styleEventosPlanPrestacion" reflow="true" value="#{devolucionMedicamentoMB.devolucionListFolio}"
+                                    emptyMessage="No existen registros para mostrar." style="margin-bottom:5px;" 
+                                    scrollRows="50" scrollable="true" liveScroll="true">
+                                    
+                                    <p:column style="text-align: left;width: 10%;" sortBy="#{item.folio}"  headerText="Folio">
+                                        <h:outputText value="#{item.folio}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 25%;" sortBy="#{item.nombreCompleto}"  headerText="Paciente">
+                                        <h:outputText value="#{item.nombreCompleto} #{item.apellidoPaterno} #{item.apellidoMaterno}" class="altoColumn" title="#{item.nombreCompleto} #{item.apellidoPaterno} #{item.apellidoMaterno}" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 10%;" sortBy="#{item.nombreCama}"  headerText="Cama">
+                                        <h:outputText value="#{item.nombreCama}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 10%;" sortBy="#{item.servicio}"  headerText="Servicio">
+                                        <h:outputText value="#{item.servicio}" class="altoColumn" title="#{item.servicio}" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left;width: 10%;" sortBy="#{item.fechaDevolucion}"  headerText="Fecha y Hora">
+                                        <h:outputText value="#{item.fechaDevolucion}" class="altoColumn" >
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column style="text-align: left;width: 5%;"  headerText="">
+                                        <p:commandLink title="Detalle"  actionListener="#{devolucionMedicamentoMB.newDevolucionFolio(item)}"
+                                                                onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();PF('mdlDetalleDevolucion').show();PF('carDialog').hide();" 
+                                                                update=":frmNewTransfer" >
+                                                <i class="fa fa-search iconMusAzul" />
+                                            </p:commandLink>
+                                    </p:column>
+                             
+                        </p:dataTable>
+                        </p:outputPanel>
+                    </p:dialog>
+                    
+                    <p:dialog  header="Detalle de la Orden de Devolución"
+                          widgetVar="mdlDetalleDevolucion"
+                          closeOnEscape="false" modal="true"                          
+                          style="font-size:xx-small !important;" width="80%">   
+                        <h:form id="frmNewTransfer">
+                            <p:messages globalOnly="false" closable="true" showDetail="false" redisplay="true">
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:panelGrid columns="6" style="width:100%;">
+                                <p:outputLabel value="Folio:" style="width:150px;" />                                    
+                                <p:outputLabel value="#{devolucionMedicamentoMB.devMinistracionExt.folio}"  class="textoNegrita" />
+
+                                <p:outputLabel value="Fecha y Hora:"  style="width:150px;" />                                    
+                                <p:outputLabel value="#{devolucionMedicamentoMB.devMinistracionExt.fechaDevolucion}"  class="textoNegrita">
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                </p:outputLabel>
+
+                                <p:outputLabel value="Servicio:"  style="width:150px;"  />                                    
+                                <p:outputLabel value="#{devolucionMedicamentoMB.devMinistracionExt.servicio}"   class="textoNegrita" />
+                                  
+
+                                <p:outputLabel value="Num. Paciente:"  style="width:150px;" />                                    
+                                <p:outputLabel value="#{devolucionMedicamentoMB.devMinistracionExt.numPaciente}"  class="textoNegrita" />
+
+                                <p:outputLabel value="Paciente:"  style="width:150px;" />
+                                <p:outputLabel value="#{devolucionMedicamentoMB.devMinistracionExt.nombreCompleto} #{devolucionMedicamentoMB.devMinistracionExt.apellidoPaterno} #{devolucionMedicamentoMB.devMinistracionExt.apellidoMaterno}"  class="textoNegrita" />
+
+                                <p:outputLabel value="Cama:"  style="width:150px;" />                                    
+                                <p:outputLabel value="#{devolucionMedicamentoMB.devMinistracionExt.nombreCama}"  class="textoNegrita" />
+                                                                  
+                            </p:panelGrid>                                                        
+                            <p:panel id="addInsumo"  style="background-color:#E7E5DC  !important; padding: 0px; " >
+                                <div id="busqueda" style="background-color:#E7E5DC  !important; padding: 0px; ">
+                                    <div class="B" style="width:70% !important; ">
+                                    <p:outputLabel value="Comentarios:" /><br/>
+                                    <p:inputTextarea id="numSoli" value="#{devolucionMedicamentoMB.comentarios}" rows="1"  class="textArea-Sum"  tabindex="2"  disabled="#{!devolucionMedicamentoMB.edit}" /> 
+                                    </div>                                                                    
+                                </div>
+                                <a href="../../../src/main/java/mx/mc/model/PresentacionMedicamento.java"></a>
+                                <p:outputPanel rendered="#{devolucionMedicamentoMB.isNew}">
+                                <div class="ui-g">
+                                    <div class="ui-g-6 ui-md-4 ui-lg-2" >
+                                        <p:selectBooleanButton id="delete" value="#{devolucionMedicamentoMB.eliminar}" onLabel="" offLabel="" onIcon="ui-icon-trash " offIcon="ui-icon-plusthick" />&nbsp;
+                                        <p:outputLabel value="Cantidad"  />&nbsp;&nbsp;
+                                        <p:inputNumber id="numDev" value="#{devolucionMedicamentoMB.cantDevolver}" decimalPlaces="0" size="1"/>
+                                    </div>
+                                    <div class="ui-g-6 ui-md-2 ui-lg-2" >
+                                        <p:outputLabel value="Conforme"  />&nbsp;&nbsp;
+                                        <p:selectBooleanButton id="conforme" value="#{devolucionMedicamentoMB.conforme}" onLabel="Si" offLabel="No" onIcon="ui-icon-check" offIcon="ui-icon-close" >
+                                            <p:ajax update="idSelectMotivo" listener="#{devolucionMedicamentoMB.obtieneListaMotivo}" />
+                                        </p:selectBooleanButton> 
+                                    </div>
+                                    <div class="ui-g-6 ui-md-6 ui-lg-3" >                              
+                                        <p:selectOneMenu  id="idSelectMotivo" class="sOneMenu" value="#{devolucionMedicamentoMB.tipoDevolucion}" required="true" requiredMessage="Es necesario el motivo de Devolución"
+                                                      tabindex="1" disabled="#{!devolucionMedicamentoMB.edit}" >
+                                            <f:selectItem itemLabel="Motivo de Devolución" itemValue="" noSelectionOption="true" />
+                                            <f:selectItems class="sOneMenu" value="#{devolucionMedicamentoMB.tipoMotivoListAux}" var="via" itemLabel="#{via.descripcion}"
+                                                       itemValue="#{via.idTipoMotivo}" />
+                                        </p:selectOneMenu>    
+                                    </div>
+                                    <div class="ui-g-6 ui-md-6 ui-lg-5" >
+                                                <p:autoComplete id="textFolio" 
+                                                    value="#{devolucionMedicamentoMB.medicamento}" 
+                                                    autocomplete="on" 
+                                                    completeMethod="#{devolucionMedicamentoMB.autoComplete}"
+                                                    minQueryLength="4" 
+                                                    forceSelection="true"
+                                                    var="insumo" 
+                                                    itemLabel="#{insumo.nombreCorto}" 
+                                                    itemValue="#{insumo}" 
+                                                    converter="medicamentoExtendedHashConverter" tabindex="5"
+                                                    placeholder="Buscar / Escanear Insumo"
+                                                    emptyMessage="Insumo desconocido." 
+                                                    size="50" 
+                                                    style="width: 360px;"  
+                                                    scrollHeight="200" >
+                                            <p:ajax event="itemSelect" update=":frmNewTransfer"
+                                                    oncomplete="$('.focusme').focus()" 
+                                                    process="@form"
+                                                    global="false" 
+                                                    listener="#{devolucionMedicamentoMB.addMedicamentoList}" resetValues="true"
+                                                    ></p:ajax>
+                                            <p:ajax event="itemUnselect" 
+                                                    listener="#{devolucionMedicamentoMB.handleUnSelect}"
+                                                    ></p:ajax>
+
+                                            <p:column style="width: 100px; font-size: small;" >
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave Institucional" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.claveInstitucional}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="width: 350px; font-size: small;" >
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.nombreCorto}" style=" font-size: x-small;" />
+                                            </p:column>
+                                            <p:column style="width: 100px; font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Lote" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.lote}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="width: 130px; font-size: small;" >
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Fecha de Caducidad" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.fechaCaducidad}" style=" font-size: small;" >
+                                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                                </h:outputText>
+                                            </p:column>
+                                        </p:autoComplete>  
+                                    </div>
+                                </div>
+                                    
+                                </p:outputPanel>    
+                            </p:panel>                            
+                            
+                            <p:dataTable  widgetVar="tblDetMed" id="tblDetMed" var="item"
+                                     styleClass="styleEventosPlanPrestacion" reflow="true" value="#{devolucionMedicamentoMB.devolucionDetalleExtList}"
+                            emptyMessage="No existen registros para mostrar." style="margin-bottom:5px;" 
+                            scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="250">
+                                <p:ajax event="rowToggle" global="false"/>
+
+                                <p:column style="width:3%">
+                                    <p:rowToggler />
+                                </p:column>
+                                
+                                <p:column style="text-align: left;width: 20%;" headerText="Clave">
+                                    <h:outputText value="#{item.claveInstitucional}" class="altoColumn" />                                
+                                </p:column>
+                                
+                                <p:column style="text-align: left;width: 50%;" headerText="Medicamento">
+                                    <h:outputText value="#{item.nombreCorto}" class="altoColumn" />                                
+                                </p:column>                    
+                                <p:column style="text-align: left;width: 20%;" headerText="Cant. máxima a devolver">
+                                    <h:outputText value="#{item.cantidadMaxima}" class="altoColumn" />                                
+                                </p:column>  
+                                
+                                <p:column style="text-align: left;width: 20%;" headerText="Cantidad a Devolver">
+                                    <h:outputText value="#{item.cantidadDevuelta}" class="altoColumn" />                                
+                                </p:column>                                                                
+                                
+                                 <p:rowExpansion>
+                                    <p:dataTable var="env" id="tblReabastoInsumoDetalle"
+                                                 value="#{item.surtimientoEnviadoExtList}"
+                                                scrollable="true" 
+                                                emptyMessage="" >
+                                        
+                                        <p:column headerText="Lote " style="width: 25%">
+                                            <h:outputText value="#{env.lote}" />
+                                        </p:column>
+
+                                        <!--TODO:  SE ELIMINA PRESENCTACION DE CADUCIDAD SOLO PARA TOLUCA  -->
+                                        <p:column headerText="Fecha de caducidad" style="width:25%" rendered="true">
+                                            <h:outputLabel value="#{env.caducidad}" >
+                                                <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                            </h:outputLabel>
+                                        </p:column>                                                                                
+                                        
+                                        <p:column headerText="Cantidad Enviado" style="width:25%">
+                                            <h:outputLabel value="#{env.cantidadEnviado}" />
+                                        </p:column>
+                                        
+                                        <p:column style="text-align: left;width: 30%;" headerText="Conforme" >
+                                            <p:selectOneButton value="#{env.conforme}" 
+                                                               unselectable="false" 
+                                                               styleClass="MyOneButton" 
+                                                               disabled="true">
+                                                <f:selectItem itemLabel="DEVOLUCION" itemValue="#{true}" />
+                                                <f:selectItem itemLabel="NO CONFORME" itemValue="#{false}" />
+                                            </p:selectOneButton>
+                                        </p:column>
+                                        
+                                        <p:column headerText="Motivo de Devolucion" style="width:30%">
+                                            <p:selectOneMenu  class="sOneMenu" value="#{env.tipoDevolucion}" required="true" requiredMessage="Es necesario el motivo de Devolución"
+                                                              tabindex="1" disabled="true" >
+                                                <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                                <f:selectItems class="sOneMenu" value="#{devolucionMedicamentoMB.tipoMotivoList}" var="via" itemLabel="#{via.descripcion}"
+                                                               itemValue="#{via.idTipoMotivo}" />
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                        
+                                        <p:column headerText="Cantidad a Devolver" style="width:25%">
+                                            <h:outputLabel value="#{env.cantidadDevolver}" />
+                                        </p:column>
+                                        
+                                        
+                                    </p:dataTable>
+                                </p:rowExpansion>
+                                <f:facet name="footer" >
+                                <p:outputLabel style="font-size: 1em !important; color: #000;">
+                                    #{devolucionMedicamentoMB.numeroMedDetalles} Insumos han sido encontrados
+                                </p:outputLabel> 
+                            </f:facet>
+                            </p:dataTable>
+                           <div class="pnlActions">
+                                <p:commandButton id="btnConfCancel" class="btnItem"  value="Cancelar" style="width: 100px;" 
+                                                         ajax="true" onclick="PF('mdlDetalleDevolucion').hide();"  tabindex="4"/>&nbsp;&nbsp;
+                                
+                                <p:commandButton id="btnConfSend"  tabindex="5" rendered="#{devolucionMedicamentoMB.edit}"
+                                            value="Enviar" style="margin:0; width: 100px;" styleClass="btnMusAzul"
+                                            actionListener="#{devolucionMedicamentoMB.procesarMedicamentoDevolucion}"
+                                            onclick="PF('statusProcess').show();"  update=":mainForm"                                       
+                                            oncomplete="if(args.estatus){ PF('mdlDetalleDevolucion').hide();} PF('carDialog').hide(); PF('statusProcess').hide(); ">
+                                    <p:confirm header="Confirmación" message="¿Realmente desea devolver los medicamentos? " icon="ui-icon-alert"  />
+                                </p:commandButton>
+                            </div>
+                        </h:form>
+                    </p:dialog>
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

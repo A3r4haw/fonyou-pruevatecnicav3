@@ -1,0 +1,862 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.SolucionMapper" >
+    <insert id="insertar" parameterType="mx.mc.model.Solucion">
+        INSERT INTO solucion(
+        <if test="idSolucion != null">             idSolucion        </if>
+        <if test="idSurtimiento != null">                ,idSurtimiento        </if>
+        <if test="idEnvaseContenedor != null">            ,idEnvaseContenedor        </if>
+        <if test="muestreo != null">            ,muestreo        </if>
+        <if test="piso != null">            ,piso        </if>
+        <if test="observaciones != null">            ,observaciones        </if>
+        <if test="volumen != null">            ,volumen        </if>
+        <if test="instruccionesPreparacion != null">            ,instruccionesPreparacion        </if>
+        <if test="fechaPrepara != null">                ,fechaPrepara        </if>
+        <if test="idUsuarioPrepara != null">                ,idUsuarioPrepara        </if>
+        <if test="comentariosPreparacion != null">                ,comentariosPreparacion        </if>
+        
+        <if test="fechaInspeccion != null">                ,fechaInspeccion        </if>
+        <if test="idUsuarioInspeccion != null">                ,idUsuarioInspeccion        </if>
+        <if test="comentarioInspeccion != null">                ,comentarioInspeccion        </if>
+        <if test="idEstatusSolucion != null">                ,idEstatusSolucion        </if>
+        <if test="volumenFinal != null">                ,volumenFinal        </if>
+        <if test="integridadFisica != null">                ,integridadFisica        </if>
+        <if test="particulas != null">                ,particulas        </if>
+        <if test="cuales != null">                ,cuales        </if>
+        <if test="apariencia != null">                ,apariencia        </if>
+        <if test="proteccionLuz != null">                ,proteccionLuz        </if>
+        <if test="proteccionTemp != null">                ,proteccionTemp        </if>
+        <if test="coloracion != null">                ,coloracion        </if>
+        <if test="etiquetado != null">                ,etiquetado        </if>
+        <if test="fechaAcondicionamiento != null">                ,fechaAcondicionamiento        </if>
+        <if test="idUsuarioAcondiciona != null">                ,idUsuarioAcondiciona        </if>
+        <if test="comentarioAcondicionada != null">            ,comentarioAcondicionada        </if>
+        <if test="resguardo != null">                               ,resguardo        </if>
+        <if test="donde != null">                ,donde        </if>
+        <if test="fechaEntrega != null">                ,fechaEntrega        </if>
+        <if test="idUsuarioRecibe != null">                ,idUsuarioRecibe        </if>
+        <if test="idServicioRecibe != null">                ,idServicioRecibe        </if>
+        <if test="comentarioRecibe != null">            ,comentarioRecibe        </if>
+        <if test="costo != null">                ,costo        </if>
+        <if test="insertFecha != null">                ,insertFecha        </if>
+        <if test="insertIdUsuario != null">                ,insertIdUsuario        </if>
+        <if test="updateFecha != null">                ,updateFecha        </if>
+        <if test="updateIdUsuario != null">                ,updateIdUsuario        </if>
+
+    <if test="proteccionTempRefrig != null"> , proteccionTempRefrig </if>
+    <if test="noAgitar != null"> , noAgitar </if>
+    <if test="idViaAdministracion != null">   , idViaAdministracion </if>
+    <if test="edadPaciente != null">  , edadPaciente </if>
+    <if test="pesoPaciente != null">  , pesoPaciente </if>
+    <if test="tallaPaciente != null"> , tallaPaciente </if>
+    <if test="areaCorporal != null">  , areaCorporal </if>
+    <if test="perfusionContinua != null"> , perfusionContinua </if>
+    <if test="velocidad != null"> , velocidad </if>
+    <if test="ritmo != null"> , ritmo </if>
+    <if test="idProtocolo != null">   , idProtocolo </if>
+    <if test="idDiagnostico != null"> , idDiagnostico </if>
+    <if test="unidadConcentracion != null"> , unidadConcentracion </if>
+    <if test="idUsuarioValida != null"> , idUsuarioValida </if>
+    <if test="fechaValida != null"> , fechaValida </if>
+    <if test="idMotivoRechazo != null"> , idMotivoRechazo </if>
+    
+    <if test=" fuga != null"> , fuga </if>
+    <if test=" aire != null"> , aire </if>
+    <if test=" burbujas != null"> , burbujas </if>
+    <if test=" sedimentacion != null"> , sedimentacion </if>
+    <if test=" precipitado != null"> , precipitado </if>
+    <if test=" selladoNoCoforme != null"> , selladoNoCoforme </if>
+    <if test=" escalaVolIlegible != null"> , escalaVolIlegible </if>
+    <if test=" separacionFases != null"> , separacionFases </if>
+    <if test=" idUsuarioAprobo != null"> , idUsuarioAprobo </if>
+    <if test=" dictamen != null"> , dictamen </if>
+    <if test=" aprobado != null"> , aprobado </if>
+    <if test=" reclasificacion != null"> , reclasificacion </if>
+    
+    <if test=" idMotivoCancelacion != null"> , idMotivoCancelacion </if>
+    <if test=" comentariosCancelacion != null"> , comentariosCancelacion </if>
+    <if test=" comentariosRechazo != null"> , comentariosRechazo </if>
+    <if test=" idUsuarioCancela != null"> , idUsuarioCancela </if>
+    <if test=" idUsuarioRechaza != null"> , idUsuarioRechaza </if>
+    
+    <if test=" fechaParaEntregar != null"> , fechaParaEntregar </if>
+    <if test=" minutosInfusion != null"> , minutosInfusion </if>
+
+    <if test=" kcalProteicas != null"> , kcalProteicas </if>
+    <if test=" kcalNoProteicas != null"> , kcalNoProteicas </if>
+    <if test=" indicaciones != null"> , indicaciones </if>
+    <if test=" descripcion != null"> , descripcion </if>
+        
+        ) VALUES (
+        <if test="idSolucion != null">                #{idSolucion}        </if>
+        <if test="idSurtimiento != null">                ,#{idSurtimiento}        </if>
+        <if test="idEnvaseContenedor != null">            ,#{idEnvaseContenedor}        </if>
+        <if test="muestreo != null">            ,#{muestreo}        </if>
+        <if test="piso != null">            ,#{piso}        </if>
+        <if test="observaciones != null">            ,#{observaciones}        </if>
+        <if test="volumen != null">            ,#{volumen}        </if>
+        <if test="instruccionesPreparacion != null">            ,#{instruccionesPreparacion}        </if>
+        <if test="fechaPrepara != null">                ,#{fechaPrepara}        </if>
+        <if test="idUsuarioPrepara != null">                ,#{idUsuarioPrepara}        </if>
+        <if test="comentariosPreparacion != null">                ,#{comentariosPreparacion}        </if>
+        
+        <if test="fechaInspeccion != null">                ,#{fechaInspeccion}        </if>
+        <if test="idUsuarioInspeccion != null">                ,#{idUsuarioInspeccion}        </if>
+        <if test="comentarioInspeccion != null">                ,#{comentarioInspeccion}        </if>
+        <if test="idEstatusSolucion != null">                ,#{idEstatusSolucion}        </if>
+        <if test="volumenFinal != null">                ,#{volumenFinal}        </if>
+        <if test="integridadFisica != null">                ,#{integridadFisica}        </if>
+        <if test="particulas != null">                ,#{particulas}        </if>
+        <if test="cuales != null">                ,#{cuales}        </if>
+        <if test="apariencia != null">                ,#{apariencia}        </if>
+        <if test="proteccionLuz != null">                ,#{proteccionLuz}        </if>
+        <if test="proteccionTemp != null">                ,#{proteccionTemp}        </if>
+        <if test="coloracion != null">                ,#{coloracion}        </if>
+        <if test="etiquetado != null">                ,#{etiquetado}        </if>
+        <if test="fechaAcondicionamiento != null">                ,#{fechaAcondicionamiento}        </if>
+        <if test="idUsuarioAcondiciona != null">                ,#{idUsuarioAcondiciona}        </if>
+        <if test="comentarioAcondicionada != null">            ,#{comentarioAcondicionada}        </if>
+        <if test="resguardo != null">                               ,#{resguardo}        </if>
+        <if test="donde != null">                ,#{donde}        </if>
+        <if test="fechaEntrega != null">                ,#{fechaEntrega}        </if>
+        <if test="idUsuarioRecibe != null">                ,#{idUsuarioRecibe}        </if>
+        <if test="idServicioRecibe != null">                ,#{idServicioRecibe}        </if>
+        <if test="comentarioRecibe != null">            ,#{comentarioRecibe}        </if>
+        <if test="costo != null">                ,#{costo}        </if>
+        <if test="insertFecha != null">                ,#{insertFecha}        </if>
+        <if test="insertIdUsuario != null">                ,#{insertIdUsuario}        </if>
+        <if test="updateFecha != null">                ,#{updateFecha}        </if>
+        <if test="updateIdUsuario != null">                ,#{updateIdUsuario}        </if>
+        
+        <if test="proteccionTempRefrig != null"> , #{ proteccionTempRefrig } </if>
+    <if test="noAgitar != null"> ,  #{ noAgitar  } </if>
+    <if test="idViaAdministracion != null">   ,  #{ idViaAdministracion  } </if>
+    <if test="edadPaciente != null">  ,  #{ edadPaciente  } </if>
+    <if test="pesoPaciente != null">  ,  #{ pesoPaciente  } </if>
+    <if test="tallaPaciente != null"> ,  #{ tallaPaciente  } </if>
+    <if test="areaCorporal != null">  ,  #{ areaCorporal  } </if>
+    <if test="perfusionContinua != null"> ,  #{ perfusionContinua  } </if>
+    <if test="velocidad != null"> ,  #{ velocidad  } </if>
+    <if test="ritmo != null"> ,  #{ ritmo  } </if>
+    <if test="idProtocolo != null">   ,  #{ idProtocolo  } </if>
+    <if test="idDiagnostico != null"> ,  #{ idDiagnostico  } </if>
+    <if test="unidadConcentracion != null"> ,  #{ unidadConcentracion  } </if>
+    <if test="idUsuarioValida != null"> ,  #{ idUsuarioValida } </if>
+    <if test="fechaValida != null"> ,  #{ fechaValida } </if>    
+    <if test="idMotivoRechazo != null"> ,  #{ idMotivoRechazo } </if>    
+    
+    <if test=" fuga != null"> , #{ fuga } </if>
+    <if test=" aire != null"> , #{ aire } </if>
+    <if test=" burbujas != null"> , #{ burbujas } </if>
+    <if test=" sedimentacion != null"> , #{ sedimentacion } </if>
+    <if test=" precipitado != null"> , #{ precipitado } </if>
+    <if test=" selladoNoCoforme != null"> , #{ selladoNoCoforme } </if>
+    <if test=" escalaVolIlegible != null"> , #{ escalaVolIlegible } </if>
+    <if test=" separacionFases != null"> , #{ separacionFases } </if>
+    <if test=" idUsuarioAprobo != null"> , #{ idUsuarioAprobo } </if>
+    <if test=" dictamen != null"> , #{ dictamen } </if>
+    <if test=" aprobado != null"> , #{ aprobado } </if>
+    <if test=" reclasificacion != null"> , #{ reclasificacion } </if>
+    
+    <if test=" idMotivoCancelacion != null"> , #{ idMotivoCancelacion } </if>
+    <if test=" comentariosCancelacion != null"> , #{ comentariosCancelacion } </if>
+    <if test=" comentariosRechazo != null"> , #{ comentariosRechazo } </if>
+    <if test=" idUsuarioCancela != null"> , #{ idUsuarioCancela } </if>
+    <if test=" idUsuarioRechaza != null"> , #{ idUsuarioRechaza } </if>
+    
+    <if test=" fechaParaEntregar != null"> , #{ fechaParaEntregar } </if>
+    <if test=" minutosInfusion != null"> , #{ minutosInfusion } </if>
+    
+    <if test=" kcalProteicas != null"> , #{ kcalProteicas } </if>
+    <if test=" kcalNoProteicas != null"> , #{ kcalNoProteicas } </if>
+    <if test=" indicaciones != null"> , #{ indicaciones } </if>
+    <if test=" descripcion != null"> , #{ descripcion } </if>
+    
+        );
+    </insert>
+
+        <insert id="insertarLista" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="list" item="item" separator=";" index="index">
+            INSERT INTO solucion(
+            <if test="item.idSolucion != null"> idSolucion </if>
+            <if test="item.idSurtimiento != null"> ,idSurtimiento </if>
+            <if test="item.idEnvaseContenedor != null"> ,idEnvaseContenedor </if>
+            <if test="item.muestreo != null"> ,muestreo </if>
+            <if test="item.piso != null"> ,piso </if>
+            <if test="item.observaciones != null"> ,observaciones </if>
+            <if test="item.volumen != null"> ,volumen </if>
+            <if test="item.instruccionesPreparacion != null"> ,instruccionesPreparacion </if>
+            <if test="item.fechaPrepara != null"> ,fechaPrepara </if>
+            <if test="item.idUsuarioPrepara != null"> ,idUsuarioPrepara </if>
+            <if test="item.comentariosPreparacion != null"> ,comentariosPreparacion </if>        
+            <if test="item.fechaInspeccion != null"> ,fechaInspeccion </if>
+            <if test="item.idUsuarioInspeccion != null"> ,idUsuarioInspeccion </if>
+            <if test="item.comentarioInspeccion != null"> ,comentarioInspeccion </if>
+            <if test="item.idEstatusSolucion != null"> ,idEstatusSolucion </if>
+            <if test="item.volumenFinal != null"> ,volumenFinal </if>
+            <if test="item.integridadFisica != null"> ,integridadFisica </if>
+            <if test="item.particulas != null"> ,particulas </if>
+            <if test="item.cuales != null"> ,cuales </if>
+            <if test="item.apariencia != null"> ,apariencia </if>
+            <if test="item.proteccionLuz != null"> ,proteccionLuz </if>
+            <if test="item.proteccionTemp != null"> ,proteccionTemp </if>
+            <if test="item.coloracion != null"> ,coloracion </if>
+            <if test="item.etiquetado != null"> ,etiquetado </if>
+            <if test="item.fechaAcondicionamiento != null"> ,fechaAcondicionamiento </if>
+            <if test="item.idUsuarioAcondiciona != null"> ,idUsuarioAcondiciona  </if>
+            <if test="item.comentarioAcondicionada != null"> ,comentarioAcondicionada </if>
+            <if test="item.resguardo != null"> ,resguardo </if>
+            <if test="item.donde != null"> ,donde </if>
+            <if test="item.fechaEntrega != null"> ,fechaEntrega </if>
+            <if test="item.idUsuarioRecibe != null"> ,idUsuarioRecibe </if>
+            <if test="item.idServicioRecibe != null"> ,idServicioRecibe </if>
+            <if test="item.comentarioRecibe != null"> ,comentarioRecibe </if>
+            <if test="item.costo != null"> ,costo </if>
+            <if test="item.insertFecha != null"> ,insertFecha </if>
+            <if test="item.insertIdUsuario != null"> ,insertIdUsuario </if>
+            <if test="item.updateFecha != null"> ,updateFecha </if>
+            <if test="item.updateIdUsuario != null"> ,updateIdUsuario </if>
+            <if test="item.proteccionTempRefrig != null"> , proteccionTempRefrig </if>
+            <if test="item.noAgitar != null"> , noAgitar </if>
+            <if test="item.idViaAdministracion != null">  , idViaAdministracion </if>
+            <if test="item.edadPaciente != null">  , edadPaciente </if>
+            <if test="item.pesoPaciente != null">  , pesoPaciente </if>
+            <if test="item.tallaPaciente != null"> , tallaPaciente </if>
+            <if test="item.areaCorporal != null">  , areaCorporal </if>
+            <if test="item.perfusionContinua != null"> , perfusionContinua </if>
+            <if test="item.velocidad != null"> , velocidad </if>
+            <if test="item.ritmo != null"> , ritmo </if>
+            <if test="item.idProtocolo != null">   , idProtocolo </if>
+            <if test="item.idDiagnostico != null"> , idDiagnostico </if>
+            <if test="item.unidadConcentracion != null"> , unidadConcentracion </if>
+            <if test="item.idUsuarioValida != null"> , idUsuarioValida </if>
+            <if test="item.fechaValida != null"> , fechaValida </if>
+            <if test="item.idMotivoRechazo != null"> , idMotivoRechazo </if>
+            <if test=" item.fuga != null"> , fuga </if>
+            <if test=" item.aire != null"> , aire </if>
+            <if test=" item.burbujas != null"> , burbujas </if>
+            <if test=" item.sedimentacion != null"> , sedimentacion </if>
+            <if test=" item.precipitado != null"> , precipitado </if>
+            <if test=" item.selladoNoCoforme != null"> , selladoNoCoforme </if>
+            <if test=" item.escalaVolIlegible != null"> , escalaVolIlegible </if>
+            <if test=" item.separacionFases != null"> , separacionFases </if>
+            <if test=" item.idUsuarioAprobo != null"> , idUsuarioAprobo </if>
+            <if test=" item.dictamen != null"> , dictamen </if>
+            <if test=" item.aprobado != null"> , aprobado </if>
+            <if test=" item.reclasificacion != null"> , reclasificacion </if>    
+            <if test=" item.idMotivoCancelacion != null"> , idMotivoCancelacion </if>
+            <if test=" item.comentariosCancelacion != null"> , comentariosCancelacion </if>
+            <if test=" item.comentariosRechazo != null"> , comentariosRechazo </if>
+            <if test=" item.idUsuarioCancela != null"> , idUsuarioCancela </if>
+            <if test=" item.idUsuarioRechaza != null"> , idUsuarioRechaza </if>
+            <if test=" item.fechaParaEntregar != null"> , fechaParaEntregar </if>        
+            <if test=" item.minutosInfusion != null"> , minutosInfusion </if>
+            ) VALUES (
+            <if test="item.idSolucion != null"> #{item.idSolucion} </if>
+            <if test="item.idSurtimiento != null"> ,#{item.idSurtimiento} </if>
+            <if test="item.idEnvaseContenedor != null"> ,#{item.idEnvaseContenedor} </if>
+            <if test="item.muestreo != null"> ,#{item.muestreo} </if>
+            <if test="item.piso != null"> ,#{item.piso} </if>
+            <if test="item.observaciones != null"> ,#{item.observaciones} </if>
+            <if test="item.volumen != null"> ,#{item.volumen} </if>
+            <if test="item.instruccionesPreparacion != null"> ,#{item.instruccionesPreparacion} </if>
+            <if test="item.fechaPrepara != null"> ,#{item.fechaPrepara} </if>
+            <if test="item.idUsuarioPrepara != null"> ,#{item.idUsuarioPrepara} </if>
+            <if test="item.comentariosPreparacion != null"> ,#{item.comentariosPreparacion} </if>
+            <if test="item.fechaInspeccion != null"> ,#{item.fechaInspeccion} </if>
+            <if test="item.idUsuarioInspeccion != null"> ,#{item.idUsuarioInspeccion} </if>
+            <if test="item.comentarioInspeccion != null"> ,#{item.comentarioInspeccion} </if>
+            <if test="item.idEstatusSolucion != null"> ,#{item.idEstatusSolucion} </if>
+            <if test="item.volumenFinal != null"> ,#{item.volumenFinal} </if>
+            <if test="item.integridadFisica != null"> ,#{item.integridadFisica} </if>
+            <if test="item.particulas != null"> ,#{item.particulas} </if>
+            <if test="item.cuales != null"> ,#{item.cuales} </if>
+            <if test="item.apariencia != null"> ,#{item.apariencia} </if>
+            <if test="item.proteccionLuz != null"> ,#{item.proteccionLuz} </if>
+            <if test="item.proteccionTemp != null"> ,#{item.proteccionTemp} </if>
+            <if test="item.coloracion != null"> ,#{item.coloracion} </if>
+            <if test="item.etiquetado != null"> ,#{item.etiquetado} </if>
+            <if test="item.fechaAcondicionamiento != null"> ,#{item.fechaAcondicionamiento} </if>
+            <if test="item.idUsuarioAcondiciona != null"> ,#{item.idUsuarioAcondiciona} </if>
+            <if test="item.comentarioAcondicionada != null"> ,#{item.comentarioAcondicionada} </if>
+            <if test="item.resguardo != null"> ,#{item.resguardo} </if>
+            <if test="item.donde != null"> ,#{item.donde} </if>
+            <if test="item.fechaEntrega != null"> ,#{item.fechaEntrega} </if>
+            <if test="item.idUsuarioRecibe != null"> ,#{item.idUsuarioRecibe} </if>
+            <if test="item.idServicioRecibe != null"> ,#{item.idServicioRecibe} </if>
+            <if test="item.comentarioRecibe != null">  ,#{item.comentarioRecibe} </if>
+            <if test="item.costo != null"> ,#{item.costo} </if>
+            <if test="item.insertFecha != null"> ,#{item.insertFecha} </if>
+            <if test="item.insertIdUsuario != null"> ,#{item.insertIdUsuario} </if>
+            <if test="item.updateFecha != null"> ,#{item.updateFecha} </if>
+            <if test="item.updateIdUsuario != null"> ,#{item.updateIdUsuario} </if>
+            <if test="item.proteccionTempRefrig != null"> , #{item.proteccionTempRefrig } </if>
+            <if test="item.noAgitar != null"> ,  #{item.noAgitar  } </if>
+            <if test="item.idViaAdministracion != null">   ,  #{item.idViaAdministracion  } </if>
+            <if test="item.edadPaciente != null">  ,  #{item.edadPaciente  } </if>
+            <if test="item.pesoPaciente != null">  ,  #{item.pesoPaciente  } </if>
+            <if test="item.tallaPaciente != null"> ,  #{item.tallaPaciente  } </if>
+            <if test="item.areaCorporal != null">  ,  #{item.areaCorporal  } </if>
+            <if test="item.perfusionContinua != null"> ,  #{item.perfusionContinua  } </if>
+            <if test="item.velocidad != null"> ,  #{item.velocidad  } </if>
+            <if test="item.ritmo != null"> ,  #{item.ritmo  } </if>
+            <if test="item.idProtocolo != null">   ,  #{item.idProtocolo  } </if>
+            <if test="item.idDiagnostico != null"> ,  #{item.idDiagnostico  } </if>
+            <if test="item.unidadConcentracion != null"> ,  #{item.unidadConcentracion  } </if>
+            <if test="item.idUsuarioValida != null"> ,  #{item.idUsuarioValida } </if>
+            <if test="item.fechaValida != null"> ,  #{item.fechaValida } </if>    
+            <if test="item.idMotivoRechazo != null"> ,  #{item.idMotivoRechazo } </if>    
+            <if test=" item.fuga != null"> , #{item.fuga } </if>
+            <if test=" item.aire != null"> , #{item.aire } </if>
+            <if test=" item.burbujas != null"> , #{item.burbujas } </if>
+            <if test=" item.sedimentacion != null"> , #{item.sedimentacion } </if>
+            <if test=" item.precipitado != null"> , #{item.precipitado } </if>
+            <if test=" item.selladoNoCoforme != null"> , #{item.selladoNoCoforme } </if>
+            <if test=" item.escalaVolIlegible != null"> , #{item.escalaVolIlegible } </if>
+            <if test=" item.separacionFases != null"> , #{item.separacionFases } </if>
+            <if test=" item.idUsuarioAprobo != null"> , #{item.idUsuarioAprobo } </if>
+            <if test=" item.dictamen != null"> , #{item.dictamen } </if>
+            <if test=" item.aprobado != null"> , #{item.aprobado } </if>
+            <if test=" item.reclasificacion != null"> , #{item.reclasificacion } </if>
+            <if test=" item.idMotivoCancelacion != null"> , #{item.idMotivoCancelacion } </if>
+            <if test=" item.comentariosCancelacion != null"> , #{item.comentariosCancelacion } </if>
+            <if test=" item.comentariosRechazo != null"> , #{item.comentariosRechazo } </if>
+            <if test=" item.idUsuarioCancela != null"> , #{item.idUsuarioCancela } </if>
+            <if test=" item.idUsuarioRechaza != null"> , #{item.idUsuarioRechaza } </if>
+            <if test=" item.fechaParaEntregar != null"> , #{item.fechaParaEntregar } </if>
+            <if test=" item.minutosInfusion != null"> , #{item.minutosInfusion } </if>
+            )
+        </foreach>
+    </insert>
+            
+    <update id="actualizar" parameterType="mx.mc.model.Solucion">
+        UPDATE solucion SET
+        updateFecha = #{updateFecha}
+        , updateIdUsuario = #{updateIdUsuario}
+        
+        <if test="idEstatusSolucion != null">            ,idEstatusSolucion = #{idEstatusSolucion}        </if>
+        
+        <if test="idSurtimiento != null">            ,idSurtimiento = #{idSurtimiento}        </if>
+        <if test="idEnvaseContenedor != null">            ,idEnvaseContenedor = #{idEnvaseContenedor}        </if>
+        
+        <if test="piso != null">            ,piso = #{piso}        </if>
+                
+        <if test="volumen != null">            ,volumen = #{volumen}        </if>
+        <if test="volumenFinal != null">            ,volumenFinal = #{volumenFinal}        </if>
+        <if test="instruccionesPreparacion != null">            ,instruccionesPreparacion = #{instruccionesPreparacion}        </if>
+        <if test="observaciones != null">            ,observaciones = #{observaciones}        </if>
+        
+        <if test="proteccionTempRefrig != null"> , proteccionTempRefrig = #{ proteccionTempRefrig } </if>
+        <if test="noAgitar != null"> , noAgitar = #{ noAgitar  } </if>
+        <if test="proteccionLuz != null"> , proteccionLuz = #{proteccionLuz}        </if>
+        <if test="proteccionTemp != null"> , proteccionTemp = #{proteccionTemp}        </if>
+        <if test="muestreo != null"> , muestreo = #{muestreo}        </if>
+        
+        <if test="idUsuarioValida != null"> , idUsuarioValida = #{ idUsuarioValida } </if>
+        <if test="fechaValida != null"> , fechaValida = #{ fechaValida } </if>
+        
+        <if test="fechaPrepara != null">            ,fechaPrepara = #{fechaPrepara}        </if>
+        <if test="idUsuarioPrepara != null">            ,idUsuarioPrepara = #{idUsuarioPrepara}        </if>
+        <if test="comentariosPreparacion != null">            ,comentariosPreparacion = #{comentariosPreparacion}        </if>
+        
+        <if test="claveMezcla != null"> , claveMezcla = #{ claveMezcla } </if>
+        <if test="loteMezcla != null"> , loteMezcla = #{ loteMezcla } </if>
+        <if test="caducidadMezcla != null"> , caducidadMezcla = #{ caducidadMezcla } </if>
+        <if test="estabilidadMezcla != null"> , estabilidadMezcla = #{ estabilidadMezcla } </if>
+        <if test="idMotivoRechazo != null"> , idMotivoRechazo = #{ idMotivoRechazo } </if>
+        
+        <if test="fechaInspeccion != null">            ,fechaInspeccion = #{fechaInspeccion}        </if>
+        <if test="idUsuarioInspeccion != null">            ,idUsuarioInspeccion = #{idUsuarioInspeccion}        </if>
+        <if test="comentarioInspeccion != null">            ,comentarioInspeccion = #{comentarioInspeccion}        </if>
+        
+        <if test="particulas != -1">            ,particulas = #{particulas}        </if>
+        <if test="integridadFisica != null">            ,integridadFisica = #{integridadFisica}        </if>
+        <if test="cuales != null">            ,cuales = #{cuales}        </if>
+        <if test="apariencia != null">            ,apariencia = #{apariencia}        </if>
+        <if test="coloracion != null">            ,coloracion = #{coloracion}        </if>
+
+        <if test="etiquetado != -1">           ,etiquetado = #{etiquetado}        </if>        
+        <if test="fechaAcondicionamiento != null">            ,fechaAcondicionamiento = #{fechaAcondicionamiento}        </if>
+        <if test="idUsuarioAcondiciona != null">            ,idUsuarioAcondiciona = #{idUsuarioAcondiciona}        </if>
+        <if test="comentarioAcondicionada != null">            ,comentarioAcondicionada = #{comentarioAcondicionada}        </if>
+        <if test="resguardo != null">            ,resguardo = #{resguardo}        </if>
+        <if test="donde != null">            ,donde = #{donde}        </if>
+        
+        <if test="fechaEntrega != null">            ,fechaEntrega = #{fechaEntrega}        </if>
+        <if test="idUsuarioRecibe != null">            ,idUsuarioRecibe = #{idUsuarioRecibe}        </if>
+        <if test="idServicioRecibe != null">            ,idServicioRecibe = #{idServicioRecibe}        </if>
+        <if test="comentarioRecibe != null">            ,comentarioRecibe = #{comentarioRecibe}        </if>
+        
+        <if test="costo != null">                            ,costo = #{costo}        </if>
+                
+        <if test="idViaAdministracion != null">   , idViaAdministracion =  #{ idViaAdministracion  } </if>
+        <if test="edadPaciente != null">  , edadPaciente = #{ edadPaciente  } </if>
+        <if test="pesoPaciente != null">  , pesoPaciente = #{ pesoPaciente  } </if>
+        <if test="tallaPaciente != null"> , tallaPaciente = #{ tallaPaciente  } </if>
+        <if test="areaCorporal != null">  , areaCorporal = #{ areaCorporal  } </if>
+        <if test="perfusionContinua != null"> , perfusionContinua = #{ perfusionContinua  } </if>
+        <if test="velocidad != null"> , velocidad = #{ velocidad  } </if>
+        <if test="ritmo != null"> , ritmo = #{ ritmo  } </if>
+        <if test="idProtocolo != null">   , idProtocolo = #{ idProtocolo  } </if>
+        <if test="idDiagnostico != null"> , idDiagnostico = #{ idDiagnostico  } </if>
+        <if test="unidadConcentracion != null"> , unidadConcentracion = #{ unidadConcentracion  } </if>
+        
+        <if test="fechaValPrescr != null"> , fechaValPrescr = #{ fechaValPrescr  } </if>
+        <if test="idUsuarioValPrescr != null"> , idUsuarioValPrescr = #{ idUsuarioValPrescr  } </if>
+        <if test="comentValPrescr != null"> , comentValPrescr = #{ comentValPrescr  } </if>
+        
+        <if test="fechaValOrdenPrep != null"> , fechaValOrdenPrep = #{ fechaValOrdenPrep  } </if>
+        <if test="idUsuarioValOrdenPrep != null"> , idUsuarioValOrdenPrep = #{ idUsuarioValOrdenPrep  } </if>
+        <if test="comentValOrdenPrep != null"> , comentValOrdenPrep = #{ comentValOrdenPrep  } </if>
+        
+        <if test=" burbujas != null"> , burbujas = #{ burbujas } </if>
+    <if test=" sedimentacion != null"> , sedimentacion = #{ sedimentacion } </if>
+    <if test=" precipitado != null"> , precipitado = #{ precipitado } </if>
+    <if test=" selladoNoCoforme != null"> , selladoNoCoforme = #{ selladoNoCoforme } </if>
+    <if test=" escalaVolIlegible != null"> , escalaVolIlegible = #{ escalaVolIlegible } </if>
+    <if test=" separacionFases != null"> , separacionFases = #{ separacionFases } </if>
+    <if test=" idUsuarioAprobo != null"> , idUsuarioAprobo = #{ idUsuarioAprobo } </if>
+    <if test=" dictamen != null"> , dictamen = #{ dictamen } </if>
+    <if test=" aprobado != null"> , aprobado = #{ aprobado } </if>
+    <if test=" reclasificacion != null"> , reclasificacion = #{ reclasificacion } </if>
+    
+    <if test=" idMotivoCancelacion != null"> , idMotivoCancelacion = #{ idMotivoCancelacion } </if>
+    <if test=" comentariosCancelacion != null"> , comentariosCancelacion = #{ comentariosCancelacion } </if>
+    <if test=" comentariosRechazo != null"> , comentariosRechazo = #{ comentariosRechazo } </if>
+    <if test=" idUsuarioCancela != null"> , idUsuarioCancela = #{ idUsuarioCancela } </if>
+    <if test=" idUsuarioRechaza != null"> , idUsuarioRechaza = #{ idUsuarioRechaza } </if>
+        
+    <if test=" fechaParaEntregar != null"> , fechaParaEntregar = #{ fechaParaEntregar } </if>
+    
+    <if test=" insSanitDisp != null"> , insSanitDisp = #{ insSanitDisp } </if>
+    <if test=" insSanitPrep != null"> , insSanitPrep = #{ insSanitPrep } </if>
+    <if test=" fechaInsSanitDisp != null"> , fechaInsSanitDisp = #{ fechaInsSanitDisp } </if>
+    <if test=" fechaInsSanitPrep != null"> , fechaInsSanitPrep = #{ fechaInsSanitPrep } </if>
+    <if test=" idUsuarioInsSanitDisp != null"> , idUsuarioInsSanitDisp = #{ idUsuarioInsSanitDisp } </if>
+    <if test=" idUsuarioInsSanitPrep != null"> , idUsuarioInsSanitPrep = #{ idUsuarioInsSanitPrep } </if>
+    <if test=" minutosInfusion != null"> , minutosInfusion = #{ minutosInfusion } </if>
+    <if test=" idUsuarioAutoriza != null"> , idUsuarioAutoriza = #{ idUsuarioAutoriza }</if>
+    <if test=" fechaAutoriza != null"> , fechaAutoriza = #{ fechaAutoriza }</if>
+    <if test=" comentarioAutoriza != null"> , comentarioAutoriza = #{ comentarioAutoriza }</if>
+    <if test=" idUsuarioNoAutoriza != null"> , idUsuarioNoAutoriza = #{ idUsuarioNoAutoriza }</if>
+    <if test=" motivoNoAutoriza != null"> , motivoNoAutoriza = #{ motivoNoAutoriza }</if>
+    
+    <if test=" kcalProteicas != null"> , kcalProteicas = #{ kcalProteicas } </if>
+    <if test=" kcalNoProteicas != null"> , kcalNoProteicas = #{ kcalNoProteicas } </if>
+    <if test=" indicaciones != null"> , indicaciones = #{ indicaciones } </if>
+    <if test=" descripcion != null"> , descripcion = #{ descripcion } </if>
+    
+        WHERE idSolucion = #{idSolucion};
+    </update>
+    
+    <update id="actualizarEstatus" parameterType="mx.mc.model.Solucion">
+        UPDATE solucion SET
+        updateFecha = #{updateFecha}
+        , updateIdUsuario = #{updateIdUsuario}
+        <if test="idEstatusSolucion != null"> , idEstatusSolucion = #{idEstatusSolucion} </if>
+        WHERE idSolucion = #{idSolucion};
+    </update>
+    
+    <select id="obtener" parameterType="mx.mc.model.Solucion" resultType="mx.mc.model.Solucion">
+        SELECT *
+        FROM solucion
+        WHERE 1=1
+        <if test="idSolucion != null">
+            AND idSolucion = #{ idSolucion }
+        </if>
+        <if test="idSurtimiento != null">
+            AND idSurtimiento = #{ idSurtimiento }
+        </if>
+        LIMIT 1;
+    </select>
+    
+    <select id="obtenerDatosSolucionByIdSurtimiento" parameterType="Map" resultType="mx.mc.model.SolucionExtended">
+        SELECT
+                s.idSolucion
+                , s.idSurtimiento
+                , IFNULL(ts.descripcion, '') AS tipoSolucion
+                , ec.descripcion AS tipoEnvase
+                , CASE WHEN pis.perfusionContinua = 1 THEN 'SI' ELSE 'NO'  END AS infusion
+                , pis.velocidad
+                , pis.ritmo
+                , IFNULL(su.fechaProgramada, '' ) AS fechaProgramada
+                , fechaMinistrado AS fechaMinistracion
+                , IFNULL( CONCAT(us.nombre, ' ', us.apellidoPaterno, ' ', us.apellidoMaterno), '') as ministro  
+                , s.caducidadMezcla
+                , IFNULL(s.loteMezcla , '') AS loteMezcla
+                , IFNULL(CASE WHEN p.idTipoSolucion = 'e68ac222-0a63-11eb-a03a-000c29750049' THEN p2.claveProtocolo ELSE '' END , '') AS nombreProtocolo
+                , s.edadPaciente
+                , s.pesoPaciente
+                , s.tallaPaciente
+                , s.areaCorporal
+                , s.claveMezcla
+                , s.proteccionTemp
+                , s.proteccionTempRefrig
+                , s.proteccionLuz
+                , s.noHorasestabilidad
+                , s.noAgitar
+                , s.velocidad
+                , s.ritmo
+                , s.perfusionContinua
+                , s.volumen
+                , s.volumenFinal 
+                , s.indicaciones
+                , s.descripcion
+                , s.estabilidadMezcla
+        FROM solucion s
+        INNER JOIN surtimiento su ON s.idSurtimiento = su.idSurtimiento
+        INNER JOIN surtimientoInsumo si ON	s.idSurtimiento = si.idSurtimiento
+        INNER JOIN prescripcionInsumo pis ON si.idPrescripcionInsumo = pis.idPrescripcionInsumo 
+        INNER JOIN prescripcion p ON su.idPrescripcion  = p.idPrescripcion 
+        INNER JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion 
+        LEFT JOIN envaseContenedor ec ON	s.idEnvaseContenedor = ec.idEnvaseContenedor
+        LEFT JOIN tipoIngrediente ti ON	pis.idTipoIngrediente = ti.idTipoIngrediente
+        LEFT JOIN surtimientoEnviado se ON	si.idSurtimientoInsumo = se.idSurtimientoInsumo
+        LEFT JOIN surtimientoMinistrado sm ON	se.idSurtimientoEnviado = sm.idSurtimientoEnviado
+        LEFT JOIN usuarios us ON	sm.idUsuario = us.idUsuario
+        LEFT JOIN protocolo p2 ON p.idProtocolo = p2.idProtocolo 
+        WHERE
+            s.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR } 
+        LIMIT 1;
+    </select>
+    
+    <select id="obtenerSolucion" parameterType="Map" resultType="mx.mc.model.SolucionExtended">
+        SELECT
+        s.idSolucion
+         , s.idSurtimiento
+         , s.idEnvaseContenedor
+         , s.muestreo
+         , s.piso
+         , s.instruccionesPreparacion
+         , s.volumen
+         , s.observaciones
+         , s.fechaPrepara
+         , s.idUsuarioPrepara
+         , s.comentariosPreparacion
+         , s.lote
+         , s.fechaCaducidad
+         , s.fechaInspeccion
+         , s.idUsuarioInspeccion
+         , s.comentarioInspeccion
+         , s.idEstatusSolucion
+         , s.volumenFinal
+         , s.integridadFisica
+         , s.particulas
+         , s.cuales
+         , s.apariencia
+         , s.proteccionLuz
+         , s.proteccionTemp
+         , s.coloracion
+         , s.etiquetado
+         , s.fechaAcondicionamiento
+         , s.idUsuarioAcondiciona
+         , s.comentarioAcondicionada
+         , s.resguardo
+         , s.donde
+         , s.fechaEntrega
+         , s.idUsuarioRecibe
+         , s.idServicioRecibe
+         , s.comentarioRecibe
+         , s.costo
+         , s.insertFecha
+         , s.insertIdUsuario
+         , s.updateFecha
+         , s.updateIdUsuario
+         , s.noHorasestabilidad
+         , s.proteccionTempRefrig
+         , s.noAgitar
+         , s.edadPaciente
+         , s.pesoPaciente
+         , s.tallaPaciente
+         , s.areaCorporal
+         , s.perfusionContinua
+         , s.velocidad
+         , s.ritmo
+         , s.idProtocolo
+         , s.idDiagnostico
+         , s.idUnidadConcentracion
+         , s.idViaAdministracion
+         , s.padecimientoCronico
+         , s.diabetes
+         , s.hipertension
+         , s.problemasRenales
+         , s.idUsuarioValida
+         , s.fechaValida
+         , s.claveMezcla
+         , IFNULL(s.loteMezcla , '') AS loteMezcla
+         , s.caducidadMezcla
+         , s.estabilidadMezcla
+         , s.idMotivoRechazo
+         , s.fechaValPrescr
+         , s.idUsuarioValPrescr
+         , s.comentValPrescr
+         , s.fechaValOrdenPrep
+         , s.idUsuarioValOrdenPrep
+         , s.comentValOrdenPrep
+         , s.fechaValidaPrescripcion
+         , s.idUsuarioValidaPrescripcion
+         , s.comentariosValidaPrescripcion
+         , s.fechaValidaOrdenPreparacion
+         , s.idUsuarioValidaOrdenPreparacion
+         , s.comentariosValidaOrdenPreparacion
+         , s.idUsuarioEntrega
+         , s.comentariosEntrega
+         , s.fuga
+         , s.aire
+         , s.burbujas
+         , s.sedimentacion
+         , s.precipitado
+         , s.selladoNoCoforme
+         , s.escalaVolIlegible
+         , s.separacionFases
+         , s.idUsuarioAprobo
+         , s.dictamen
+         , s.aprobado
+         , s.reclasificacion
+         , s.idMotivoCancelacion
+         , s.comentariosCancelacion
+         , s.comentariosRechazo
+         , s.idUsuarioCancela
+         , s.idUsuarioRechaza
+         , s.fechaParaEntregar
+         , s.idEquipo
+         , s.sobrellenado
+         , s.minutosInfusion
+         , s.idUsuarioAutoriza
+         , s.fechaAutoriza
+         , s.comentarioAutoriza
+         , kcalProteicas 
+         , kcalNoProteicas 
+         , CASE WHEN s.perfusionContinua = 1 THEN 'SI' ELSE 'NO'  END AS infusion 
+         , ec.descripcion AS tipoEnvase
+         , IFNULL(ts.descripcion, '') AS tipoSolucion
+         , IFNULL(su.fechaProgramada, '' ) AS fechaProgramada
+         , IFNULL(CASE WHEN p.idTipoSolucion = 'e68ac222-0a63-11eb-a03a-000c29750049' THEN p2.claveProtocolo ELSE '' END , '') AS nombreProtocolo
+         , CONCAT(pa.nombreCompleto,' ', pa.apellidoPaterno,' ', pa.apellidoMaterno) AS nombrePaciente
+         , IFNULL(ts.descripcion,'') AS tipoPrescripcion
+         , IFNULL(su.fechaProgramada,'') AS  fechaProgramada
+         , su.folio AS folio
+         , IFNULL(es.descripcion,'') AS  estatusSolucion
+         , IFNULL(va.nombreViaAdministracion, '') AS  nombreViaAdministracion
+         , e.nombre AS nombreEstructura
+         , IFNULL(c.nombreCama,'') AS nombreCama 
+         , CONCAT(u1.nombre, ' ', u1.apellidoPaterno, ' ' , u1.apellidoMaterno) as nombreMedico
+         , u1.cedProfesional
+         , IFNULL(e2.nombre, '') AS nombreAlmacen
+         , s.indicaciones
+         , s.idUsuarioRechaza
+         , s.descripcion
+         FROM solucion s 
+        LEFT JOIN estatusSolucion es ON s.idEstatusSolucion = es.idEstatusSolucion
+        LEFT JOIN viaAdministracion va ON s.idViaAdministracion = va.idViaAdministracion
+        JOIN surtimiento su ON s.idSurtimiento = su.idSurtimiento
+        JOIN estructura e2 ON su.idEstructuraAlmacen = e2.idEstructura
+        JOIN prescripcion p ON su.idPrescripcion  = p.idPrescripcion
+        JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion
+        JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        JOIN estructura e ON ps.idEstructura = e.idEstructura
+        JOIN visita v ON ps.idVisita = v.idVisita
+        JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteUbicacion = pu.idPacienteUbicacion
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN envaseContenedor ec ON s.idEnvaseContenedor = ec.idEnvaseContenedor
+        LEFT JOIN protocolo p2 ON p.idProtocolo = p2.idProtocolo
+        LEFT JOIN usuarios u1 ON p.idMedico = u1.idUsuario
+        WHERE 1=1
+            <if test=" idSurtimiento ">
+                AND s.idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }  
+            </if>
+            <if test=" idSolucion ">
+                AND s.idSolucion = #{ idSolucion , jdbcType = VARCHAR }  
+            </if>
+        LIMIT 1;
+    </select>
+    
+    <select id="obtenerAutoCompSolucion" resultType="mx.mc.model.SolucionExtended" parameterType="Map" >
+        SELECT 
+            so.idSolucion,
+            su.folio,
+            su.fechaProgramada,
+            t.clave AS tipoSolucion,
+            CONCAT(pa.nombreCompleto,' ',pa.apellidoPaterno,' ',pa.apellidoMaterno) AS nombrePaciente,
+            ep.nombre AS nombreEstructura
+            , es.descripcion AS estatusSolucion
+        FROM    solucion so
+            INNER JOIN    surtimiento su ON su.idSurtimiento = so.idSurtimiento
+            INNER JOIN    prescripcion p ON p.idPrescripcion = su.idPrescripcion
+            INNER JOIN    estructura ep ON ep.idEstructura = p.idEstructura
+            INNER JOIN    pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+            INNER JOIN    visita v ON v.idVisita = ps.idVisita
+            INNER JOIN    paciente pa ON pa.idPaciente = v.idPaciente
+            INNER JOIN    tipoSolucion t ON t.idTipoSolucion = p.idTipoSolucion
+            INNER JOIN	   estatusSolucion es ON so.idEstatusSolucion = es.idEstatusSolucion
+        WHERE  so.idEstatusSolucion IN ( 2, 3, 4, 5, 6 , 7, 9, 10, 14 )
+<!--            <if test=" idEstructura != null ">
+                AND p.idEstructura = #{ idEstructura }
+            </if>-->
+            AND ( su.folio LIKE '%${cadena}%'
+                OR t.clave LIKE '%${cadena}%'
+                OR CONCAT(pa.nombreCompleto,' ',pa.apellidoPaterno,' ',pa.apellidoMaterno) LIKE '%${cadena}%'
+                OR ep.nombre LIKE '%${cadena}%'
+            )
+        ;
+    </select>
+    
+    <select id="obtenerSolucionByIdSolucion"  resultType="mx.mc.model.DevolucionMezclaExtended" parameterType="Map" >
+        SELECT 
+            so.idSolucion,
+            so.insertFecha as creacion,
+            u.nombre AS registro,
+            su.folio AS orden,
+            p.folio AS folioPrescripcion,
+            ep.nombre AS area,
+            c.nombreCama AS cama,
+            CONCAT(pa.nombreCompleto,' ',pa.apellidoPaterno,' ',pa.apellidoMaterno) AS paciente,
+            CONCAT(um.nombre,' ',um.apellidoPaterno,' ',um.apellidoMaterno) AS medico,
+            su.fechaProgramada AS surtimiento,
+            ep.nombre AS origen,
+            p.idTipoSolucion,
+            so.volumenFinal,
+            so.loteMezcla,
+            so.caducidadMezcla,
+            so.noHorasestabilidad,
+            t.clave as claveMezcla,
+            ep.idEstructura as idOrigen
+        FROM    solucion so
+            INNER JOIN    surtimiento su ON su.idSurtimiento = so.idSurtimiento
+            INNER JOIN    prescripcion p ON p.idPrescripcion = su.idPrescripcion
+            INNER JOIN    pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+            INNER JOIN    estructura ep ON ep.idEstructura = p.idEstructura
+            INNER JOIN    visita v ON v.idVisita = ps.idVisita
+            INNER JOIN    paciente pa ON pa.idPaciente = v.idPaciente
+            INNER JOIN    usuarios um ON um.idUsuario = p.idMedico
+            INNER JOIN    usuarios u ON u.idUsuario = su.insertIdUsuario
+            INNER JOIN	  tipoSolucion t on t.idTipoSolucion = p.idTipoSolucion
+            LEFT JOIN     pacienteUbicacion pu ON pu.idPacienteServicio = p.idPacienteServicio
+            LEFT JOIN     cama c ON c.idCama = pu.idCama
+        WHERE    
+            so.idSolucion = #{idSolucion, jdbcType = VARCHAR}
+        LIMIT 1;
+    </select>
+
+    <select id="obtenerSolucionesByIdPrescripcion" resultType="mx.mc.model.SolucionExtended" parameterType="Map" >
+        SELECT s.* FROM solucion s 
+        INNER JOIN surtimiento su ON s.idSurtimiento = su.idSurtimiento
+        WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR } 
+    </select>
+    
+    <update id="actualizarListaSoluciones" parameterType="java.util.List" >
+        <foreach collection="list" item="item" separator=";" index="index"> 
+            UPDATE solucion SET
+            updateFecha = #{item.updateFecha}
+            , updateIdUsuario = #{item.updateIdUsuario}
+
+            <if test="item.idEstatusSolucion != null"> , idEstatusSolucion = #{item.idEstatusSolucion} </if>
+            <if test="item.idSurtimiento != null"> , idSurtimiento = #{item.idSurtimiento} </if>
+            <if test="item.idEnvaseContenedor != null"> , idEnvaseContenedor = #{item.idEnvaseContenedor} </if>
+            <if test="item.piso != null"> , piso = #{item.piso} </if>
+            <if test="item.volumen != null"> , volumen = #{item.volumen} </if>
+            <if test="item.volumenFinal != null"> , volumenFinal = #{item.volumenFinal} </if>
+            <if test="item.instruccionesPreparacion != null"> , instruccionesPreparacion = #{item.instruccionesPreparacion} </if>
+            <if test="item.observaciones != null"> , observaciones = #{item.observaciones} </if>
+            <if test="item.proteccionTempRefrig != null"> , proteccionTempRefrig = #{item.proteccionTempRefrig} </if>
+            <if test="item.noAgitar != null"> , noAgitar = #{item.noAgitar} </if>
+            <if test="item.proteccionLuz != null"> , proteccionLuz = #{ item.proteccionLuz } </if>
+            <if test="item.proteccionTemp != null"> , proteccionTemp = #{ item.proteccionTemp } </if>
+            <if test="item.muestreo != null"> , muestreo = #{ item.muestreo } </if>
+            <if test="item.idUsuarioValida != null"> , idUsuarioValida = #{ item.idUsuarioValida } </if>
+            <if test="item.fechaValida != null"> , fechaValida = #{ item.fechaValida } </if>
+            <if test="item.fechaPrepara != null"> , fechaPrepara = #{ item.fechaPrepara } </if>
+            <if test="item.idUsuarioPrepara != null"> , idUsuarioPrepara = #{item.idUsuarioPrepara } </if>
+            <if test="item.comentariosPreparacion != null"> , comentariosPreparacion = #{item.comentariosPreparacion } </if>
+            <if test="item.claveMezcla != null"> , claveMezcla = #{ item.claveMezcla } </if>
+            <if test="item.loteMezcla != null"> , loteMezcla = #{ item.loteMezcla } </if>
+            <if test="item.caducidadMezcla != null"> , caducidadMezcla = #{ item.caducidadMezcla } </if>
+            <if test="item.estabilidadMezcla != null"> , estabilidadMezcla = #{ item.estabilidadMezcla } </if>
+            <if test="item.idMotivoRechazo != null"> , idMotivoRechazo = #{ item.idMotivoRechazo } </if>
+            <if test="item.fechaInspeccion != null"> , fechaInspeccion = #{item.fechaInspeccion} </if>
+            <if test="item.idUsuarioInspeccion != null"> , idUsuarioInspeccion = #{item.idUsuarioInspeccion} </if>
+            <if test="item.comentarioInspeccion != null"> , comentarioInspeccion = #{item.comentarioInspeccion} </if>
+            <if test="item.particulas != -1"> , particulas = #{item.particulas} </if>
+            <if test="item.integridadFisica != null"> , integridadFisica = #{item.integridadFisica} </if>
+            <if test="item.cuales != null"> , cuales = #{item.cuales} </if>
+            <if test="item.apariencia != null"> , apariencia = #{item.apariencia} </if>
+            <if test="item.coloracion != null"> , coloracion = #{item.coloracion} </if>
+            <if test="item.etiquetado != -1"> , etiquetado = #{item.etiquetado} </if>        
+            <if test="item.fechaAcondicionamiento != null"> , fechaAcondicionamiento = #{item.fechaAcondicionamiento} </if>
+            <if test="item.idUsuarioAcondiciona != null"> , idUsuarioAcondiciona = #{item.idUsuarioAcondiciona} </if>
+            <if test="item.comentarioAcondicionada != null"> , comentarioAcondicionada = #{item.comentarioAcondicionada} </if>
+            <if test="item.resguardo != null"> , resguardo = #{item.resguardo} </if>
+            <if test="item.donde != null"> , donde = #{item.donde} </if>
+            <if test="item.fechaEntrega != null"> , fechaEntrega = #{item.fechaEntrega} </if>
+            <if test="item.idUsuarioRecibe != null"> , idUsuarioRecibe = #{item.idUsuarioRecibe} </if>
+            <if test="item.idServicioRecibe != null"> , idServicioRecibe = #{item.idServicioRecibe} </if>
+            <if test="item.comentarioRecibe != null"> , comentarioRecibe = #{item.comentarioRecibe} </if>
+            <if test="item.costo != null"> , costo = #{item.costo} </if>
+            <if test="item.idViaAdministracion != null"> , idViaAdministracion =  #{ item.idViaAdministracion  } </if>
+            <if test="item.edadPaciente != null"> , edadPaciente = #{ item.edadPaciente  } </if>
+            <if test="item.pesoPaciente != null"> , pesoPaciente = #{ item.pesoPaciente  } </if>
+            <if test="item.tallaPaciente != null"> , tallaPaciente = #{ item.tallaPaciente  } </if>
+            <if test="item.areaCorporal != null"> , areaCorporal = #{ item.areaCorporal  } </if>
+            <if test="item.perfusionContinua != null"> , perfusionContinua = #{ item.perfusionContinua  } </if>
+            <if test="item.velocidad != null"> , velocidad = #{ item.velocidad  } </if>
+            <if test="item.ritmo != null"> , ritmo = #{ item.ritmo  } </if>
+            <if test="item.idProtocolo != null"> , idProtocolo = #{ item.idProtocolo  } </if>
+            <if test="item.idDiagnostico != null"> , idDiagnostico = #{ item.idDiagnostico  } </if>
+            <if test="item.unidadConcentracion != null"> , unidadConcentracion = #{ item.unidadConcentracion  } </if>
+            <if test="item.fechaValPrescr != null"> , fechaValPrescr = #{ item.fechaValPrescr  } </if>
+            <if test="item.idUsuarioValPrescr != null"> , idUsuarioValPrescr = #{ item.idUsuarioValPrescr  } </if>
+            <if test="item.comentValPrescr != null"> , comentValPrescr = #{ item.comentValPrescr  } </if>
+            <if test="item.fechaValOrdenPrep != null"> , fechaValOrdenPrep = #{ item.fechaValOrdenPrep  } </if>
+            <if test="item.idUsuarioValOrdenPrep != null"> , idUsuarioValOrdenPrep = #{ item.idUsuarioValOrdenPrep  } </if>
+            <if test="item.comentValOrdenPrep != null"> , comentValOrdenPrep = #{ item.comentValOrdenPrep  } </if>
+            <if test="item.burbujas != null"> , burbujas = #{ item.burbujas } </if>
+            <if test="item.sedimentacion != null"> , sedimentacion = #{ item.sedimentacion } </if>
+            <if test="item.precipitado != null"> , precipitado = #{ item.precipitado } </if>
+            <if test="item.selladoNoCoforme != null"> , selladoNoCoforme = #{ item.selladoNoCoforme } </if>
+            <if test="item.escalaVolIlegible != null"> , escalaVolIlegible = #{ item.escalaVolIlegible } </if>
+            <if test="item.separacionFases != null"> , separacionFases = #{ item.separacionFases } </if>
+            <if test="item.idUsuarioAprobo != null"> , idUsuarioAprobo = #{ item.idUsuarioAprobo } </if>
+            <if test="item.dictamen != null"> , dictamen = #{ item.dictamen } </if>
+            <if test="item.aprobado != null"> , aprobado = #{ item.aprobado } </if>
+            <if test="item.reclasificacion != null"> , reclasificacion = #{ item.reclasificacion } </if>
+            <if test="item.idMotivoCancelacion != null"> , idMotivoCancelacion = #{ item.idMotivoCancelacion } </if>
+            <if test="item.comentariosCancelacion != null"> , comentariosCancelacion = #{ item.comentariosCancelacion } </if>
+            <if test="item.comentariosRechazo != null"> , comentariosRechazo = #{ item.comentariosRechazo } </if>
+            <if test="item.idUsuarioCancela != null"> , idUsuarioCancela = #{ item.idUsuarioCancela } </if>
+            <if test="item.idUsuarioRechaza != null"> , idUsuarioRechaza = #{ item.idUsuarioRechaza } </if>
+            <if test="item.fechaParaEntregar != null"> , fechaParaEntregar = #{ item.fechaParaEntregar } </if>
+            <if test="item.insSanitDisp != null"> , insSanitDisp = #{ item.insSanitDisp } </if>
+            <if test="item.insSanitPrep != null"> , insSanitPrep = #{ item.insSanitPrep } </if>
+            <if test="item.fechaInsSanitDisp != null"> , fechaInsSanitDisp = #{ item.fechaInsSanitDisp } </if>
+            <if test="item.fechaInsSanitPrep != null"> , fechaInsSanitPrep = #{ item.fechaInsSanitPrep } </if>
+            <if test="item.idUsuarioInsSanitDisp != null"> , idUsuarioInsSanitDisp = #{ item.idUsuarioInsSanitDisp } </if>
+            <if test="item.idUsuarioInsSanitPrep != null"> , idUsuarioInsSanitPrep = #{ item.idUsuarioInsSanitPrep } </if>
+            <if test="item.minutosInfusion != null"> , minutosInfusion = #{ item.minutosInfusion } </if>
+            <if test="item.idUsuarioAutoriza != null"> , idUsuarioAutoriza = #{ item.idUsuarioAutoriza }</if>
+            <if test="item.fechaAutoriza != null"> , fechaAutoriza = #{ item.fechaAutoriza }</if>
+            <if test="item.comentarioAutoriza != null"> , comentarioAutoriza = #{ item.comentarioAutoriza }</if>
+            <if test="item.idUsuarioNoAutoriza != null"> , idUsuarioNoAutoriza = #{ item.idUsuarioNoAutoriza }</if>
+            <if test="item.motivoNoAutoriza != null"> , motivoNoAutoriza = #{ item.motivoNoAutoriza }</if>
+            <if test="item.kcalProteicas != null"> , kcalProteicas = #{ item.kcalProteicas } </if>
+            <if test="item.kcalNoProteicas != null"> , kcalNoProteicas = #{ item.kcalNoProteicas } </if>
+            <if test="item.indicaciones != null"> , indicaciones = #{ item.indicaciones } </if>
+            <if test="item.descripcion != null"> , descripcion = #{ item.descripcion } </if>
+            WHERE idSolucion = #{item.idSolucion}
+        </foreach>
+    </update>                
+    
+    <select id="obtenerNumeroSolucionesProcesadas" resultType="int" parameterType="Map" >
+        SELECT ifnull(count(s.idSolucion),0) as numeroSolucionesPreparadas
+        FROM solucion s
+        JOIN surtimiento su ON s.idSurtimiento = su.idSurtimiento
+        WHERE s.idEstatusSolucion &gt;= 6
+        AND su.idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </select>
+    
+    <select id="obtenerDescripcionMezcla" resultType="java.lang.String" parameterType="Map" >
+        SELECT obtieneDescMezcla( #{ idSurtimiento , jdbcType = VARCHAR } ) AS comentarios ;
+    </select>
+    
+</mapper>

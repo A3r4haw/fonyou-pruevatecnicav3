@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TransferenciaMapper">
+   
+    <select id="obtener" parameterType="mx.mc.model.Transferencia" resultType="mx.mc.model.Transferencia">
+        SELECT idTransferencia, idEstructura, idEstructuraDestino, folio, observaciones, idEstatusTransferencia, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM transferencia
+        WHERE 1=1
+        <if test="idTransferencia != null"> AND idTransferencia = #{idTransferencia} </if>
+        <if test="idEstructura != null">    AND idEstructura = #{idEstructura} </if>
+        <if test="idEstructuraDestino != null"> AND idEstructuraDestino = #{idEstructuraDestino} </if>
+        <if test="folio != null">           AND folio = #{folio} </if>
+        <if test="observaciones != null">   AND observaciones = #{observaciones} </if>
+        <if test="idEstatusTransferencia != null"> AND idEstatusTransferencia = #{idEstatusTransferencia} </if>
+        <if test="insertFecha != null">     AND insertFecha = #{insertFecha} </if>
+        <if test="insertIdUsuario != null"> AND insertIdUsuario = #{insertIdUsuario} </if>
+        <if test="updateFecha != null">     AND updateFecha = #{updateFecha} </if>
+        <if test="updateIdUsuario != null"> AND updateIdUsuario = #{updateIdUsuario} </if>
+    </select>
+    
+    <select id="obtenerLista" parameterType="mx.mc.model.Transferencia" resultType="mx.mc.model.Transferencia">
+        SELECT idTransferencia, idEstructura, idEstructuraDestino, folio, observaciones, idEstatusTransferencia, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM transferencia
+        WHERE 1=1
+        
+        <if test="idTransferencia != null"> AND idTransferencia = #{idTransferencia} </if>
+        <if test="idEstructura != null">    AND idEstructura = #{idEstructura} </if>
+        <if test="idEstructuraDestino != null"> AND idEstructuraDestino = #{idEstructuraDestino} </if>
+        <if test="folio != null">           AND folio = #{folio} </if>
+        <if test="observaciones != null">   AND observaciones = #{observaciones} </if>
+        <if test="idEstatusTransferencia != null"> AND idEstatusTransferencia = #{idEstatusTransferencia} </if>
+        <if test="insertFecha != null">     AND insertFecha = #{insertFecha} </if>
+        <if test="insertIdUsuario != null"> AND insertIdUsuario = #{insertIdUsuario} </if>
+        <if test="updateFecha != null">     AND updateFecha = #{updateFecha} </if>
+        <if test="updateIdUsuario != null"> AND updateIdUsuario = #{updateIdUsuario} </if>
+    </select>
+    
+    <select id="obtenerTransferencias"  parameterType="Map" resultType="mx.mc.model.Transferencia">
+        SELECT t.idTransferencia, t.idEstructura, e.nombre as origen, t.idEstructuraDestino, d.nombre as destino, t.folio, t.observaciones, t.idEstatusTransferencia, t.insertFecha, t.insertIdUsuario, concat(u.nombre ,' ' ,u.apellidoPaterno) as usuario, r.nombre as estatus, t.updateFecha, t.updateIdUsuario
+        FROM transferencia t
+        inner join estructura e on e.idEstructura=t.idEstructura
+        inner join estructura d on d.idEstructura = t.idEstructuraDestino
+        inner join usuarios u on u.idUsuario = t.insertIdUsuario
+        inner join estatusReabasto r on r.idEstatusReabasto=t.idEstatusTransferencia
+        WHERE 1=1
+        <if test="cadena != null "> 
+            AND ( t.idTransferencia  LIKE '%${cadena}%'
+            OR t.idEstructura  LIKE '%${cadena}%' 
+            OR t.idEstructuraDestino  LIKE '%${cadena}%' 
+            OR t.folio  LIKE '%${cadena}%' 
+            OR t.observaciones  LIKE '%${cadena}%' )
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Transferencia" >
+        INSERT INTO transferencia (
+        <if test="idTransferencia != null"> idTransferencia </if>
+        <if test="idEstructura != null">    ,idEstructura </if>
+        <if test="idEstructuraDestino != null"> ,idEstructuraDestino </if>
+        <if test="folio != null">           ,folio </if>
+        <if test="observaciones != null">   ,observaciones </if>
+        <if test="idEstatusTransferencia != null"> ,idEstatusTransferencia </if>
+        <if test="insertFecha != null">     ,insertFecha </if>
+        <if test="insertIdUsuario != null"> ,insertIdUsuario </if>
+        <if test="updateFecha != null">     ,updateFecha </if>
+        <if test="updateIdUsuario != null"> ,updateIdUsuario </if>
+        )VALUES(
+        <if test="idTransferencia != null"> #{idTransferencia} </if>
+        <if test="idEstructura != null">    , #{idEstructura} </if>
+        <if test="idEstructuraDestino != null"> , #{idEstructuraDestino} </if>
+        <if test="folio != null">           , #{folio} </if>
+        <if test="observaciones != null">   , #{observaciones} </if>
+        <if test="idEstatusTransferencia != null"> , #{idEstatusTransferencia} </if>
+        <if test="insertFecha != null">     , #{insertFecha} </if>
+        <if test="insertIdUsuario != null"> , #{insertIdUsuario} </if>
+        <if test="updateFecha != null">     , #{updateFecha} </if>
+        <if test="updateIdUsuario != null"> , #{updateIdUsuario} </if>
+        )
+    </insert>
+    
+    <update id="actualizar" parameterType="mx.mc.model.Transferencia">
+         UPDATE transferencia        
+        <set>
+            updateFecha = #{updateFecha}
+            , updateIdUsuario = #{updateIdUsuario}            
+            <if test="idEstructura != null">    , idEstructura = #{idEstructura} </if>
+            <if test="idEstructuraDestino != null"> , idEstructuraDestino = #{idEstructuraDestino} </if>
+            <if test="folio != null">           , folio = #{folio} </if>
+            <if test="observaciones != null">   , observaciones = #{observaciones} </if>
+            <if test="idEstatusTransferencia != null"> , idEstatusTransferencia = #{idEstatusTransferencia} </if>                        
+        </set>
+        WHERE idTransferencia = #{idTransferencia}
+    </update>
+    
+    <delete id="eliminarPorId" parameterType="Map">
+        DELETE FROM transferencia WHERE idTransferencia = #{idTransferencia}
+    </delete>
+</mapper>    

@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanelAmplio" >                    
+                    <h:form id="mainForm">
+                        <p:focus context="mainForm"/>
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value="Consulta de Recetas Surtidas" style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+
+                            <p:inputText id="busqueda" 
+                                         value="#{recetaSutidaMB.cadenaBusqueda}" 
+                                         class="textSearch"
+                                         style="width: 50% !important;" 
+                                         placeholder="Buscar..." />
+                            <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />
+                            <p:spacer width="12px" />
+
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); "
+                                             actionListener="#{recetaSutidaMB.consultaRecetas}"
+                                             update="@form"  />
+                        </div>
+
+                        <p:messages id="validaMsg" globalOnly="true" showSummary="true" closable="true" showDetail="false"  />
+                        <p:dataTable id="tblRecetas" 
+                                     widgetVar="tblRecetas" 
+                                     value="#{recetaSutidaMB.recetaList}"
+                                     selection="#{recetaSutidaMB.recetaSelect}"
+                                     var="item" 
+                                     rowKey="#{item.idPrescripcion}"
+                                     rowIndexVar="row"
+                                     selectionMode="single"
+                                     style="margin-bottom:5px;"
+                                     styleClass="mystyle"
+                                     scrollRows="10" scrollable="true" scrollHeight="350"
+                                     emptyMessage="No se encontraron Registros"
+                                     reflow="true"
+                                     paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorPosition="bottom"
+                                     rendered="#{recetaSutidaMB.sizeRecetaList gt 0}" >
+
+                            <p:ajax event="rowDblselect" onstart="PF('statusProcess').show()"
+                                    oncomplete="PF('statusProcess').hide(); PF('mdlDetalleReceta').show();"
+                                    listener="#{recetaSutidaMB.verReceta}" update="formDetalleReceta" />
+
+                            <f:facet name="{Records}">
+                                <div style="float:left;">
+                                    <p:outputLabel class="footerLabel" value="Resultados Encontrados #{recetaSutidaMB.sizeRecetaList}" rendered="true" />
+                                </div>
+                            </f:facet>
+
+                            <f:facet name="{Exporters}">
+                                <div style="float:right">
+                                    <h:commandLink >
+                                        <img src="#{request.contextPath}/resources/img/btnxls.png" style="height: 25px !important; margin-left: 5px !important;" title="Exportar" />
+                                        <p:dataExporter type="xls" target="tblRecetas" fileName="recetas" />
+                                    </h:commandLink>
+                                    <h:commandLink>
+                                        <img src="#{request.contextPath}/resources/img/btnpdf.png" style="height: 25px !important; margin-left: 5px !important;" title="Exportar" />
+                                        <p:dataExporter type="pdf" target="tblRecetas" fileName="recetas"/>
+                                    </h:commandLink>
+                                </div>
+                            </f:facet>
+                            <p:column class="columnLeft15" sortBy="#{item.fechaPrescripcion}" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Fecha" />
+                                </f:facet>
+                                <h:outputText value="#{item.fechaPrescripcion}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="columnLeft15" sortBy="#{item.folio}" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Folio Receta" />
+                                </f:facet>
+                                <h:outputText value="#{item.folio}" />
+                            </p:column>
+                            <p:column class="columnLeft15" sortBy="#{item.pacienteNumero}" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Número Paciente" />
+                                </f:facet>
+                                <h:outputText value="#{item.pacienteNumero}" />
+                            </p:column>
+                            <p:column class="columnLeft25" sortBy="#{item.nombrePaciente} #{item.appPaciente} #{item.apmPaciente}" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Paciente" />
+                                </f:facet>
+                                <h:outputText value="#{item.nombrePaciente} #{item.appPaciente} #{item.apmPaciente}" />
+                            </p:column>
+                            <p:column class="columnLeft20" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Ubicación" />
+                                </f:facet>
+                                <h:outputText value="#{item.ubicacion}" />
+                            </p:column>
+                            <p:column class="columnLeft10" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Estatus" />
+                                </f:facet>
+                                <h:outputText value="#{item.estatusPrescripcion}" />
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                </div>
+
+
+                <p:dialog header="Detalle Receta - Consulta Externa"
+                          widgetVar="mdlDetalleReceta"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true"  width="80%" 
+                          resizable="false"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="formDetalleReceta" >
+                        <p:focus context="formDetalleReceta"/>
+
+                        <div class="ui-g" >
+                            <div class="ui-g-12 panelGris" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel value="Fecha Surtimiento:  " />
+                                    <br/>
+                                    <h:outputText  class="textoNegrita" value="#{recetaSutidaMB.recetaSelect.fechaPrescripcion}" >
+                                        <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                    </h:outputText>
+                                </div> 
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel value="Folio Receta:  " />
+                                    <br/>
+                                    <p:outputLabel class="textoNegrita" value="#{recetaSutidaMB.recetaSelect.folio}" />
+                                </div> 
+                                <div class="ui-g-12 ui-md-6 ui-lg-1"> 
+                                    <p:outputLabel value="Folio MUS:  " />
+                                    <br/>
+                                    <p:outputLabel class="textoNegrita" value="#{recetaSutidaMB.recetaSelect.folioSurtimiento}" />                                        
+                                </div> 
+                                <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                    <h:outputText value="Tipo: " />
+                                    <br/>
+                                    <h:outputText value="Normal" rendered="#{recetaSutidaMB.recetaSelect.tipoPrescripcion eq 'N'}" class="textoNegrita" />
+                                    <h:outputText value="Urgente" rendered="#{recetaSutidaMB.recetaSelect.tipoPrescripcion eq 'U'}" class="textoNegrita" />
+                                    <h:outputText value="Dósis Única" rendered="#{recetaSutidaMB.recetaSelect.tipoPrescripcion eq 'D'}" class="textoNegrita" />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-2"> 
+                                    <p:outputLabel value="Ubicación:  " />
+                                    <br/>
+                                    <p:outputLabel class="textoNegrita" value="#{recetaSutidaMB.recetaSelect.ubicacion}" />                                        
+                                </div> 
+                            </div>                            
+                            <div class="ui-g-12 panelGris" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-2"> 
+                                    <p:outputLabel value="Número Paciente:  " />                                        
+                                    <br/>
+                                    <p:outputLabel class="textoNegrita" value="#{recetaSutidaMB.recetaSelect.pacienteNumero}" />                                        
+                                </div> 
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel value="Paciente: " />
+                                    <br/>
+                                    <p:outputLabel class="textoNegrita" value="#{recetaSutidaMB.recetaSelect.nombrePaciente} #{recetaSutidaMB.recetaSelect.appPaciente} #{recetaSutidaMB.recetaSelect.apmPaciente}"  />
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                    <p:outputLabel value="Médico:  " />
+                                    <br/>
+                                    <p:outputLabel class="textoNegrita" value="#{recetaSutidaMB.recetaSelect.nombreMedico} #{recetaSutidaMB.recetaSelect.appMedico} #{recetaSutidaMB.recetaSelect.apmMedico}" />
+                                </div> 
+                                <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                    <p:outputLabel value="Usuario:  " />
+                                    <br/>
+                                    <p:outputLabel class="textoNegrita" value="#{recetaSutidaMB.usuarioSelect.nombreUsuario}" />
+                                </div> 
+                            </div>  
+                            <div class="ui-g" >
+                                <p:dataTable id="tblDetalleReceta" 
+                                             widgetVar="tblDetalleReceta" 
+                                             value="#{recetaSutidaMB.detalleRecetaList}"
+                                             selection="#{recetaSutidaMB.detalleInsumoSelect}"
+                                             var="presc" 
+                                             rowKey="#{presc.idPrescripcionInsumo}"
+                                             rowIndexVar="row"
+                                             selectionMode="single"
+                                             style="margin-bottom:5px; "
+                                             reflow="true"
+                                             emptyMessage=" " 
+                                             scrollRows="10" scrollable="true" scrollHeight="350"
+                                             paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                             paginator="false"
+                                             rows="10"
+                                             paginatorPosition="bottom" >
+                                    <f:facet name="{Records}">
+                                        <div style="float:left;">
+                                            <p:outputLabel class="footerLabel" value="Insumos Ministrados: #{recetaSutidaMB.sizeDetalleRecetaList}" />
+                                        </div>
+                                    </f:facet>
+
+                                    <p:column class="columnLeft10" sortBy="#{presc.claveInstitucional}" style="width: 10%;" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave" />
+                                        </f:facet>
+                                        <h:outputText value="#{presc.claveInstitucional}" />
+                                    </p:column>
+
+                                    <p:column class="columnLeft15" style="width:70%" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Insumo" />
+                                        </f:facet>
+                                        <h:outputText value="#{presc.nombreCorto}" />
+                                    </p:column>
+
+                                    <p:column class="columnLeft45"  style="width:10%" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Cantidad Surtida" />
+                                        </f:facet>
+                                        <h:outputText value="#{presc.cantidadSurtida}" />
+                                    </p:column>
+
+                                    <p:column class="columnLeft45"  style="width:10%">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Cajas Surtidas" />
+                                        </f:facet>
+                                        <h:outputText value="#{presc.cajasSurtidas}" />
+                                    </p:column>                                                                                        
+
+                                </p:dataTable>                                          
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

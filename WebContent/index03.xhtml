@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="es"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" ></meta>
+        <meta charset="utf-8" ></meta>
+        <title>#{msg['app.titulo']}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" ></meta>
+        <meta name="description" content="#{msg['app.description']}" ></meta>
+        <meta name="og:site_name" content="#{msg['app.description']}" ></meta>
+        <meta name="og:title" content="#{msg['app.description']}" ></meta>
+        <meta name="og:description" content="#{msg['app.description']}" ></meta>
+
+        <style type="text/css">
+            html {
+                /*height: 80%;*/
+                /*overflow: hidden;*/
+            }
+
+            body {
+                background-color: #ffffff;
+                background: url(#{request.contextPath}/resources/img/Fondo08.png) no-repeat center top fixed;
+                -webkit-background-size: cover;
+                -moz-background-size: cover;
+                -o-background-size: cover;
+                /*background-size: cover;*/
+                overflow: hidden;
+                font-family: Arial;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+            
+            *:focus {
+                outline: none;
+            }
+
+            .login { 
+                width: 400px;
+                height: auto;
+                margin:0px auto; 
+            }
+
+            .login-screen {
+                background-color: #ffffff;
+                border-radius: 5px;
+                border-color: #CDCDCD ;
+                border-width: 1px;
+                border-style: solid;
+                text-align: center;
+            }
+
+            .app-title {
+                text-align: center;
+                color: #777;
+            }
+
+            .control-group {
+                margin-bottom: 10px;
+            }
+
+            input {
+                text-align: center;
+                background-color: #ECF0F1;
+                border: 2px solid transparent;
+                border-radius: 3px;
+                font-size: 16px;
+                font-weight: 200;
+                padding: 10px 0;
+                width: 300px;
+                transition: border .5s;
+            }
+
+            input:focus {
+                border: 2px solid #3498DB;
+                box-shadow: none;
+            }
+
+            .btn {
+                border: 2px solid transparent;
+                background: #3498DB;
+                color: #ffffff;
+                font-size: 16px;
+                line-height: 25px;
+                padding: 10px 0;
+                text-decoration: none;
+                text-shadow: none;
+                border-radius: 3px;
+                box-shadow: none;
+                transition: 0.25s;
+                display: block;
+                width: 250px;
+                margin: 0 auto;
+            }
+
+            .btn:hover {
+                background-color: #2980B9;
+            }
+
+            .login-link {
+                font-size: 12px;
+                color: #444;
+                display: block;
+                margin-top: 20px;
+                padding-right: 10px;
+                text-align: right;
+            }
+            
+            .iconInput {
+                position:absolute;
+                text-indent:5px;
+                margin-top:8px;
+                margin-left: -25px;
+                color: #2980B9;
+                font-size: 0.9em;
+            }
+            
+            .hostLabel {
+                width: 98%;
+                text-align: right;
+                font-size: 8px;
+                color: #c5c5c5;
+            }
+
+            div.imgEmotionLogo {
+                content:url(#{request.contextPath}/resources/img/logoEmotion01Context.png);
+                height: 40px;
+                text-align: center;
+                align: center;
+                display: block;
+                margin: 0px auto;
+                /*top: 20px;*/
+            }
+
+            div.imgEntidadLogo {
+                content:url(#{request.contextPath}/resources/img/logoMotion.png);
+                height: 60px;
+                text-align: center;
+                align: center;
+                display: block;
+                margin: 0px auto;
+                /*top: 20px;*/
+            }
+
+            div.comercialLabel{
+                background-color: #252d3c;
+                height: 60px;
+                text-align: center;
+                margin: 0px auto;
+                top: 20px;
+            }
+
+            div.block1 {
+                width:25%;
+                color: #ababab;
+            }
+
+            a:visited , a:link , a:hover , a:active {
+                color: #2980B9;
+                text-decoration: none;
+                font-size: 14px;
+                font-type: bold;
+            }
+
+            .errMessage  {
+                font-size: 14px;
+                color:red;
+                margin-left: 15px;
+            }
+
+        </style>
+        <script> 
+                var tam = [0, 0];
+                if (typeof window.innerWidth != 'undefined') {
+                  tam = [window.innerWidth,window.innerHeight];
+                  
+                } else if (typeof document.documentElement != 'undefined'
+                    &amp;&amp; typeof document.documentElement.clientWidth != 'undefined'
+                    &amp;&amp; document.documentElement.clientWidth != 0) {
+                  tam = [
+                      document.documentElement.clientWidth,
+                      document.documentElement.clientHeight
+                  ];
+                } else {
+                  tam = [
+                      document.getElementsByTagName('body')[0].clientWidth,
+                      document.getElementsByTagName('body')[0].clientHeight
+                  ];
+                }
+        </script>
+
+    </h:head>
+    <h:body >
+        <div id="main" >
+            
+            <div id="main-login" style="height:100vh; background-color:#f2f2f2;; float:left; width:450px; display: flex; align-items: center; white-space: nowrap;position: relative; float:none;" >
+                <div class="login"  >
+                    <form action="j_spring_security_check" method="post" class="form-signin">
+                        <p:focus for="j_username"/>
+                        <div class="app-title" style="padding-top: 0px; padding-bottom: 40px; " >
+                            <div class="imgEntidadLogo"></div>
+                        </div>
+                        <div class="login-screen" >
+                            <br/>
+                            <div class="app-title" style="padding-top: 10px;" >
+                                <div class="imgEmotionLogo"></div>
+                            </div>
+                            <div class="login-form">
+                                <div class="app-title">
+                                    <h3>Inicio de Sesión</h3>
+                                </div>
+                                <div class="control-group">
+                                    <h:inputText id="j_username" 
+                                                 pt:placeholder="Nombre de Usuario" 
+                                                 required="" 
+                                                 styleClass="login-field"  />
+                                    <i class="iconInput fa fa-user" aria-hidden="true"></i>
+                                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                                    <!--<label class="login-field-icon fui-user" for="j_username"></label>-->
+                                </div>
+
+                                <div class="control-group">
+                                    <h:inputSecret id="j_password" 
+                                                   pt:placeholder="Contraseña" 
+                                                   required="" 
+                                                   styleClass="login-field" />
+                                    <i class="iconInput fa fa-lock" aria-hidden="true" ></i>
+                                    <!--<label class="login-field-icon fui-lock" for="j_password"></label>-->
+                                </div>
+                                <br/>
+                                <div class="">
+                                    <input type="submit" class="btn btn-primary btn-large btn-block" value="Ingresar" />
+                                </div>
+                                <div class="">
+                                    <h:outputText value="#{session.getAttribute('error')}" class = "errMessage"
+                                                  rendered="#{session.getAttribute('error') ne null}"/>
+                                </div>
+                                <div class="">
+                                    <a class="login-link" href="recuperarContrasena.xhtml">Recuperar Contraseña</a>
+                                </div>
+
+                                <div class="hostLabel">
+                                    <h:outputText value="#{initMB.hostName} - #{initMB.revNumber}"/>
+                                </div>
+                            </div>
+                            <br/>
+                            <div class="comercialLabel">
+                                <br/>
+                                Desarrollado por <a href="https://motioncorp.com.mx" style="color: #ababab;">Motion Corp</a>
+                                 
+                                <i class='fa fa-facebook block1'></i>
+                                <i class='fa fa-youtube-play block1'></i>
+                                <i class='fa fa-linkedin-square block1'></i>
+                                <i class='fa fa-twitter-square block1'></i>
+                                <i class='fa fa-instagram block1'></i>
+                                
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div id="content" style="" >
+            </div>
+        </div>
+    </h:body>
+</html>

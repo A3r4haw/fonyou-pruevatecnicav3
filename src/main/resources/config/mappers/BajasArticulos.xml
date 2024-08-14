@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.BajasArticulosMapper" >
+ 
+    <select id="consultarBajasArticulos" resultType="mx.mc.model.BajasArticulos" parameterType="Map">
+        select 
+        claveInstitucional,
+        fechaCaducidad,
+        nombreCorto,
+        activo,
+        cantidadActual,
+        costo,
+        estatus,
+        idEstructura,
+        insertFecha, 
+        idMedicamento
+        from 
+        ( SELECT replace( m.claveInstitucional,'.',' ')as claveInstitucional, 
+        m.nombreCorto,
+        i.activo,
+        i.cantidadActual,
+        i.costo,
+        i.fechaCaducidad, 
+        e.idTipoAlmacen, 
+        e.idEstructura,
+        i.insertFecha,
+        m.idMedicamento, 
+
+        CASE 
+        WHEN date_add(  now() , Interval (Select valor from config where nombre = 'fun_no_dias_para_caducidad' ) DAY ) > i.fechaCaducidad  THEN "N"
+        WHEN i.activo = 0 THEN "O" END AS estatus
+
+        FROM medicamento m 
+        INNER JOIN inventario i ON m.idMedicamento = i.idInsumo 
+        INNER JOIN estructura e ON i.idEstructura = e.idEstructura ) as Tab1
+
+        WHERE  1 = 1 
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo != null ">
+            and estatus = #{ paramBusquedaReporte.estatusCantidadInsumo , jdbcType = VARCHAR}             
+        </if>        
+        
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            and insertFecha between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }        
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            and idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR}             
+        </if>        
+        
+        and idTipoAlmacen in ( 3, 4)
+        
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    
+    <select id="obtenerTotalRegistros" resultType="Long" parameterType="Map">
+        select count(*) 
+        from (
+        SELECT replace( m.claveInstitucional,'.',' ')as claveInstitucional, 
+        m.nombreCorto,
+        i.fechaCaducidad,
+        i.activo,
+        i.cantidadActual,
+        i.costo,
+        e.idTipoAlmacen, 
+        e.idEstructura,
+        i.insertFecha,
+        m.idMedicamento, 
+
+        CASE 
+        WHEN date_add(  now() , Interval (Select valor from config where nombre = 'fun_no_dias_para_caducidad' ) DAY ) > i.fechaCaducidad  THEN "N" 
+        WHEN i.activo = 0 THEN "O" END AS estatus
+
+        FROM medicamento m 
+        INNER JOIN inventario i ON m.idMedicamento = i.idInsumo 
+        INNER JOIN estructura e ON i.idEstructura = e.idEstructura ) as Tab1
+        WHERE  1 = 1 
+        
+        <if test=" paramBusquedaReporte.listInsumos != null ">
+            AND idMedicamento IN 
+            <foreach item="item" index="index" collection="paramBusquedaReporte.listInsumos" open="(" separator="," close=")">
+                #{item.idMedicamento}
+            </foreach>
+        </if>
+
+        <if test=" paramBusquedaReporte.estatusCantidadInsumo != null ">
+            and estatus = #{ paramBusquedaReporte.estatusCantidadInsumo , jdbcType = VARCHAR}             
+        </if>        
+        
+        <if test=" paramBusquedaReporte.fechaInicio != null and paramBusquedaReporte.fechaFin != null "> 
+            and insertFecha between #{paramBusquedaReporte.fechaInicio, jdbcType = TIMESTAMP } AND #{paramBusquedaReporte.fechaFin, jdbcType = TIMESTAMP }        
+        </if>
+        
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            and idEstructura = #{ paramBusquedaReporte.idEstructura , jdbcType = VARCHAR}             
+        </if>        
+        
+        and idTipoAlmacen in ( 3, 4)
+    </select>
+    
+</mapper>

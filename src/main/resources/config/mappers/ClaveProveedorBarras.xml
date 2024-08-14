@@ -1,0 +1,672 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ClaveProveedorBarrasMapper" >
+
+    <insert id="insertar" parameterType="mx.mc.model.ClaveProveedorBarras">
+        INSERT INTO claveProveedorBarras (
+        <if test=" claveProveedor != null"> claveProveedor </if>
+        <if test=" codigoBarras != null"> , codigoBarras </if>
+        <if test=" item.claveInstitucional != null"> , claveInstitucional </if>
+        <if test=" item.cantidadXCaja != null"> , cantidadXCaja </if>
+        <if test=" insertUsuario != null"> , insertUsuario </if>
+        <if test=" insertFecha != null"> , insertFecha </if>
+        <if test=" updateUsuario != null"> , updateUsuario </if>
+        <if test=" updateFecha != null"> , updateFecha </if>
+        ) VALUES (
+        <if test=" claveProveedor != null"> #{claveProveedor, jdbcType = VARCHAR } </if>
+        <if test=" codigoBarras != null"> , codigoBarras, jdbcType = VARCHAR } </if>
+        <if test=" item.claveInstitucional != null"> , #{ item.claveInstitucional, jdbcType = VARCHAR } </if>
+        <if test=" item.cantidadXCaja != null"> , #{ item.cantidadXCaja, jdbcType = INTEGER } </if>
+        <if test=" insertUsuario != null"> , insertUsuario, jdbcType = VARCHAR } </if>
+        <if test=" insertFecha != null"> , insertFecha, jdbcType = TIMESTAMP } </if>
+        <if test=" updateUsuario != null"> , updateUsuario, jdbcType = VARCHAR } </if>
+        <if test=" updateFecha != null"> , updateFecha, jdbcType = TIMESTAMP } </if>
+    </insert>
+    
+    <select id="obtenerExistenciaByProveedorBarras" resultType="mx.mc.model.ClaveProveedorBarras" parameterType="map">
+        SELECT * FROM claveProveedorBarras
+        WHERE 1 = 1
+        <if test=" claveProveedor != null ">AND claveProveedor = #{ claveProveedor, jdbcType = VARCHAR }</if>
+        <if test= " codigoBarras != null ">AND codigoBarras = #{ codigoBarras, jdbcType = VARCHAR }</if>
+    </select>
+    
+    <insert id="insertarListClaveProvedorBarras" parameterType="map">
+        <foreach collection="listClaveProveedorBarras" item="item" separator=";">
+            INSERT INTO claveProveedorBarras (
+            <if test=" item.claveProveedor != null"> claveProveedor </if>
+            <if test=" item.codigoBarras != null"> , codigoBarras </if>
+            <if test=" item.claveInstitucional != null"> , claveInstitucional </if>
+            <if test=" item.cantidadXCaja != null"> , cantidadXCaja </if>
+            <if test=" item.insertUsuario != null"> , insertUsuario </if>
+            <if test=" item.insertFecha != null"> , insertFecha </if>
+            <if test=" item.updateUsuario != null"> , updateUsuario </if>
+            <if test=" item.updateFecha != null"> , updateFecha </if>
+            ) VALUES (
+            <if test=" item.claveProveedor != null"> #{ item.claveProveedor, jdbcType = VARCHAR } </if>
+            <if test=" item.codigoBarras != null"> , #{ item.codigoBarras, jdbcType = VARCHAR } </if>
+            <if test=" item.claveInstitucional != null"> , #{ item.claveInstitucional, jdbcType = VARCHAR } </if>
+            <if test=" item.cantidadXCaja != null"> , #{ item.cantidadXCaja, jdbcType = INTEGER } </if>
+            <if test=" item.insertUsuario != null"> , #{ item.insertUsuario, jdbcType = VARCHAR } </if>
+            <if test=" item.insertFecha != null"> , #{ item.insertFecha, jdbcType = TIMESTAMP } </if>
+            <if test=" item.updateUsuario != null"> , #{ item.updateUsuario, jdbcType = VARCHAR } </if>
+            <if test=" item.updateFecha != null"> , #{ item.updateFecha, jdbcType = TIMESTAMP } </if>
+            )
+        </foreach>
+    </insert>
+    
+    <select id="obtenerMedicamentoByClaveSAP" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">
+        SELECT DISTINCT cpb.claveInstitucional , cpb.codigoBarras , cpb.cantidadXCaja , cpb.claveProveedor, me.idMedicamento
+        FROM claveProveedorBarras cpb 
+        LEFT JOIN medicamento me ON cpb.claveInstitucional = me.claveInstitucional
+        WHERE 1 = 1
+        <if test="claveProveedor != null "> AND cpb.claveProveedor = #{ claveProveedor , jdbcType = VARCHAR } </if>
+        limit 1
+    </select>
+    
+    <update id="updateListClaveProveedorBarras" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="listClaveProveedorBarrasExiste" item="item"  index="index"  separator=";">
+            UPDATE claveProveedorBarras 
+            <set>
+                cantidadXCaja = #{ item.cantidadXCaja, jdbcType = INTEGER },
+                updateUsuario = #{ item.updateUsuario , jdbcType = VARCHAR },
+                updateFecha = #{ item.updateFecha , jdbcType = TIMESTAMP }			
+            </set>
+            WHERE claveProveedor = #{ item.claveProveedor , jdbcType = VARCHAR }
+            AND codigoBarras = #{ item.codigoBarras , jdbcType = VARCHAR }
+            AND claveInstitucional = #{ item.claveInstitucional , jdbcType = VARCHAR }
+        </foreach>
+
+    </update>
+    
+    <select id="obtenerClave" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map" >        
+        SELECT cp.claveInstitucional, cp.codigoBarras, cp.cantidadXCaja, cp.claveProveedor, re.loteEnv AS lote 
+        FROM claveProveedorBarras cp
+        INNER JOIN medicamento m on cp.claveInstitucional = m.claveInstitucional
+        INNER JOIN reabastoInsumo ri on m.idMedicamento = ri.idInsumo
+        INNER JOIN reabastoEnviado re on ri.idReabastoInsumo = re.idReabastoInsumo
+        WHERE cp.codigoBarras = #{codigoBarras}
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerByClave" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map" >        
+        SELECT distinct m.claveInstitucional,  m.factorTransformacion as cantidadXCaja,re.fechaCad as fechaCaducidad,
+		re.loteEnv AS lote, r.idTipoOrigen as claveProveedor
+        FROM reabasto r 
+        INNER JOIN reabastoInsumo ri on r.idReabasto = ri.idReabasto
+        INNER JOIN reabastoEnviado re on ri.idReabastoInsumo = re.idReabastoInsumo
+        INNER JOIN medicamento m on m.idMedicamento = ri.idInsumo
+        and re.idReabastoEnviado = #{idReabastoEnviado , jdbcType = VARCHAR }
+    </select>
+    
+    <select id="obtenerListaByNameClave" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map" >        
+        select re.idReabastoEnviado,m.nombreCorto,m.nombreLargo,re.fechaCad as fechaCaducidad,ri.idReabastoInsumo,m.claveInstitucional,re.loteEnv as lote 
+        from reabasto r 
+        inner join reabastoInsumo ri on ri.idReabasto = r.idReabasto
+        inner join reabastoEnviado re on re.idReabastoInsumo = ri.idReabastoInsumo
+        inner join medicamento m on m.idMedicamento = ri.idInsumo
+        where folio = #{folio, jdbcType = VARCHAR }
+        
+                and (CASE WHEN UPPER (#{ cadena , jdbcType = VARCHAR }) REGEXP '^[A-Z]'> 0 
+				THEN ( m.nombreCorto like '%${ cadena }%' )
+                                ELSE   m.claveInstitucional = #{ cadena , jdbcType = VARCHAR } 
+                    END)
+        group by m.idMedicamento , re.loteEnv , re.fechaCad 
+        order by re.fechaCad asc
+    </select>
+    
+    <select id="obtenerListaByNameClaveSkuQr" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map" >        
+        select 
+        re.idReabastoEnviado,
+        re.idReabastoEnviado,m.nombreCorto,m.nombreLargo,re.fechaCad as fechaCaducidad,ri.idReabastoInsumo,m.claveInstitucional,re.loteEnv as lote 
+        from reabasto r 
+        inner join reabastoInsumo ri on ri.idReabasto = r.idReabasto
+        inner join reabastoEnviado re on re.idReabastoInsumo = ri.idReabastoInsumo
+        inner join medicamento m on m.idMedicamento = ri.idInsumo
+        LEFT JOIN inventario i ON i.idInventario = re.idInventarioSurtido
+        LEFT JOIN claveProveedorBarras cb ON (i.claveProveedor = cb.claveProveedor
+        AND m.claveInstitucional = cb.claveInstitucional)
+        where 1 = 1
+        and folio = #{folio, jdbcType = VARCHAR }   
+        and m.activo = 1
+        and
+        (
+        CONCAT( m.claveInstitucional , ',' , i.lote , ',' , DATE_FORMAT(i.fechaCaducidad, '%d%m%Y')) = '${ cadena }'
+        OR CONCAT( '(01)', m.claveInstitucional , '(10)' , i.lote , '(17)' , DATE_FORMAT(i.fechaCaducidad, '%y%m%d')) = '${ cadena }'
+        OR cb.codigoBarras = #{ cadena , jdbcType = VARCHAR } 
+        OR m.codigoBarrasAlterno = #{ cadena , jdbcType = VARCHAR } 
+        <if test="activa_autoCompleteInsumos == true">                       
+            OR m.nombreCorto LIKE '%${ cadena }%'
+            OR m.nombreLargo LIKE '%${ cadena }%'            
+            OR m.claveAlterna LIKE '%${ cadena }%'            
+            OR m.claveInstitucional LIKE '%${ cadena }%'            
+        </if>
+        )
+        group by m.idMedicamento , re.loteEnv , re.fechaCad     
+        order by re.fechaCad asc
+    </select>
+    
+    <select id="obtenerListaClavesCodigoBarras" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">
+        SELECT DISTINCT
+            me.claveInstitucional,
+            cpb.codigoBarras,
+            cpb.cantidadXCaja,
+            cpb.claveProveedor,
+            me.idMedicamento,
+            me.nombreCorto,
+            me.nombreLargo,
+            i.idInventario,
+            i.lote,
+            i.fechaCaducidad,
+            i.idEstructura,
+            i.cantidadActual
+        FROM
+            claveProveedorBarras cpb
+                right JOIN
+            medicamento me ON cpb.claveInstitucional = me.claveInstitucional
+                INNER JOIN
+            inventario i ON me.idMedicamento = i.idInsumo
+        WHERE
+            1 = 1   
+                AND i.idEstructura = #{ idEstructura}
+                AND cpb.codigoBarras=#{ codigoBarras}
+                AND i.cantidadActual > 0
+        order by cpb.claveProveedor desc
+    </select>
+    
+    <select id="obtenerListaClavesCodigoBarrasExt" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">
+        SELECT DISTINCT
+            if(i.presentacionComercial = 0, "Unidosis","Caja") as presentacion,
+            me.claveInstitucional,
+            cpb.codigoBarras,
+            cpb.claveProveedor,
+            me.idMedicamento,
+            me.nombreCorto,
+            me.nombreLargo,
+            me.idPresentacionSalida,
+            i.cantidadXCaja,
+            i.idInventario,
+            i.lote,
+            i.fechaCaducidad,
+            i.idEstructura,
+            i.cantidadActual
+        FROM
+            claveProveedorBarras cpb
+                right JOIN
+            medicamento me ON cpb.claveInstitucional = me.claveInstitucional
+                INNER JOIN
+            inventario i ON me.idMedicamento = i.idInsumo
+        WHERE
+            1 = 1   
+                AND ( i.idEstructura = #{ idEstructura} )
+                <!--AND cpb.codigoBarras=#{ codigoBarras}-->
+                and (CASE WHEN UPPER (#{ codigoBarras , jdbcType = VARCHAR }) REGEXP '^[A-Z]'> 0 
+                            THEN me.nombreCorto like '%${ codigoBarras }%' 
+                            ELSE  cpb.codigoBarras = #{ codigoBarras , jdbcType = VARCHAR } 
+                    END)
+                <!--AND ( me.nombreCorto like '%${ codigoBarras }%' OR  me.claveInstitucional like '%${ codigoBarras }%' )-->
+                AND i.cantidadActual > 0
+        order by cpb.claveProveedor desc
+    </select>        
+    
+    <select id="obtenerListaClavesCodigoBarrasExtChiconcuac" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">
+        SELECT 
+        a.*
+        FROM
+        ((SELECT DISTINCT
+        1 AS groupId,
+        i.idInventario,
+        i.fechaCaducidad,
+        i.cantidadActual,
+        me.claveInstitucional,
+        i.claveProveedor,
+        me.idMedicamento,
+        me.nombreCorto,
+        me.nombreLargo,
+        me.idPresentacionSalida,
+        me.factorTransformacion,
+        i.cantidadXCaja,            
+        i.lote,            
+        i.idEstructura,            
+        i.presentacionComercial,
+        CASE
+        WHEN i.presentacioncomercial = 0 THEN i.cantidadActual
+        ELSE 'N/A'
+        END as calculoCajaUnidosis
+        FROM
+        claveProveedorBarras cpb
+        RIGHT JOIN medicamento me ON cpb.claveInstitucional = me.claveInstitucional
+        INNER JOIN inventario i ON me.idMedicamento = i.idInsumo
+        WHERE
+        1 = 1 
+        AND ( i.idEstructura = #{ idEstructura} )
+        <!--AND cpb.codigoBarras=#{ codigoBarras}-->
+        and (CASE WHEN UPPER (#{ codigoBarras , jdbcType = VARCHAR }) REGEXP '^[A-Z]'> 0 
+        THEN ( me.nombreCorto like '%${ codigoBarras }%' OR me.claveInstitucional like '%${ codigoBarras }%' )
+        ELSE (cpb.codigoBarras = #{ codigoBarras , jdbcType = VARCHAR } OR me.claveInstitucional like '%${ codigoBarras }%') 
+        END)
+        <!--  AND i.cantidadActual > 0-->
+        <if test=" listaSubCategoria.size() > 0 ">
+            AND me.idSubcategoria IN
+            <foreach item="item" index="index" collection="listaSubCategoria" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="Rmanual == true">
+            AND me.tipo =38
+        </if>
+        AND i.cantidadActual > 0
+        GROUP BY idMedicamento , i.lote , i.fechaCaducidad , i.claveProveedor , i.cantidadXCaja) 
+        
+        UNION 
+        
+        (SELECT DISTINCT
+        2 AS groupId,
+        n.idInventario,
+        n.fechaCaducidad,
+        n.cantidadActual,
+        me.claveInstitucional,
+        n.claveProveedor,
+        me.idMedicamento,
+        me.nombreCorto,
+        me.nombreLargo,
+        me.idPresentacionSalida,
+        me.factorTransformacion,
+        n.cantidadXCaja,            
+        n.lote,
+        n.idEstructura,
+        n.presentacionComercial,
+        CASE
+        WHEN n.presentacioncomercial = 0 THEN n.cantidadActual
+        ELSE 'N/A'
+        END as calculoCajaUnidosis
+        FROM
+        claveProveedorBarras cpb
+        RIGHT JOIN medicamento me ON cpb.claveInstitucional = me.claveInstitucional
+        INNER JOIN inventario n ON me.idMedicamento = n.idInsumo
+        WHERE
+        1 = 1
+        AND ( n.idEstructura = #{ idEstructura} )
+        <!--AND cpb.codigoBarras=#{ codigoBarras}-->
+        and (CASE WHEN UPPER (#{ codigoBarras , jdbcType = VARCHAR }) REGEXP '^[A-Z]'> 0 
+        THEN ( me.nombreCorto like '%${ codigoBarras }%' OR me.claveInstitucional like '%${ codigoBarras }%' )
+        ELSE (cpb.codigoBarras = #{ codigoBarras , jdbcType = VARCHAR } OR me.claveInstitucional like '%${ codigoBarras }%') 
+        END)
+                    
+        <if test=" listaSubCategoria.size() > 0 ">
+            AND me.idSubcategoria IN
+            <foreach item="item" index="index" collection="listaSubCategoria" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="Rmanual == true">
+            AND me.tipo =38
+        </if>
+        
+        AND n.cantidadActual = 0
+        GROUP BY idMedicamento , n.lote , n.fechaCaducidad , n.claveProveedor , n.cantidadXCaja)) a
+        ORDER BY a.groupId , a.fechaCaducidad ASC;
+        
+    </select>
+    
+    
+    <select id="obtenerListaClavesCodigoQrExt" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">
+        SELECT DISTINCT
+            i.idInventario
+            , i.lote
+            , i.fechaCaducidad
+            , i.cantidadXCaja
+            , i.cantidadActual
+            , m.claveInstitucional
+            , m.idMedicamento
+            , m.nombreCorto
+            , m.nombreLargo
+            , IFNULL( c.codigoBarras , '' ) AS codigoBarras
+            , IFNULL( c.claveProveedor  , '' ) AS claveProveedor
+        FROM inventario i
+        INNER JOIN medicamento m ON i.idInsumo = m.idMedicamento
+        LEFT JOIN claveProveedorBarras c ON m.claveInstitucional = c.claveInstitucional
+        WHERE 
+            i.activo = 1
+            AND m.activo = 1
+            AND i.cantidadActual > 0
+            AND i.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+            AND m.claveInstitucional = #{ claveInstitucional , jdbcType = VARCHAR }
+            AND i.lote = #{ lote , jdbcType = VARCHAR }
+            <!-- AND i.fechaCaducidad = STR_TO_DATE( #{ fechaCaducidad , jdbcType = VARCHAR } , '%d%m%Y  %T') -->
+            AND i.fechaCaducidad = #{ fechaCaducidad , jdbcType = TIMESTAMP }
+            <if test=" cantidadXcaja != null ">
+                AND i.cantidadXCaja = #{ cantidadXcaja , jdbcType = INTEGER }
+                AND ( i.presentacionComercial = 1 OR i.presentacionComercial is null )
+            </if>
+            <if test=" cantidadXcaja == null ">
+                AND i.cantidadXCaja = 1
+                AND i.presentacionComercial = 0
+            </if>
+        ORDER BY c.claveProveedor DESC
+    </select>
+    
+    <select id="obtenerListaClavesCodigoQrTransfer" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">
+        SELECT DISTINCT
+            i.idInventario,
+            m.claveInstitucional,
+            c.codigoBarras,
+            c.claveProveedor,
+            m.idMedicamento,
+            i.lote,
+            i.cantidadXCaja,
+            i.fechaCaducidad,
+            m.nombreCorto,
+            m.nombreLargo,
+            i.idEstructura,
+            i.cantidadActual
+        FROM
+            inventario i
+                INNER JOIN
+            almacenPuntosControl o ON i.idEstructura = o.idAlmacen
+                INNER JOIN
+            medicamento m ON m.idMedicamento = i.idInsumo
+                LEFT JOIN
+            claveProveedorBarras c ON c.claveInstitucional = m.claveInstitucional
+                INNER JOIN
+            almacenPuntosControl d ON d.idMedicamento = m.idMedicamento
+        WHERE
+            1=1
+                AND m.claveInstitucional = #{ claveInstitucional}
+                        AND i.lote = #{ lote , jdbcType = VARCHAR }
+                        <!-- AND i.fechaCaducidad = STR_TO_DATE( #{ fechaCaducidad} , '%d%m%Y  %T') -->
+                        AND i.fechaCaducidad = #{ fechaCaducidad}
+                        AND o.idAlmacen = #{ idEstructuraOrigen}
+                        AND d.idAlmacen = #{ idEstructuraDestino}
+                        AND i.cantidadActual > 0
+                order by c.claveProveedor desc;        
+    </select>
+    
+    
+    <select id="obtenerListaClavesCodigoBarrasTransfer" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">
+        SELECT DISTINCT
+            i.idInventario,
+            m.claveInstitucional,
+            c.codigoBarras,
+            c.claveProveedor,
+            m.idMedicamento,
+            i.lote,
+            i.cantidadXCaja,
+            i.fechaCaducidad,
+            m.nombreCorto,
+            m.nombreLargo,
+            i.idEstructura,
+            i.cantidadActual
+        FROM
+            inventario i
+                INNER JOIN
+            almacenPuntosControl o ON i.idEstructura = o.idAlmacen
+                INNER JOIN
+            medicamento m ON m.idMedicamento = i.idInsumo
+                LEFT JOIN
+            claveProveedorBarras c ON c.claveInstitucional = m.claveInstitucional
+                INNER JOIN
+            almacenPuntosControl d ON d.idMedicamento = m.idMedicamento
+        WHERE
+            1 = 1   
+		AND o.idAlmacen   = #{ idEstructuraOrigen}
+                AND d.idAlmacen   = #{ idEstructuraDestino}
+		AND c.codigoBarras= #{ codigoBarras}
+		AND i.cantidadActual > 0
+        order by c.claveProveedor desc
+    </select>
+    <select id="obtenerListaClavesDescripcionTransfer" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">
+        SELECT DISTINCT
+            i.idInventario,
+            m.claveInstitucional,
+            c.codigoBarras,
+            c.claveProveedor,
+            m.idMedicamento,
+            i.lote,
+            i.cantidadXCaja,
+            i.fechaCaducidad,
+            m.nombreCorto,
+            m.nombreLargo,
+            i.idEstructura,
+            i.cantidadActual
+        FROM
+            inventario i
+                INNER JOIN
+            almacenPuntosControl o ON i.idEstructura = o.idAlmacen
+                INNER JOIN
+            medicamento m ON m.idMedicamento = i.idInsumo
+                LEFT JOIN
+            claveProveedorBarras c ON c.claveInstitucional = m.claveInstitucional
+                INNER JOIN
+            almacenPuntosControl d ON d.idMedicamento = m.idMedicamento
+        WHERE
+            1 = 1
+                AND o.idAlmacen  = #{ idEstructuraOrigen}
+                AND d.idAlmacen =  #{ idEstructuraDestino}
+                AND m.nombreCorto like '%${descripcion}%'
+                AND i.cantidadActual>0
+
+    </select>
+    <select id="obtenerListaClavesClaveInstitucional" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">
+        SELECT DISTINCT cpb.claveInstitucional , cpb.codigoBarras , cpb.cantidadXCaja , cpb.claveProveedor
+        , me.idMedicamento , me.nombreCorto , me.nombreLargo , i.idInventario , i.lote , i.fechaCaducidad , i.idEstructura , i.cantidadActual
+        FROM claveProveedorBarras cpb 
+        INNER JOIN medicamento me ON cpb.claveInstitucional = me.claveInstitucional
+        INNER JOIN inventario i ON me.idMedicamento = i.idInsumo
+        WHERE 1=1
+        AND i.idEstructura = #{ idEstructura}
+        and cpb.claveInstitucional=#{ claveInstitucional}
+        AND i.cantidadActual > 0
+        order by cpb.claveProveedor desc
+    </select>
+    
+    <select id="obtenerListaClavesCodigoBarras2" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">
+        SELECT DISTINCT cpb.claveInstitucional , cpb.codigoBarras , cpb.cantidadXCaja , cpb.claveProveedor
+        , me.idMedicamento , me.nombreCorto , me.nombreLargo , i.idInventario , i.lote , i.fechaCaducidad , i.idEstructura , i.cantidadActual
+        FROM claveProveedorBarras cpb 
+        INNER JOIN medicamento me ON cpb.claveInstitucional = me.claveInstitucional
+        INNER JOIN inventario i ON (me.idMedicamento = i.idInsumo AND cpb.claveProveedor = i.lote OR cpb.claveProveedor = i.claveProveedor)
+        WHERE 1=1        
+        and (CASE WHEN UPPER (#{ codigoBarras , jdbcType = VARCHAR }) REGEXP '^[A-Z]'> 0 THEN me.nombreCorto like '%${ codigoBarras }%' ELSE  cpb.codigoBarras = #{ codigoBarras , jdbcType = VARCHAR } END)
+        AND i.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+        AND i.cantidadActual > 0
+        order by cpb.claveProveedor desc
+    </select>
+    
+    <select id="obtenerListaClavesCodigoQr" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">
+        SELECT DISTINCT
+            me.claveInstitucional,
+            cpb.codigoBarras,
+            i.presentacionComercial,
+            cpb.cantidadXCaja,
+            cpb.claveProveedor,
+            me.idMedicamento,
+            me.nombreCorto,
+            me.nombreLargo,
+            i.idInventario,
+            i.lote,
+            i.fechaCaducidad,
+            i.idEstructura,
+            i.cantidadActual,
+            i.cantidadXCaja
+        FROM
+            claveProveedorBarras cpb
+                right JOIN
+            medicamento me ON cpb.claveInstitucional = me.claveInstitucional
+                INNER JOIN
+            inventario i ON (me.idMedicamento = i.idInsumo
+                AND cpb.claveProveedor = i.lote
+                OR cpb.claveProveedor = i.claveProveedor)
+        WHERE
+            1 = 1    
+                AND me.claveInstitucional = #{ claveInstitucional , jdbcType = VARCHAR }
+                AND i.lote = #{ lote , jdbcType = VARCHAR }
+                <!-- AND i.fechaCaducidad = STR_TO_DATE( #{ fechaCaducidad , jdbcType = VARCHAR } , '%d%m%Y  %T') -->
+                AND i.fechaCaducidad = #{ fechaCaducidad , jdbcType = TIMESTAMP }
+                AND i.idEstructura = #{ idEstructura , jdbcType = VARCHAR }
+                AND i.cantidadActual > 0
+        order by cpb.claveProveedor desc;
+    </select>
+    
+    
+    <select id="obtenerListaByName" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">                       
+                
+        SELECT DISTINCT
+            round(i.cantidadActual / i.cantidadXCaja,2)  as cajas,
+            m.claveInstitucional,
+            i.presentacionComercial,
+            cpb.codigoBarras,
+            if(cpb.cantidadXCaja is null,1,cpb.cantidadXCaja) as cantidadXCaja,
+            cpb.claveProveedor,
+            apc.idAlmacen,
+            m.idMedicamento,
+            m.nombreCorto,
+            m.nombreLargo,
+            i.idInventario,
+            i.lote,
+            i.fechaCaducidad,
+            i.idEstructura,
+            i.cantidadActual,
+            i.cantidadXCaja
+        FROM    almacenPuntosControl apc
+            INNER JOIN     medicamento m ON m.idMedicamento = apc.idMedicamento
+            INNER JOIN     inventario i ON i.idEstructura = apc.idAlmacen
+            LEFT JOIN      claveProveedorBarras cpb ON cpb.claveInstitucional = m.claveInstitucional
+        WHERE
+            1 = 1
+            AND i.idInsumo = apc.idMedicamento            
+            AND (m.nombreCorto like '%${ codigoBarras }%' or m.claveInstitucional like '%${ codigoBarras }%')
+            AND i.activo = 1
+        <if test=" buscaCantCero == true"> 
+            AND i.cantidadActual >= 0
+        </if>
+        <if test=" buscaCantCero == false"> 
+            AND i.cantidadActual > 0
+        </if>
+            
+            AND apc.idAlmacen =  #{ idEstructura , jdbcType = VARCHAR }
+        
+    </select>
+
+    <select id="obtenerListaByQR" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">
+        SELECT distinct 
+        cpb.claveInstitucional, 
+        i.presentacionComercial,
+        cpb.codigoBarras, cpb.cantidadXCaja, cpb.claveProveedor,
+        me.idMedicamento, me.nombreCorto, me.nombreLargo,
+        i.idInventario, i.lote, i.fechaCaducidad, i.idEstructura, i.cantidadActual,i.cantidadXCaja
+        
+        from medicamento me
+        INNER JOIN almacenPuntosControl apc on apc.idMedicamento = me.idMedicamento
+        INNER JOIN inventario i on me.idMedicamento = i.idInsumo
+        INNER JOIN claveProveedorBarras cpb on cpb.claveInstitucional = me.claveInstitucional
+        and apc.idAlmacen = #{ idEstructura , jdbcType = VARCHAR }
+        and i.idEstructura = apc.idAlmacen
+        and me.claveInstitucional = #{ claveInstitucional , jdbcType = VARCHAR }
+        and i.lote = #{ lote , jdbcType = VARCHAR }        
+        and i.fechaCaducidad = #{ fechaCaducidad , jdbcType = TIMESTAMP }
+         <if test=" buscaCantCero == true"> 
+            AND i.cantidadActual >= 0
+        </if>
+        <if test=" buscaCantCero == false"> 
+            AND i.cantidadActual > 0
+        </if>
+        and i.activo = 1
+    </select>
+    
+    <select id="obtenerListaClavesByBarras" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">
+        select distinct
+        cpb.claveInstitucional, 
+        i.presentacionComercial,cpb.codigoBarras, cpb.cantidadXCaja, cpb.claveProveedor,
+        m.idMedicamento, m.nombreCorto, m.nombreLargo,
+        i.idInventario, i.lote, i.fechaCaducidad, i.idEstructura, i.cantidadActual,i.cantidadXCaja
+        
+        from
+        claveProveedorBarras cpb
+        inner join medicamento m on cpb.claveInstitucional = m.claveInstitucional
+        inner join almacenPuntosControl apc on m.idMedicamento = apc.idMedicamento
+        inner join inventario i on m.idMedicamento = i.idInsumo
+        and apc.idAlmacen = #{ idEstructura , jdbcType = VARCHAR }
+        and i.idEstructura = apc.idAlmacen
+        and i.activo = 1
+         <if test=" buscaCantCero == true"> 
+            AND i.cantidadActual >= 0
+        </if>
+        <if test=" buscaCantCero == false"> 
+            AND i.cantidadActual > 0
+        </if>
+        where cpb.codigoBarras = #{ codigoBarras , jdbcType = VARCHAR }        
+    </select>
+    
+    <select id="obtenerByFolio" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map">       
+        SELECT distinct 
+        m.claveInstitucional,
+        cpb.claveProveedor,cpb.codigoBarras,
+        re.loteEnv as lote,
+        re.fechaCad as fechaCaducidad, 
+        re.cantidadXCaja,
+        re.cantidadRecibida / m.factorTransformacion as  cantidadRecibida
+        from reabastoInsumo ri 
+        INNER JOIN reabasto r on r.idReabasto = ri.idReabasto
+        INNER JOIN reabastoEnviado re on re.idReabastoInsumo = ri.idReabastoInsumo
+        INNER JOIN medicamento m on m.idMedicamento = ri.idInsumo
+        INNER JOIN claveProveedorBarras cpb on cpb.claveProveedor = re.claveProveedor
+        where r.folio = #{ folio , jdbcType = VARCHAR }
+        group by m.claveInstitucional;
+    </select>
+    
+        <insert id="insertarCodigoProveedor" parameterType="mx.mc.model.ClaveProveedorBarras">
+            INSERT INTO claveProveedorBarras (
+        <if test=" claveProveedor != null"> claveProveedor </if>
+        <if test=" codigoBarras != null"> , codigoBarras </if>
+        <if test=" claveInstitucional != null"> , claveInstitucional </if>
+        <if test=" insertUsuario != null"> , insertUsuario </if>
+        <if test=" insertFecha != null"> , insertFecha </if>
+        <if test=" cantidadXCaja != null"> , cantidadXCaja </if>
+        ) VALUES (
+        <if test=" claveProveedor != null"> #{claveProveedor, jdbcType = VARCHAR } </if>
+        <if test=" codigoBarras != null"> , #{codigoBarras, jdbcType = VARCHAR } </if>
+        <if test=" claveInstitucional != null"> , #{ claveInstitucional, jdbcType = VARCHAR } </if>
+        <if test=" insertUsuario != null"> , #{insertUsuario, jdbcType = VARCHAR } </if>
+        <if test=" insertFecha != null"> , #{insertFecha, jdbcType = TIMESTAMP } </if>
+        <if test=" cantidadXCaja != null"> , #{ cantidadXCaja, jdbcType = INTEGER } </if>
+        );
+    </insert>
+    
+    <delete id="eliminarCodigoProveedorCodigoBarra" parameterType="mx.mc.model.ReportInventarioExistencias">
+        DELETE FROM claveProveedorBarras 
+        WHERE 
+        codigoBarras = #{codigoBarras, jdbcType = VARCHAR} 
+    </delete>
+
+    <select id="obtenerListaByNameClaveSkuQrSurte" resultType="mx.mc.model.ClaveProveedorBarras_Extend" parameterType="Map" >        
+        SELECT i.idInventario ,i.idEstructura , m.nombreCorto , m.nombreLargo , ri.idReabastoInsumo 
+            , m.claveInstitucional , i.lote  , i.fechaCaducidad 
+        from reabasto r 
+        inner join reabastoInsumo ri on ri.idReabasto = r.idReabasto 
+        -- inner join reabastoEnviado re on re.idReabastoInsumo = ri.idReabastoInsumo 
+        inner join medicamento m on m.idMedicamento = ri.idInsumo 
+        LEFT JOIN inventario i ON ri.idInsumo = i.idInsumo  
+        LEFT JOIN claveProveedorBarras cb ON (i.claveProveedor = cb.claveProveedor AND m.claveInstitucional = cb.claveInstitucional) 
+        where 1 = 1 
+        and folio = #{folio, jdbcType = VARCHAR }   
+        and i.idEstructura =  = #{ idEstructura , jdbcType = VARCHAR }   
+        and m.activo = 1
+        and
+        (
+        CONCAT( m.claveInstitucional , ',' , i.lote , ',' , DATE_FORMAT(i.fechaCaducidad, '%d%m%Y')) = '${ cadena }'
+        OR CONCAT( '(01)', m.claveInstitucional , '(10)' , i.lote , '(17)' , DATE_FORMAT(i.fechaCaducidad, '%y%m%d')) = '${ cadena }'
+        OR cb.codigoBarras = #{ cadena , jdbcType = VARCHAR } 
+        OR m.codigoBarrasAlterno = #{ cadena , jdbcType = VARCHAR } 
+        <if test="activa_autoCompleteInsumos == true">                       
+            OR m.nombreCorto LIKE '%${ cadena }%'
+            OR m.nombreLargo LIKE '%${ cadena }%'            
+            OR m.claveAlterna LIKE '%${ cadena }%'            
+            OR m.claveInstitucional LIKE '%${ cadena }%'            
+        </if>
+        )
+        group by m.idMedicamento , re.loteEnv , re.fechaCad     
+        order by re.fechaCad asc
+    </select>    
+    
+</mapper>

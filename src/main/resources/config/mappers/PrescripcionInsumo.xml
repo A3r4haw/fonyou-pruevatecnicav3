@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.PrescripcionInsumoMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.PrescripcionInsumo" parameterType="mx.mc.model.PrescripcionInsumo" >
+        SELECT 
+        idPrescripcionInsumo , 
+        idPrescripcion ,
+        idInsumo ,
+        fechaInicio ,
+        dosis ,
+        frecuencia ,
+        duracion ,
+        comentarios ,
+        idEstatusPrescripcion ,
+        idEstatusMirth,
+        insertFecha ,
+        insertIdUsuario ,
+        updateFecha ,
+        updateIdUsuario
+        FROM prescripcionInsumo
+        WHERE 1=1
+        <if test=" idPrescripcionInsumo != null ">
+            AND idPrescripcionInsumo = #{ idPrescripcionInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInsumo != null ">
+            AND idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaInicio != null ">
+            AND fechaInicio = #{ fechaInicio , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" dosis != null ">
+            AND dosis = #{ dosis , jdbcType = INTEGER }
+        </if>
+        
+        <if test=" frecuencia != null ">
+            AND frecuencia = #{ frecuencia , jdbcType = INTEGER }
+        </if>
+        <if test=" duracion != null ">
+            AND duracion = #{ duracion , jdbcType = INTEGER }
+        </if>
+        <if test=" comentarios != null ">
+            AND comentarios = #{ comentarios , jdbcType = VARCHAR }
+        </if>
+        
+        <if test=" idEstatusPrescripcion != null ">
+            AND idEstatusPrescripcion = #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        </if>
+        <if test="idEstatusMirth != null">
+            AND idEstatusMirth,=#{idEstatusMirth,,jdbcType=INTEGER}
+        </if>
+        LIMIT 0, 1
+    </select>
+    
+    
+    <select id="obtenerLista" resultType="mx.mc.model.PrescripcionInsumo" parameterType="mx.mc.model.PrescripcionInsumo" >
+        SELECT 
+        idPrescripcionInsumo , 
+        idPrescripcion ,
+        idInsumo ,
+        fechaInicio ,
+        dosis ,
+        frecuencia ,
+        duracion ,
+        comentarios ,
+        idEstatusPrescripcion ,
+        indicaciones , 
+        idEstatusMirth ,
+        insertFecha ,
+        insertIdUsuario ,
+        updateFecha ,
+        updateIdUsuario ,
+        envioJV , 
+        idTipoIngrediente , 
+        velocidad , 
+        ritmo , 
+        perfusionContinua , 
+        idUnidadConcentracion
+        FROM prescripcionInsumo
+        WHERE 1=1
+        <if test=" idPrescripcionInsumo != null ">
+            AND idPrescripcionInsumo = #{ idPrescripcionInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInsumo != null ">
+            AND idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaInicio != null ">
+            AND fechaInicio = #{ fechaInicio , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" dosis != null ">
+            AND dosis = #{ dosis , jdbcType = INTEGER }
+        </if>
+        
+        <if test=" frecuencia != null ">
+            AND frecuencia = #{ frecuencia , jdbcType = INTEGER }
+        </if>
+        <if test=" duracion != null ">
+            AND duracion = #{ duracion , jdbcType = INTEGER }
+        </if>
+        <if test=" comentarios != null ">
+            AND comentarios = #{ comentarios , jdbcType = VARCHAR }
+        </if>
+        
+        <if test=" idEstatusPrescripcion != null ">
+            AND idEstatusPrescripcion = #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        </if>
+        <if test="idEstatusMirth!=null">
+            AND idEstatusMirth =#{idEstatusMirth,jdbcType=INTEGER}
+        </if>
+    </select>
+    
+    
+    <insert id="insertar" parameterType="mx.mc.model.PrescripcionInsumo" >
+        INSERT INTO prescripcionInsumo (
+        <if test=" idPrescripcionInsumo != null ">
+            idPrescripcionInsumo 
+        </if>
+        <if test=" idPrescripcion != null ">
+            , idPrescripcion
+        </if>
+        <if test=" idInsumo != null ">
+            , idInsumo
+        </if>
+        <if test=" fechaInicio != null ">
+            , fechaInicio
+        </if>
+        <if test=" dosis != null ">
+            , dosis
+        </if>
+        
+        <if test=" frecuencia != null ">
+            , frecuencia 
+        </if>
+        <if test=" duracion != null ">
+            , duracion 
+        </if>
+        <if test=" comentarios != null ">
+            , comentarios 
+        </if>
+        
+        <if test=" idEstatusPrescripcion != null ">
+            , idEstatusPrescripcion 
+        </if>
+        <if test="idEstatusMirth!=null">
+            ,idEstatusMirth
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario
+        </if>
+        ) VALUES (
+        <if test=" idPrescripcionInsumo != null ">
+            #{ idPrescripcionInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPrescripcion != null ">
+           , #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInsumo != null ">
+           , #{ idInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaInicio != null ">
+           , #{ fechaInicio , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" dosis != null ">
+           , #{ dosis , jdbcType = DOUBLE }
+        </if>
+        <if test=" frecuencia != null ">
+           , #{ frecuencia , jdbcType = INTEGER }
+        </if>
+        <if test=" duracion != null ">
+           , #{ duracion , jdbcType = INTEGER }
+        </if>
+        <if test=" comentarios != null ">
+           , #{ comentarios , jdbcType = VARCHAR }
+        </if>
+        
+        <if test=" idEstatusPrescripcion != null ">
+           , #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        </if>
+        <if test="idEstatusMirth!=null">
+           , #{idEstatusMirth,jdbcType=INTEGER}
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.PrescripcionInsumo"  >
+        UPDATE prescripcionInsumo SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        
+        <if test=" idPrescripcion != null ">
+            , idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idInsumo != null ">
+            , idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaInicio != null ">
+            , fechaInicio = #{ fechaInicio , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" dosis != null ">
+            , dosis = #{ dosis , jdbcType = INTEGER }
+        </if>
+        
+        <if test=" frecuencia != null ">
+            , frecuencia = #{ frecuencia , jdbcType = INTEGER }
+        </if>
+        <if test=" duracion != null ">
+            , duracion = #{ duracion , jdbcType = INTEGER }
+        </if>
+        <if test=" comentarios != null ">
+            , comentarios = #{ comentarios , jdbcType = VARCHAR }
+        </if>
+        
+        <if test=" idEstatusPrescripcion != null ">
+            , idEstatusPrescripcion = #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        </if>
+        <if test="idEstatusMirth!=null">
+            ,idEstatusMirth=#{idEstatusMirth,jdbcType=INTEGER}
+        </if>
+        WHERE idPrescripcionInsumo = #{ idPrescripcionInsumo , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.PrescripcionInsumo" >
+        DELETE FROM prescripcionInsumo 
+        WHERE idPrescripcionInsumo = #{ idPrescripcionInsumo , jdbcType = VARCHAR }
+    </delete>
+    
+    <select id="obtenerInsumosPorIdPrescripcion" resultType="mx.mc.model.PrescripcionInsumo_Extended" parameterType="Map" >
+        SELECT  p.idPrescripcion , p.idEstatusPrescripcion 
+            , pi.idPrescripcionInsumo , pi.indicaciones , pi.dosis , pi.frecuencia , pi.duracion , pi.fechaInicio
+            , m.idMedicamento as idInsumo , m.claveInstitucional , m.nombreCorto , m.nombreLargo , m.concentracion , m.indivisible 
+        FROM prescripcion p
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+        INNER JOIN medicamento m ON pi.idInsumo = m.idMedicamento
+        WHERE p.idPrescripcion = #{ idPrescripcion , jdbcType = INTEGER }
+        <if test=" tipoInsumo != null ">
+            AND m.tipo = #{ tipoInsumo , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <select id="obtenerPrescripcionInsumoByIdPrescripcion" resultType="mx.mc.model.PrescripcionInsumo_Extended" parameterType="Map" >
+        SELECT *
+        FROM prescripcionInsumo p
+        WHERE p.idPrescripcion = #{ idPrescripcion , jdbcType = INTEGER }
+        LIMIT 1
+    </select>
+    
+    <insert id="registraMedicamentoList" parameterType="java.util.List" useGeneratedKeys="false" >
+        INSERT INTO prescripcionInsumo
+            (
+            idPrescripcionInsumo ,
+            idPrescripcion ,
+            idInsumo ,
+            fechaInicio ,
+            dosis ,
+            frecuencia ,
+            duracion ,
+            comentarios ,
+            idEstatusPrescripcion ,            
+            indicaciones ,
+            idEstatusMirth,
+            insertFecha ,
+            insertIdUsuario ,
+            updateFecha ,
+            updateIdUsuario,
+            envioJV,
+            idTipoIngrediente,
+            velocidad,
+            ritmo,
+            perfusionContinua,
+            idUnidadConcentracion
+            )
+            VALUES
+        <foreach collection="list" item="item" separator="," index="index">  
+            (
+                #{ item.idPrescripcionInsumo }
+                , #{ item.idPrescripcion }
+                , #{ item.idInsumo }
+                , #{ item.fechaInicio }
+                , #{ item.dosis }
+                , #{ item.frecuencia }
+                , #{ item.duracion }
+                , #{ item.comentarios }
+                , #{ item.idEstatusPrescripcion }
+                , #{ item.indicaciones }
+                , #{item.idEstatusMirth}
+                , #{ item.insertFecha }
+                , #{ item.insertIdUsuario }
+                , #{ item.updateFecha }
+                , #{ item.updateIdUsuario }
+                , #{ item.envioJV }
+                , #{ item.idTipoIngrediente }
+                , #{ item.velocidad }
+                , #{ item.ritmo }
+                , #{ item.perfusionContinua }
+                , #{ item.idUnidadConcentracion }
+            )
+        </foreach>
+    </insert>
+    
+    <delete id="eliminaMedicamentoList" parameterType="Map" >
+        DELETE FROM 
+        prescripcionInsumo
+        WHERE idPrescripcion = #{ idPrescripcion , jdbcType = INTEGER } 
+    </delete>
+    
+    
+    <update id="cambiarEstatusPrescripcion" parameterType="mx.mc.model.PrescripcionInsumo"  >
+        UPDATE prescripcionInsumo SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        , idEstatusPrescripcion = #{ idEstatusPrescripcion , jdbcType = INTEGER }
+        WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </update>
+    <update id="wsCancelar" parameterType="mx.mc.model.Prescripcion"  >        
+        UPDATE prescripcionInsumo SET
+         idEstatusPrescripcion = #{ procesado , jdbcType = INTEGER }
+        WHERE folio = #{ folio , jdbcType = VARCHAR }
+    </update>
+    <update id="actualizaEstatusMirth" parameterType="Map">
+        UPDATE prescripcionInsumo
+        <set>
+           idEstatusMirth = #{idEstatusMirth}
+        </set>
+        WHERE idPrescripcionInsumo = #{idPrescripcionInsumo}
+    </update>
+    <update id="updateAsignPrescripcionInsumo" parameterType="mx.mc.model.PrescripcionInsumo_Extended"  >
+        UPDATE prescripcionInsumo 
+        SET
+        idEstatusPrescripcion = #{ idEstatusPrescripcion }
+        ,updateFecha = #{updateFecha }
+        ,updateIdUsuario = #{ updateIdUsuario }
+        WHERE idPrescripcionInsumo = #{ idPrescripcionInsumo }
+    </update>
+    
+    <select id="obtenerUltimaPrescripcionInsumoByIdPrescripcion" resultType="mx.mc.model.PrescripcionInsumo_Extended" parameterType="Map" >
+        SELECT *
+        FROM prescripcionInsumo p
+        WHERE p.idPrescripcion = #{ idPrescripcion , jdbcType = INTEGER }
+        ORDER BY insertFecha DESC
+        LIMIT 1
+    </select>
+    
+    <update id="actualizarInsumo" parameterType="mx.mc.model.PrescripcionInsumo_Extended"  >
+        UPDATE prescripcionInsumo 
+        SET
+        idEnvaseContenedor = #{ idEnvaseContenedor }
+        ,condiciones=#{condiciones}
+        ,volumen=#{volumen}
+        ,observaciones = #{observaciones}
+        ,updateFecha = #{updateFecha }
+        ,updateIdUsuario = #{ updateIdUsuario }
+        WHERE idPrescripcionInsumo = #{ idPrescripcionInsumo }
+    </update>  
+    
+    <select id="obtenerPrescripcionInsumosPorIdPrescripcion" resultType="mx.mc.model.PrescripcionInsumo" parameterType="Map" >
+        SELECT  * FROM prescripcionInsumo
+        WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </select>
+    
+    <update id="actualizarListaPrescripcionInsumo" parameterType="java.util.List">    
+        <foreach collection="list" item="item" separator=";" index="index">  
+            UPDATE prescripcionInsumo SET 
+            updateFecha = #{ item.updateFecha , jdbcType = TIMESTAMP }
+            <if test="item.updateIdUsuario != null">
+            , updateIdUsuario = #{ item.updateIdUsuario , jdbcType = VARCHAR }
+            </if>
+            <if test="item.idEstatusPrescripcion != null">
+            , idEstatusPrescripcion = #{ item.idEstatusPrescripcion , jdbcType = INTEGER }
+            </if>
+            WHERE idPrescripcionInsumo = #{ item.idPrescripcionInsumo }    
+        </foreach>
+    </update>
+    
+    <select id="obtenerPrescripcionesByIdPaciente" resultType="mx.mc.model.PrescripcionInsumo_Extended" parameterType="Map" >
+        SELECT  p.idPrescripcion , p.idEstatusPrescripcion 
+            , pi.idPrescripcionInsumo , pi.indicaciones , pi.dosis, pi.frecuencia , pi.duracion , pi.fechaInicio
+            , m.idMedicamento as idInsumo , m.claveInstitucional , m.nombreCorto , m.nombreLargo , m.concentracion , m.indivisible
+        FROM prescripcion p
+        INNER JOIN pacienteServicio ps on p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN visita v on ps.idVisita = v.idVisita       
+        INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion        
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion   
+        INNER JOIN surtimientoInsumo si ON (s.idSurtimiento = si.idSurtimiento AND pi.idPrescripcionInsumo = si.idPrescripcionInsumo)
+        INNER JOIN medicamento m ON pi.idInsumo = m.idMedicamento    
+        WHERE v.idPaciente = #{ idPaciente , jdbcType = VARCHAR }
+        AND s.folio = #{ folioSurtimiento , jdbcType = VARCHAR }      
+        <if test=" folioSurtimiento != null  ">
+            AND s.folio = #{ folioSurtimiento , jdbcType = VARCHAR }
+        </if>
+        group by idInsumo
+        order by fechaInicio desc;
+    </select>
+    
+    <select id="totalSurtimientosByIdPacienteAndIdInsumo" resultType="Integer" parameterType="Map" >
+        SELECT COUNT(*) FROM surtimiento s INNER JOIN surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento
+        WHERE idPrescripcion IN (
+            SELECT  p.idPrescripcion
+            FROM prescripcion p
+            INNER JOIN pacienteServicio ps on p.idPacienteServicio = ps.idPacienteServicio
+            INNER JOIN visita v on ps.idVisita = v.idVisita       
+            INNER JOIN prescripcionInsumo pi ON p.idPrescripcion = pi.idPrescripcion
+            INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion   
+            INNER JOIN medicamento m ON pi.idInsumo = m.idMedicamento    
+            WHERE v.idPaciente = #{ idPaciente , jdbcType = VARCHAR } AND idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+            GROUP BY  p.idPrescripcion 
+        ) AND si.idPrescripcionInsumo = #{idPrescripcionInsumo, jdbcType = VARCHAR};
+    </select>
+
+    <select id="obtenerPrimerPrescripcionInsumoByIdPrescripcion" resultType="mx.mc.model.PrescripcionInsumo_Extended" parameterType="Map" >
+        SELECT *
+        FROM prescripcionInsumo p
+        WHERE p.idPrescripcion = #{ idPrescripcion , jdbcType = INTEGER }
+        AND (p.idTipoIngrediente IS NOT NULL OR p.perfusionContinua IS NOT NULL)
+        LIMIT 1
+    </select>
+    
+    <update id="cancelarPorIdPrescripcion" parameterType="Map"  >        
+        UPDATE prescripcionInsumo SET
+            idEstatusPrescripcion = #{ idEstatusPrescripcion , jdbcType = INTEGER }
+            , updateFecha = #{ fecha , jdbcType = VARCHAR }
+            , updateIdUsuario  = #{ idUsuario , jdbcType = VARCHAR }
+        WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </update>
+    
+</mapper>

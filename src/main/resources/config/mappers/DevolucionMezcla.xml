@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DevolucionMezclaMapper" > 
+    
+    <insert id="insertar" parameterType="mx.mc.model.DevolucionMezcla">
+        INSERT INTO devolucionMezcla (
+        <if test=" idDevolucionMezcla != null"> idDevolucionMezcla	</if>
+        <if test=" folio != null">	,folio	</if>
+        <if test=" creacion != null">	,creacion	</if>
+        <if test=" orden != null">	,orden	</if>
+        <if test=" idOrigen != null">	,idOrigen	</if>
+        <if test=" idDestino != null">	,idDestino	</if>
+        <if test=" idSolucion != null"> ,idSolucion	</if>
+        <if test=" nombre != null"> ,nombre	</if>
+        <if test=" idPresentacion != null"> ,idPresentacion	</if>
+        <if test=" idVia != null"> ,idVia	</if>
+        <if test=" idUsuario != null"> ,idUsuario	</if>	
+        <if test=" idMotivo != null"> ,idMotivo	</if>	
+        <if test=" retencion != null"> ,retencion	</if>	
+        <if test=" fechaRetiro != null"> ,fechaRetiro	</if>	
+        <if test=" reutilizar != null"> ,reutilizar	</if>	
+        <if test=" fechaLimite != null"> ,fechaLimite	</if>	
+        <if test=" comentarios != null"> ,comentarios	</if>	
+        <if test=" merma != null"> ,merma	</if>	
+        <if test=" destruir != null"> ,destruir	</if>	
+        <if test=" sugerencia != null"> ,sugerencia	</if>	
+        <if test=" idDestinoFinal != null"> ,idDestinoFinal	</if>	
+        <if test=" idCalsificacion != null"> ,idCalsificacion	</if>	
+        <if test=" riesgoPaciente != null"> ,riesgoPaciente	</if>	
+        <if test=" idCuales != null"> ,idCuales	</if>	
+        <if test=" idEstatusSolucion != null"> ,idEstatusSolucion	</if>	
+        <if test=" insertFecha != null"> ,insertFecha	</if>	
+        <if test=" insertIdUsuario != null"> ,insertIdUsuario	</if>	
+        <if test=" updateFecha != null"> ,updateFecha	</if>	
+        <if test=" updateIdUsuario != null"> ,updateIdUsuario	</if>		
+        ) VALUES (
+        <if test=" idDevolucionMezcla != null"> #{ idDevolucionMezcla }	</if>
+        <if test=" folio != null">	,#{ folio }	</if> 
+        <if test=" creacion != null">	,#{ creacion }	</if> 
+        <if test=" orden != null">	,#{ orden }	</if> 
+        <if test=" idOrigen != null">	,#{ idOrigen }	</if> 
+        <if test=" idDestino != null">	,#{ idDestino }	</if> 
+        <if test=" idSolucion != null"> ,#{ idSolucion }	</if>
+        <if test=" nombre != null"> ,#{ nombre }	</if>
+        <if test=" idPresentacion != null"> ,#{ idPresentacion }	</if>
+        <if test=" idVia != null"> ,#{ idVia }	</if>
+        <if test=" idUsuario != null"> ,#{ idUsuario }	</if>
+        <if test=" idMotivo != null"> ,#{ idMotivo }	</if>
+        <if test=" retencion != null"> ,#{ retencion }	</if>
+        <if test=" fechaRetiro != null"> ,#{ fechaRetiro }	</if>
+        <if test=" reutilizar != null"> ,#{ reutilizar }	</if>
+        <if test=" fechaLimite != null"> ,#{ fechaLimite }	</if>
+        <if test=" comentarios != null"> ,#{ comentarios }	</if>
+        <if test=" merma != null"> ,#{ merma }	</if>
+        <if test=" destruir != null"> ,#{ destruir }	</if>
+        <if test=" sugerencia != null"> ,#{ sugerencia }	</if>
+        <if test=" idDestinoFinal != null"> ,#{ idDestinoFinal }	</if>
+        <if test=" idCalsificacion != null"> ,#{ idCalsificacion }	</if>
+        <if test=" riesgoPaciente != null"> ,#{ riesgoPaciente }	</if>
+        <if test=" idCuales != null"> ,#{ idCuales }	</if>
+        <if test=" idEstatusSolucion != null"> ,#{ idEstatusSolucion }	</if>
+        <if test=" insertFecha != null"> ,#{ insertFecha }	</if>
+        <if test=" insertIdUsuario != null"> ,#{ insertIdUsuario }	</if>
+        <if test=" updateFecha != null"> ,#{ updateFecha }	</if>
+        <if test=" updateIdUsuario != null"> ,#{ updateIdUsuario }	</if>		 
+        )
+    </insert>
+    
+    <select id="obtenerDevolucionMezclaById" parameterType="Map" resultType="mx.mc.model.DevolucionMezclaExtended">
+        SELECT 
+        d.folio,
+        d.creacion,
+        u.nombre AS registro,
+        es.descripcion AS estatus,
+        d.orden,
+        p.folio AS folioPrescripcion,
+        ep.nombre AS area,
+        c.nombreCama AS cama,
+        CONCAT(pa.nombreCompleto,' ',pa.apellidoPaterno,' ',pa.apellidoMaterno) AS paciente,
+        CONCAT(um.nombre,' ',um.apellidoPaterno,' ',um.apellidoMaterno) AS medico,
+        su.fechaProgramada AS surtimiento,
+        ep.nombre AS origen,
+        d.nombre,
+        d.idPresentacion,
+        d.idVia,
+        so.volumenFinal,
+        so.lote,
+        so.fechaCaducidad,
+        so.noHorasestabilidad,
+        d.idUsuario,
+        d.idMotivo,
+        tm.nombreCatalogo as motivoRetiro,
+        d.idDestinoFinal,
+        td.nombreCatalogo as destinoFinal,
+        d.fechaRetiro,
+        d.idCalsificacion,   
+        tc.nombreCatalogo as clasificacion,
+        d.merma,
+        d.comentarios,
+        d.riesgoPaciente,
+        d.idCuales,
+        d.idDevolucionMezcla,
+        so.idSolucion,        
+        t.clave as claveMezcla,
+        t.idTipoSolucion,
+        d.retencion,
+        d.reutilizar,
+        d.fechaLimite,
+        d.destruir,
+        d.idOrigen, 
+        d.idDestino,
+        d.sugerencia,
+        d.insertFecha,
+        d.insertIdUsuario
+        FROM    devolucionMezcla d
+        INNER JOIN    solucion so ON so.idSolucion = d.idSolucion
+        INNER JOIN    surtimiento su ON su.idSurtimiento = so.idSurtimiento
+        INNER JOIN    prescripcion p ON p.idPrescripcion = su.idPrescripcion
+        INNER JOIN    pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+        INNER JOIN    estructura ep ON ep.idEstructura = p.idEstructura
+        INNER JOIN    visita v ON v.idVisita = ps.idVisita
+        INNER JOIN    paciente pa ON pa.idPaciente = v.idPaciente
+        INNER JOIN    usuarios um ON um.idUsuario = p.idMedico
+        INNER JOIN    usuarios u ON u.idUsuario = d.idUsuario
+        LEFT JOIN    pacienteUbicacion pu ON p.idPacienteUbicacion = pu.idPacienteUbicacion
+        LEFT JOIN    cama c ON c.idCama = pu.idCama
+        INNER JOIN    estatusSolucion es ON es.idEstatusSolucion = d.idEstatusSolucion
+        LEFT JOIN  catalogoGeneral tm ON tm.idCatalogoGeneral = d.idMotivo
+        LEFT JOIN  catalogoGeneral td ON td.idCatalogoGeneral = d.idDestinoFinal 
+        LEFT JOIN  catalogoGeneral tc ON tc.idCatalogoGeneral = d.idCalsificacion
+        INNER JOIN	  tipoSolucion t on t.idTipoSolucion = p.idTipoSolucion
+        WHERE  1=1
+        AND d.idDevolucionMezcla = #{ idDevolucionMezcla }        
+        LIMIT 1;
+    </select>
+    
+    <select id="obtenerBusquedaLazy" parameterType="Map" resultType="mx.mc.model.DevolucionMezclaExtended">
+        SELECT 
+        d.folio,
+        d.creacion,
+        u.nombre AS registro,
+        es.descripcion AS estatus,
+        d.orden,
+        p.folio AS folioPrescripcion,
+        ep.nombre AS area,
+        c.nombreCama AS cama,
+        CONCAT(pa.nombreCompleto,' ',pa.apellidoPaterno,' ',pa.apellidoMaterno) AS paciente,
+        CONCAT(um.nombre,' ',um.apellidoPaterno,' ',um.apellidoMaterno) AS medico,
+        su.fechaProgramada AS surtimiento,
+        ep.nombre AS origen,
+        d.nombre,
+        d.idPresentacion,
+        d.idVia,
+        so.volumenFinal,
+        so.loteMezcla,
+        so.caducidadMezcla,
+        so.noHorasestabilidad,
+        d.idUsuario,
+        d.idMotivo,
+        tm.nombreCatalogo as motivoRetiro,
+        d.idDestinoFinal,
+        td.nombreCatalogo as destinoFinal,
+        d.fechaRetiro,
+        d.idCalsificacion,   
+        tc.nombreCatalogo as clasificacion,
+        d.merma,
+        d.comentarios,
+        d.riesgoPaciente,
+        d.idCuales,
+        d.idDevolucionMezcla,
+        so.idSolucion,        
+        t.clave as claveMezcla,
+        t.idTipoSolucion,
+        d.retencion,
+        d.reutilizar,
+        d.fechaLimite,
+        d.destruir,
+        d.idOrigen, 
+        d.idDestino,
+        d.sugerencia
+        FROM    devolucionMezcla d
+        INNER JOIN    solucion so ON so.idSolucion = d.idSolucion
+        INNER JOIN    surtimiento su ON su.idSurtimiento = so.idSurtimiento
+        INNER JOIN    prescripcion p ON p.idPrescripcion = su.idPrescripcion
+        INNER JOIN    pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+        INNER JOIN    estructura ep ON ep.idEstructura = p.idEstructura
+        INNER JOIN    visita v ON v.idVisita = ps.idVisita
+        INNER JOIN    paciente pa ON pa.idPaciente = v.idPaciente
+        INNER JOIN    usuarios um ON um.idUsuario = p.idMedico
+        INNER JOIN    usuarios u ON u.idUsuario = d.idUsuario
+        LEFT JOIN    pacienteUbicacion pu ON p.idPacienteUbicacion = pu.idPacienteUbicacion
+        LEFT JOIN    cama c ON c.idCama = pu.idCama
+        INNER JOIN    estatusSolucion es ON es.idEstatusSolucion = d.idEstatusSolucion
+        LEFT JOIN  catalogoGeneral tm ON tm.idCatalogoGeneral = d.idMotivo
+        LEFT JOIN  catalogoGeneral td ON td.idCatalogoGeneral = d.idDestinoFinal 
+        LEFT JOIN  catalogoGeneral tc ON tc.idCatalogoGeneral = d.idCalsificacion
+        INNER JOIN	  tipoSolucion t on t.idTipoSolucion = p.idTipoSolucion
+        WHERE  1=1
+        <if test="cadena != null ">
+            AND ( d.folio LIKE '%${cadena}%' 
+            OR u.nombre LIKE '%${cadena}%' 
+            OR es.descripcion LIKE '%${cadena}%' 
+            OR su.folio LIKE '%${cadena}%' 
+            OR p.folio LIKE '%${cadena}%' 
+            OR ep.nombre LIKE '%${cadena}%' 
+            OR c.nombreCama LIKE '%${cadena}%' 
+            OR pa.nombreCompleto LIKE '%${cadena}%' 
+            OR um.nombre LIKE '%${cadena}%'             
+            OR su.fechaProgramada LIKE '%${cadena}%' 
+            OR ep.nombre LIKE '%${cadena}%'  )
+        </if>
+        AND so.idEstatusSolucion = #{idEstatusSolucion} 
+        <!--TODO: corregir area-->
+        <!--AND p.idEstructura = #{ idEstructura , jdbcType = VARCHAR }-->        
+        <if test="sortOrder != null" >
+            <if test="sortField == 'folio'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY d.folio asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY d.folio desc
+                </if>                                    
+            </if>
+            <if test="sortField == 'area'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY ep.nombre asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY ep.nombre desc
+                </if>
+            </if>
+            <if test="sortField == 'cama'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY c.nombreCama asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY c.nombreCama desc
+                </if>
+            </if>
+            <if test="sortField == 'paciente'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY pa.nombreCompleto asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY pa.nombreCompleto desc
+                </if>
+            </if>                    
+            <if test="sortField == 'registro'">
+                <if test="sortOrder == 'asc'">
+                    ORDER BY u.nombre asc
+                </if>
+                <if test="sortOrder == 'desc'">
+                    ORDER BY u.nombre desc
+                </if>
+            </if>                    
+        </if>
+        LIMIT #{startingAt}, #{maxPerPage}
+    </select>
+    
+    <select id="obtenerBusquedaTotalLazy" parameterType="Map" resultType="Long">
+        SELECT COUNT(*) AS total
+        FROM devolucionMezcla d
+        INNER JOIN    solucion so ON so.idSolucion = d.idSolucion
+        INNER JOIN    surtimiento su ON su.idSurtimiento = so.idSurtimiento
+        INNER JOIN    prescripcion p ON p.idPrescripcion = su.idPrescripcion
+        INNER JOIN    pacienteServicio ps ON ps.idPacienteServicio = p.idPacienteServicio
+        INNER JOIN    estructura ep ON ep.idEstructura = p.idEstructura
+        INNER JOIN    visita v ON v.idVisita = ps.idVisita
+        INNER JOIN    paciente pa ON pa.idPaciente = v.idPaciente
+        INNER JOIN    usuarios um ON um.idUsuario = p.idMedico
+        INNER JOIN    usuarios u ON u.idUsuario = d.idUsuario
+        LEFT JOIN    pacienteUbicacion pu ON pu.idPacienteServicio = ps.idPacienteServicio
+        LEFT JOIN    cama c ON c.idCama = pu.idCama
+        INNER JOIN    estatusSolucion es ON es.idEstatusSolucion = d.idEstatusSolucion
+        LEFT JOIN  catalogoGeneral tm ON tm.idCatalogoGeneral = d.idMotivo
+        LEFT JOIN  catalogoGeneral td ON td.idCatalogoGeneral = d.idDestinoFinal 
+        LEFT JOIN  catalogoGeneral tc ON tc.idCatalogoGeneral = d.idCalsificacion
+        INNER JOIN	  tipoSolucion t on t.idTipoSolucion = p.idTipoSolucion
+        WHERE  1=1
+        <if test="cadena != null ">                         
+            AND ( d.folio LIKE '%${cadena}%' 
+            OR u.nombre LIKE '%${cadena}%' 
+            OR es.descripcion LIKE '%${cadena}%' 
+            OR su.folio LIKE '%${cadena}%' 
+            OR p.folio LIKE '%${cadena}%' 
+            OR ep.nombre LIKE '%${cadena}%' 
+            OR c.nombreCama LIKE '%${cadena}%' 
+            OR pa.nombreCompleto LIKE '%${cadena}%' 
+            OR um.nombre LIKE '%${cadena}%'             
+            OR su.fechaProgramada LIKE '%${cadena}%' 
+            OR ep.nombre LIKE '%${cadena}%'  )
+        </if>
+    </select>
+    
+</mapper> 
+ 

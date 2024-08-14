@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+    <h:head>
+        <title>REPORTE MOVIMIENTOS GENERALES</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" closable="true" showDetail="false"/>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="Reporte de Costo Per Cápita por Servicio" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <br/>
+                                            <p:commandButton value="Unidad Jerárquica"
+                                                             onclick="PF('modalUnidadGer').show();"
+                                                             icon="fa fa-sitemap"  
+                                                             style="float:right;"
+                                                             />    
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel value="Fecha inicio" />
+                                            <br/>
+                                            <p:calendar id="txtFechaInicio" 
+                                                        value="#{repCostPerCapServMB.fechaInicio}" 
+                                                        showOn="button" 
+                                                        locale="es_MX" 
+                                                        navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" maxdate="#{repCostPerCapServMB.fechaInicio}"
+                                                        pages="1" 
+                                                        mask="true" showButtonPanel="true" effect="fade"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel value="Fecha Fin" />
+                                            <br/>
+                                            <p:calendar id="txtFechaFin" 
+                                                        value="#{repCostPerCapServMB.fechaFin}" 
+                                                        showOn="button" 
+                                                        locale="es_MX" 
+                                                        navigator="true" 
+                                                        pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="" 
+                                                        maxdate="#{repCostPerCapServMB.fechaFin}"
+                                                        pages="1" 
+                                                        mask="true" showButtonPanel="true" effect="fade">
+                                                <p:ajax event="dateSelect" listener="#{repCostPerCapServMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                            </p:calendar>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <br/>
+                                            <p:commandButton value="Consultar Reporte" onclick="PF('statusProcess').show();"
+                                                             actionListener="#{repCostPerCapServMB.consultar}"
+                                                             update=":formTablaMovimientos, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();"
+                                                             icon="fa fa-check-circle"  
+                                                             style="float:right;"
+                                                             />    
+                                        </div>
+                                                                   	
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </p:panelGrid>	     
+                        
+                        <p:dialog header="Unidad Gerarquica" 
+                              widgetVar="modalUnidadGer"
+                              modal="true"
+                              height="350"
+                              resizable="false"
+                              closeOnEscape="true">
+
+                        <h3 style="margin: 5px;">Unidades Gerarquicas</h3>
+                        
+                        <p:tree value="#{repCostPerCapServMB.root}" 
+                                var="nodo" 
+                                selectionMode="single"
+                                selection="#{repCostPerCapServMB.selectedNode}" 
+                                dynamic="true"
+                                onNodeClick="PF('modalUnidadGer').hide()" >
+                            <p:treeNode>
+                                <h:outputText value="#{nodo.nombre}" />
+                            </p:treeNode> 
+                        </p:tree>
+                        
+                        <ui:remove>
+                        <p:tree value="#{usuariosMB.root}" var="node"  
+                                selectionMode="single"  
+                                animate="true" 
+                                style="width:250px; height: 300px; overflow: auto; display: block;"
+                                selection="#{usuariosMB.selectNode}"
+                                onNodeClick="PF('modalUnidadGer').hide()">                                                                                
+                            <p:treeNode>                                                        
+                                <h:outputText value="#{node}" />                                                        
+                            </p:treeNode>
+                        </p:tree>
+                        </ui:remove>
+                        
+                        <p:commandButton value="Cancelar" style="margin: 10px;float: right;"
+                                         icon="fa fa-ban"
+                                         oncomplete="PF('modalIngresoServ').hide()"
+                                         global="false"
+                                         validateClient="false"/>
+                       
+                    </p:dialog>
+                    </h:form>
+                    <br />
+                    <h:form id="formTablaMovimientos" >
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     style="font-size: x-small !important;"
+                                     value="#{repCostPerCapServMB.lazyModel}" 
+                                     var="result" 
+                                     lazy="true" 
+                                     id="resultadosDT" 
+                                     scrollable="true" 
+                                     scrollWidth="98%" 
+                                     scrollHeight="350">
+
+                            <p:column  headerText="Servicio">
+                                <h:outputText value="#{result.nombre}"/>
+                            </p:column>                    
+                            <p:column  headerText="Costo de Servicio">
+                                <h:outputText value="#{result.montoPorServicio}" >
+                                    <f:convertNumber type="currency" currencySymbol="$" locale="es_MX"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column  headerText="Pacientes Atendidos">
+                                <h:outputText value="#{result.pacientesAtendidos}"/>
+                            </p:column>
+                            <p:column headerText="Costo Per Capita">
+                                <h:outputText value="#{result.costoPerCapita}">
+                                    <f:convertNumber type="currency" currencySymbol="$" locale="es_MX"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>						
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

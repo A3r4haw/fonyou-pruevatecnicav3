@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="formPrincipal">
+                        <p:focus context="formPrincipal" id="focusController"/>
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <div style="background: #808080; color: white ; padding: 10px;">
+                            <p:outputLabel value="Ministración de Medicamentos:"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 10px;" />
+                            <p:inputText id="busqueda" style="margin-top:0px; width: 50% !important;"
+                                         value="#{ministrarMedicamentoMB.textoBusqueda}" class="textSearch"
+                                         placeholder="Buscar por nombre, clave de derechohabiencia..." 
+                                         />
+
+                            <p:commandButton value="Buscar" 
+                                             icon="ui-icon-search" 
+                                             global="false"
+                                             actionListener="#{ministrarMedicamentoMB.escanearClaveDePaciente}"
+                                             oncomplete="if(args.estatusModal){ PF('modalMinistracion').show(); }"
+                                             disabled="#{!ministrarMedicamentoMB.permiso.puedeVer}"
+                                             update="@form">
+                            </p:commandButton>
+                        </div>
+                        <p:dataTable id="tablaPacientes"
+                                     var="paciente" 
+                                     rowKey="#{paciente.idPaciente}"
+                                     reflow="true"
+                                     value="#{ministrarMedicamentoMB.listaPacientes}"
+                                     emptyMessage="No existen registros para mostrar."
+                                     styleClass="tablaMovil" 
+                                     >
+
+                            <p:column headerText="Nombre">
+                                <h:outputText value="#{paciente.nombrePaciente}" />
+                            </p:column>
+                            <p:column headerText="Num. Paciente">
+                                <h:outputText value="#{paciente.pacienteNumero}" />
+                            </p:column>
+                            <p:column headerText="Póliza de Seguro">
+                                <h:outputText value="#{paciente.claveDerechohabiencia}" />
+                            </p:column>
+                            <p:column headerText="Fecha Nacimiento">
+                                <h:outputText value="#{paciente.fechaNacimiento}" />
+                            </p:column>
+                            <p:column headerText="Sexo">
+                                <h:outputText value="#{paciente.sexo}" />
+                            </p:column>
+
+                            <p:column style="text-align: left;width: 5%;"  headerText="Acciones">
+                                <p:commandLink title="Detalle" actionListener="#{ministrarMedicamentoMB.cargarModalMinistracion(paciente)}"
+                                               oncomplete="PF('modalMinistracion').show();" 
+                                               update="@form" >
+                                    <i class="fa fa-edit iconMusAzul" />
+                                </p:commandLink>
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:dialog header="Ministración de Medicamentos" 
+                                  widgetVar="modalMinistracion"
+                                  modal="true"
+                                  resizable="false"
+                                  closable="true"
+                                  fitViewport="true"
+                                  width="90%" 
+                                  closeOnEscape="true">
+                            <p:messages id="msgModal" globalOnly="true" closable="true" showDetail="false"/>
+
+                            <p:panel header="Paciente: #{ministrarMedicamentoMB.pacienteSelect.nombrePaciente}" 
+                                     toggleable="true" 
+                                     collapsed="true">
+                                <p:panelGrid id="headerPanel" columns="8" columnClasses="" layout="grid" styleClass="ui-fluid" >
+                                    <p:outputLabel  value="Nombre:" style="font-weight: bold !important;" />
+                                    <p:outputLabel  value="#{ministrarMedicamentoMB.pacienteSelect.nombrePaciente}" />
+                                    <p:outputLabel  value="Número Paciente:" style="font-weight: bold !important;" />
+                                    <p:outputLabel  value="#{ministrarMedicamentoMB.pacienteSelect.pacienteNumero}" />
+                                    <p:outputLabel  value="Póliza de Seguro:" style="font-weight: bold !important;" />
+                                    <p:outputLabel  value="#{ministrarMedicamentoMB.pacienteSelect.claveDerechohabiencia}" />
+                                    <p:outputLabel  value="Fecha Nacimiento:" style="font-weight: bold !important;" />
+                                    <p:outputLabel  value="#{ministrarMedicamentoMB.pacienteSelect.fechaNacimiento}" />
+                                    <p:outputLabel  value="Sexo:" style="font-weight: bold !important;" />
+                                    <p:outputLabel  value="#{ministrarMedicamentoMB.pacienteSelect.sexo}" />
+                                </p:panelGrid>
+                            </p:panel>                            
+                            <div style="background: #808080;padding: 10px;">
+                                <p:outputLabel style="margin-right: 10px;margin-left: 10px;color: #fff;" value="Eliminar:" />&nbsp;&nbsp;
+                                <p:selectBooleanCheckbox value="#{ministrarMedicamentoMB.eliminarCodigo}" id="checkEliminar"/>&nbsp;&nbsp;
+
+                                <p:outputLabel value="Cantidad" style="color: #fff;" />&nbsp;&nbsp;
+                                <p:inputNumber id="numSoli" value="#{ministrarMedicamentoMB.cantMinistrar}" decimalPlaces="0" size="10"  tabindex="2" />&nbsp;&nbsp;
+
+                                <p:focus for="busquedaMedic" />
+                                <p:autoComplete id="busquedaMedic" 
+                                                value="#{ministrarMedicamentoMB.medicamento}" 
+                                                completeMethod="#{ministrarMedicamentoMB.autoComplete}"
+                                                minQueryLength="4" 
+                                                forceSelection="true"
+                                                var="insumo" 
+                                                itemLabel="#{insumo.nombreCorto}" 
+                                                itemValue="#{insumo}"
+                                                converter="medicamentoExtendedHashConverter"
+                                                placeholder="Buscar / Escanear Insumo"
+                                                emptyMessage="Insumo desconocido."
+                                                style="margin-left: 10px; margin-right: 10px; width: 50%"
+                                                size="50" 
+                                                scrollHeight="200" >
+                                    <p:ajax event="itemSelect"
+                                            update="checkEliminar, busquedaMedic, numSoli, tablaMedicamento, msgModal, btn-no-ministrar, btn-ministrar,panelSolucion"
+                                            oncomplete="if(args.estatus){PF('modalMinistracion').hide();PF('modalSolucion').show();  }else{$('.focusme').focus();}" 
+                                            listener="#{ministrarMedicamentoMB.escanearCodigoQR}"
+                                            ></p:ajax>
+                                    
+                                    <p:column style="font-size: small;" width="50px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave Institucional" />
+                                        </f:facet>
+                                        <h:outputText value="#{insumo.claveInstitucional}" style=" font-size: small;" />
+                                    </p:column>
+                                    
+                                    <p:column style="font-size: small;" width="50px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Descripción" />
+                                        </f:facet>
+                                        <h:outputText value="#{insumo.nombreCorto}" style=" font-size: x-small;" />
+                                    </p:column>
+                                    
+                                    <p:column style="font-size: small;" width="350px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Lote" />
+                                        </f:facet>
+                                        <h:outputText value="#{insumo.lote}" style=" font-size: x-small;" />
+                                    </p:column>
+                                    
+                                    <p:column style="font-size: small;"  width="50px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Fecha de Caducidad" />
+                                        </f:facet>
+                                        <h:outputText value="#{insumo.fechaCaducidad}" style=" font-size: x-small;">
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                        </h:outputText>
+                                    </p:column>
+                                </p:autoComplete>
+                            </div>
+
+                            <p:dataTable id="tablaMedicamento"
+                                         var="medicamento" 
+                                         rowKey="#{medicamento.idMedicamento}"
+                                         reflow="true"
+                                         value="#{ministrarMedicamentoMB.listaMedicamentos}"
+                                         emptyMessage="No existen registros para mostrar."
+                                         >
+
+                                <p:column headerText="Clave" style="width: 10%">
+                                    
+                                    <h:outputText value="#{medicamento.solucion ? medicamento.codigoInsumo.clave : medicamento.claveInstitucional}" />
+                                </p:column>
+                                
+                                <p:column headerText="Insumo" style="width: 57%">
+                                    <h:outputText value="#{medicamento.nombreCorto}" />
+                                </p:column>
+                                
+                                <p:column headerText="Hora ministración" style="width: 10%">
+                                    <h:outputText value="#{medicamento.fechaProgramado}" >
+                                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                                    </h:outputText>
+                                </p:column>
+                                
+                                <p:column headerText="Cantidad Indicada" style="width: 5%">
+                                    <h:outputText value="#{medicamento.cantidadActual}" />
+                                </p:column>
+                                
+                                <p:column headerText="Lote" style="width: 5%">
+                                    <h:outputText value="#{medicamento.solucion ? medicamento.codigoInsumo.lote : medicamento.lote}" />
+                                </p:column>
+                                
+                                <p:column headerText="Fecha Caducidad" style="width: 5%">
+                                    <h:outputText value="#{medicamento.solucion ? medicamento.codigoInsumo.fecha : medicamento.fechaCaducidad}" >
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </p:column>
+                                
+                                <p:column headerText="Cantidad Ministrada" style="width: 5%">
+                                    <h:outputText value="#{medicamento.cantidadMinistrada}" />
+                                </p:column>
+                                
+                                <p:column headerText="Estatus" style="width: 3%">
+                                    <h:outputText class="fa fa-check-circle" 
+                                                  style="color: green;" 
+                                                  rendered="#{medicamento.estatusMinistracion eq 2}" />                                  
+                                    <h:outputText class="fa fa-times-circle" 
+                                                  style="color: red;" 
+                                                  rendered="#{medicamento.estatusMinistracion eq 1}" />                                  
+                                </p:column>
+
+                                <!--p:column headerText="Acciones" rendered="#{ministrarMedicamentoMB.solucion}">
+                                    <p:commandLink title="Detalle" rendered="#{medicamento.idTipoSolucion != null ? true:false}"
+                                                   actionListener="#{ministrarMedicamentoMB.detallePrescripcionSolucion(medicamento.folioPrescripcion)}"
+                                                   oncomplete="PF('modalSolucion').show();" 
+                                                   update="@form" >
+                                        <i class="fa fa-edit iconMusAzul" />
+                                    </p:commandLink>
+                                </p:column-->
+                            </p:dataTable>
+                            <p:commandButton value="Cancelar" 
+                                             global="false"
+                                             onclick="PF('modalMinistracion').hide();"  
+                                             validateClient="false"
+                                             icon="ui-icon-close"
+                                             styleClass="btnItem"
+                                             update="focusController,formPrincipal"
+                                             actionListener="#{ministrarMedicamentoMB.init}"
+                                             style="background-color: #F2F2F2;color: #000;">
+                            </p:commandButton>
+                            <p:spacer width="20"/>
+                            <p:commandButton id="btn-no-ministrar"
+                                             value="No-Ministrar" 
+                                             icon="ui-icon-cancel"
+                                             styleClass="btnMusVerde"
+                                             onclick="PF('modalNoMinistracion').show();"
+                                             disabled="#{!ministrarMedicamentoMB.permiso.puedeProcesar || !ministrarMedicamentoMB.medPorMinistrar}">
+
+                            </p:commandButton>
+                            <p:commandButton id="btn-ministrar"
+                                             value="Ministrar" 
+                                             icon="ui-icon-check"
+                                             styleClass="btnMusAzul"
+                                             actionListener="#{ministrarMedicamentoMB.validarFarmacovigilancia}"
+                                             oncomplete=" if (args.existeAlerta) {PF('mdlResValidaciones').show(); }"
+                                             disabled="#{!ministrarMedicamentoMB.permiso.puedeProcesar || !ministrarMedicamentoMB.medPorMinistrar}"
+                                             update="@form">
+
+                            </p:commandButton>
+                        </p:dialog>
+                        
+                        <p:dialog header="Alertas de Farmacovigilancia"
+                                  widgetVar="mdlResValidaciones"
+                                  closeOnEscape="true"
+                                  closable="true"
+                                  modal="true" 
+                                  style="font-size:xx-small !important; max-height:800px;" width="95%" 
+                                  >
+                                <p:messages id="validaMsgres" class="validaMsg" globalOnly="true" closable="true" >
+                                    <p:autoUpdate />
+                                </p:messages>
+                                <ui:remove><h:outputLabel value="#{ministrarMedicamentoMB.alertasDTO.codigo}" style="font-weight: bold!important; color:black!important;" />
+                                    &nbsp;&nbsp;
+                                    <h:outputLabel value="#{ministrarMedicamentoMB.alertasDTO.descripcion}" style="font-weight: bold!important; color:black!important;" />
+                                    <br/></ui:remove>
+                                <p:dataTable emptyMessage="No se encontraron registros" rows="10" 
+                                             paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                             currentPageReportTemplate=" "
+                                             paginator="true"  reflow="true"                                       
+                                             paginatorPosition="bottom" widgetVar="tblAlertaFarmaco" 
+                                             value="#{ministrarMedicamentoMB.alertasDTO.listaAlertaFarmacovigilancia}" var="item" 
+                                             lazy="true" id="tblAlertaFarmaco" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                             style="margin-bottom:2px;"
+                                             styleClass="mystyle"
+                                             >    
+
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Alertas encontradas" style="font-weight: bold!important; color:black!important;" />
+                                    </f:facet>
+
+                                    <p:column style="text-align: left !important; width: 5%;" headerText="Número">
+                                        <h:outputText value="#{item.numero}"/>
+                                    </p:column>
+
+                                    <p:column style="text-align: left !important; width: 25%;" headerText="Factor Uno">
+                                        <h:outputText value="#{item.factor1}" />
+                                    </p:column>                            
+
+                                    <p:column style="text-align: left !important; width: 25%;" headerText="Factor Dos">
+                                        <h:outputText value="#{item.factor2}" />
+                                    </p:column>
+                                    <p:column style="text-align: left !important; width: 5%;" headerText="Riesgo">
+                                        <h:outputLabel styleClass="#{item.riesgo eq 'Alto' ? 'riesgoAlto' : item.riesgo eq 'Medio' ? 'riesgoMedio' : item.riesgo eq 'Bajo' ? 'riesgoBajo' : null}" value="#{item.riesgo}"  />
+                                    </p:column>
+                                    <p:column style="text-align: left !important; width: 10%;" headerText="Tipo">
+                                        <h:outputText value="#{item.tipo}" />
+                                    </p:column>
+                                    <p:column style="text-align: left !important; width: 10%;" headerText="Origen">
+                                        <h:outputText value="#{item.origen}" />
+                                    </p:column>
+                                    <p:column style="text-align: left !important; width: 10%;" headerText="Clasificación">
+                                        <h:outputText value="#{item.clasificacion}" />
+                                    </p:column>
+                                    <p:column style="text-align: left !important; width: 10%;"  headerText="Motivo">
+                                        <h:outputText value="#{item.motivo}"  class="" />
+                                    </p:column>
+                                </p:dataTable>
+                                <br />
+                                <p:dataTable emptyMessage="No se encontraron registros" rows="10"
+                                             paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                             currentPageReportTemplate=" "
+                                             paginator="true"  reflow="true"                                       
+                                             paginatorPosition="bottom" widgetVar="tblAlertaFarmaco" 
+                                             value="#{ministrarMedicamentoMB.alertasDTO.validacionNoCumplidas}" var="item" 
+                                             lazy="true" id="tblValidacionNoCumplida" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                             style="margin-bottom:5px; text-align: center;"
+                                             rendered="#{ministrarMedicamentoMB.alertasDTO.validacionNoCumplidas.size() gt 0 ? 'true' : 'false'}"> 
+
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Información no encontrada" style="font-weight: bold!important; color:black!important;" />
+                                    </f:facet>
+
+                                    <p:column style="text-align: left; width: 13%"  headerText="Codigo"  width="15%">
+                                        <h:outputText value="#{item.codigo}" class="" />
+                                    </p:column>
+
+                                    <p:column style="text-align: left !important; width: 80%"  headerText="Descripción"  width="80%" >
+                                        <h:outputText value="#{item.descripcion}"   class="" />
+                                    </p:column>                            
+                                </p:dataTable>
+
+
+                                <p:commandButton value="Autorizar"  styleClass="btnMusAzul"                                                                                 
+                                                 icon="fa fa-check-circle" style="margin-right: 10px;float: right;"
+                                                 onclick="PF('statusProcess').show()"
+                                                 oncomplete="PF('statusProcess').hide(); if (args.estatus) {PF('modalMinistracion').hide();PF('mdlResValidaciones').hide();}"
+                                                 actionListener="#{ministrarMedicamentoMB.ministrarMedicamentos()}"                                          
+                                                 update="@form" > 
+                                    <p:confirm header="Confirmación" message="Desea continuar con la ministración ?" icon="ui-icon-alert" />
+                                </p:commandButton>
+
+                                <p:commandButton value="Rechazar" styleClass="btnMusRed" icon="fa fa-times-circle" 
+                                                 onclick="PF('statusProcess').hide();" 
+                                                 oncomplete="PF('statusProcess').hide(); if (args.estatus) {PF('mdlResValidaciones').hide();PF('modalSurtimiento').hide(); PF('mdlReportSurt').show();}"
+                                                 actionListener="#{ministrarMedicamentoMB.rechazarValidacionSolucion}" 
+                                                 style="margin-right: 10px;float: right;" 
+                                                 update="@form" > 
+                                    <p:confirm header="Confirmación" message="Desea rechazar la ministracion ?" icon="ui-icon-alert" />
+                                </p:commandButton>   
+                                
+                                <p:commandButton value="Cancelar" style="margin-right: 10px;float: right;"  
+                                         oncomplete="PF('mdlResValidaciones').hide();" />
+
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                    <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                </p:confirmDialog>
+                        </p:dialog>
+
+
+                        <p:dialog header="Confirmar No Ministración de Medicamentos" 
+                                  widgetVar="modalNoMinistracion"
+                                  modal="true"
+                                  resizable="false"
+                                  closable="false"
+                                  fitViewport="true"
+                                  closeOnEscape="true">
+
+                            <p:outputLabel value="¿Desea indicar como NO ministrados los medicamentos seleccionados?" />
+                            <p:separator/>
+                            <p:panelGrid columns="2">
+                                <p:outputLabel value="Paciente:"/>
+                                <p:outputLabel value="#{ministrarMedicamentoMB.pacienteSelect.nombrePaciente}" />
+                                <p:outputLabel value="Número:"/>
+                                <p:outputLabel value="#{ministrarMedicamentoMB.pacienteSelect.pacienteNumero}" />
+                                <p:outputLabel value="Cama:"/>
+                                <p:outputLabel value="#{ministrarMedicamentoMB.pacienteSelect.nombreCama}" />
+                            </p:panelGrid>
+                            <p:separator/>
+                            <p:outputLabel value="Motivo de no ministración: "/>
+                            <p:selectOneMenu value="#{ministrarMedicamentoMB.idMotivoNoMinistrado}">
+                                <f:selectItems value="#{ministrarMedicamentoMB.listaMotivos}" var="motivo" itemLabel="#{motivo.descripcion}" itemValue="#{motivo.idTipoCancelacion}"/>
+                            </p:selectOneMenu>
+
+                            <p:commandButton value="Aceptar" 
+                                             icon="ui-icon-check"
+                                             styleClass="btnMusVerde"
+                                             actionListener="#{ministrarMedicamentoMB.noMinistrarMedicamentos}"
+                                             disabled="#{!ministrarMedicamentoMB.permiso.puedeProcesar}"
+                                             update="@form">
+
+                            </p:commandButton>
+                            <p:spacer width="20"/>
+                            <p:commandButton value="Cancelar" 
+                                             global="false"
+                                             onclick="PF('modalNoMinistracion').hide();"  
+                                             validateClient="false"
+                                             icon="ui-icon-close"
+                                             styleClass="btnItem"
+                                             style="background-color: #F2F2F2;color: #000;">
+                            </p:commandButton>
+                        </p:dialog>
+
+                        <p:dialog  header="Detalle de la Solución " 
+                                   widgetVar="modalSolucion"
+                                   modal="true"
+                                   resizable="false"
+                                   closable="false"
+                                   fitViewport="true" width="70%"
+                                   closeOnEscape="true">    
+                            <p:outputPanel id="panelSolucion">                            
+                            <div class="ui-g">
+                                <div class="ui-g-12">
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 10px;" value="Tipo Ingrediente:" />
+                                        <br/>                                                                        
+                                        <p:outputLabel style="margin-right: 10px;" value="#{ministrarMedicamentoMB.surtimientoSelected.nombreIngrediente}" class="textoNegrita lbl-subtitulo"  />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel style="margin-right: 10px;" value="Velocidad:" />
+                                        <br/>
+                                        <p:outputLabel style="margin-right: 10px;" value="#{ministrarMedicamentoMB.surtimientoSelected.velocidad}" class="textoNegrita lbl-subtitulo"  /> ml/h
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel style="margin-right: 10px;" value="Ritmo:" />
+                                        <br/>
+                                        <p:outputLabel style="margin-right: 10px;" value="#{ministrarMedicamentoMB.surtimientoSelected.ritmo}" class="textoNegrita lbl-subtitulo"  /> cm3/min
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel style="margin-right: 10px;" value="Perfusión Continua:" />
+                                        <br/>
+                                        <p:selectBooleanCheckbox value="#{ministrarMedicamentoMB.surtimientoSelected.perfusionContinua eq 1 ? true : false}" 
+                                                                 id="chkPerfucionContinua"
+                                                                 disabled="true"
+                                                                 />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel style="margin-right: 10px;" value="Unidad de Concentración:" />
+                                        <br/>
+                                        <p:outputLabel style="margin-right: 10px;" value="#{ministrarMedicamentoMB.surtimientoSelected.unidadConcentracion}" class="textoNegrita lbl-subtitulo"  />
+                                    </div>
+                                </div>
+                                <div class="ui-g-12">
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel value="Fecha de Inicio:"  for="timeInicio" />&nbsp;&nbsp;
+                                        <p:calendar id="timeInicio" value="#{ministrarMedicamentoMB.surtimientoSelected.fechaInicio}" disabled="#{ministrarMedicamentoMB.surtimientoSelected.perfusionContinua ne 1}"
+                                                    mindate="#{ministrarMedicamentoMB.surtimientoSelected.fechaProgramada}" pattern="dd/MM/yyyy HH:mm:ss">
+                                            <p:ajax event="dateSelect" process="@this timeFin" update="@this timeFin"/>
+                                        </p:calendar>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel value="Fecha de Termino:"  for="timeFin"  />&nbsp;&nbsp;
+                                        <p:calendar id="timeFin" locale="es"  value="#{ministrarMedicamentoMB.surtimientoSelected.fechaTermino}"  disabled="#{ministrarMedicamentoMB.surtimientoSelected.perfusionContinua ne 1}"
+                                                    mindate="#{ministrarMedicamentoMB.surtimientoSelected.fechaInicio eq null ? ministrarMedicamentoMB.surtimientoSelected.fechaProgramada : ministrarMedicamentoMB.surtimientoSelected.fechaInicio}" pattern="dd/MM/yyyy HH:mm:ss"  />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-1" style="padding-right: 0px!important; margin-right:15px!important;">
+                                        <p:outputLabel value="Comentarios:" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4" style="padding-left: 0px !important; margin-left:0px!important;">
+                                        <p:inputTextarea rows="2" cols="50"  value="#{ministrarMedicamentoMB.surtimientoSelected.comentarios}" />
+                                    </div>
+                                </div>                                
+                                <div class="ui-g-12">
+                                <p:dataTable id="tablaDetalleSolucion"
+                                             var="detalle" 
+                                             rowKey="#{detalle.idMedicamento}"
+                                             reflow="true"
+                                             value="#{ministrarMedicamentoMB.detalleSolucion}"
+                                             emptyMessage="No existen registros para mostrar."
+                                             >
+
+                                    <p:column headerText="Clave">
+                                        <h:outputText value="#{detalle.claveInstitucional}" />
+                                    </p:column>
+                                    <p:column headerText="Insumo">
+                                        <h:outputText value="#{detalle.nombreCorto}" />
+                                    </p:column>
+                                    <p:column headerText="Dosis">
+                                        <h:outputText value="#{detalle.dosis}" />
+                                    </p:column>
+                                    <p:column headerText="Cant. Prog.">
+                                        <h:outputText value="#{detalle.cantidadActual}" />
+                                    </p:column>
+                                </p:dataTable>
+                                <br/>
+                                <p:commandButton value="Cancelar" 
+                                                 global="false"
+                                                 onclick="PF('modalMinistracion').hide();"  
+                                                 validateClient="false"
+                                                 icon="ui-icon-close"
+                                                 styleClass="btnItem"
+                                                 update="focusController,formPrincipal"
+                                                 actionListener="#{ministrarMedicamentoMB.init}"
+                                                 style="background-color: #F2F2F2;color: #000;">
+                                </p:commandButton>
+                                <p:spacer width="10"/>
+                                <p:commandButton id="btn-no-ministrar-solucion"
+                                                 value="No-Ministrar" 
+                                                 icon="ui-icon-cancel"
+                                                 styleClass="btnMusVerde"
+                                                 onclick="PF('modalNoMinistracion').show();"
+                                                 disabled="#{!ministrarMedicamentoMB.permiso.puedeProcesar || !ministrarMedicamentoMB.medPorMinistrar}">
+
+                                </p:commandButton>
+                                <p:spacer width="10"/>
+                                <p:commandButton id="btn-ministrar-solucion"
+                                                 value="Ministrar" 
+                                                 icon="ui-icon-check"
+                                                 styleClass="btnMusAzul"
+                                                 actionListener="#{ministrarMedicamentoMB.ministrarMedicamentos}"
+                                                 disabled="#{!ministrarMedicamentoMB.permiso.puedeProcesar || !ministrarMedicamentoMB.medPorMinistrar}"
+                                                 update="@form">
+
+                                </p:commandButton>
+                                </div>
+                            </div>
+                            </p:outputPanel>
+                        </p:dialog>
+                    </h:form>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

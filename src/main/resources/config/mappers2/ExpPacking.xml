@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.seidor.ulises.mapper.ExpPackingMapper" >
+    <update id="actualizar" parameterType="com.seidor.ulises.model.ExpPacking" >
+        UPDATE expPacking SET
+            tratado = #{ expPacking.tratado , jdbcType = VARCHAR }
+            , fechaTratado = #{ expPacking.fechaTratado , jdbcType = TIMESTAMP }
+        WHERE idexped = #{ expPacking.idExped , jdbcType = VARCHAR }
+          AND articulo = #{ expPacking.articulo , jdbcType = VARCHAR }
+          AND linea = #{ expPacking.linea , jdbcType = VARCHAR }
+    </update>
+</mapper>

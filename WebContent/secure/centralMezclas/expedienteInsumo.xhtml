@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Entidad Hospitalaria</title>
+    </h:head>
+
+    <h:body>
+
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanelAmplio" style="border: none;">
+                    <h:form id="mainForm">
+
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value="Expediente de Insumos" style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;" />
+                            <p:inputText id="busqueda" 
+                                         value="#{expedienteInsumoMB.cadenaBusqueda}" 
+                                         style="width: 50% !important;" 
+                                         class="textSearch"
+                                         placeholder="Buscar..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona enter para buscar" alt="15" style=""/>
+                            </i>
+                            <p:spacer width="10px" />
+
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); "
+                                             actionListener="#{expedienteInsumoMB.obtenerInsumoLista}"
+                                             update="@form"  />
+                        </div>
+                        <br/>
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <p:dataTable  id="tblMainDocumento"  
+                                      var="item" 
+                                      value="#{expedienteInsumoMB.expedienteInsumoLazy}"
+                                      lazy="true"
+                                      selectionMode="single"
+                                      selection="#{expedienteInsumoMB.medicamentoSeleccionado}"
+                                      rowKey="#{item.idMedicamento}"
+                                      style="text-align: center;" styleClass="fixed-size"
+                                      scrollHeight="50hv"
+                                      scrollable="true"                                    
+                                      scrollRows="20"
+                                      emptyMessage="No se encontraron registros"
+                                      reflow="true"  
+                                      paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                      currentPageReportTemplate=" "
+                                      paginator="true"
+                                      rows="20"
+                                      paginatorPosition="bottom" >
+
+                            <p:column headerText="Clave" style="width: 8%;" sortBy="#{item.claveInstitucional}" >
+                                <h:outputText value="#{item.claveInstitucional}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Clave Alterna" style="width: 8%;" sortBy="#{item.claveAlterna}">
+                                <h:outputText value="#{item.claveAlterna}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Nombre" style="width: 30%; text-align: left; word-break: break-word;" sortBy="#{item.nombreCorto}">
+                                <h:outputText value="#{item.nombreCorto}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Registró" style="width: 12%; text-align: left;" sortBy="#{item.nombreUsuarioRegistra}">
+                                <h:outputText value="#{item.nombreUsuarioRegistra}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Fecha Registro" style="width: 8%;">
+                                <h:outputText value="#{item.insertFecha}" title="" class="altoColumn" >
+                                    <f:convertDateTime pattern="MM/dd/yyyy HH:mm" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Ult. Edición" style="width: 12%; text-align: left;" sortBy="#{item.nombreUsuarioModifica}">
+                                <h:outputText value="#{item.nombreUsuarioModifica}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column headerText="Fecha Edición" style="width: 8%;">
+                                <h:outputText value="#{item.insertFecha}" title="" class="altoColumn" >
+                                    <f:convertDateTime pattern="MM/dd/yyyy HH:mm" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column id="acciones"   headerText="" style="width: 4%;" >
+                                <p:commandLink id="linkEditar"                                               
+                                               style="margin: 5px;text-decoration: none;"
+                                               actionListener="#{expedienteInsumoMB.consultaInsumo(item.idMedicamento)}"
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide(); PF('dlgDocumento').show();" 
+                                               update=":frmDocumento , tblMainDocumento" 
+                                               rendered="#{expedienteInsumoMB.permiso.puedeEditar}">
+                                    <i class="fa fa-folder-open iconMusAzul"/>
+                                </p:commandLink> 
+
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>                                                                        
+
+
+                    <p:dialog header="Expediente del Insumo"
+                              widgetVar="dlgDocumento"
+                              closeOnEscape="true"
+                              closable="true"  
+                              modal="true" 
+                              resizable="false" 
+                              focus="frmDocumento:txtClave" 
+                              width="95%" 
+                              style="font-size:xx-small !important;"
+                              >               
+                        <p:focus context="frmDocumento"/>
+                        
+
+                            <h:form id="frmDocumento" style="padding: 0px;">
+                                <p:messages id="msgValidaRegistro" globalOnly="false" showDetail="false" closable="true" showSummary="true" >
+                                    <p:autoUpdate />
+                                </p:messages>
+
+                                <p:panelGrid id="headerPanel" columns="4" columnClasses="ui-g-12 ui-md-1, ui-g-12 ui-md-2, ui-g-12 ui-md-1, ui-g-12 ui-md-6" layout="grid" styleClass="ui-fluid" >
+                                    <p:outputLabel value="Clave" class="plabel" />
+                                    <p:outputLabel id="txtClave"  class="ptxt1" tabindex="1"  
+                                                 value="#{expedienteInsumoMB.medicamentoSeleccionado.claveInstitucional}" />
+
+                                    <p:outputLabel value="Nombre" class="plabel" />
+                                    <p:outputLabel tabindex="2" 
+                                                     value="#{expedienteInsumoMB.medicamentoSeleccionado.nombreCorto}"  />
+                                    
+                                </p:panelGrid>
+                                <div class="ui-fluid" style="max-height: 600px;overflow:auto">
+                                    <p:panelGrid id="contentPanel" columns="10" 
+                                                 columnClasses="ui-g-12 ui-md-1 ui-md-custom-10, ui-g-12 ui-md-1 ui-md-custom-10
+                                                                , ui-g-12 ui-md-1 ui-md-custom-10 , ui-g-12 ui-md-1 ui-md-custom-10
+                                                                , ui-g-12 ui-md-1 ui-md-custom-10 , ui-g-12 ui-md-1 ui-md-custom-10
+                                                                , ui-g-12 ui-md-1 ui-md-custom-10 , ui-g-12 ui-md-1 ui-md-custom-10" 
+                                                 layout="grid" styleClass="ui-fluid" >
+                                        <p:outputLabel value="Sust. Activa:" class="plabel" />
+                                        <p:outputLabel class="ptxt1"  tabindex="3" value="#{expedienteInsumoMB.medicamentoSeleccionado.nombreSustanciaActiva}" />
+
+                                        <p:outputLabel value="Concentración:" class="plabel" />
+                                        <p:outputLabel class="ptxt1"  tabindex="4" value="#{expedienteInsumoMB.medicamentoSeleccionado.concentracion}" />
+
+                                        <p:outputLabel value="Unidad:" class="plabel" />
+                                        <p:outputLabel class="ptxt1"  tabindex="5" value="#{expedienteInsumoMB.medicamentoSeleccionado.nombreUnidadConcentracion}" />
+
+                                        <p:outputLabel value="Via de Admon:" class="plabel" />
+                                        <p:outputLabel class="ptxt1"  tabindex="6" value="#{expedienteInsumoMB.medicamentoSeleccionado.viaAdministracion}" />
+
+                                        <p:outputLabel value="Pres. Comercial:" class="plabel" />
+                                        <p:outputLabel class="ptxt1"  tabindex="7" value="#{expedienteInsumoMB.medicamentoSeleccionado.presentacionEntrada} " />
+
+                                        <p:outputLabel value="Pres. Unidosis" class="plabel" />
+                                        <p:outputLabel class="ptxt1"  tabindex="8" value="#{expedienteInsumoMB.medicamentoSeleccionado.presentacionSalida} " />
+
+                                        <p:outputLabel value="Categoría:" class="plabel" />
+                                        <p:outputLabel class="ptxt1"  tabindex="9" value="#{expedienteInsumoMB.medicamentoSeleccionado.nombreCategoria} " />
+
+                                        <p:outputLabel value="Subategoría:" class="plabel" />
+                                        <p:outputLabel class="ptxt1"  tabindex="10" value="#{expedienteInsumoMB.medicamentoSeleccionado.subcategoria} " />
+
+                                        <p:outputLabel value="Cant. por Envase:" class="plabel" />
+                                        <p:outputLabel class="ptxt1"  tabindex="10" value="#{expedienteInsumoMB.medicamentoSeleccionado.cantPorEnvase} " />
+
+                                        <p:outputLabel value="U. de Medida:" class="plabel" />
+                                        <p:outputLabel class="ptxt1"  tabindex="10" value="#{expedienteInsumoMB.medicamentoSeleccionado.nombreUnidadMedida} " />
+
+                                    </p:panelGrid>
+
+                                    <p:panelGrid id="almacnPanel" columns="2" columnClasses="ui-g-12 ui-md-3, ui-g-12 ui-md-9" layout="grid" styleClass="ui-fluid" >  
+                                        <p:panel>
+                                        <p:dataTable id="tblAlmacenes" widgetVar="tblAlmacenes"
+                                                     value="#{expedienteInsumoMB.estructuraLista}"
+                                                     selectionMode="single"
+                                                     selection="#{expedienteInsumoMB.estructuraSeleccionada}"
+                                                     rowKey="#{alm.idEstructura}"
+                                                     var="alm" scrollable="true" scrollHeight="100"
+                                                     reflow="true" style="margin-top:5px"
+                                                     rowIndexVar="almr"
+                                                     emptyMessage="" >
+
+                                            <p:ajax event="rowDblselect" onstart="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" 
+                                                    update=":frmDocumento:tblReabastoInsumos , :frmDocumento:tblInventario " 
+                                                    listener="#{expedienteInsumoMB.obtenerInventarioPorIdEstructurayporIdInsumo()}"/>
+
+                                            <f:facet name="header" class="headerTable">Almacenes</f:facet>
+
+                                            <p:column style="text-align: left !important; " headerText="Clave" width="20%">
+                                                <h:outputText value="#{alm.claveEstructura}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Nombre" width="80%">
+                                                <h:outputText value="#{alm.nombre}" class="altoColumn" />
+                                            </p:column>
+
+                                        </p:dataTable>
+                                        <p:tooltip for="tblAlmacenes" value="Seleccione un almacén haciendo doble click" position="botton"/>
+                                        </p:panel>
+                                        
+                                        <p:panel>
+                                        <p:dataTable id="tblInventario" widgetVar="tblInventario" value="#{expedienteInsumoMB.inventarioLista}"
+                                                     selectionMode="single"
+                                                     selection="#{expedienteInsumoMB.inventarioSeleccionado}"
+                                                     var="inve"
+                                                     rowKey="#{inve.idInventario}"
+                                                     scrollable="true" scrollHeight="100"
+                                                     reflow="true" style="margin-top:5px"
+                                                     rowIndexVar="inver"
+                                                     emptyMessage="" >
+                                            <p:ajax event="rowDblselect" onstart="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" 
+                                                    update=":frmDocumento:tblReabastoInsumos , :frmDocumento:tblIngresos , :frmDocumento:tblSalidas" 
+                                                    listener="#{expedienteInsumoMB.obtenerReabastoInsumoPorIdEstructuraYporIdInsumo()}"/>
+
+                                            <f:facet name="header" class="headerTable">Inventario</f:facet>
+
+                                            <p:column style="text-align: left !important; " headerText="Fecha" width="13%">
+                                                <h:outputText value="#{inve.fechaIngreso}" class="altoColumn" >
+                                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Proveedor" width="20%">
+                                                <h:outputText value="#{inve.nombreProveedor}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Fabricante" width="10%">
+                                                <h:outputText value="#{inve.nombreFabricante}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Estabilidad" width="10%">
+                                                <h:outputText value="#{inve.noHorasEstabilidad}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Osmolaridad" width="10%">
+                                                <h:outputText value="#{inve.osmolaridad}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Lote" width="10%">
+                                                <h:outputText value="#{inve.lote}" class="altoColumn"  style="font-weight: bold;" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Caducidad" width="10%">
+                                                <h:outputText value="#{inve.fechaCaducidad}" class="altoColumn" style="font-weight: bold;" >
+                                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Cantidad" width="10%">
+                                                <h:outputText value="#{inve.cantidadActual}" class="altoColumn" style="font-weight: bold;" />
+                                            </p:column>
+
+                                        </p:dataTable>
+                                        <p:tooltip for="tblInventario" value="Seleccione un lote haciendo doble click" position="botton"/>
+                                        </p:panel>
+
+                                    </p:panelGrid>
+
+                                    <p:panelGrid id="solicitudesPanel" columns="1" columnClasses="ui-g-12" layout="grid" styleClass="ui-fluid" >  
+
+                                        <p:dataTable id="tblReabastoInsumos" widgetVar="tblReabastoInsumos" value="#{expedienteInsumoMB.reabastoInsumoExtendedLista}"
+                                                     selectionMode="single"
+                                                     selection="#{expedienteInsumoMB.reabastoInsumoExtendedSeleccionado}"
+                                                     var="reaIns"
+                                                     rowKey="#{reaIns.idReabastoInsumo}"
+                                                     scrollable="true" scrollHeight="100"
+                                                     reflow="true" style="margin-top:5px"
+                                                     rowIndexVar="reaInsr"
+                                                     emptyMessage=" " >
+
+                                            <!--                                        <p:ajax event="rowDblselect" onstart="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" 
+                                                                                        update=":frmDocumento:tblIngresos" 
+                                                                                        listener="# {expedienteInsumoMB.obtenerReabastoEnviadoPorIdEstructuraYporIdInsumo()}"/>-->
+
+                                            <f:facet name="header" class="headerTable">Solicitudes</f:facet>
+
+                                            <p:column style="text-align: left !important; " headerText="Fecha" width="15%">
+                                                <h:outputText value="#{reaIns.fechaSolicitud}" class="altoColumn" >
+                                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Folio" width="15%">
+                                                <h:outputText value="#{reaIns.folio}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Solicitante" width="20%">
+                                                <h:outputText value="#{reaIns.nombrePersonaSolicita}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Cant. Solicitada" width="10%">
+                                                <h:outputText value="#{reaIns.cantidadSolicitada}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Recibe" width="20%">
+                                                <h:outputText value="#{reaIns.nombrePersonaRecibe}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Cant. Recibida" width="10%">
+                                                <h:outputText value="#{reaIns.cantidadRecibida}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Ver" width="5%">
+
+                                            </p:column>
+
+                                        </p:dataTable>
+
+                                    </p:panelGrid>
+
+                                    <p:panelGrid id="recibidosPanel" columns="1" columnClasses="ui-g-12" layout="grid" styleClass="ui-fluid" >  
+
+                                        <p:dataTable id="tblIngresos" widgetVar="tblIngresos"  value="#{expedienteInsumoMB.reabastoEnviadoLista}"
+                                                     selectionMode="single"
+                                                     selection="#{expedienteInsumoMB.reabastoEnviadoSeleccionado}"
+                                                     var="reaEnv" 
+                                                     rowKey="#{reaEnv.idReabastoEnviado}"
+                                                     scrollable="true" scrollHeight="100"
+                                                     reflow="true" style="margin-top:5px"
+                                                     rowIndexVar="reaEnvr"
+                                                     emptyMessage="" >
+
+                                            <!--                                        <p:ajax event="rowDblselect" onstart="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" 
+                                                                                        update=":frmDocumento:tblSalidas" 
+                                                                                        listener="# {expedienteInsumoMB.obtieneSurtimientoEnviado()}"/>-->
+
+                                            <f:facet name="header" class="headerTable">Ingresos</f:facet>
+
+                                            <p:column style="text-align: left !important; " headerText="Fecha" width="10%">
+                                                <h:outputText value="#{reaEnv.fechaSolicitud}" class="altoColumn" >
+                                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Folio" width="10%">
+                                                <h:outputText value="#{reaEnv.folio}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Ingresa" width="15%">
+                                                <h:outputText value="#{reaEnv.nombrePersonaRecibe}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Proveedor" width="15%">
+                                                <h:outputText value="#{reaEnv.nombreProveedor}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Fabricante" width="15%">
+                                                <h:outputText value="#{reaEnv.nombreFabricante}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Estabilidad" width="8%">
+                                                <h:outputText value="#{reaEnv.noHorasEstabilidad}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Osmolaridad" width="8%">
+                                                <h:outputText value="#{reaEnv.osmolaridad}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Densidad" width="8%">
+                                                <h:outputText value="#{reaEnv.densidad}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Lote" width="8%">
+                                                <h:outputText value="#{reaEnv.loteEnv}" class="altoColumn" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Caducidad" width="8%">
+                                                <h:outputText value="#{reaEnv.fechaCad}" class="altoColumn" >
+                                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Cant. Ingresada" width="8%">
+                                                <h:outputText value="#{reaEnv.cantidadIngresada}" class="altoColumn" />
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Ver" width="3%">
+
+                                            </p:column>
+
+                                        </p:dataTable>                                    
+
+                                    </p:panelGrid>
+
+                                    <p:panelGrid id="SalidasPanel" columns="1" columnClasses="ui-md-12" layout="grid" styleClass="ui-fluid" >  
+
+                                        <p:dataTable id="tblSalidas" widgetVar="tblSalidas" value="#{expedienteInsumoMB.surtimientoEnviadoExtendedLista}"
+                                                     selectionMode="single"
+                                                     selection="#{expedienteInsumoMB.surtimientoEnviadoSeleccionado}"
+                                                     var="surEnv" 
+                                                     rowKey="#{surEnv.idSurtimientoEnviado}"
+                                                     scrollable="true" scrollHeight="100"
+                                                     reflow="true" style="margin-top:5px"
+                                                     rowIndexVar="surEnvr"
+                                                     emptyMessage="" >
+                                            
+                                            <f:facet name="header" class="headerTable">Salidas</f:facet>
+
+                                            <p:column style="text-align: left !important; " headerText="Fecha" width="8%">
+                                                <h:outputText value="#{surEnv.insertFecha}" class="altoColumn" >
+                                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Prescripción" width="8%">
+                                                <h:outputText value="#{surEnv.folioPrescripcion}"/>
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Paciente" width="15%">
+                                                <h:outputText value="#{surEnv.nombrePaciente}"/>
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Médico" width="15%">
+                                                <h:outputText value="#{surEnv.nombreMédico}"/>
+                                            </p:column>
+
+                                            <!--                                        <p:column style="text-align: left !important; " headerText="Dispensó" width="20%">
+                                                                                    </p:column>-->
+                                            <p:column style="text-align: left !important; " headerText="Surtimiento" width="8%">
+                                                <h:outputText value="#{surEnv.folioSurtimiento}"/>
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Preparó" width="15%">
+                                                <h:outputText value="#{surEnv.nombreUsuarioPrepara}"/>
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Lote" width="8%">
+                                                <h:outputText value="#{surEnv.lote}"/>
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Caducidad" width="8%">
+                                                <h:outputText value="#{surEnv.fechaCaducidad}">
+                                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Cant. Surtida" width="8%">
+                                                <h:outputText value="#{surEnv.cantidadEnviado}"/>
+                                            </p:column>
+
+                                            <p:column style="text-align: left !important; " headerText="Cant. Preparada" width="8%">
+
+                                            </p:column>
+
+
+                                        </p:dataTable>
+
+                                        <!--                                    <p:dataTable id="tblDispensaciones" value=""
+                                                                                         var="adj" scrollable="true" scrollHeight="150"
+                                                                                         reflow="true" style="margin-top:5px"
+                                                                                         selection=""
+                                                                                         rowKey="" rowIndexVar="row"
+                                                                                         emptyMessage="No se encontraron Registros" >
+                                                                                <f:facet name="header" class="headerTable">Dispensaciones</f:facet>
+                                        
+                                                                                <p:column style="text-align: left !important; " headerText="Fecha" width="20%">
+                                                                                </p:column>
+                                                                                <p:column style="text-align: left !important; " headerText="Folio" width="20%">
+                                                                                </p:column>
+                                                                                <p:column style="text-align: left !important; " headerText="Paciente" width="20%">
+                                                                                </p:column>
+                                                                                <p:column style="text-align: left !important; " headerText="Médico" width="20%">
+                                                                                </p:column>
+                                                                                <p:column style="text-align: left !important; " headerText="Dosis" width="20%">
+                                                                                </p:column>
+                                                                                <p:column style="text-align: left !important; " headerText="Frecuencia" width="20%">
+                                                                                </p:column>
+                                                                                <p:column style="text-align: left !important; " headerText="Periodo" width="20%">
+                                                                                </p:column>
+                                                                                
+                                                                            </p:dataTable>-->
+
+                                    </p:panelGrid>
+
+                                </div>
+
+                                <br/>
+                                <ui:remove>
+                                    <p:commandButton id="btnCancel" class="btnItem" value="Cancelar" 
+                                                     onclick="PF('dlgDocumento').hide();"  validateClient="false" tabindex="6" />
+
+                                    <p:commandButton value="Guardar" widgetVar="btnSave"
+                                                     actionListener="#{expedienteInsumoMB.guardarRegistroMedicamento()}"
+                                                     style="float:right;" class="btnNew" styleClass="btnMusAzul" 
+                                                     onclick="PF('statusProcess').show();"
+                                                     oncomplete="PF('statusProcess').hide(); if(args.estatus){ PF('dlgDocumento').hide(); }" 
+                                                     update="mainForm:tblMainDocumento" ajax="true"  >
+                                    </p:commandButton>
+                                </ui:remove>
+
+                            </h:form>
+
+                    </p:dialog>                                                   
+                </div>
+            </ui:define>
+
+            <ui:define name="footer" >
+            </ui:define>
+
+        </ui:composition>
+    </h:body>
+</html>

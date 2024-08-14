@@ -1,0 +1,274 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" >
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <f:view contentType="text/html">
+
+        <h:head>
+            <h:outputStylesheet library="css" name="styles.css"/>
+            <h:outputStylesheet library="css" name="login.css"/>
+            <style type="text/css">
+                  html {
+                height: 80%;
+                overflow: hidden;
+            }
+            
+            body {
+                /*background-color: #FFFFFF;*/
+                background-color: #3498DB;
+                background: url(#{request.contextPath}/resources/img/Fondo06.png) no-repeat center top fixed;
+                -webkit-background-size: cover;
+                -moz-background-size: cover;
+                -o-background-size: cover;
+                background-size: cover;
+                height: 90%;
+                overflow: hidden;
+                padding: 50px;
+                font-family: Arial;
+            }
+            
+            .ui-dialog-title {
+                font-size: 16px !important;
+                font-weight: bold !important;
+                /*background-color: #ECF0F1 !important;*/
+                /*color:  #ECF0F1 !important;*/
+            }
+            
+            .ui-widget {
+                font-family: "Helvetica Neue",Helvetica,Arial,sans-serif !important;
+                font-size: 1em !important;
+            }
+            
+/*            * {
+				box-sizing: border-box;
+			}*/
+
+			*:focus {
+				outline: none;
+			}
+
+/*			.login {
+				margin: 100px 50px;
+				width: 450px;
+			    height: 400 px;	
+			}*/
+			
+/*			.login-screen {
+				background-color: #FFFFFF;
+				padding: 20px;
+				border-radius: 5px;
+				text-align: center;
+			}
+
+			.app-title {
+				text-align: center;
+				color: #777;
+			}
+
+			.login-form {
+				text-align: center;
+			}*/
+			
+			.control-group {
+				margin-bottom: 10px;
+			}
+
+			input {
+				text-align: center;
+				background-color: #ECF0F1;
+				border: 2px solid transparent;
+				border-radius: 3px;
+				font-size: 16px;
+				font-weight: 200;
+				padding: 10px 0;
+				width: 300px;
+				transition: border .5s;
+			}
+
+			input:focus {
+				border: 2px solid #3498DB;
+				box-shadow: none;
+			}
+
+/*			.btn {
+				border: 2px solid transparent;
+				background: #3498DB;
+				color: #2980B9;
+				font-size: 16px;
+				line-height: 25px;
+				padding: 10px 0;
+				text-decoration: none;
+				text-shadow: none;
+				border-radius: 3px;
+				box-shadow: none;
+				transition: 0.25s;
+				display: block;
+				width: 250px;
+				margin: 0 auto;
+			}
+
+			.btn:hover {
+				background-color: #2980B9;
+			}*/
+
+			.login-link {
+			 	font-size: 12px;
+			 	color: #444;
+			 	display: block;
+				margin-top: 12px;
+			    text-align: right;	
+			}
+                        
+                        div.comercialLabel{
+			   background-color: #252d3c;
+   			   height: 60px;
+   			   text-align: center;
+   			   margin: 0px auto;
+ 			   top: 20px; 
+			}
+			
+            </style>
+        </h:head>
+
+        <body>            
+            <h:form id="frmMain">
+                <p:messages showDetail="false" closable="true" globalOnly="true">
+                    <p:autoUpdate />
+                </p:messages>
+                <div class="centered" >
+                    <div align="center" >
+                        <div align="center" >
+                            <img src="resources/img/logoeMotionColor.png" height="40px" />
+                        </div>
+                        <div class="ui-fluid" style="padding-top: 10%">
+                            <p:panelGrid id="contentPanel" columns="1" columnClasses="ui-g-12" layout="grid" styleClass="ui-fluid"
+                                         rendered="#{recuperarContrasenaMB.mostrarDatos}" >
+                                <div align="center">
+                                    <p  style="color: #2980B9;font-size: 20px; font-weight: bold;">Recuperar Contraseña</p>
+                                </div>
+                                <div align="center" style=" padding-top: 20px;" >
+                                    <p:inputText id="txtNombreUsuario" value="#{recuperarContrasenaMB.nombreUsuario}" 
+                                                 requiredMessage="Usuario es requerido" style="text-align: center;" 
+                                                 size="24" placeholder="Ingrese nombre de usuario" maxlength="20" 
+                                                  >
+                                        
+                                        <p:clientValidator/>
+                                    </p:inputText>
+                                    <p:message for="txtNombreUsuario"/>
+                                    <br/>
+                                    <p:inputText id="txtCorreo" value="#{recuperarContrasenaMB.correo}" 
+                                                 requiredMessage="Correo es requerido" style="text-align: center;" 
+                                                  size="24" placeholder="Ingrese cuenta de correo" maxlength="90" 
+                                                  >
+                                        
+                                        <p:clientValidator/>
+                                    </p:inputText>
+                                    <p:message for="txtCorreo"/>
+                                </div>
+                                <div align="center" >
+                                    <br/>
+                                    <br/>
+                                    <p:commandButton value="Recuperar Contraseña" icon="ui-icon-check" class="btn" 
+                                                     actionListener="#{recuperarContrasenaMB.validarCambioContrasena}" 
+                                                     onclick="PF('statusProcess').show();"
+                                                     oncomplete="PF('statusProcess').hide(); if (args.estatus ) { PF('dlgCambio').show(); } "
+                                                     update=":frmCambioContra" />
+                                    <p:commandLink title="Cambiar Contraseña" 
+                                                   actionListener="#{recuperarContrasenaMB.validarCambioContrasena}"
+                                                   resetValues="true" 
+                                               onclick="PF('statusProcess').show();" 
+                                               oncomplete="PF('statusProcess').hide(); if (args.estatus ) { PF('dlgCambio').show(); }" 
+                                               update=":frmCambioContra"  >
+                                        <i class="fa fa-key iconMusAzul" />
+                                </p:commandLink>
+                                </div>
+                            </p:panelGrid>
+                            <div style="padding-left: 80px" >
+                                <p style="text-align: right; font-size: 12px; ">
+                                    <a style="color: #2980B9;font-size: 14px;" href="index.xhtml">Regresar</a>
+                                </p>
+                            </div>
+                            <div align="center" style="padding-top: 5%" >
+                                <p style="text-align: center; font-size: 12px; ">
+                                    eMotion - by 
+                                    <a href='http://www.motioncorp.com.mx' target="_blank"> 
+                                        <img src="#{request.contextPath}/resources/img/logoMotion.png" width="50px" height="25px" border="0" />
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+            
+            <p:dialog widgetVar="statusProcess" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                <p:graphicImage name="img/cargando.gif"/>
+            </p:dialog>
+
+            <p:dialog widgetVar="dlgCambio" header="Cambio de contraseña"
+                      closeOnEscape="true" closable="true" modal="true" resizable="false" 
+                      focus="" style="font-size:xx-small !important;" width="40%" > 
+                <p:focus context="frmCambioContra"/>
+
+                <h:form id="frmCambioContra" style="padding: 0px;">
+                    <p:messages id="msgValidaRegistro"  showDetail="false" closable="true" showSummary="true" >
+                        <p:autoUpdate />
+                    </p:messages>
+                    <div align="center">
+                        <p>Nueva contraseña</p>
+                        <p:password id="txtPassword1" value="#{recuperarContrasenaMB.contrasena2}" match="txtPassword2" 
+                                            required="true" requiredMessage="Contraseña requerida" converterMessage="Las contraseñas no coinciden"
+                                            feedback="true" placeholder="Ingrese nueva contraseña" 
+                                            validatorMessage="Contraseña requerida" 
+                                            weakLabel="Contraseña débil" goodLabel="Contraseña segura" strongLabel="Contraseña muy segura" >
+                            <p:ajax event="change" listener="#{recuperarContrasenaMB.validaContrasena1}" />
+                        </p:password>
+                        
+<!--                        <p:password id="txtPassword1" value="# {recuperarContrasenaMB.contrasena1}" match="txtPassword2" 
+                                            required="true" requiredMessage="Contraseña requerida"
+                                            converterMessage="Las contraseñas no coinciden"
+                                            feedback="true" 
+                                            promptLabel="Ingrese contraseña" weakLabel="Contraseña débil"
+                                            goodLabel="Contraseña segura" strongLabel="Contraseña muy segura" >
+                            <p:ajax event="change" listener="# {recuperarContrasenaMB.validaContrasena1}"  />
+                        </p:password>-->
+                        <br/>
+                        <p>Confirmación de contraseña</p>
+                        <p:password id="txtPassword2" value="#{recuperarContrasenaMB.contrasena2}"
+                                            required="true" requiredMessage="Confirmación requerida" converterMessage="Las contraseñas no coinciden"
+                                            placeholder="Ingrese confirmación de contraseña"  >
+                            <p:ajax event="change" listener="#{recuperarContrasenaMB.validaContrasena2}" />
+                        </p:password>
+                        <br/>
+                        <br/>
+                    </div>
+                    <div align="center" >
+                        <p:commandButton id="btnAprobar" value="Cambiar contraseña" title="Confiramar Cambio de contraseña" 
+                                         actionListener="#{recuperarContrasenaMB.cambiarContrasena}"
+                                         onclick="PF('statusProcess').show();" process="frmCambioContra" 
+                                         oncomplete="PF('statusProcess').hide(); if (args.estatus) { PF('dlgCambio').hide(); }"
+                                         update=":frmMain"  style=" margin: 5px 0; " immediate="true" /> 
+                        
+                    </div>
+                    <div class="comercialLabel">
+                    <br/>
+                    	Design by <a href="https://motioncorp.com.mx" style="color: #ababab;">Motion Corp</a>
+				            <!-- 
+				            <i class='fa fa-facebook block1'></i>
+				            <i class='fa fa-youtube-play block1'></i>
+				            <i class='fa fa-linkedin-square block1'></i>
+				            <i class='fa fa-twitter-square block1'></i>
+				            <i class='fa fa-instagram block1'></i>
+				            -->
+				        </div>
+
+                </h:form>
+            </p:dialog>
+
+        </body>
+    </f:view>
+</html>

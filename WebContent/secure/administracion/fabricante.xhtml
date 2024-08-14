@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Fabricantes</title>
+    </h:head>
+
+    <h:body>
+
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">
+
+                <div class="mainPanel">
+
+                    <h:form id="mainForm">
+
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Fabricantes" 
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+
+                                <p:inputText id="textSearch" 
+                                         value="#{fabricanteMB.cadenaBusqueda}" 
+                                         style="width: 50%!important;border-radius:10px!important;" 
+                                         placeholder="Buscar por nombre..." />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15" style=""/>
+                            </i>
+                                
+                                <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{fabricanteMB.buscarFabricantes()}"
+                                                 update=":mainForm" ajax="false" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide();" style=" margin-left: 15px; margin-bottom: 8px;" />
+                        </div>
+                        <p:messages id="messages" showDetail="false" globalOnly="true" closable="true"  rendered="#{fabricanteMB.message}" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <p:commandButton class="btnNew" value="Agregar" icon="fa fa-plus"  rendered="#{fabricanteMB.permiso.puedeCrear}"
+                                         actionListener="#{fabricanteMB.nuevoFabricante}" onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                                         oncomplete="PF('statusProcess').hide(); PF('mdlNuevoFabricante').show();"
+                                         ajax="true" update=":frmNuevoFabricante"  style=" margin: 5px 0; "  /> &nbsp;&nbsp;
+                      
+                        <br/>
+                        
+                        <p:outputLabel value="No tiene permiso de visualización de esta transacción." 
+                               style="font-size: 18px !important; font-weight: bold; color: red;"
+                               rendered="#{!fabricanteMB.permiso.puedeVer}" />
+                            
+                        <p:dataTable id="tblFabricantes"  
+                                     value="#{fabricanteMB.fabricanteLazy}" var="item"                                     
+                                     lazy="true" 
+                                     scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: left;" 
+                                     reflow="true" paginator="true" paginatorPosition="bottom" 
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     emptyMessage="No se encontraron registros" rows="10"
+                                     rendered="#{fabricanteMB.permiso.puedeVer}"    >     
+                            
+                            <p:column headerText="Nombre Fabricante" style="width: 30%" sortBy="#{item.nombreFabricante}" >
+                                <h:outputText value="#{item.nombreFabricante}" class="altoColumn" />
+                            </p:column>                                                                
+                            <p:column headerText="Domicilio" style="width: 35%">
+                                <h:outputText value="#{item.domicilio}" title="#{item.domicilio}" class="altoColumn" />
+                            </p:column>
+                            <p:column headerText="Activo" style="width: 20%">
+                                <h:outputText value="#{item.idEstatus > 0 ? 'Si' : 'No'}" title="#{item.idEstatus}" class="altoColumn" />
+                            </p:column>
+                            
+                            <p:column headerText="Acciones" style="width: 15%" >
+                                <p:commandLink title="Editar"  actionListener="#{fabricanteMB.obtenerFabricante(item.idFabricante)}" rendered="#{fabricanteMB.permiso.puedeEditar}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('mdlNuevoFabricante').show();" update=":frmNuevoFabricante" >
+                                    <i class="fa fa-eye  iconMusAzul" />
+                                </p:commandLink> &nbsp;&nbsp;
+                                <p:commandLink title="#{item.idEstatus > 0 ? 'Desactivar' : 'Activar'}" actionListener="#{fabricanteMB.changeStatus(item.idFabricante,item.idEstatus)}" rendered="#{fabricanteMB.permiso.puedeEditar}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":mainForm:tblFabricantes " >
+                                    <i class="#{item.idEstatus > 0 ? 'fa fa-toggle-on' : 'fa fa-toggle-off'}  iconMusAzul" />
+
+                                </p:commandLink> 
+                            </p:column>
+                           
+                        </p:dataTable>
+                    </h:form>                                                                        
+
+                    <p:dialog header="Datos de Fabricante"
+                              widgetVar="mdlNuevoFabricante" 
+                              closeOnEscape="true" modal="true" resizable="false" 
+                              closable="true"
+                              style="font-size:xx-small !important;" 
+                              width="30%" height="180px" > 
+                        <h:form id="frmNuevoFabricante">
+                            <p:messages globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+
+                            <div class="ui-g">
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Nombre Fabricante * : "  class="plabel" />
+                                        <p:inputText id="txtNombreFabricante"
+                                                     placeholder="Nombre de Fabricante" 
+                                                     value="#{fabricanteMB.fabricanteSelect.nombreFabricante}"
+                                                     maxlength="90" size="60" />
+                                    </div>
+                                </div>
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel value="Domicilio  : "  class="plabel" />
+                                        <p:inputText id="txtDomicilio"
+                                                     placeholder="Domicilio Fabricante" 
+                                                     value="#{fabricanteMB.fabricanteSelect.domicilio}"
+                                                     maxlength="90" size="60" />
+                                    </div>
+                                </div>    
+                            </div>
+                            <div class="ui-g-12" style=" width: 100% !important; /*position: absolute; bottom: 0px;*/ background-color: #f8f8f8; border-top: solid 2px #C8C8C8;  " >
+                                <div class="ui-g-12 ui-md-6 ui-lg-12" style="display: flex; align-content: center; justify-content: space-between; float: right;" >                                    
+                                    <div >
+                                        <p:commandButton id="btnRegNew1"   styleClass="btnMusAzul"  tabindex="13"
+                                                         value="Guardar" style="margin:0; width: 100px;"  
+                                                         onclick="PF('statusProcess').show();" 
+                                                         actionListener="#{fabricanteMB.guardarFabricante()}"
+                                                         update=":mainForm:tblFabricantes"
+                                                         oncomplete="PF('statusProcess').hide();if(args.estatus){ PF('mdlNuevoFabricante').hide(); }" />
+                                    </div>
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>                                                                                                              
+                </div>
+            </ui:define>
+
+            <ui:define name="footer">
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+
+</html>

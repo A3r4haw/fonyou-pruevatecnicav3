@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.ConfigMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Config" parameterType="mx.mc.model.Config" >
+        SELECT
+        idConfig , nombre , valor , descripcion , activa , insertFecha , insertidUsuario , updateFecha , updateIdUsuario
+        FROM config
+        WHERE 1=1
+        <if test=" idConfig != null ">
+            AND idConfig = #{ idConfig , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activa != null ">
+            AND activa = #{ activa , jdbcType = INTEGER }
+        </if>
+        LIMIT 0, 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Config" parameterType="mx.mc.model.Config" >
+        SELECT
+        idConfig , nombre , valor , descripcion , activa , insertFecha , insertidUsuario , updateFecha , updateIdUsuario
+        FROM config
+        WHERE 1=1
+        <if test=" idConfig != null ">
+            AND idConfig = #{ idConfig , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activa != null ">
+            AND activa = #{ activa , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Config" >
+        INSERT INTO config (
+        <if test=" idConfig != null ">
+            idConfig
+        </if>
+        <if test=" nombre != null ">
+            , nombre
+        </if>
+        <if test=" valor != null ">
+            , valor
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion
+        </if>
+        <if test=" activa != null ">
+            , activa
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertidUsuario != null ">
+            , insertidUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario
+        </if>
+        ) VALUES (
+        <if test=" idConfig != null ">
+            #{ idConfig , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            , #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" valor != null ">
+            , #{ valor , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activa != null ">
+            , #{ activa , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertidUsuario != null ">
+            , #{ insertidUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.Config"  >
+        UPDATE config SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" nombre != null ">
+            , nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" valor != null ">
+            , valor = #{ valor , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activa != null ">
+            , activa = #{ activa , jdbcType = INTEGER }
+        </if>
+        WHERE idConfig = #{ idConfig , jdbcType = VARCHAR }
+    </update>
+
+    <select id="obtenerConfigOrdenadoPorCadena" resultType="mx.mc.model.Config" parameterType="Map">
+        SELECT 
+            idConfig, nombre, valor, descripcion, idTipoParam, activa
+        FROM
+            config
+        WHERE      
+            length(nombre) > 0   
+        <if test=" paramConfig.descripcion != null and paramConfig.descripcion != '' ">
+            AND ( nombre LIKE '%${ paramConfig.descripcion }%'
+                    OR descripcion LIKE '%${ paramConfig.descripcion }%'
+                )
+        </if>
+                
+        <if test="sortField == null or sortField == '' " > 
+            ORDER BY idConfig asc
+        </if>
+        
+        <if test="sortField == 'nombre'" > 
+            <if test="sortOrder == 'asc'" > 
+                ORDER BY nombre asc
+            </if>
+            <if test="sortOrder == 'desc'" > 
+                ORDER BY nombre desc
+            </if>            
+        </if>
+        
+        <if test="sortField == 'descripcion'" > 
+            <if test="sortOrder == 'asc'" > 
+                ORDER BY descripcion asc
+            </if>
+            <if test="sortOrder == 'desc'" > 
+                ORDER BY descripcion desc
+            </if>
+        </if>                
+        
+        <if test="sortField == 'activo'">
+            <if test="sortOrder == 'asc'" >
+                ORDER BY activo asc
+            </if>
+            <if test="sortOrder == 'desc'" >
+                ORDER BY activo desc
+            </if>    
+        </if>
+        
+        LIMIT #{ startingAt , jdbcType = INTEGER}, #{ maxPerPage , jdbcType = INTEGER}
+        
+    </select>
+    
+    <select id="obtenerTotalConfigOrdenadoPorCadena" resultType="Long" parameterType="Map">
+        SELECT 
+            count(*)
+        FROM config
+        WHERE
+            length(nombre) > 0  
+        <if test=" paramConfig.descripcion != null and paramConfig.descripcion != '' ">
+            AND ( nombre LIKE '%${ paramConfig.descripcion }%'
+                    OR descripcion LIKE '%${ paramConfig.descripcion }%'
+                )
+        </if>
+    </select>
+    <select id="obtenerByNombre" resultType="mx.mc.model.Config" parameterType="Map" >
+        SELECT
+        idConfig , nombre , valor , descripcion , activa , insertFecha , insertidUsuario , updateFecha , updateIdUsuario
+        FROM config
+        WHERE 1=1
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+</mapper>

@@ -1,0 +1,2578 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.SurtimientoMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Surtimiento" parameterType="mx.mc.model.Surtimiento" >
+        SELECT
+            idSurtimiento , idEstructuraAlmacen , idPrescripcion , fechaProgramada , folio , idEstatusSurtimiento , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario 
+        FROM surtimiento
+        WHERE 1=1
+        <if test=" idSurtimiento != null ">
+            AND idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructuraAlmacen != null ">
+            AND idEstructuraAlmacen = #{ idEstructuraAlmacen , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" folio != null ">
+            AND folio = #{ folio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatusSurtimiento != null ">
+            AND idEstatusSurtimiento = #{ idEstatusSurtimiento , jdbcType = INTEGER }
+        </if>
+    LIMIT 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Surtimiento" parameterType="mx.mc.model.Surtimiento" >
+        SELECT
+            idSurtimiento , idEstructuraAlmacen , idPrescripcion , fechaProgramada , folio , idEstatusSurtimiento , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario 
+        FROM surtimiento
+        WHERE 1=1
+        <if test=" idSurtimiento != null ">
+            AND idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstructuraAlmacen != null ">
+            AND idEstructuraAlmacen = #{ idEstructuraAlmacen , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" folio != null ">
+            AND folio = #{ folio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatusSurtimiento != null ">
+            AND idEstatusSurtimiento = #{ idEstatusSurtimiento , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    
+    <select id="obtenerPorFechaEstructuraPacienteCamaPrescripcion" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map" >
+        SELECT 
+            s.idSurtimiento , s.idPrescripcion , s.folio , s.fechaProgramada , s.idEstatusSurtimiento 
+            , estatus AS estatusPrescripcion
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente
+            , pa.pacienteNumero , pa.claveDerechohabiencia
+            , e.nombre AS nombreEstructura 
+            , c.nombreCama 
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico
+            , p.folio as folioPrescripcion, p.tipoPrescripcion , p.idEstructura , pa.sexo as pacienteSexo , u.cedProfesional
+        FROM surtimiento s
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio AND pu.fechaUbicaFin IS NULL
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ cadenaBusqueda }%'
+                OR p.folio LIKE '%${ cadenaBusqueda }%'
+                )
+        </if>
+        <if test=" fechaProgramada != null ">
+            <!--todo: Regla: Solo prescripciones del dia -->
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ <= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusSurtimiento != null ">
+            AND s.idEstatusSurtimiento IN
+            <foreach item="item" index="index" collection="listEstatusSurtimiento" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY p.tipoPrescripcion DESC, s.fechaProgramada ASC
+    </select>
+    
+    
+    <select id="obtenerPorFechaEstructuraPacienteCamaPrescripcionLazy" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map" >
+        SELECT 
+            s.idSurtimiento , s.idPrescripcion , s.folio , s.fechaProgramada , s.idEstatusSurtimiento, s.idEstructuraAlmacen, s.parcial
+            , estatus AS estatusPrescripcion
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente
+            , pa.pacienteNumero , pa.claveDerechohabiencia
+            , e.nombre AS nombreEstructura 
+            , c.nombreCama AS cama
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico
+            , p.folio as folioPrescripcion, p.tipoPrescripcion , p.idEstructura , pa.sexo as pacienteSexo , u.cedProfesional
+            , p.tipoConsulta
+            , (SELECT tu.nombre FROM turno tu WHERE idTurno IN (1, 2, 4) AND CURRENT_TIME() BETWEEN horaInicio AND horaFIN) AS turno
+            , CASE tipoPrescripcion
+                WHEN 'U' THEN 1 
+                WHEN 'D' THEN 2 
+                WHEN 'N' THEN 3 
+                WHEN 'M' THEN 4 
+                ELSE 5 
+            END as orden
+        FROM surtimiento s
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio AND pu.fechaUbicaFin IS NULL
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR s.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+        <if test=" fechaProgramada != null ">
+            <!--todo: Regla: Solo prescripciones del dia -->
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ <= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusSurtimiento != null ">
+            AND s.idEstatusSurtimiento IN
+            <foreach item="item" index="index" collection="listEstatusSurtimiento" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        AND e.envioHL7 != 1
+        AND pu.fechaUbicaFin IS NULL
+        ORDER BY orden ASC, s.fechaProgramada ASC
+        <if test="maxPerPage != -1">
+            LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        </if>
+    </select>
+    
+    
+    <select id="obtenerPorFechaEstructuraPacienteCamaPrescripcionOrderLazy" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map" >
+        SELECT  
+            s.idSurtimiento , s.idPrescripcion , s.folio , s.fechaProgramada , s.idEstatusSurtimiento 
+            , estatus AS estatusPrescripcion
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente
+            , pa.pacienteNumero , pa.claveDerechohabiencia
+            , e.nombre AS nombreEstructura 
+            , c.nombreCama AS cama
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico
+            , p.folio as folioPrescripcion, p.tipoPrescripcion , p.idEstructura , pa.sexo as pacienteSexo , u.cedProfesional
+            , p.tipoConsulta
+            , (SELECT tu.nombre FROM turno tu WHERE idTurno IN (1, 2, 4) AND CURRENT_TIME() BETWEEN horaInicio AND horaFIN) AS turno
+        FROM surtimiento s
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio AND pu.fechaUbicaFin IS NULL
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR s.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+        <if test=" fechaProgramada != null ">
+            <!--todo: Regla: Solo prescripciones del dia -->
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ <= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusSurtimiento != null ">
+            AND s.idEstatusSurtimiento IN
+            <foreach item="item" index="index" collection="listEstatusSurtimiento" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        AND e.envioHL7 != 1
+        AND pu.fechaUbicaFin IS NULL
+        
+        
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'folio'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY s.folio asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY s.folio desc
+                </if>            
+            </if>
+            <if test="sortField == 'tipoPrescripcion'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY p.tipoPrescripcion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY p.tipoPrescripcion desc
+                </if>
+            </if>   
+            <if test="sortField == 'fechaProgramada'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY s.fechaProgramada asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY s.fechaProgramada desc
+                </if>
+            </if>
+            <if test="sortField == 'nombrePaciente'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombrePaciente asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombrePaciente desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreMedico'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreMedico asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreMedico desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreEstructura'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreEstructura asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreEstructura desc
+                </if>
+            </if>
+            
+        </if>
+        <if test="maxPerPage != -1">
+            LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        </if>
+    </select>
+    
+    <select id="obtenerPorFechaEstructuraPacienteCamaPrescripcionSolucionOrderLazy" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map" >
+        SELECT  distinct
+            s.idSurtimiento , s.idPrescripcion , s.folio , s.fechaProgramada , s.idEstatusSurtimiento 
+            ,pi.ritmo,pi.velocidad,pi.perfusionContinua,uc.nombreUnidadConcentracion as unidadConcentracion,ti.nombre as nombreIngrediente
+            , estatus AS estatusPrescripcion
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente
+            , pa.pacienteNumero , pa.claveDerechohabiencia
+            , e.nombre AS nombreEstructura 
+            , c.nombreCama AS cama
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico
+            , p.folio as folioPrescripcion, p.tipoPrescripcion , p.idEstructura , pa.sexo as pacienteSexo , u.cedProfesional
+            , p.tipoConsulta,pa.idPaciente,v.idVisita, ts.clave AS tipoSolucion
+        FROM surtimiento s
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        
+        JOIN prescripcionInsumo pi on pi.idPrescripcion = p.idPrescripcion        
+        JOIN unidadConcentracion uc on uc.idUnidadConcentracion = pi.idUnidadConcentracion
+        JOIN tipoIngrediente ti on ti.idtipoIngrediente = pi.idTipoIngrediente
+        
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente        
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR s.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+        <if test=" fechaProgramada != null ">
+            <!--todo: Regla: Solo prescripciones del dia -->
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ <= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusSurtimiento != null ">
+            AND s.idEstatusSurtimiento IN
+            <foreach item="item" index="index" collection="listEstatusSurtimiento" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        AND e.envioHL7 != 1
+        AND pu.fechaUbicaFin IS NULL
+        
+        <!-- TODO: Sólo para evitar duplicados, pendiente revisar query -->
+        GROUP BY s.idSurtimiento
+        
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'folio'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY s.folio asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY s.folio desc
+                </if>            
+            </if>
+            <if test="sortField == 'tipoPrescripcion'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY p.tipoPrescripcion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY p.tipoPrescripcion desc
+                </if>
+            </if>   
+            <if test="sortField == 'fechaProgramada'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY s.fechaProgramada asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY s.fechaProgramada desc
+                </if>
+            </if>
+            <if test="sortField == 'nombrePaciente'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombrePaciente asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombrePaciente desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreMedico'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreMedico asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreMedico desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreEstructura'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreEstructura asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreEstructura desc
+                </if>
+            </if>
+            
+        </if>
+        <if test="maxPerPage != -1">
+            LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        </if>
+    </select>
+    
+    <select id="obtenerTotalPorFechaEstructuraPacienteCamaPrescripcionLazy" resultType="Long" parameterType="Map" >
+        SELECT distinct
+            count(*)
+        FROM surtimiento s
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio AND pu.fechaUbicaFin IS NULL
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR s.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+        <if test=" fechaProgramada != null ">
+            <!--todo: Regla: Solo prescripciones del dia -->
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ <= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusSurtimiento != null ">
+            AND s.idEstatusSurtimiento IN
+            <foreach item="item" index="index" collection="listEstatusSurtimiento" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        AND e.envioHL7 != 1
+        AND pu.fechaUbicaFin IS NULL
+    </select>
+    
+    <select id="obtenerTotalPorFechaEstructuraPacienteCamaPrescripcionSolucionLazy" resultType="Long" parameterType="Map" >
+        SELECT 
+            count(*)
+        FROM surtimiento s
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        JOIN prescripcionInsumo pi on pi.idPrescripcion = p.idPrescripcion        
+        JOIN unidadConcentracion uc on uc.idUnidadConcentracion = pi.idUnidadConcentracion
+        JOIN tipoIngrediente ti on ti.idtipoIngrediente = pi.idTipoIngrediente
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        LEFT JOIN turnoMedico tm ON p.idMedico = tm.idMedico
+        LEFT JOIN turno tu ON tm.idTurno = tu.idTurno
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR s.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+        <if test=" fechaProgramada != null ">
+            <!--todo: Regla: Solo prescripciones del dia -->
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ <= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusSurtimiento != null ">
+            AND s.idEstatusSurtimiento IN
+            <foreach item="item" index="index" collection="listEstatusSurtimiento" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        AND e.envioHL7 != 1
+        AND pu.fechaUbicaFin IS NULL
+    </select>
+    
+    <select id="obtenerPorFechaEstructuraPacientePrescripcionExt" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map" >
+        SELECT 
+            s.idSurtimiento ,p.resurtimiento, s.idPrescripcion , s.folio , s.fechaProgramada , s.idEstatusSurtimiento ,es.estatus
+            , estatus AS estatusPrescripcion
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente
+            , pa.pacienteNumero , pa.claveDerechohabiencia
+            , e.nombre AS nombreEstructura 
+            , c.nombreCama 
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico
+            , p.folio as folioPrescripcion, p.tipoPrescripcion , p.tipoConsulta,  p.idEstructura
+        FROM surtimiento s
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio AND pu.fechaUbicaFin IS NULL
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" cadenaBusqueda != null ">
+            AND ( e.nombre LIKE '%${ cadenaBusqueda }%' 
+            OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ cadenaBusqueda }%'
+            OR p.folio LIKE '%${ cadenaBusqueda }%'
+            OR pa.claveDerechohabiencia LIKE '%${ cadenaBusqueda }%'
+            OR pa.pacienteNumero LIKE '%${ cadenaBusqueda }%'
+            ) 
+        </if>
+        <if test=" fechaProgramada != null ">
+            <!--todo: Regla: Solo prescripciones del dia -->
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d %H:%i') 
+            between date_format( date_add(now() , interval - #{numHorPrevReceta} HOUR ) , '%Y-%m-%d %H:%i')
+            and date_format( date_add(now() , interval + #{numHorPostReceta} HOUR ) , '%Y-%m-%d %H:%i')
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusSurtimiento != null ">
+            AND s.idEstatusSurtimiento IN
+            <foreach item="item" index="index" collection="listEstatusSurtimiento" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        
+        
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'folio'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY s.folio asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY s.folio desc
+                </if>            
+            </if>
+            <if test="sortField == 'tipoPrescripcion'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY p.tipoPrescripcion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY p.tipoPrescripcion desc
+                </if>
+            </if>   
+            <if test="sortField == 'fechaProgramada'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY s.fechaProgramada asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY s.fechaProgramada desc
+                </if>
+            </if>
+            <if test="sortField == 'nombrePaciente'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombrePaciente asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombrePaciente desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreMedico'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreMedico asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreMedico desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreEstructura'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreEstructura asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreEstructura desc
+                </if>
+            </if>
+            
+        </if>
+        
+        ORDER BY p.tipoPrescripcion DESC, s.fechaProgramada ASC
+        
+         <if test="maxPerPage != -1">
+            LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        </if>
+    </select>
+    
+    <select id="obtenerTotalPorFechaEstructuraPacientePrescripcionExt" resultType="Long" parameterType="Map" >
+        SELECT count(*) as total FROM
+        (SELECT 
+            s.idSurtimiento , s.idPrescripcion , s.folio , s.fechaProgramada , s.idEstatusSurtimiento 
+            , estatus AS estatusPrescripcion
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente
+            , pa.pacienteNumero , pa.claveDerechohabiencia
+            , e.nombre AS nombreEstructura 
+            , c.nombreCama 
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico
+            , p.folio as folioPrescripcion, p.tipoPrescripcion , p.idEstructura
+        FROM surtimiento s
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio AND pu.fechaUbicaFin IS NULL
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" cadenaBusqueda != null ">
+            AND ( e.nombre LIKE '%${ cadenaBusqueda }%' 
+            OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ cadenaBusqueda }%'
+            OR p.folio LIKE '%${ cadenaBusqueda }%'
+            OR pa.claveDerechohabiencia LIKE '%${ cadenaBusqueda }%'
+            OR pa.pacienteNumero LIKE '%${ cadenaBusqueda }%'
+            ) 
+        </if>
+        <if test=" fechaProgramada != null ">
+            <!--todo: Regla: Solo prescripciones del dia -->
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d %H:%i') 
+            between date_format( date_add(now() , interval - #{numHorPrevReceta} HOUR ) , '%Y-%m-%d %H:%i')
+            and date_format( date_add(now() , interval + #{numHorPostReceta} HOUR ) , '%Y-%m-%d %H:%i')
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusSurtimiento != null ">
+            AND s.idEstatusSurtimiento IN
+            <foreach item="item" index="index" collection="listEstatusSurtimiento" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>      
+        
+         )AS total
+    </select>
+    
+    
+    <insert id="insertar" parameterType="mx.mc.model.Surtimiento" >
+        INSERT INTO surtimiento (
+        <if test=" idSurtimiento != null ">
+            idSurtimiento
+        </if>
+        <if test=" parcial != null ">
+            , parcial
+        </if>
+        <if test=" idEstructuraAlmacen != null ">
+            , idEstructuraAlmacen
+        </if>
+        <if test=" idPrescripcion != null ">
+            , idPrescripcion
+        </if>
+        <if test=" folio != null ">
+            , folio
+        </if>
+        <if test=" fechaProgramada != null ">
+            , fechaProgramada
+        </if>
+        <if test=" idEstatusSurtimiento != null ">
+            , idEstatusSurtimiento
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario 
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , updateIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" idEstatusMirth != null ">
+            , idEstatusMirth
+        </if>
+        <if test=" padecimientoCronico != null ">
+            , padecimientoCronico
+        </if>
+        <if test=" diabetes != null ">
+            , diabetes
+        </if>
+        <if test=" hipertension != null ">
+            , hipertension
+        </if>
+        <if test=" problemasRenales != null ">
+            , problemasRenales
+        </if>
+        ) VALUES (
+        <if test=" idSurtimiento != null ">
+            #{ idSurtimiento , jdbcType = VARCHAR }
+        </if>
+        
+        <if test=" parcial != null ">
+            , #{ parcial , jdbcType = BOOLEAN }
+        </if>
+        <if test=" idEstructuraAlmacen != null ">
+            , #{ idEstructuraAlmacen , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPrescripcion != null ">
+            , #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" folio != null ">
+            , #{ folio , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaProgramada != null ">
+            , #{ fechaProgramada , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idEstatusSurtimiento != null ">
+            , #{ idEstatusSurtimiento , jdbcType = INTEGER }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idEstatusMirth != null ">
+            , #{ idEstatusMirth , jdbcType = INTEGER }
+        </if>
+        <if test=" padecimientoCronico != null ">
+            , #{ padecimientoCronico , jdbcType = BOOLEAN }
+        </if>
+        <if test=" diabetes != null ">
+            , #{ diabetes , jdbcType = BOOLEAN }
+        </if>
+        <if test=" hipertension != null ">
+            , #{ hipertension , jdbcType = BOOLEAN }
+        </if>
+        <if test=" problemasRenales != null ">
+            , #{ problemasRenales , jdbcType = BOOLEAN }
+        </if>
+        )
+    </insert>
+
+    <insert id="insertarLista" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="list" item="item" separator=";" index="index">
+            INSERT INTO surtimiento (
+            <if test=" item.idSurtimiento != null "> idSurtimiento </if>
+            <if test=" item.parcial != null "> , parcial </if>
+            <if test=" item.idEstructuraAlmacen != null "> , idEstructuraAlmacen </if>
+            <if test=" item.idPrescripcion != null "> , idPrescripcion </if>
+            <if test=" item.folio != null "> , folio </if>
+            <if test=" item.fechaProgramada != null "> , fechaProgramada </if>
+            <if test=" item.idEstatusSurtimiento != null "> , idEstatusSurtimiento </if>
+            <if test=" item.insertIdUsuario != null "> , insertIdUsuario  </if>
+            <if test=" item.insertFecha != null "> , insertFecha </if>
+            <if test=" item.updateIdUsuario != null "> , updateIdUsuario </if>
+            <if test=" item.updateFecha != null "> , updateFecha </if>
+            <if test=" item.idEstatusMirth != null "> , idEstatusMirth </if>
+            <if test=" item.padecimientoCronico != null "> , padecimientoCronico </if>
+            <if test=" item.diabetes != null "> , diabetes </if>
+            <if test=" item.hipertension != null "> , hipertension </if>
+            <if test=" item.problemasRenales != null "> , problemasRenales </if>
+            ) VALUES (
+            <if test=" item.idSurtimiento != null "> #{ item.idSurtimiento , jdbcType = VARCHAR } </if>
+            <if test=" item.parcial != null "> , #{ item.parcial , jdbcType = BOOLEAN } </if>
+            <if test=" item.idEstructuraAlmacen != null "> , #{ item.idEstructuraAlmacen , jdbcType = VARCHAR } </if>
+            <if test=" item.idPrescripcion != null "> , #{ item.idPrescripcion , jdbcType = VARCHAR } </if>
+            <if test=" item.folio != null "> , #{ item.folio , jdbcType = VARCHAR } </if>
+            <if test=" item.fechaProgramada != null "> , #{ item.fechaProgramada , jdbcType = TIMESTAMP } </if>
+            <if test=" item.idEstatusSurtimiento != null "> , #{ item.idEstatusSurtimiento , jdbcType = INTEGER } </if>
+            <if test=" item.insertIdUsuario != null "> , #{ item.insertIdUsuario , jdbcType = VARCHAR } </if>
+            <if test=" item.insertFecha != null "> , #{ item.insertFecha , jdbcType = TIMESTAMP } </if>
+            <if test=" item.updateIdUsuario != null "> , #{ item.updateIdUsuario , jdbcType = VARCHAR } </if>
+            <if test=" item.updateFecha != null "> , #{ item.updateFecha , jdbcType = TIMESTAMP } </if>
+            <if test=" item.idEstatusMirth != null "> , #{ item.idEstatusMirth , jdbcType = INTEGER } </if>
+            <if test=" item.padecimientoCronico != null "> , #{ item.padecimientoCronico , jdbcType = BOOLEAN } </if>
+            <if test=" item.diabetes != null "> , #{ item.diabetes , jdbcType = BOOLEAN } </if>
+            <if test=" item.hipertension != null "> , #{ item.hipertension , jdbcType = BOOLEAN } </if>
+            <if test=" item.problemasRenales != null "> , #{ item.problemasRenales , jdbcType = BOOLEAN } </if>
+            )
+        </foreach>    
+    </insert>
+
+    <update id="actualizar" parameterType="mx.mc.model.Surtimiento" >
+        UPDATE surtimiento SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" idEstatusSurtimiento != null ">
+            , idEstatusSurtimiento = #{ idEstatusSurtimiento , jdbcType = INTEGER }
+        </if>
+        <if test = " idEstructuraAlmacen != null">
+            , idEstructuraAlmacen = #{ idEstructuraAlmacen , jdbcType = VARCHAR }
+        </if>
+        <if test = " padecimientoCronico != null">
+            , padecimientoCronico = #{ padecimientoCronico , jdbcType = BOOLEAN }
+        </if>
+        <if test = " diabetes != null">
+            , diabetes = #{ diabetes , jdbcType = BOOLEAN }
+        </if>
+        <if test = " hipertension != null">
+            , hipertension = #{ hipertension , jdbcType = BOOLEAN }
+        </if>
+        <if test = " problemasRenales != null">
+            , problemasRenales = #{ problemasRenales , jdbcType = BOOLEAN }
+        </if>
+        <if test = " claveAgrupada != null">
+            , claveAgrupada = #{ claveAgrupada , jdbcType = VARCHAR }
+        </if>
+        <if test = " fechaProgramada != null">
+            , fechaProgramada = #{ fechaProgramada , jdbcType = TIMESTAMP }
+        </if>
+        WHERE idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+    </update>
+    
+    <update id="actualizarPorFolio" parameterType="Map" >
+        UPDATE surtimiento SET
+        procesado = #{ procesado , jdbcType = INTEGER }
+        WHERE folio = #{ folio , jdbcType = VARCHAR }
+    </update>
+    
+    <update id="actualizarPorFolioVale" parameterType="Map" >
+        UPDATE surtimiento SET
+        procesadoVale = #{ procesado , jdbcType = INTEGER }
+        WHERE folio = #{ folio , jdbcType = VARCHAR }
+    </update>
+    
+    <update id="cancelar" parameterType="mx.mc.model.Prescripcion"  >
+        
+        UPDATE surtimiento SET
+        updateFecha = #{ fecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        , idEstatusSurtimiento = #{ idEstatusSurtimiento , jdbcType = INTEGER }
+        WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        AND idEstatusSurtimiento in (1 , 4)
+    </update>
+    
+    <update id="cancelarSurtimiento" parameterType="Map" >
+        UPDATE surtimiento SET
+        updateFecha = #{ fecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        , idEstatusSurtimiento = #{ idEstatusSurtimiento , jdbcType = INTEGER }
+        WHERE idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+    </update>
+    
+    <update id="cancelarSurtimientoChiconcuac" parameterType="mx.mc.model.Prescripcion"  >
+        UPDATE surtimiento SET
+        updateFecha = #{ fecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        , idEstatusSurtimiento = #{ idEstatusSurtimiento , jdbcType = INTEGER }
+        WHERE idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </update>
+    
+    <select id="obtenerPorFolio" parameterType="Map" resultType="mx.mc.model.Surtimiento">
+        SELECT
+            *
+        FROM surtimiento
+        WHERE 1=1        
+        <if test=" folio != null ">
+            AND folio = #{ folio , jdbcType = VARCHAR }
+        </if>
+        
+    </select>
+    
+    <select id="obtenerSurtimientoExtendedPorIdSurtimiento" resultType="mx.mc.model.Surtimiento_Extend" parameterType="mx.mc.model.Surtimiento_Extend" >
+        SELECT
+            idSurtimiento , idPrescripcion , fechaProgramada , folio , idEstatusSurtimiento, idEstructuraAlmacen
+        FROM surtimiento
+        WHERE 1=1
+        <if test=" idSurtimiento != null ">
+            AND idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" folio != null ">
+            AND folio = #{ folio , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatusSurtimiento != null ">
+            AND idEstatusSurtimiento = #{ idEstatusSurtimiento , jdbcType = INTEGER }
+        </if>
+    LIMIT 1
+    </select>
+    
+    
+    <delete id="eliminarPorIdPrescripcion"  parameterType="Map" >
+        DELETE FROM surtimiento
+        WHERE 
+            idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </delete>
+    
+    <select id="obtenerNumeroSurtimientosProgramados" resultType="Integer" parameterType="Map" >
+        SELECT count(si.idSurtimiento) as surtimientosIncompletos
+        FROM prescripcion p
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        INNER JOIN surtimientoInsumo si ON s.idSurtimiento = si.idSurtimiento
+        WHERE p.idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        AND s.idEstatusSurtimiento = #{ idEstatusSurtimiento  , jdbcType = INTEGER }
+    </select>
+    
+    <insert id="clonarSurtimientoPorId" parameterType="Map">
+        INSERT INTO  surtimiento (idSurtimiento,
+            idEstructuraAlmacen,
+            idPrescripcion,
+            fechaProgramada,
+            folio,
+            idEstatusSurtimiento,
+            idEstatusMirth,
+            folioOrdenAVG,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario,
+            procesado)
+        SELECT uuid() as idSurtimiento,
+            idEstructuraAlmacen,
+            idPrescripcion,
+            fechaProgramada,
+            #{newFolio , jdbcType = VARCHAR },
+            1,
+            0,
+            null,
+            now(),
+            insertIdUsuario,
+            null,
+            null,
+            0
+        FROM surtimiento where idSurtimiento = #{idSurtimiento , jdbcType = VARCHAR };
+    </insert>
+    
+    <select id="obtenerPorFechaEstructuraPacienteCamaPrescripcionCancelacion" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map" >
+        SELECT 
+            s.idSurtimiento , s.idPrescripcion , s.folio , s.fechaProgramada , s.idEstatusSurtimiento 
+            , es.estatus AS estatusSurtimiento , p.idEstatusPrescripcion , ep.estatus AS estatusPrescripcion 
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente
+            , pa.pacienteNumero , pa.claveDerechohabiencia
+            , e.nombre AS nombreEstructura 
+            , c.nombreCama 
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico
+            , p.folio as folioPrescripcion, p.tipoPrescripcion , p.idEstructura
+        FROM surtimiento s
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN estatusPrescripcion ep ON p.idEstatusPrescripcion = ep.idEstatusPrescripcion
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND p.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ cadenaBusqueda }%'
+                OR p.folio LIKE '%${ cadenaBusqueda }%'
+                )
+        </if>
+        <if test=" fechaProgramada != null ">
+            <!--todo: Regla: Solo prescripciones del dia -->
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ >= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusSurtimiento != null ">
+            AND s.idEstatusSurtimiento IN
+            <foreach item="item" index="index" collection="listEstatusSurtimiento" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY p.tipoPrescripcion DESC, s.fechaProgramada ASC
+    </select>
+    
+    <select id="obtenerPorFechaEstructuraPacienteCamaPrescripcionCancelacionInterna" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map" >
+        SELECT 
+            s.idSurtimiento , s.idPrescripcion , s.folio , s.fechaProgramada , s.idEstatusSurtimiento 
+            , ep.estatus AS estatusPrescripcion
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente
+            , pa.pacienteNumero , pa.claveDerechohabiencia
+            , e.nombre AS nombreEstructura 
+            , c.nombreCama 
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico
+            , p.folio as folioPrescripcion, p.tipoPrescripcion , p.idEstructura
+        FROM surtimiento s
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN estatusPrescripcion ep ON ep.idEstatusPrescripcion = p.idEstatusPrescripcion
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND p.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ cadenaBusqueda }%'
+                OR p.folio LIKE '%${ cadenaBusqueda }%'
+                )
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusSurtimiento != null ">
+            AND s.idEstatusSurtimiento IN
+            <foreach item="item" index="index" collection="listEstatusSurtimiento" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY p.tipoPrescripcion DESC, s.fechaProgramada ASC
+    </select>
+    
+    <update id="actualizarPorFolioEstatusIntipharm" parameterType="mx.mc.model.Surtimiento" >
+        UPDATE surtimiento s
+        INNER JOIN	surtimientoInsumo si ON si.idSurtimiento = s.idSurtimiento 
+        <set>        
+            si.updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR },            
+            si.idEstatusSurtimiento = #{ idEstatusSurtimiento , jdbcType = INTEGER },
+            si.updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+            <if test="actualizar == true">                    
+            ,s.idEstatusSurtimiento =  #{ idEstatusSurtimiento , jdbcType = INTEGER },            
+            s.updateFecha = #{ updateFecha , jdbcType = TIMESTAMP },    
+            s.updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+            </if>            
+        </set>    
+        WHERE
+        s.folio = #{ folio , jdbcType = VARCHAR }         
+        <if test=" numeroMedicacion != 0 ">
+            and si.numeroMedicacion = #{ numeroMedicacion , jdbcType = INTEGER }            
+        </if>
+    </update>
+    
+    <insert id="clonarSurtimientoCanceladoPorId" parameterType="Map">
+        INSERT INTO  surtimiento (idSurtimiento,
+            idEstructuraAlmacen,
+            idPrescripcion,
+            fechaProgramada,
+            folio,
+            idEstatusSurtimiento,
+            idEstatusMirth,
+            folioOrdenAVG,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario,
+            procesado)
+        SELECT uuid() as idSurtimiento,
+            idEstructuraAlmacen,
+            idPrescripcion,
+            fechaProgramada,
+            #{newFolio , jdbcType = VARCHAR },
+            5,
+            idEstatusMirth,
+            folioOrdenAVG,
+            insertFecha,
+            insertIdUsuario,
+            updateFecha,
+            updateIdUsuario,
+            procesado
+        FROM surtimiento where idSurtimiento = #{idSurtimiento , jdbcType = VARCHAR };
+    </insert>
+    
+    <update id="actualizarFolio" parameterType="Map" >
+        UPDATE surtimiento SET
+        folio = #{ newFolio , jdbcType = VARCHAR }
+        WHERE idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+    </update>
+    
+    <update id="actualizarTipoCancelacion" parameterType="Map" >
+        UPDATE surtimiento SET
+        idTipoCancelacion = #{ idTipoCancelacion , jdbcType = INTEGER }
+        WHERE idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+    </update>
+    
+    <select id="obtenerSurtPrescripcion" resultType="int" parameterType="Map">
+        select distinct 
+        count(*) as val
+        from surtimiento s 
+        inner join prescripcion p on p.idPrescripcion = s.idPrescripcion
+        where p.folio = #{ folio , jdbcType = VARCHAR }         
+        and s.idEstatusSurtimiento in (1,4)
+    </select>
+    
+    <select id="obtenerTotalSurtimiento" resultType="int" parameterType="Map">
+        select distinct 
+        count(*) as val        
+        from surtimientoInsumo si 
+        inner join surtimiento s on s.idSurtimiento = si.idSurtimiento
+        where s.folio = #{ folio , jdbcType = VARCHAR }         
+        and si.idEstatusSurtimiento in (4);
+    </select>
+    
+    <update id="ligaridCapsulaconSurtimiento" parameterType="mx.mc.model.Surtimiento" >        
+        UPDATE surtimiento
+        <set>
+            <if test="idCapsula != null">
+            idCapsula  = #{idCapsula,jdbcType=VARCHAR}
+            </if>
+        </set>
+        WHERE 
+        <if test="idSurtimiento != null">
+            idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR } 
+        </if>
+    </update>
+    
+    <select id="obtenerByIdSurtimiento" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map">
+        SELECT
+            *
+        FROM surtimiento
+        WHERE 
+         idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+    LIMIT 1
+    </select>
+    
+    <select id="obtenerByIdPrescripcion" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map">
+        SELECT
+            *
+        FROM surtimiento
+        WHERE 
+         idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        LIMIT 1
+    </select>
+    
+    <update id="updateAsignSurtimiento" parameterType="mx.mc.model.Surtimiento_Extend"  >
+        UPDATE surtimiento 
+        SET
+        idEstatusSurtimiento = #{ idEstatusSurtimiento , jdbcType = INTEGER }
+        ,updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        ,updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        ,idEstatusMirth = #{ idEstatusMirth , jdbcType = INTEGER }
+        WHERE idSurtimiento = #{ idSurtimiento , jdbcType = VARCHAR }
+    </update>  
+    
+    <select id="obtenerSurtimientoConEstatus" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map">
+        SELECT
+            *
+        FROM surtimiento
+        WHERE 
+         idSurtimiento IN
+            <foreach item="item" index="index" collection="listaSurtimiento" open="(" separator="," close=")">
+                    #{item}
+            </foreach>
+        AND idEstatusSurtimiento NOT IN
+            <foreach item="item" index="index" collection="listaEstatus" open="(" separator="," close=")">
+                    #{item}
+            </foreach>
+        LIMIT 1;
+    </select>
+    
+    <update id="actualizarClaveSolucionSurtimietoByFolio" parameterType="mx.mc.model.Surtimiento"  >
+        UPDATE surtimiento 
+        SET claveAgrupada = #{ claveAgrupada , jdbcType = VARCHAR }
+        WHERE folio = #{ folio , jdbcType = VARCHAR }
+    </update>  
+    
+    <select id="obtenerByFechaAndPrescripcion" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map">
+        SELECT
+            *
+        FROM surtimiento
+        WHERE 
+        idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        and  date_format(fechaProgramada,'%Y-%m-%d') =  date_format( #{ fechaProgramada , jdbcType = TIMESTAMP} ,'%Y-%m-%d');
+        <!--date_format( #{ fechaProgramada , jdbcType = TIMESTAMP},'%Y-%m-%d %H:%i:%s') ;        -->
+    </select>
+    
+    <select id="obtenerDetallePrescripcionSolucion" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map">
+        SELECT 	
+            t.nombre as nombreIngrediente
+            , pi.velocidad
+            , ROUND(pi.ritmo,2) as ritmo
+            , pi.perfusionContinua
+            , u.nombreUnidadConcentracion as unidadConcentracion
+            <!--, sm.fechaMinistrado
+            , sm.fechaInicio
+            , sm.comentarios -->
+            ,s.*
+        FROM   prescripcion p 
+            INNER JOIN    prescripcionInsumo pi on pi.idPrescripcion = p.idPrescripcion
+            INNER JOIN    surtimiento s on s.idPrescripcion = p.idPrescripcion
+            INNER JOIN    tipoIngrediente t on t.idTipoIngrediente = pi.idTipoIngrediente
+            INNER JOIN    unidadConcentracion u on u.idUnidadConcentracion = pi.idUnidadConcentracion
+            <!--INNER JOIN    surtimientoInsumo si ON si.idPrescripcionInsumo = pi.idPrescripcionInsumo AND si.idSurtimiento = s.idSurtimiento
+            INNER JOIN    surtimientoEnviado se ON se.idSurtimientoInsumo = si.idSurtimientoInsumo
+            INNER JOIN    surtimientoMinistrado sm ON sm.idSurtimientoEnviado = se.idSurtimientoEnviado-->
+        WHERE
+            p.folio = #{folioPrescripcion}
+    </select>
+
+                
+    <select id="obtenerSolucionPorIdSurtimiento" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map" >
+        SELECT s.idSurtimiento 
+            , s.idPrescripcion 
+            , s.folio 
+            , s.fechaProgramada 
+            , s.idEstatusSurtimiento 
+            , s.claveAgrupada  
+            , so.ritmo, so.velocidad 
+            , so.perfusionContinua
+            , so.idEstatusSolucion
+            , es2.descripcion AS estatusSolucion 
+            , ts.clave AS tipoSolucion 
+            , p.folio as folioPrescripcion 
+            , estatus AS estatusPrescripcion 
+            , p.tipoPrescripcion 
+            , p.idEstructura 
+            , p.tipoConsulta 
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico 
+            , u.cedProfesional
+            , e.nombre AS nombreEstructura , IFNULL(c.nombreCama, '') AS cama
+            , pa.idPaciente  
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente 
+            , pa.pacienteNumero 
+            , pa.claveDerechohabiencia
+            , TIMESTAMPDIFF(YEAR, pa.fechaNacimiento ,CURDATE()) AS edadPaciente
+        FROM solucion so
+        JOIN estatusSolucion es2 ON so.idEstatusSolucion = es2.idEstatusSolucion 
+        JOIN surtimiento s ON so.idSurtimiento = s.idSurtimiento
+        JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion 
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteUbicacion = pu.idPacienteUbicacion
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion
+        WHERE s.idSurtimiento = #{ idSurtimiento }
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerPorFechaEstructuraPacientePrescripcionSolucionLazy" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map" >
+        SELECT s.idSurtimiento 
+            , s.idPrescripcion 
+            , s.folio 
+            , s.fechaProgramada            
+            , s.idEstatusSurtimiento 
+            , s.claveAgrupada  
+            , so.ritmo, so.velocidad 
+            , so.perfusionContinua
+            , so.idEstatusSolucion
+            , es2.descripcion AS estatusSolucion 
+            , ts.clave AS tipoSolucion 
+            , p.folio as folioPrescripcion 
+            , estatus AS estatusPrescripcion 
+            , p.tipoPrescripcion 
+            , p.idEstructura 
+            , p.tipoConsulta 
+            , p.idTipoSolucion 
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico 
+            , u.cedProfesional
+            , e.nombre AS nombreEstructura , IFNULL(c.nombreCama, '') AS cama
+            , pa.idPaciente  
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente 
+            , pa.pacienteNumero 
+            , pa.claveDerechohabiencia
+            , TIMESTAMPDIFF(YEAR, pa.fechaNacimiento ,CURDATE()) AS edadPaciente
+            , pa.fechaNacimiento
+            , pa.sexo AS pacienteSexo
+            , so.fechaParaEntregar
+            , s.diabetes , s.hipertension , s.problemasRenales
+            , s.insertFecha
+            , s.insertIdUsuario
+            , so.comentariosRechazo
+            , so.descripcion AS descripcion
+        FROM solucion so
+        JOIN estatusSolucion es2 ON so.idEstatusSolucion = es2.idEstatusSolucion 
+        JOIN surtimiento s ON so.idSurtimiento = s.idSurtimiento
+        JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion 
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteUbicacion = pu.idPacienteUbicacion
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion
+        WHERE 1=1
+        <if test=" tipoPrescripcion != null "> AND UPPER ( p.tipoPrescripcion ) LIKE UPPER (SUBSTRING( #{ tipoPrescripcion } , 1,1 ) ) </if>
+        <if test=" estatusSolucion != null "> AND UPPER( es2.descripcion ) LIKE UPPER( '%${ estatusSolucion }%' ) </if>
+        <if test=" nombreEstructura != null "> AND UPPER( e.nombre ) LIKE UPPER( '%${ nombreEstructura }%' ) </if>
+        <if test=" tipoSolucion != null "> AND UPPER( ts.clave ) LIKE UPPER( '%${ tipoSolucion }%' ) </if>
+        <if test=" nombreMedico != null "> AND UPPER( CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' ' , u.nombre ) ) LIKE UPPER( '%${ nombreMedico }%' ) </if>
+        <if test=" folio != null "> AND UPPER( s.folio ) LIKE UPPER( '%${ folio }%' ) </if>
+        <if test=" fechaProgramada2 != null "> AND date_format(fechaProgramada , '%Y-%m-%d %H:%i' ) LIKE '%${ fechaProgramada2 }%' </if>
+        <if test=" nombrePaciente != null "> AND UPPER( CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) ) LIKE UPPER( '%${ nombrePaciente }%' ) </if>
+        <if test=" cama != null "> AND UPPER( c.nombreCama ) LIKE UPPER( '%${ cama }%' ) </if>
+        <if test=" folioPrescripcion != null "> AND UPPER( p.folio ) LIKE UPPER( '%${ folioPrescripcion }%' ) </if>
+        
+        <if test=" tipoProceso == 1">                    
+            AND (s.fechaProgramada BETWEEN
+            (SELECT DATE_ADD(now() , INTERVAL (-1 * (SELECT valor FROM config c WHERE nombre = 'fun_numHorPrevReceta')) HOUR  ) ) 
+            AND
+            (SELECT DATE_ADD(now() , INTERVAL (1 * (SELECT valor FROM config c WHERE nombre = 'fun_numHorPostReceta')) HOUR  ))
+            )
+        </if>
+        <if test=" tipoProceso == 2">
+            AND (s.fechaProgramada BETWEEN
+            (SELECT DATE_ADD(now() , INTERVAL (-1 * (SELECT valor FROM config c WHERE nombre = 'fun_numHorPrevOrden')) HOUR  ) ) 
+            AND
+            (SELECT DATE_ADD(now() , INTERVAL (1 * (SELECT valor FROM config c WHERE nombre = 'fun_numHorPostOrden')) HOUR  ))
+            )
+        </if>    
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR pa.claveDerechohabiencia LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR pa.pacienteNumero LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR s.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+<!--        <if test=" fechaProgramada != null ">
+            todo: Regla: Solo prescripciones del dia 
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ <= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>-->
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" estatusSurtimientoLista != null ">
+            AND s.idEstatusSurtimiento IN 
+            <foreach item="item" index="index" collection="estatusSurtimientoLista" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" estatusSolucionLista != null ">
+            AND so.idEstatusSolucion IN 
+            <foreach item="item" index="index" collection="estatusSolucionLista" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" idTipoSolucion != null ">
+            AND p.idTipoSolucion = #{ idTipoSolucion, jdbcType = VARCHAR }
+        </if>
+        
+        <if test=" agruparParaAutorizar == true">
+            AND s.folio in (SELECT MIN(su.folio) FROM prescripcion pr INNER JOIN surtimiento su ON pr.idPrescripcion = su.idPrescripcion
+                INNER JOIN solucion sol ON su.idSurtimiento = sol.idSurtimiento
+                WHERE sol.idEstatusSolucion IN ( 26 ) 
+                group by su.idPrescripcion) 
+        </if>
+        
+        <if test="sortOrder != null" > 
+            <if test="sortField == null" >                  
+                ORDER BY s.fechaProgramada desc
+            </if>
+            <if test=" paramBusquedaReporte.sortField == 'cama'" > 
+                <if test=" paramBusquedaReporte.sortOrder == 'asc'" > 
+                    ORDER BY c.nombreCama  asc
+                </if>
+                <if test=" paramBusquedaReporte.sortOrder == 'desc'" > 
+                    ORDER BY c.nombreCama  desc
+                </if>            
+            </if>
+            <if test=" paramBusquedaReporte.sortField == 'tipoSolucion'" > 
+                <if test=" paramBusquedaReporte.sortOrder == 'asc'" > 
+                    ORDER BY ts.clave asc
+                </if>
+                <if test=" paramBusquedaReporte.sortOrder == 'desc'" > 
+                    ORDER BY ts.clave desc
+                </if>            
+            </if>
+            <if test="sortField == 'folio'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY s.folio asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY s.folio desc
+                </if>            
+            </if>
+            <if test="sortField == 'tipoPrescripcion'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY p.tipoPrescripcion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY p.tipoPrescripcion desc
+                </if>
+            </if>   
+            <if test="sortField == 'fechaProgramada'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY s.fechaProgramada asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY s.fechaProgramada desc
+                </if>
+            </if>
+            <if test="sortField == 'nombrePaciente'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombrePaciente asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombrePaciente desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreMedico'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreMedico asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreMedico desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreEstructura'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreEstructura asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreEstructura desc
+                </if>
+            </if>
+            
+        </if>
+        <if test="maxPerPage != -1">
+            LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        </if>
+    </select>
+    
+    <select id="obtenerTotalPorFechaEstructuraPacientePrescripcionSolucionLazy" resultType="Long" parameterType="Map" >
+        
+        SELECT count(*) 
+        <if test=" agruparParaAutorizar == true">
+            from (
+            SELECT 
+                so.idSurtimiento
+        </if>    
+        FROM solucion so
+        JOIN estatusSolucion es2 ON so.idEstatusSolucion = es2.idEstatusSolucion 
+        JOIN surtimiento s ON so.idSurtimiento = s.idSurtimiento
+        JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion 
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteUbicacion = pu.idPacienteUbicacion
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion
+        WHERE 1=1
+        <if test=" tipoPrescripcion != null "> AND UPPER ( p.tipoPrescripcion ) LIKE UPPER (SUBSTRING( #{ tipoPrescripcion } , 1,1 ) ) </if>
+        <if test=" estatusSolucion != null "> AND UPPER( es2.descripcion ) LIKE UPPER( '%${ estatusSolucion }%' ) </if>
+        <if test=" nombreEstructura != null "> AND UPPER( e.nombre ) LIKE UPPER( '%${ nombreEstructura }%' ) </if>
+        <if test=" tipoSolucion != null "> AND UPPER( ts.clave ) LIKE UPPER( '%${ tipoSolucion }%' ) </if>
+        <if test=" nombreMedico != null "> AND UPPER( CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' ' , u.nombre ) ) LIKE UPPER( '%${ nombreMedico }%' ) </if>
+        <if test=" folio != null "> AND UPPER( s.folio ) LIKE UPPER( '%${ folio }%' ) </if>
+        <if test=" fechaProgramada2 != null "> AND date_format(fechaProgramada , '%Y-%m-%d %H:%i' ) LIKE '%${ fechaProgramada2 }%' </if>
+        <if test=" nombrePaciente != null "> AND UPPER( CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) ) LIKE UPPER( '%${ nombrePaciente }%' ) </if>
+        <if test=" cama != null "> AND UPPER( c.nombreCama ) LIKE UPPER( '%${ cama }%' ) </if>
+        <if test=" folioPrescripcion != null "> AND UPPER( p.folio ) LIKE UPPER( '%${ folioPrescripcion }%' ) </if>
+        
+        <if test=" tipoProceso == 1">                    
+            AND (s.fechaProgramada BETWEEN
+            (SELECT DATE_ADD(now() , INTERVAL (-1 * (SELECT valor FROM config c WHERE nombre = 'fun_numHorPrevReceta')) HOUR  ) ) 
+            AND
+            (SELECT DATE_ADD(now() , INTERVAL (1 * (SELECT valor FROM config c WHERE nombre = 'fun_numHorPostReceta')) HOUR  ))
+            )
+        </if>
+        <if test=" tipoProceso == 2">
+            AND (s.fechaProgramada BETWEEN
+            (SELECT DATE_ADD(now() , INTERVAL (-1 * (SELECT valor FROM config c WHERE nombre = 'fun_numHorPrevOrden')) HOUR  ) ) 
+            AND
+            (SELECT DATE_ADD(now() , INTERVAL (1 * (SELECT valor FROM config c WHERE nombre = 'fun_numHorPostOrden')) HOUR  ))
+            )
+        </if>    
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR pa.claveDerechohabiencia LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR pa.pacienteNumero LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR s.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+<!--        <if test=" fechaProgramada != null ">
+            todo: Regla: Solo prescripciones del dia 
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ >= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>-->
+        
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" estatusSurtimientoLista != null ">
+            AND s.idEstatusSurtimiento IN 
+            <foreach item="item" index="index" collection="estatusSurtimientoLista" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" estatusSolucionLista != null ">
+            AND so.idEstatusSolucion IN 
+            <foreach item="item" index="index" collection="estatusSolucionLista" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" idTipoSolucion != null ">
+            AND p.idTipoSolucion = #{ idTipoSolucion, jdbcType = VARCHAR }
+        </if>
+        <if test=" agruparParaAutorizar == true">
+            group by s.idPrescripcion 
+            ) as s2
+        </if>
+    </select>
+    
+    <select id="obtenerSurtimientoByFolioSurtimientoOrFolioPrescripcion" parameterType="Map" resultType="mx.mc.model.Surtimiento_Extend">
+        SELECT s.idPrescripcion, s.idSurtimiento, s.folio AS folio, p.folio AS folioPrescripcion FROM prescripcion p 
+        INNER JOIN surtimiento s ON p.idPrescripcion = s.idPrescripcion
+        WHERE 1 = 1
+        <if test="folioPrescripcion != null">
+            and p.folio = #{folioPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test="folioSurtimiento != null">
+            and s.folio = #{folioSurtimiento, jdbcType = VARCHAR }
+        </if> 
+    </select>
+    
+    <select id="obtenerUltimoByIdPrescripcion" resultType="mx.mc.model.Surtimiento_Extend" parameterType="java.lang.String" >
+        SELECT
+            idSurtimiento , idPrescripcion , fechaProgramada , folio , idEstatusSurtimiento, idEstructuraAlmacen, insertFecha
+        FROM surtimiento
+        WHERE 1=1
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        ORDER BY fechaProgramada DESC
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerSurtimientoExtendedByIdSurtimiento" resultType="mx.mc.model.Surtimiento_Extend" parameterType="java.lang.String">
+        SELECT  distinct
+            s.idSurtimiento , s.idPrescripcion , s.folio , s.fechaProgramada , s.idEstatusSurtimiento 
+            , pi.ritmo, pi.velocidad, pi.perfusionContinua, uc.nombreUnidadConcentracion as unidadConcentracion
+            , ti.nombre as nombreIngrediente
+            , estatus AS estatusPrescripcion
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente
+            , pa.pacienteNumero , pa.claveDerechohabiencia
+            , e.nombre AS nombreEstructura 
+            , c.nombreCama AS cama
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico
+            , p.folio as folioPrescripcion, p.tipoPrescripcion , p.idEstructura , pa.sexo as pacienteSexo , u.cedProfesional
+            , p.tipoConsulta, pa.idPaciente, v.idVisita, ts.descripcion AS tipoSolucion
+            , s.padecimientoCronico, s.diabetes, s.hipertension, s.problemasRenales
+            , TIMESTAMPDIFF(YEAR, pa.fechaNacimiento ,CURDATE()) AS edadPaciente , pa.fechaNacimiento
+            , s.claveAgrupada
+            , s.idEstructuraAlmacen
+            , s.insertFecha
+            , s.insertIdUsuario
+        FROM surtimiento s
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        JOIN prescripcionInsumo pi on pi.idPrescripcion = p.idPrescripcion        
+        LEFT JOIN unidadConcentracion uc on uc.idUnidadConcentracion = pi.idUnidadConcentracion
+        LEFT JOIN tipoIngrediente ti on ti.idtipoIngrediente = pi.idTipoIngrediente
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente        
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteUbicacion = pu.idPacienteUbicacion <!-- p.idPacienteServicio = pu.idPacienteServicio  Se realiza cambio por que no se mostraba la cama correcta-->
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion
+        WHERE 1=1
+	AND s.idSurtimiento = #{idSurtimiento, jdbcType=VARCHAR}
+	AND e.envioHL7 != 1
+        <!--AND pu.fechaUbicaFin IS NULL-->
+        AND p.idTipoSolucion is not null
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerTotalOrdenesSolucionLazy" resultType="Long" parameterType="Map" >
+        SELECT count(*)
+        FROM surtimiento s
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR s.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+        <if test=" fechaProgramada != null ">
+            <!--todo: Regla: Solo prescripciones del dia -->
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ <= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusSurtimiento != null ">
+            AND s.idEstatusSurtimiento IN
+            <foreach item="item" index="index" collection="listEstatusSurtimiento" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        AND e.envioHL7 != 1
+        AND pu.fechaUbicaFin IS NULL
+    </select>
+    
+    <select id="obtenerOrdenesSolucionLazy" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map" >
+        SELECT  s.idSurtimiento , s.idPrescripcion , s.folio , s.fechaProgramada , s.idEstatusSurtimiento 
+            , estatus AS estatusPrescripcion
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente
+            , pa.pacienteNumero , pa.claveDerechohabiencia
+            , e.nombre AS nombreEstructura 
+            , c.nombreCama AS cama
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico
+            , p.folio as folioPrescripcion, p.tipoPrescripcion , p.idEstructura , pa.sexo as pacienteSexo , u.cedProfesional
+            , p.tipoConsulta,pa.idPaciente,v.idVisita, ts.descripcion AS tipoSolucion
+            , s.padecimientoCronico, s.diabetes, s.hipertension, s.problemasRenales
+            , TIMESTAMPDIFF(YEAR, pa.fechaNacimiento ,CURDATE()) AS edadPaciente
+            , s.claveAgrupada
+        FROM surtimiento s
+        INNER JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        INNER JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente        
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteServicio = pu.idPacienteServicio
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR s.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+        <if test=" fechaProgramada != null ">
+            <!--todo: Regla: Solo prescripciones del dia -->
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ <= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusSurtimiento != null ">
+            AND s.idEstatusSurtimiento IN
+            <foreach item="item" index="index" collection="listEstatusSurtimiento" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        AND e.envioHL7 != 1
+        AND pu.fechaUbicaFin IS NULL
+        
+        <!-- TODO: Sólo para evitar duplicados, pendiente revisar query -->
+        GROUP BY s.idSurtimiento
+        
+        <if test="sortOrder == null" >
+            ORDER BY s.fechaProgramada desc
+        </if>
+        <if test="sortOrder != null" > 
+            <if test="sortField == null" > 
+                ORDER BY s.fechaProgramada desc
+            </if>
+            <if test="sortField == 'folio'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY s.folio asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY s.folio desc
+                </if>            
+            </if>
+            <if test="sortField == 'tipoPrescripcion'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY p.tipoPrescripcion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY p.tipoPrescripcion desc
+                </if>
+            </if>   
+            <if test="sortField == 'fechaProgramada'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY s.fechaProgramada asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY s.fechaProgramada desc
+                </if>
+            </if>
+            <if test="sortField == 'nombrePaciente'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombrePaciente asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombrePaciente desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreMedico'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreMedico asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreMedico desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreEstructura'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreEstructura asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreEstructura desc
+                </if>
+            </if>
+            
+        </if>
+        <if test="maxPerPage != -1">
+            LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        </if>
+    </select>
+    
+    <select id="obtenerPorFechaEstructuraPacientePrescripcionFechaEntregSolucionLazy" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map" >
+        SELECT s.idSurtimiento 
+            , s.idPrescripcion 
+            , s.folio 
+            , s.fechaProgramada 
+            , s.idEstatusSurtimiento 
+            , s.claveAgrupada  
+            , so.ritmo, so.velocidad 
+            , so.perfusionContinua
+            , so.idEstatusSolucion
+            , es2.descripcion AS estatusSolucion 
+            , ts.clave AS tipoSolucion 
+            , p.folio as folioPrescripcion 
+            , estatus AS estatusPrescripcion 
+            , p.tipoPrescripcion 
+            , p.idEstructura 
+            , p.tipoConsulta 
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico 
+            , u.cedProfesional
+            , e.nombre AS nombreEstructura , IFNULL(c.nombreCama, '') AS cama
+            , pa.idPaciente  
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente 
+            , pa.pacienteNumero 
+            , pa.claveDerechohabiencia
+            , TIMESTAMPDIFF(YEAR, pa.fechaNacimiento ,CURDATE()) AS edadPaciente
+            , pa.fechaNacimiento
+            , pa.sexo AS pacienteSexo
+            , so.fechaParaEntregar
+            , es2.descripcion  AS estatusSolucion
+        FROM solucion so
+        JOIN estatusSolucion es2 ON so.idEstatusSolucion = es2.idEstatusSolucion 
+        JOIN surtimiento s ON so.idSurtimiento = s.idSurtimiento
+        JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion 
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteUbicacion = pu.idPacienteUbicacion
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR s.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+        <if test=" fechaProgramada != null ">
+            <!--todo: Regla: Solo prescripciones del dia -->
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ <= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" estatusSurtimientoLista != null ">
+            AND s.idEstatusSurtimiento IN 
+            <foreach item="item" index="index" collection="estatusSurtimientoLista" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" estatusSolucionLista != null ">
+            AND so.idEstatusSolucion IN 
+            <foreach item="item" index="index" collection="estatusSolucionLista" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" idEstructura != null ">
+            AND p.idEstructura = #{ idEstructura }
+        </if>
+        <if test=" idTipoSolucion != null ">
+            AND p.idTipoSolucion = #{ idTipoSolucion }
+        </if>
+        <if test=" fechaParaEntregar != null ">
+            AND DATE_FORMAT( so.fechaParaEntregar , '%Y-%m-%d') = date_format( #{ fechaParaEntregar  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>
+        <if test=" idHorarioParaEntregar!= null" >
+            AND DATE_FORMAT( so.fechaParaEntregar , '%h-%i') 
+            = date_format( (SELECT horaEntrega FROM horarioEntrega WHERE idHorarioEntrega = #{ idHorarioParaEntregar }) , '%h-%i')
+        </if>
+
+        
+        <if test="sortOrder != null" > 
+            <if test="sortField == null" > 
+                ORDER BY s.fechaProgramada desc
+            </if>
+            <if test="sortField == 'folio'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY s.folio asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY s.folio desc
+                </if>            
+            </if>
+            <if test="sortField == 'tipoPrescripcion'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY p.tipoPrescripcion asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY p.tipoPrescripcion desc
+                </if>
+            </if>   
+            <if test="sortField == 'fechaProgramada'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY s.fechaProgramada asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY s.fechaProgramada desc
+                </if>
+            </if>
+            <if test="sortField == 'nombrePaciente'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombrePaciente asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombrePaciente desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreMedico'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreMedico asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreMedico desc
+                </if>
+            </if>
+             <if test="sortField == 'nombreEstructura'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY nombreEstructura asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY nombreEstructura desc
+                </if>
+            </if>
+            
+        </if>
+        <if test="maxPerPage != -1">
+            LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        </if>
+    </select>
+    
+    <select id="obtenerTotalPorFechaEstructuraPacientePrescripcionFechaEntregSolucionLazy" resultType="Long" parameterType="Map" >
+        SELECT 
+            count(*)
+        FROM solucion so
+        JOIN estatusSolucion es2 ON so.idEstatusSolucion = es2.idEstatusSolucion 
+        JOIN surtimiento s ON so.idSurtimiento = s.idSurtimiento
+        JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion 
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteUbicacion = pu.idPacienteUbicacion
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion
+        WHERE 1=1
+        <if test=" listServiciosQueSurte != null ">
+            <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+            <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR s.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+        <if test=" fechaProgramada != null ">
+            <!--todo: Regla: Solo prescripciones del dia -->
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ <= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>
+        <if test=" listTipoPrescripcion != null ">
+            <!--todo: Regla:  Solo prescripciones en estatus programada-->
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" estatusSurtimientoLista != null ">
+            AND s.idEstatusSurtimiento IN 
+            <foreach item="item" index="index" collection="estatusSurtimientoLista" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" estatusSolucionLista != null ">
+            AND so.idEstatusSolucion IN 
+            <foreach item="item" index="index" collection="estatusSolucionLista" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        
+        <if test=" idEstructura != null ">
+            AND p.idEstructura = #{ idEstructura }
+        </if>
+        <if test=" idTipoSolucion != null ">
+            AND p.idTipoSolucion = #{ idTipoSolucion }
+        </if>
+        <if test=" fechaParaEntregar != null ">
+            AND DATE_FORMAT( so.fechaParaEntregar , '%Y-%m-%d') = date_format( #{ fechaParaEntregar  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>
+        <if test=" idHorarioParaEntregar!= null" >
+            AND DATE_FORMAT( so.fechaParaEntregar , '%h-%i') 
+            = date_format( (SELECT horaEntrega FROM horarioEntrega WHERE idHorarioEntrega = #{ idHorarioParaEntregar }) , '%h-%i')
+        </if>
+        
+    </select>
+
+    
+    <select id="obtenerSolucionesPorIdEstructuraTipoMezclaFechas" resultType="mx.mc.model.Surtimiento_Extend" parameterType="Map" >
+        SELECT s.idSurtimiento 
+            , s.idPrescripcion 
+            , s.folio 
+            , s.fechaProgramada 
+            , s.idEstatusSurtimiento 
+            , s.claveAgrupada  
+            , so.ritmo, so.velocidad 
+            , so.perfusionContinua
+            , so.idEstatusSolucion
+            , es2.descripcion AS estatusSolucion 
+            , ts.clave AS tipoSolucion 
+            , p.folio as folioPrescripcion 
+            , estatus AS estatusPrescripcion 
+            , p.tipoPrescripcion 
+            , p.idEstructura 
+            , p.tipoConsulta 
+            , p.idTipoSolucion 
+            , CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) AS nombreMedico 
+            , u.cedProfesional
+            , e.nombre AS nombreEstructura , IFNULL(c.nombreCama, '') AS cama
+            , pa.idPaciente  
+            , CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) AS nombrePaciente 
+            , pa.pacienteNumero 
+            , pa.claveDerechohabiencia
+            , TIMESTAMPDIFF(YEAR, pa.fechaNacimiento ,CURDATE()) AS edadPaciente
+            , pa.fechaNacimiento
+            , pa.sexo AS pacienteSexo
+            , so.fechaParaEntregar
+            , s.diabetes , s.hipertension , s.problemasRenales
+            , s.insertFecha
+            , s.insertIdUsuario
+            , so.comentariosRechazo
+            , so.descripcion AS descripcion
+        FROM solucion so
+        JOIN estatusSolucion es2 ON so.idEstatusSolucion = es2.idEstatusSolucion 
+        JOIN surtimiento s ON so.idSurtimiento = s.idSurtimiento
+        JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion 
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteUbicacion = pu.idPacienteUbicacion
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion
+        WHERE 1=1
+        <if test=" paramBusquedaReporte.fechaInicio != null ">
+            <if test=" paramBusquedaReporte.fechaFin != null ">
+                AND (s.fechaProgramada BETWEEN #{ paramBusquedaReporte.fechaInicio } AND  #{ paramBusquedaReporte.fechaFin } )
+            </if>
+        </if>
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND ps.idEstructura = #{ paramBusquedaReporte.idEstructura } 
+        </if>
+        
+        <if test=" fechaProgramada != null "> AND date_format(fechaProgramada , '%Y-%m-%d %H:%i' ) LIKE '%${ fechaProgramada }%' </if>
+        <if test=" tipoPrescripcion != null "> AND UPPER ( p.tipoPrescripcion ) LIKE UPPER (SUBSTRING( #{ tipoPrescripcion } , 1,1 ) ) </if>
+        <if test=" estatusSolucion != null "> AND UPPER( es2.descripcion ) LIKE UPPER( '%${ estatusSolucion }%' ) </if>
+        <if test=" nombreEstructura != null "> AND UPPER( e.nombre ) LIKE UPPER( '%${ nombreEstructura }%' ) </if>
+        <if test=" tipoSolucion != null "> AND UPPER( ts.clave ) LIKE UPPER( '%${ tipoSolucion }%' ) </if>
+        <if test=" nombreMedico != null "> AND UPPER( CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' ' , u.nombre ) ) LIKE UPPER( '%${ nombreMedico }%' ) </if>
+        <if test=" folio != null "> AND UPPER( s.folio ) LIKE UPPER( '%${ folio }%' ) </if>
+        <if test=" nombrePaciente != null "> AND UPPER( CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) ) LIKE UPPER( '%${ nombrePaciente }%' ) </if>
+        <if test=" cama != null "> AND UPPER( c.nombreCama ) LIKE UPPER( '%${ cama }%' ) </if>
+        <if test=" folioPrescripcion != null "> AND UPPER( p.folio ) LIKE UPPER( '%${ folioPrescripcion }%' ) </if>
+        
+        <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+        <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+<!--        <if test=" listServiciosQueSurte != null ">
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>-->
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR pa.claveDerechohabiencia LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR pa.pacienteNumero LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR s.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+<!--todo: Regla:  Solo prescripciones en estatus programada-->
+<!--        <if test=" listTipoPrescripcion != null ">
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" estatusSurtimientoLista != null ">
+            AND s.idEstatusSurtimiento IN 
+            <foreach item="item" index="index" collection="estatusSurtimientoLista" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>-->
+        <if test=" estatusSolucionLista != null ">
+            AND so.idEstatusSolucion IN 
+            <foreach item="item" index="index" collection="estatusSolucionLista" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" idTipoSolucion != null ">
+            AND p.idTipoSolucion = #{ idTipoSolucion, jdbcType = VARCHAR }
+        </if>
+        
+        <if test=" paramBusquedaReporte.sortOrder != null" > 
+            <if test=" paramBusquedaReporte.sortField == null" > 
+                ORDER BY s.fechaProgramada desc
+            </if>
+            <if test=" paramBusquedaReporte.sortField == 'cama'" > 
+                <if test=" paramBusquedaReporte.sortOrder == 'asc'" > 
+                    ORDER BY c.nombreCama  asc
+                </if>
+                <if test=" paramBusquedaReporte.sortOrder == 'desc'" > 
+                    ORDER BY c.nombreCama  desc
+                </if>            
+            </if>
+            <if test=" paramBusquedaReporte.sortField == 'tipoSolucion'" > 
+                <if test=" paramBusquedaReporte.sortOrder == 'asc'" > 
+                    ORDER BY ts.clave asc
+                </if>
+                <if test=" paramBusquedaReporte.sortOrder == 'desc'" > 
+                    ORDER BY ts.clave desc
+                </if>            
+            </if>
+            <if test=" paramBusquedaReporte.sortField == 'folio'" > 
+                <if test=" paramBusquedaReporte.sortOrder == 'asc'" > 
+                    ORDER BY s.folio asc
+                </if>
+                <if test=" paramBusquedaReporte.sortOrder == 'desc'" > 
+                    ORDER BY s.folio desc
+                </if>            
+            </if>
+            <if test=" paramBusquedaReporte.sortField == 'tipoPrescripcion'" > 
+                <if test=" paramBusquedaReporte.sortOrder == 'asc'" > 
+                    ORDER BY p.tipoPrescripcion asc
+                </if>
+                <if test=" paramBusquedaReporte.sortOrder == 'desc'" > 
+                    ORDER BY p.tipoPrescripcion desc
+                </if>
+            </if>   
+            <if test=" paramBusquedaReporte.sortField == 'fechaProgramada'" > 
+                <if test=" paramBusquedaReporte.sortOrder == 'asc'" > 
+                    ORDER BY s.fechaProgramada asc
+                </if>
+                <if test=" paramBusquedaReporte.sortOrder == 'desc'" > 
+                    ORDER BY s.fechaProgramada desc
+                </if>
+            </if>
+            <if test=" paramBusquedaReporte.sortField == 'nombrePaciente'" > 
+                <if test=" paramBusquedaReporte.sortOrder == 'asc'" > 
+                    ORDER BY nombrePaciente asc
+                </if>
+                <if test=" paramBusquedaReporte.sortOrder == 'desc'" > 
+                    ORDER BY nombrePaciente desc
+                </if>
+            </if>
+             <if test=" paramBusquedaReporte.sortField == 'nombreMedico'" > 
+                <if test=" paramBusquedaReporte.sortOrder == 'asc'" > 
+                    ORDER BY nombreMedico asc
+                </if>
+                <if test=" paramBusquedaReporte.sortOrder == 'desc'" > 
+                    ORDER BY nombreMedico desc
+                </if>
+            </if>
+             <if test=" paramBusquedaReporte.sortField == 'nombreEstructura'" > 
+                <if test=" paramBusquedaReporte.sortOrder == 'asc'" > 
+                    ORDER BY nombreEstructura asc
+                </if>
+                <if test=" paramBusquedaReporte.sortOrder == 'desc'" > 
+                    ORDER BY nombreEstructura desc
+                </if>
+            </if>
+            
+        </if>
+        <if test=" paramBusquedaReporte.maxPerPage != -1">
+            LIMIT #{ paramBusquedaReporte.startingAt , jdbcType = INTEGER }, #{ paramBusquedaReporte.maxPerPage , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <select id="obtenerTotalSolucionesPorIdEstructuraTipoMezclaFechas" resultType="Long" parameterType="Map" >
+        SELECT 
+            count(*)
+        FROM solucion so
+        JOIN estatusSolucion es2 ON so.idEstatusSolucion = es2.idEstatusSolucion 
+        JOIN surtimiento s ON so.idSurtimiento = s.idSurtimiento
+        JOIN estatusSurtimiento es ON s.idEstatusSurtimiento = es.idEstatusSurtimiento
+        JOIN prescripcion p ON s.idPrescripcion = p.idPrescripcion 
+        INNER JOIN usuarios u ON p.idMedico = u.idUsuario
+        INNER JOIN pacienteServicio ps ON p.idPacienteServicio = ps.idPacienteServicio
+        INNER JOIN estructura e ON ps.idEstructura = e.idEstructura
+        INNER JOIN visita v ON ps.idVisita = v.idVisita
+        INNER JOIN paciente pa ON v.idPaciente = pa.idPaciente
+        LEFT JOIN pacienteUbicacion pu ON p.idPacienteUbicacion = pu.idPacienteUbicacion
+        LEFT JOIN cama c ON pu.idCama = c.idCama
+        LEFT JOIN tipoSolucion ts ON p.idTipoSolucion = ts.idTipoSolucion
+        WHERE 1=1
+        <if test=" paramBusquedaReporte.fechaInicio != null ">
+            <if test=" paramBusquedaReporte.fechaFin != null ">
+                AND (s.fechaProgramada BETWEEN #{ paramBusquedaReporte.fechaInicio } AND  #{ paramBusquedaReporte.fechaFin } )
+            </if>
+        </if>
+        <if test=" paramBusquedaReporte.idEstructura != null ">
+            AND ps.idEstructura = #{ paramBusquedaReporte.idEstructura } 
+        </if>
+        
+        <if test=" tipoPrescripcion != null "> AND UPPER ( p.tipoPrescripcion ) LIKE UPPER (SUBSTRING( #{ tipoPrescripcion } , 1,1 ) ) </if>
+        <if test=" estatusSolucion != null "> AND UPPER( es2.descripcion ) LIKE UPPER( '%${ estatusSolucion }%' ) </if>
+        <if test=" nombreEstructura != null "> AND UPPER( e.nombre ) LIKE UPPER( '%${ nombreEstructura }%' ) </if>
+        <if test=" tipoSolucion != null "> AND UPPER( ts.clave ) LIKE UPPER( '%${ tipoSolucion }%' ) </if>
+        <if test=" nombreMedico != null "> AND UPPER( CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' ' , u.nombre ) ) LIKE UPPER( '%${ nombreMedico }%' ) </if>
+        <if test=" folio != null "> AND UPPER( s.folio ) LIKE UPPER( '%${ folio }%' ) </if>
+        <if test=" nombrePaciente != null "> AND UPPER( CONCAT(pa.apellidoPaterno , ' ' , pa.apellidoMaterno , ' , ' , pa.nombreCompleto ) ) LIKE UPPER( '%${ nombrePaciente }%' ) </if>
+        <if test=" cama != null "> AND UPPER( c.nombreCama ) LIKE UPPER( '%${ cama }%' ) </if>
+        <if test=" folioPrescripcion != null "> AND UPPER( p.folio ) LIKE UPPER( '%${ folioPrescripcion }%' ) </if>
+        
+        <!--todo: Regla: Listar surtimientos solo del servicio al que surte el almacen al que el usuario está asignado -->
+        <!--todo:  Optimizar consulta, obteniendo primero el idEstructura de Usuario, el idEstructura del Servicio al que atiene el almacen-->
+<!--        <if test=" listServiciosQueSurte != null ">
+            AND ps.idEstructura IN 
+            <foreach item="item" index="index" collection="listServiciosQueSurte" open="(" separator="," close=")">
+                #{ item.idEstructura }
+            </foreach>
+        </if>-->
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null ">
+            AND (
+                e.nombre LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(pa.nombreCompleto , ' ' , pa.apellidoPaterno , ' ' , pa.apellidoMaterno) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR pa.claveDerechohabiencia LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR pa.pacienteNumero LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR c.nombreCama LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR p.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR s.folio LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR CONCAT(u.apellidoPaterno , ' ' , u.apellidoMaterno , ' , ' , u.nombre ) LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                )
+        </if>
+<!--        <if test=" fechaProgramada != null ">
+            todo: Regla: Solo prescripciones del dia 
+            AND DATE_FORMAT( s.fechaProgramada , '%Y-%m-%d') <![CDATA[ >= ]]> date_format( #{ fechaProgramada  , jdbcType = TIMESTAMP } , '%Y-%m-%d')
+        </if>-->
+        <!--todo: Regla:  Solo prescripciones en estatus programada-->
+<!--
+        <if test=" listTipoPrescripcion != null ">
+            AND p.tipoPrescripcion IN 
+            <foreach item="item" index="index" collection="listTipoPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPaciente != null ">
+            AND pa.idEstatusPaciente IN 
+            <foreach item="item" index="index" collection="listEstatusPaciente" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" listEstatusPrescripcion != null ">
+            AND p.idEstatusPrescripcion IN 
+            <foreach item="item" index="index" collection="listEstatusPrescripcion" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" estatusSurtimientoLista != null ">
+            AND s.idEstatusSurtimiento IN 
+            <foreach item="item" index="index" collection="estatusSurtimientoLista" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" estatusSolucionLista != null ">
+            AND so.idEstatusSolucion IN 
+            <foreach item="item" index="index" collection="estatusSolucionLista" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>-->
+        <if test=" estatusSolucionLista != null ">
+            AND so.idEstatusSolucion IN 
+            <foreach item="item" index="index" collection="estatusSolucionLista" open="(" separator="," close=")">
+                #{ item }
+            </foreach>
+        </if>
+        <if test=" idTipoSolucion != null ">
+            AND p.idTipoSolucion = #{ idTipoSolucion, jdbcType = VARCHAR }
+        </if>
+        
+    </select>
+        
+    <select id="obtenerSurtimientosByIdPrescripcion" resultType="mx.mc.model.Surtimiento" parameterType="Map" >
+        SELECT
+            *
+        FROM surtimiento
+        WHERE 
+         idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+    </select>    
+                
+</mapper>

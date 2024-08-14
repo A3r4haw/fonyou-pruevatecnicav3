@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.CensoInsumoMapper" >
+
+    <insert id="insertarCensoInsumo" parameterType="mx.mc.model.CensoInsumo" >
+        INSERT INTO censoInsumo (
+            idCensoInsumo, idCensoPaciente, idMedicamento, idDiagnostico, idUsuarioRegistra, fechaRegistro, idEstatusCensoInsumo,
+            idDelegacion, sexo, cantidadMinima, dosis, frecuencia, periodo, vigenciaInicio, vigenciaFin, oficio, fileName,
+            autorizacion, idEntidadHospitalaria, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        ) VALUES (
+            #{ idCensoInsumo , jdbcType = VARCHAR }
+            , #{ idCensoPaciente , jdbcType = VARCHAR }
+            , #{ idMedicamento , jdbcType = VARCHAR }
+            , #{ idDiagnostico , jdbcType = VARCHAR }
+            , #{ idUsuarioRegistra , jdbcType = VARCHAR }
+            , #{ fechaRegistro , jdbcType = TIMESTAMP }
+            , #{ idEstatusCensoInsumo , jdbcType = INTEGER }
+            , #{ idDelegacion , jdbcType = VARCHAR }
+            , #{ sexo , jdbcType = VARCHAR }
+            , #{ cantidadMinima , jdbcType = INTEGER }
+            , #{ dosis , jdbcType = DOUBLE }
+            , #{ frecuencia , jdbcType = INTEGER }
+            , #{ periodo , jdbcType = INTEGER }
+            , #{ vigenciaInicio , jdbcType = TIMESTAMP }
+            , #{ vigenciaFin , jdbcType = TIMESTAMP }
+            , #{ oficio , jdbcType = BLOB }
+            , #{ fileName , jdbcType = VARCHAR }
+            , #{ autorizacion , jdbcType = VARCHAR }
+            , #{ idEntidadHospitalaria , jdbcType = VARCHAR }
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        )
+    </insert>
+     
+    <select id="obtenerCensoInsumo" resultType="mx.mc.model.CensoInsumo" parameterType="mx.mc.model.CensoInsumo" >
+        SELECT idCensoInsumo, idCensoPaciente, idMedicamento, idDiagnostico, idUsuarioRegistra, fechaRegistro, idEstatusCensoInsumo,
+            idDelegacion, sexo, cantidadMinima, dosis, frecuencia, periodo, vigenciaInicio, vigenciaFin, oficio, fileName,
+            autorizacion, idEntidadHospitalaria, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM censoInsumo
+        WHERE 1=1
+        <if test=" idCensoInsumo != null ">
+            AND idCensoInsumo = #{ idCensoInsumo , jdbcType = VARCHAR }
+        </if>
+        <if test=" idCensoPaciente != null ">
+            AND idCensoPaciente = #{ idCensoPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" idMedicamento != null ">
+            AND idMedicamento = #{ idMedicamento , jdbcType = VARCHAR }
+        </if>
+        <if test=" idDiagnostico != null ">
+            AND idDiagnostico = #{ idDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatusCensoInsumo != null ">
+            AND idEstatusCensoInsumo = #{ idEstatusCensoInsumo , jdbcType = INTEGER }
+        </if>
+    </select>
+    
+    <update id="actualizarCensoInsumo" parameterType="mx.mc.model.CensoInsumo" >
+        UPDATE censoInsumo
+            SET idMedicamento = #{ idMedicamento , jdbcType = VARCHAR }
+              , idDiagnostico = #{ idDiagnostico , jdbcType = VARCHAR }
+              , idDelegacion = #{ idDelegacion , jdbcType = VARCHAR }
+              , sexo = #{ sexo , jdbcType = VARCHAR }
+              , cantidadMinima = #{ cantidadMinima , jdbcType = INTEGER }
+              , dosis = #{ dosis , jdbcType = DOUBLE }
+              , frecuencia = #{ frecuencia , jdbcType = INTEGER }
+              , periodo = #{ periodo , jdbcType = INTEGER }
+              , vigenciaInicio = #{ vigenciaInicio , jdbcType = TIMESTAMP }
+              , vigenciaFin = #{ vigenciaFin , jdbcType = TIMESTAMP }
+              , oficio = #{ oficio , jdbcType = BLOB }
+              , fileName = #{ fileName , jdbcType = VARCHAR }
+              , autorizacion = #{ autorizacion , jdbcType = VARCHAR }
+              , idEntidadHospitalaria = #{ idEntidadHospitalaria , jdbcType = VARCHAR }
+              , updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+              , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        WHERE idCensoInsumo = #{ idCensoInsumo , jdbcType = VARCHAR }
+    </update>
+</mapper>

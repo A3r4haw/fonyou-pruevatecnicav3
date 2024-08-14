@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    
+    <h:head>
+        <title>Reporte de Camas Asignadas</title>
+    </h:head>
+        
+    <h:body>
+    	<ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel">  
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>                        
+                        <p:panelGrid>
+                            
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="Reporte de Camas" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:outputLabel style="margin-right: 10px;" value="Estatus de la Cama" />
+                                            <br/>
+                                            <p:selectCheckboxMenu id="comboTipoMovimiento" label="Seleccione uno o mas"
+                                                            value="#{repCamaMB.tipoEstatusCama}"                                                            
+                                                            filter="true" filterMatchMode="startsWith" panelStyle="width:250px">					                                         
+                                                <f:selectItems value="#{repCamaMB.estatusCamaList}"
+                                                           var="estatus"
+                                                           itemValue="#{estatus.idEstatusCama}"
+                                                           itemLabel="#{estatus.nombreEstatusCama}"/>
+                                           </p:selectCheckboxMenu>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="margin-top: 12px">
+                                            <p:outputLabel style="margin-right: 10px;" value="Área:" />
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold!important;" value="#{repCamaMB.fullNameUnidad}" />
+                                            
+                                            <p:commandButton class="btnNew" value="Seleccionar área" 
+                                                             actionListener="#{repCamaMB.obtenerArbol}" onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('mdlArea').show();"
+                                             ajax="true" update=":mainForm"   style=" margin: 5px 0; "  />
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" style="margin-top: 12px">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bolder;" value="Cama / Servicio / Paciente"/>
+                                            <br/>
+                                            <p:inputText id="valor" placeholder="Busqueda..." value="#{repCamaMB.cadenaFiltro}"/>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2" style="margin-top: 12px">
+                                            <p:commandButton class="btnNew" value="Generar reporte"  styleClass="btnMusAzul"
+                                                             actionListener="#{repCamaMB.generaReporte}" onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide()"
+                                             ajax="true" update=":mainForm"  style=" margin: 5px 0; "  />                                            
+                                        </div>                                                                                
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2" style="margin-top: 12px">
+                                            <p:menuButton value="Exportar" disabled="#{repCamaMB.habilReporte}"
+                                                style="">                                               
+                                                <p:menuitem 
+                                                            value="Formato PDF"
+                                                            actionListener="#{repCamaMB.imprimeReporteCamas()}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"
+                                                    >                                                     
+                                                </p:menuitem>
+                                            </p:menuButton>                                            
+                                        </div>
+                                    </div>	                            		
+                                </div>
+                            </div>
+                        </p:panelGrid>
+                        
+                        <p:dataTable id="tblRepCama" widgetVar="tblRepCama" var="item"  emptyMessage="" rows="10"
+                                paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                currentPageReportTemplate=" " paginator="true" paginatorPosition="bottom"
+                                style="font-size: x-small !important;"
+                                value="#{repCamaMB.repCamaLazy}"  lazy="true"  scrollable="true" scrollWidth="100%" scrollHeight="350"  >
+                            <p:column style="text-align: left;"  headerText="Cama" sortBy="#{item.cama}">                                
+                                <h:outputText value="#{item.cama} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Ubicación" sortBy="#{item.ubicacion}">
+                                    <h:outputText value="#{item.ubicacion} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Estatus" sortBy="#{item.estatus}">
+                                <h:outputText value="#{item.estatus} " class="altoColumn" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="paciente" sortBy="#{item.paciente}">
+                                <h:outputText value="#{item.paciente} " class="altoColumn" />
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                    
+                    <p:dialog header="Seleccionar Área"
+                          widgetVar="mdlArea"
+                          closeOnEscape="true" modal="true"
+                          style="font-size:xx-small !important; ">
+                        <h:form id="frmEstructura">                        
+                            <h:outputLabel value="Estructura Hospitalaria" />
+                            <p:messages id="msgValidaEstructura" globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <table class="tableMus">
+                                <tr>
+                                    <td>
+                                        <p:tree value="#{repCamaMB.root}" var="node" required="true" requiredMessage="La estructura es requerida" 
+                                                    selectionMode="single"  animate="true" style="width:250px; height: 300px; overflow: auto; display: block;"
+                                                    selection="#{repCamaMB.selectNode}">
+                                            <p:ajax event="select" update=":frmEstructura:txtEstruct, :frmEstructura:txtPathEstruct" listener="#{repCamaMB.onNodeSelect}" />
+                                            <p:treeNode>
+                                                <h:outputText value="#{node}" />
+                                            </p:treeNode>
+                                        </p:tree>
+                                    </td>
+                                    <td>
+                                        <p:outputLabel value="Nombre Unidad:" /><br />
+                                        <p:inputText id="txtEstruct" style="width:300px;" value="#{repCamaMB.nameUnidad}" disabled="true"  />
+                                        <br /><br />                                                    
+                                        <p:outputLabel value="Ruta Completa:"/><br /> 
+                                        <p:inputText id="txtPathEstruct" style="width:300px;" value="#{repCamaMB.repCama.ubicacion}" disabled="true" />
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p:panel class="pnlActions">
+                                <p:commandButton id="btnSave3"
+                                            widgetVar="btnSave3"                                                
+                                            value="Seleccionar" style="margin:0"
+                                            styleClass="btnMusAzul" update=":mainForm"
+                                            actionListener="#{repCamaMB.assignArea}" 
+                                            onclick="PF('statusProcess').show();"
+                                            oncomplete=" if(args.estatus3){PF('mdlArea').hide();} PF('statusProcess').hide();"
+                                            >                                    
+                                </p:commandButton>
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>
+        </ui:composition>
+     </h:body>	
+</html>

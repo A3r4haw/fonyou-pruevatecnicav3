@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.TurnoMedicoMapper" >
+    
+    <select id="obtenerLista" resultType="mx.mc.model.TurnoMedico" parameterType="mx.mc.model.TurnoMedico" >
+        SELECT idTurnoMedico,
+               idTurno,
+               idMedico
+        FROM turnoMedico
+        WHERE 1 = 1
+        <if test=" idTurnoMedico != null ">
+            AND idTurnoMedico = #{ idTurnoMedico , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTurno != null ">
+            AND idTurno = #{ idTurno , jdbcType = INTEGER }
+        </if>
+        <if test=" idMedico != null ">
+            AND idMedico = #{ idMedico , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.TurnoMedico">
+        INSERT INTO turnoMedico (
+            idTurnoMedico,
+            idTurno,
+            idMedico
+        )
+        VALUES (
+            #{ idTurnoMedico , jdbcType = VARCHAR },
+            #{ idTurno , jdbcType = INTEGER },
+            #{ idMedico , jdbcType = VARCHAR }
+        )
+    </insert>
+    
+    <insert id="insertarListaTurnos" parameterType="java.util.List">
+        
+        
+            INSERT INTO turnoMedico (
+                idTurnoMedico,
+                idTurno,
+                idMedico
+            ) VALUES 
+            
+        <foreach collection="list" item="item" separator="," index="index" >
+            (
+                #{ item.idTurnoMedico , jdbcType = VARCHAR },
+                #{ item.idTurno , jdbcType = INTEGER },
+                #{ item.idMedico , jdbcType = VARCHAR }
+            )
+        </foreach>
+    </insert>
+    
+    <delete id="eliminarByIdUsuario" parameterType="Map">
+        DELETE FROM turnoMedico
+        WHERE idMedico = #{ idUsuario , jdbcType = VARCHAR }
+    </delete>
+    
+</mapper>

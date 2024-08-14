@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.EstabilidadMapper">
+
+    <select id="obtener" resultType="mx.mc.model.Estabilidad" parameterType="mx.mc.model.Estabilidad">
+        SELECT * FROM estabilidad WHERE 1 = 1
+        <if test=" idEstabilidad != null "> AND idEstabilidad = #{ idEstabilidad } </if>
+        <if test=" idInsumo != null ">  AND idInsumo = #{ idInsumo }      </if>
+        <if test=" idFabricante != null "> AND idFabricante = #{ idFabricante }       </if>
+        <if test=" idViaAdministracion != null "> AND idViaAdministracion = #{ idViaAdministracion }     </if>
+        <if test=" solucionesCompatibles != null "> AND solucionesCompatibles like '%${ solucionesCompatibles }%'     </if>
+        LIMIT 1
+    </select>
+
+    <select id="obtenerLista" resultType="mx.mc.model.Estabilidad" parameterType="mx.mc.model.Estabilidad">
+        SELECT * FROM estabilidad WHERE 1 = 1
+        <if test=" idEstabilidad != null "> AND idEstabilidad = #{ idEstabilidad } </if>
+        <if test=" idInsumo != null ">  AND idInsumo = #{ idInsumo }      </if>
+        <if test=" idFabricante != null "> AND idFabricante = #{ idFabricante }       </if>
+        <if test=" idViaAdministracion != null "> AND idViaAdministracion = #{ idViaAdministracion }     </if>
+        <if test=" solucionesCompatibles != null "> AND solucionesCompatibles like '%${ solucionesCompatibles }%'     </if>
+    </select>
+    
+    <select id="buscarEstabilidad" resultType="mx.mc.model.Estabilidad_Extended" parameterType="Map">
+        SELECT e.*, m.claveInstitucional  , m.nombreCorto , uc.nombreUnidadConcentracion
+        FROM estabilidad e
+        JOIN medicamento m ON e.idInsumo = m.idMedicamento 
+        LEFT JOIN unidadConcentracion uc ON e.idUnidadReconst = uc.idUnidadConcentracion 
+        WHERE e.idEstatus = 1
+            AND e.idInsumo = #{ idInsumo }
+            AND e.idViaAdministracion = #{ idViaAdministracion }
+            <if test=" claveDiluyente != null ">
+                AND e.solucionesCompatibles LIKE '%${ claveDiluyente }%'
+            </if>
+            <if test=" idFabricante != null ">
+                AND e.idFabricante = #{ idFabricante }
+            </if>
+            <if test=" idContenedor != null ">
+                AND e.idContenedor = #{ idContenedor }
+            </if>
+<!--            <if test=" idContenedor == null ">
+                AND e.idContenedor IS NULL
+            </if>-->
+            
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Estabilidad">
+    INSERT INTO estabilidad
+    (
+        idEstabilidad
+        <if test=" idInsumo != null"> , idInsumo </if>
+        <if test=" nombreGenerico != null"> , nombreGenerico </if>
+        <if test=" idFabricante != null"> , idFabricante </if>
+        <if test=" idMarca != null"> , idMarca </if>
+        <if test=" idPresentacion != null"> , idPresentacion </if>
+        <if test=" presentacionEnvase != null"> , presentacionEnvase </if>
+        <if test=" volumenReconst != null"> , volumenReconst </if>
+        <if test=" diluyenteReconst != null"> , diluyenteReconst </if>
+        <if test=" concentracionReconst != null"> , concentracionReconst </if>
+        <if test=" idUnidadReconst != null"> , idUnidadReconst </if>
+        <if test=" almaceamiento != null"> , almaceamiento </if>
+        <if test=" solucionesCompatibles != null"> , solucionesCompatibles </if>
+        <if test=" concentMinMezcla != null"> , concentMinMezcla </if>
+        <if test=" concentMaxMezclat != null"> , concentMaxMezclat </if>
+        <if test=" idUnidadMezcla != null"> , idUnidadMezcla </if>
+        <if test=" limHrsUsoRedSeca != null"> , limHrsUsoRedSeca </if>
+        <if test=" limHrsUsoRedFria != null"> , limHrsUsoRedFria </if>
+        <if test=" idViaAdministracion != null">, idViaAdministracion </if>
+        <if test=" observacionesPreparacion != null"> , observacionesPreparacion </if>
+        <if test=" reglasDePreparacion != null"> , reglasDePreparacion </if>
+        <if test=" referenciaBibliografica != null"> , referenciaBibliografica </if>
+        <if test=" noHrsEstabilidad != null"> , noHrsEstabilidad </if>
+        <if test=" noHrsEstabilidadMezcla != null"> , noHrsEstabilidadMezcla </if>
+        <if test=" temperaturaMin != null"> , temperaturaMin </if>
+        <if test=" temperaturaMax != null"> , temperaturaMax </if>
+        , idContenedor
+        <if test=" costo != null"> , costo </if>
+        <if test=" refrigeracionInsumo != null"> , refrigeracionInsumo </if>
+        <if test=" tempAmbiente != null"> , tempAmbiente </if>
+        <if test=" tempRefrigeracion != null"> , tempRefrigeracion </if>
+        <if test=" noAgitar != null"> , noAgitar </if>
+        <if test=" autorizar != null"> , autorizar </if>
+        <if test=" fotosensible != null"> , fotosensible </if>
+        <if test=" incluyeDiluyente != null"> , incluyeDiluyente </if>
+        <if test=" requiereDiluyente != null"> , requiereDiluyente </if>
+        <if test=" diluyente != null"> , diluyente </if>
+        <if test=" contenedor != null"> , contenedor </if>
+        <if test=" esAgua != null"> , esAgua </if>
+        <if test=" mezclaParental != null"> , mezclaParental </if>
+        <if test=" osmolaridad != null"> , osmolaridad </if>
+        <if test=" densidad != null"> , densidad </if>
+        <if test=" calorias != null"> , calorias </if>
+        <if test=" calcularNCA != null"> , calcularNCA </if>
+        <if test=" ordePreparacion != null"> , ordePreparacion </if>
+        <if test=" ordenEtiqueta != null"> , ordenEtiqueta </if>
+        <if test=" ordenAdicion != null"> , ordenAdicion </if>
+        <if test=" calculoMezcla != null"> , calculoMezcla </if>
+        <if test=" dosisPorMl != null"> , dosisPorMl </if>
+        <if test=" idUnidadMedidaDosis != null"> , idUnidadMedidaDosis </if>
+        <if test=" cantPorEnvase != null"> , cantPorEnvase </if>
+        <if test=" idUnidadMedida != null"> , idUnidadMedida </if>
+        <if test=" noHorasestabilidad != null"> , noHorasestabilidad </if>
+        <if test=" noHorasEstabilidadAbierto != null"> , noHorasEstabilidadAbierto </if>
+        <if test=" dosificacion != null"> , dosificacion </if>
+        <if test=" riesgos != null"> , riesgos </if>
+        <if test=" contraindicaciones != null"> , contraindicaciones </if>
+        <if test=" interacciones != null"> , interacciones </if>
+        <if test=" composicion != null"> , composicion </if>
+        <if test=" precauciones != null"> , precauciones </if>
+        <if test=" reacciones != null"> , reacciones </if>
+        <if test=" farmacocinetica != null"> , farmacocinetica </if>
+        <if test=" farmacodinamica != null"> , farmacodinamica </if>
+        <if test=" indicacionesTerapeuticas != null"> , indicacionesTerapeuticas </if>
+        <if test=" idEstatus != null"> , idEstatus </if>
+        <if test=" insertFecha != null"> , insertFecha </if>
+        <if test=" insertIdUsuario != null"> , insertIdUsuario </if>
+        <if test=" updateFecha != null"> , updateFecha </if>
+        <if test=" updateIdUsuario != null"> , updateIdUsuario </if>
+    ) VALUES (
+        #{ idEstabilidad }
+        <if test=" idInsumo != null"> , #{ idInsumo } </if>
+        <if test=" nombreGenerico != null"> , #{ nombreGenerico } </if>
+        <if test=" idFabricante != null"> , #{ idFabricante } </if>
+        <if test=" idMarca != null"> , #{ idMarca } </if>
+        <if test=" idPresentacion != null"> , #{ idPresentacion } </if>
+        <if test=" presentacionEnvase != null"> , #{ presentacionEnvase } </if>
+        <if test=" volumenReconst != null"> , #{ volumenReconst } </if>
+        <if test=" diluyenteReconst != null"> , #{ diluyenteReconst } </if>
+        <if test=" concentracionReconst != null"> , #{ concentracionReconst } </if>
+        <if test=" idUnidadReconst != null"> , #{ idUnidadReconst } </if>
+        <if test=" almaceamiento != null"> , #{ almaceamiento } </if>
+        <if test=" solucionesCompatibles != null"> , #{ solucionesCompatibles } </if>
+        <if test=" concentMinMezcla != null"> , #{ concentMinMezcla } </if>
+        <if test=" concentMaxMezclat != null"> , #{ concentMaxMezclat } </if>
+        <if test=" idUnidadMezcla != null"> , #{ idUnidadMezcla } </if>
+        <if test=" limHrsUsoRedSeca != null"> , #{ limHrsUsoRedSeca } </if>
+        <if test=" limHrsUsoRedFria != null"> , #{ limHrsUsoRedFria } </if>
+        <if test=" idViaAdministracion != null"> , #{ idViaAdministracion } </if>
+        <if test=" observacionesPreparacion != null"> , #{ observacionesPreparacion } </if>
+        <if test=" reglasDePreparacion != null"> , #{ reglasDePreparacion } </if>
+        <if test=" referenciaBibliografica != null"> , #{ referenciaBibliografica } </if>
+        <if test=" noHrsEstabilidad != null"> , #{ noHrsEstabilidad } </if>
+        <if test=" noHrsEstabilidadMezcla != null"> , #{ noHrsEstabilidadMezcla } </if>
+        <if test=" temperaturaMin != null"> , #{ temperaturaMin } </if>
+        <if test=" temperaturaMax != null"> , #{ temperaturaMax } </if>
+        , #{ idContenedor }
+        <if test=" costo != null"> , #{ costo } </if>
+        <if test=" refrigeracionInsumo != null"> , #{ refrigeracionInsumo } </if>
+        <if test=" tempAmbiente != null"> , #{ tempAmbiente } </if>
+        <if test=" tempRefrigeracion != null"> , #{ tempRefrigeracion } </if>
+        <if test=" noAgitar != null"> , #{ noAgitar } </if>
+        <if test=" autorizar != null"> , #{ autorizar } </if>
+        <if test=" fotosensible != null"> , #{ fotosensible } </if>
+        <if test=" incluyeDiluyente != null"> , #{ incluyeDiluyente } </if>
+        <if test=" requiereDiluyente != null"> , #{ requiereDiluyente } </if>
+        <if test=" diluyente != null"> , #{ diluyente } </if>
+        <if test=" contenedor != null"> , #{ contenedor } </if>
+        <if test=" esAgua != null"> , #{ esAgua } </if>
+        <if test=" mezclaParental != null"> , #{ mezclaParental } </if>
+        <if test=" osmolaridad != null"> , #{ osmolaridad } </if>
+        <if test=" densidad != null"> , #{ densidad } </if>
+        <if test=" calorias != null"> , #{ calorias } </if>
+        <if test=" calcularNCA != null"> , #{ calcularNCA } </if>
+        <if test=" ordePreparacion != null"> , #{ ordePreparacion } </if>
+        <if test=" ordenEtiqueta != null"> , #{ ordenEtiqueta } </if>
+        <if test=" ordenAdicion != null"> , #{ ordenAdicion } </if>
+        <if test=" calculoMezcla != null"> , #{ calculoMezcla } </if>
+        <if test=" dosisPorMl != null"> , #{ dosisPorMl } </if>
+        <if test=" idUnidadMedidaDosis != null"> , #{ idUnidadMedidaDosis } </if>
+        <if test=" cantPorEnvase != null"> , #{ cantPorEnvase } </if>
+        <if test=" idUnidadMedida != null"> , #{ idUnidadMedida } </if>
+        <if test=" noHorasestabilidad != null"> , #{ noHorasestabilidad } </if>
+        <if test=" noHorasEstabilidadAbierto != null"> , #{ noHorasEstabilidadAbierto } </if>
+        <if test=" dosificacion != null"> , #{ dosificacion } </if>
+        <if test=" riesgos != null"> , #{ riesgos } </if>
+        <if test=" contraindicaciones != null"> , #{ contraindicaciones } </if>
+        <if test=" interacciones != null"> , #{ interacciones } </if>
+        <if test=" composicion != null"> , #{ composicion } </if>
+        <if test=" precauciones != null"> , #{ precauciones } </if>
+        <if test=" reacciones != null"> , #{ reacciones } </if>
+        <if test=" farmacocinetica != null"> , #{  farmacocinetica } </if>
+        <if test=" farmacodinamica != null"> , #{  farmacodinamica } </if>
+        <if test=" indicacionesTerapeuticas != null"> , #{ indicacionesTerapeuticas } </if>
+        <if test=" idEstatus != null"> , #{ idEstatus } </if>
+        <if test=" insertFecha != null">, #{ insertFecha } </if>
+        <if test=" insertIdUsuario != null">, #{ insertIdUsuario } </if>
+        <if test=" updateFecha != null"> , #{ updateFecha } </if>
+        <if test=" updateIdUsuario != null"> , #{ updateIdUsuario } </if>
+        )
+    </insert>
+    
+    <update id="actualizar" parameterType="mx.mc.model.Estabilidad" >
+        UPDATE estabilidad SET
+            updateFecha = #{ updateFecha }
+            , updateIdUsuario = #{ updateIdUsuario } 
+            <if test=" idInsumo != null"> , idInsumo = #{ idInsumo } </if>
+            <if test=" nombreGenerico != null"> , nombreGenerico = #{ nombreGenerico } </if>
+            <if test=" idFabricante != null">, idFabricante = #{ idFabricante } </if>
+            <if test=" idMarca != null"> , idMarca = #{ idMarca } </if>
+            <if test=" idPresentacion != null"> , idPresentacion = #{ idPresentacion } </if>
+            <if test=" presentacionEnvase != null"> , presentacionEnvase = #{ presentacionEnvase } </if>
+            <if test=" volumenReconst != null"> , volumenReconst = #{ volumenReconst } </if>
+            <if test=" diluyenteReconst != null"> , diluyenteReconst = #{ diluyenteReconst } </if>
+            <if test=" concentracionReconst != null"> , concentracionReconst = #{ concentracionReconst } </if>
+            <if test=" idUnidadReconst != null"> , idUnidadReconst = #{ idUnidadReconst } </if>
+            <if test=" almaceamiento != null"> , almaceamiento = #{ almaceamiento } </if>
+            , solucionesCompatibles = #{ solucionesCompatibles }
+            <if test=" concentMinMezcla != null"> , concentMinMezcla = #{ concentMinMezcla } </if>
+            <if test=" concentMaxMezclat != null"> , concentMaxMezclat = #{ concentMaxMezclat } </if>
+            <if test=" idUnidadMezcla != null"> , idUnidadMezcla = #{ idUnidadMezcla } </if>
+            <if test=" limHrsUsoRedSeca != null"> , limHrsUsoRedSeca = #{ limHrsUsoRedSeca } </if>
+            <if test=" limHrsUsoRedFria!= null"> , limHrsUsoRedFria = #{ limHrsUsoRedFria } </if>
+            <if test=" idViaAdministracion!= null"> , idViaAdministracion = #{ idViaAdministracion } </if>
+            <if test=" observacionesPreparacion != null"> , observacionesPreparacion = #{ observacionesPreparacion } </if>
+            <if test=" reglasDePreparacion != null"> , reglasDePreparacion = #{ reglasDePreparacion } </if>
+            <if test=" referenciaBibliografica != null"> , referenciaBibliografica = #{ referenciaBibliografica } </if>
+            <if test=" noHrsEstabilidad != null"> , noHrsEstabilidad = #{ noHrsEstabilidad } </if>
+            <if test=" noHrsEstabilidadMezcla != null"> , noHrsEstabilidadMezcla = #{ noHrsEstabilidadMezcla } </if>
+            <if test=" temperaturaMin != null"> , temperaturaMin = #{ temperaturaMin } </if>
+            <if test=" temperaturaMax != null"> , temperaturaMax = #{ temperaturaMax } </if>
+            , idContenedor = #{ idContenedor }
+            <if test=" costo != null"> , costo = #{ costo } </if>
+            <if test=" refrigeracionInsumo != null"> , refrigeracionInsumo = #{ refrigeracionInsumo } </if>
+            <if test=" tempAmbiente != null"> , tempAmbiente = #{ tempAmbiente } </if>
+            <if test=" tempRefrigeracion != null"> , tempRefrigeracion = #{ tempRefrigeracion } </if>
+            <if test=" noAgitar != null"> , noAgitar = #{ noAgitar } </if>
+            <if test=" autorizar != null"> , autorizar = #{ autorizar } </if>
+            <if test=" fotosensible != null"> , fotosensible = #{ fotosensible } </if>
+            <if test=" incluyeDiluyente != null"> , incluyeDiluyente = #{ incluyeDiluyente } </if>
+            <if test=" requiereDiluyente != null"> , requiereDiluyente = #{ requiereDiluyente } </if>
+            <if test=" diluyente != null"> , diluyente = #{ diluyente } </if>
+            <if test=" contenedor != null"> , contenedor = #{ contenedor } </if>
+            <if test=" esAgua != null"> , esAgua = #{ esAgua } </if>
+            <if test=" mezclaParental != null"> , mezclaParental = #{ mezclaParental } </if>
+            <if test=" osmolaridad != null"> , osmolaridad = #{ osmolaridad } </if>
+            <if test=" densidad != null"> , densidad = #{ densidad } </if>
+            <if test=" calorias != null"> , calorias = #{ calorias } </if>
+            <if test=" calcularNCA != null"> , calcularNCA = #{ calcularNCA } </if>
+            <if test=" ordePreparacion != null"> , ordePreparacion = #{ ordePreparacion } </if>
+            <if test=" ordenEtiqueta != null"> , ordenEtiqueta = #{ ordenEtiqueta } </if>
+            <if test=" ordenAdicion != null"> , ordenAdicion = #{ ordenAdicion } </if>
+            <if test=" calculoMezcla != null"> , calculoMezcla = #{ calculoMezcla } </if>
+            <if test=" dosisPorMl != null"> , dosisPorMl = #{ dosisPorMl } </if>
+            <if test=" idUnidadMedidaDosis != null"> , idUnidadMedidaDosis = #{ idUnidadMedidaDosis } </if>
+            <if test=" cantPorEnvase != null"> , cantPorEnvase = #{ cantPorEnvase } </if>
+            <if test=" idUnidadMedida != null"> , idUnidadMedida = #{ idUnidadMedida } </if>
+            <if test=" noHorasestabilidad != null"> , noHorasestabilidad = #{ noHorasestabilidad } </if>
+            <if test=" noHorasEstabilidadAbierto != null"> , noHorasEstabilidadAbierto = #{ noHorasEstabilidadAbierto } </if>
+            <if test=" dosificacion != null"> , dosificacion = #{ dosificacion } </if>
+            <if test=" riesgos != null"> , riesgos = #{ riesgos } </if>
+            <if test=" contraindicaciones != null"> , contraindicaciones = #{ contraindicaciones } </if>
+            <if test=" interacciones != null"> , interacciones = #{ interacciones } </if>
+            <if test=" composicion != null"> , composicion = #{ composicion } </if>
+            <if test=" precauciones != null"> , precauciones = #{ precauciones } </if>
+            <if test=" reacciones != null"> , reacciones = #{ reacciones } </if>
+            <if test=" farmacocinetica != null"> , farmacocinetica = #{ farmacocinetica } </if>
+            <if test=" farmacodinamica != null"> , farmacodinamica = #{ farmacodinamica } </if>
+            <if test=" indicacionesTerapeuticas != null"> , indicacionesTerapeuticas = #{ indicacionesTerapeuticas } </if>
+            <if test=" idEstatus != null"> , idEstatus = #{ idEstatus } </if>
+        WHERE idEstabilidad = #{ idEstabilidad }
+    </update>
+    
+    <select id="obtenerListaEstabilidades" resultType="mx.mc.model.Estabilidad_Extended" parameterType="Map" >
+        SELECT 
+        e.idEstabilidad
+        , m.claveInstitucional
+        , e.nombreGenerico
+        , e.presentacionEnvase
+        , e.volumenReconst
+        , e.diluyenteReconst
+        , e.concentracionReconst
+        , f.nombreFabricante
+        , ec.descripcion AS nombreContenedor
+        , va.nombreViaAdministracion as viaAdministracion
+        , e.solucionesCompatibles 
+        FROM estabilidad e
+        LEFT JOIN medicamento m ON e.idInsumo = m.idMedicamento
+        LEFT JOIN fabricante f ON e.idFabricante = f.idFabricante
+        INNER JOIN viaAdministracion va ON e.idViaAdministracion = va.idViaAdministracion
+        LEFT JOIN envaseContenedor ec ON e.idContenedor = ec.idEnvaseContenedor
+        WHERE 1 = 1 
+        <if test=" cadenaBusqueda != null ">
+            AND (
+            m.nombreCorto LIKE '%${ cadenaBusqueda }%'
+            OR e.nombreGenerico LIKE '%${ cadenaBusqueda }%'
+            OR f.nombreFabricante LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+        AND e.idEstatus = 1    
+        <if test="sortOrder != null" > 
+            <if test="sortField == 'nombreGenerico'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY e.nombreGenerico asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY e.nombreGenerico desc
+                </if>            
+            </if>
+            <if test="sortField == 'nombreFabricante'" > 
+                <if test="sortOrder == 'asc'" > 
+                    ORDER BY f.nombreFabricante asc
+                </if>
+                <if test="sortOrder == 'desc'" > 
+                    ORDER BY f.nombreFabricante desc
+                </if>            
+            </if>
+        </if>
+        <if test="maxPerPage != -1">
+            LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+        </if>    
+    </select>
+    
+    <select id="obtenerTotalEstabilidades" resultType="Long" parameterType="Map">        
+        SELECT distinct count(*) FROM estabilidad e
+        INNER JOIN medicamento m ON e.idInsumo = m.idMedicamento
+        INNER JOIN fabricante f ON e.idFabricante = f.idFabricante
+        INNER JOIN viaAdministracion va ON e.idViaAdministracion = va.idViaAdministracion
+        LEFT JOIN envaseContenedor ec ON e.idContenedor = ec.idEnvaseContenedor
+        WHERE 1 = 1 
+        <if test=" cadenaBusqueda != null ">
+            AND (
+            m.nombreCorto LIKE '%${ cadenaBusqueda }%'
+            OR e.nombreGenerico LIKE '%${ cadenaBusqueda }%'
+            OR f.nombreFabricante LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+        AND e.idEstatus = 1 
+    </select>
+    
+    <select id="obtenerTotalPorFechaEstructuraPacienteCamaPrescripcionLazy" resultType="Long" parameterType="Map" >
+        SELECT distinct
+            count(*) FROM estabilidad e
+        INNER JOIN medicamento m ON e.idInsumo = m.idMedicamento
+        INNER JOIN fabricante f ON e.idFabricante = f.idFabricante
+        WHERE 1 = 1 
+        <if test=" cadenaBusqueda != null ">
+            AND (
+            m.nombreCorto LIKE '%${ cadenaBusqueda }%'
+            OR e.nombreGenerico LIKE '%${ cadenaBusqueda }%'
+            OR f.nombreFabricante LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+    </select>    
+    
+    <select id="obtenerEstabilidad" resultType="mx.mc.model.Estabilidad_Extended" parameterType="Map">
+        SELECT e.*, m.claveInstitucional  , m.nombreCorto
+        FROM estabilidad e
+        JOIN medicamento m ON e.idInsumo = m.idMedicamento 
+        WHERE e.idEstatus = 1
+            AND e.idInsumo = #{ idInsumo }
+            AND e.idViaAdministracion = #{ idViaAdministracion }
+            AND e.idFabricante = #{ idFabricante }
+            <if test=" claveDiluyente == null ">
+                AND e.solucionesCompatibles is null
+            </if>
+            <if test=" claveDiluyente != null ">
+                AND e.solucionesCompatibles LIKE '%${ claveDiluyente }%'
+            </if>
+            LIMIT 1;
+    </select>
+    
+    <select id="obtenerEstabilidadPorId" resultType="mx.mc.model.Estabilidad_Extended" parameterType="Map">
+        SELECT * FROM estabilidad WHERE 1 = 1
+        <if test=" idEstabilidad != null "> AND idEstabilidad = #{ idEstabilidad } </if>
+        LIMIT 1;
+    </select>
+
+</mapper>

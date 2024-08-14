@@ -1,0 +1,1150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+
+-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.InventarioMapper" >
+    
+    <select id="obtener" resultType="mx.mc.model.Inventario" parameterType="mx.mc.model.Inventario">
+        SELECT idInventario, fechaIngreso, idEstructura, idInsumo, idPresentacion, lote, fechaCaducidad, costo, costoUnidosis, idDictamenMedico, idProveedor, accesorios, cantidadActual, existenciaInicial, activo, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario, cantidadXCaja, claveProveedor, presentacionComercial, osmolaridad , densidad , noHorasestabilidad , idFabricante , calorias
+        FROM inventario
+        WHERE 1=1
+            <if test="idInventario != null">    AND idInventario =#{idInventario,jdbcType=VARCHAR}</if>
+            <if test="fechaIngreso != null">    AND fechaIngreso =#{fechaIngreso,jdbcType=DATE}</if>
+            <if test="idEstructura != null">    AND idEstructura =#{idEstructura,jdbcType=VARCHAR}</if>
+            <if test="idInsumo != null">        AND idInsumo =#{idInsumo,jdbcType=VARCHAR}</if>
+            <if test="idPresentacion != null">  AND idPresentacion =#{idPresentacion,jdbcType=INTEGER}</if>
+            <if test="lote != null">            AND lote =#{lote,jdbcType=VARCHAR}</if>
+            <if test="fechaCaducidad != null">  AND fechaCaducidad =#{fechaCaducidad,jdbcType=DATE}</if>
+            <if test="costo != null">           AND costo =#{costo,jdbcType=DECIMAL}</if>
+            <if test="costoUnidosis != null">   AND costoUnidosis =#{costoUnidosis,jdbcType=DECIMAL}</if>
+            <if test="idDictamenMedico != null">AND idDictamenMedico =#{idDictamenMedico,jdbcType=VARCHAR}</if>
+            <if test="idProveedor != null">     AND idProveedor =#{idProveedor,jdbcType=VARCHAR}</if>
+            <if test="accesorios != null">      AND accesorios =#{accesorios,jdbcType=VARCHAR}</if>
+            <if test="cantidadActual != null">  AND cantidadActual =#{cantidadActual,jdbcType=INTEGER}</if>
+            <if test="existenciaInicial != null">AND existenciaInicial =#{existenciaInicial,jdbcType=BIGINT}</if>
+            <if test="activo != null">          AND activo =#{activo,jdbcType=INTEGER}</if>
+            <if test="insertFecha != null">     AND insertFecha =#{insertFecha,jdbcType=DATE}</if>
+            <if test="insertIdUsuario != null"> AND insertIdUsuario =#{insertIdUsuario,jdbcType=VARCHAR}</if>
+            <if test="updateFecha != null">     AND updateFecha =#{updateFecha,jdbcType=DATE}</if>
+            <if test="updateIdUsuario != null"> AND updateIdUsuario =#{updateIdUsuario,jdbcType=VARCHAR}</if>
+            LIMIT 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Inventario" parameterType="mx.mc.model.Inventario">
+        SELECT idInventario, fechaIngreso, idEstructura, idInsumo, idPresentacion, lote, fechaCaducidad, costo, costoUnidosis, idDictamenMedico, idProveedor, accesorios, cantidadActual, existenciaInicial, activo, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM inventario
+        WHERE 1=1
+            <if test="idInventario != null">    AND idInventario =#{idInventario,jdbcType=VARCHAR}</if>
+            <if test="fechaIngreso != null">    AND fechaIngreso =#{fechaIngreso,jdbcType=DATE}</if>
+            <if test="idEstructura != null">    AND idEstructura =#{idEstructura,jdbcType=VARCHAR}</if>
+            <if test="idInsumo != null">        AND idInsumo =#{idInsumo,jdbcType=VARCHAR}</if>
+            <if test="idPresentacion != null">  AND idPresentacion =#{idPresentacion,jdbcType=INTEGER}</if>
+            <if test="lote != null">            AND lote =#{lote,jdbcType=VARCHAR}</if>
+            <if test="fechaCaducidad != null">  AND fechaCaducidad =#{fechaCaducidad,jdbcType=DATE}</if>
+            <if test="costo != null">           AND costo =#{costo,jdbcType=DECIMAL}</if>
+            <if test="costoUnidosis != null">   AND costoUnidosis =#{costoUnidosis,jdbcType=DECIMAL}</if>
+            <if test="idDictamenMedico != null">AND idDictamenMedico =#{idDictamenMedico,jdbcType=VARCHAR}</if>
+            <if test="idProveedor != null">     AND idProveedor =#{idProveedor,jdbcType=VARCHAR}</if>
+            <if test="accesorios != null">      AND accesorios =#{accesorios,jdbcType=VARCHAR}</if>
+            <if test="cantidadActual != null">  AND cantidadActual =#{cantidadActual,jdbcType=INTEGER}</if>
+            <if test="existenciaInicial != null">AND existenciaInicial =#{existenciaInicial,jdbcType=BIGINT}</if>
+            <if test="activo != null">          AND activo =#{activo,jdbcType=INTEGER}</if>
+            <if test="insertFecha != null">     AND insertFecha =#{insertFecha,jdbcType=DATE}</if>
+            <if test="insertIdUsuario != null"> AND insertIdUsuario =#{insertIdUsuario,jdbcType=VARCHAR}</if>
+            <if test="updateFecha != null">     AND updateFecha =#{updateFecha,jdbcType=DATE}</if>
+            <if test="updateIdUsuario != null"> AND updateIdUsuario =#{updateIdUsuario,jdbcType=VARCHAR}</if>
+    </select>
+    
+    <select id="obtenerExistencia" resultType="mx.mc.model.Inventario" parameterType="Map" >
+        SELECT idInventario, idEstructura, idInsumo, lote, activo, sum(cantidadActual) as cantidadActual
+        FROM inventario
+        WHERE
+            activo = 1
+            AND idEstructura  = #{idEstructura,jdbcType=VARCHAR}
+            AND idInsumo  = #{idInsumo,jdbcType=VARCHAR}
+    </select>
+    
+    <select id="obtenerLotesPorMedicamento" resultType="mx.mc.model.Inventario" parameterType="Map" >
+        SELECT idInventario, idEstructura, idInsumo, lote, activo, cantidadActual
+        FROM inventario
+        WHERE
+        activo = 1
+        AND idInsumo  = #{idInsumo,jdbcType=VARCHAR}
+    </select>
+    
+    <select id="obtenerLotesInventario" resultType="mx.mc.model.Inventario" parameterType="Map" >
+        SELECT idInventario, idEstructura, idInsumo, lote, activo, cantidadActual
+        FROM inventario
+        WHERE 
+        1 = 1
+        <if test="cadenaBusqueda != null">
+        AND (
+               lote LIKE '%${ cadenaBusqueda }%'
+               OR idEstructura LIKE '%${ cadenaBusqueda }%'
+               OR idInsumo LIKE '%${ cadenaBusqueda }%'
+            )
+        </if>
+    </select>
+    
+    <select id="obtenerListaporLotes" resultType="mx.mc.model.InventarioExtended" parameterType="Map" >
+        SELECT distinctRow
+        m.idMedicamento,
+        m.claveInstitucional,
+        m.nombreCorto,
+        i.lote,
+        i.activo,
+        i.fechaCaducidad,
+        i.idInsumo
+       
+        FROM
+        inventario i
+        INNER JOIN
+        medicamento m ON m.idMedicamento = i.idInsumo
+        WHERE 1 = 1 
+        and m.claveInstitucional = #{claveInstitucional, jdbcType = VARCHAR}
+    </select>
+    
+    
+    
+    <select id="obtenerInventarioPorClveInstEstructuraYLote" resultType="mx.mc.model.Inventario" parameterType="mx.mc.model.Inventario" >
+        SELECT idInventario , cantidadXCaja
+        FROM inventario i 
+        INNER JOIN medicamento me ON me.idMedicamento = i.idInsumo
+        WHERE 1 = 1 
+        AND me.claveInstitucional = #{idInsumo, jdbcType = VARCHAR}
+        AND i.lote = #{lote, jdbcType = VARCHAR}
+        AND i.idEstructura = #{idEstructura, jdbcType = VARCHAR}
+        LIMIT 0,1
+    </select>
+    
+    <select id="obtenerIdiventarioPorInsumoEstructuraYLote" resultType="java.lang.String" parameterType="Map">
+        SELECT idInventario
+        FROM inventario
+        WHERE idInsumo = #{idInsumo, jdbcType = VARCHAR}
+        AND lote = #{lote, jdbcType = VARCHAR}
+        AND idEstructura = #{idEstructura, jdbcType = VARCHAR}
+        AND activo = 1 limit 1
+    </select>
+    
+    <select id="obtenerIdiventarioPorInsumoEstructura" resultType="mx.mc.model.Inventario" parameterType="Map">
+        SELECT idInventario , lote
+        FROM inventario
+        WHERE idInsumo = #{idInsumo, jdbcType = VARCHAR}
+        AND idEstructura = #{idEstructura, jdbcType = VARCHAR}
+        ORDER BY lote ASC
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerIdiventarioPorInsumo" resultType="mx.mc.model.Inventario" parameterType="Map">
+        SELECT idInventario , lote
+        FROM inventario
+        WHERE idInsumo = #{idInsumo, jdbcType = VARCHAR}
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerInventariosPorInsumoEstructuraYLote" resultType="mx.mc.model.Inventario" parameterType="Map">
+        SELECT idInventario,fechaIngreso,idEstructura,idInsumo,idPresentacion,
+        lote,fechaCaducidad,costo,costoUnidosis,idDictamenMedico,
+        idProveedor,accesorios,cantidadActual,existenciaInicial,activo,
+        insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+        FROM inventario
+        WHERE idInsumo = #{idInsumo, jdbcType = VARCHAR}
+        AND lote = #{lote, jdbcType = VARCHAR}
+        AND idEstructura = #{idEstructura, jdbcType = VARCHAR}
+        LIMIT 0,1
+    </select>
+    
+    <update id="actualizarInventario" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="listaDetalle"  item="item"  index="index"  separator=";">
+            UPDATE inventario
+            <set>
+                cantidadActual = cantidadActual - #{item.cantidadEnviado, jdbcType = INTEGER}
+            </set>   
+            WHERE idInsumo = #{item.idMedicamento, jdbcType = VARCHAR}
+            AND lote = #{item.lote, jdbcType = VARCHAR}
+            AND idEstructura = #{item.idEstructura, jdbcType = VARCHAR}
+        </foreach>
+    </update>
+    
+    <update id="actualizarAjusteInvent" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="listaDetalle"  item="item"  index="index"  separator=";">
+            UPDATE inventario
+            <set>
+                cantidadActual = cantidadActual - #{item.cantidadAjuste, jdbcType = INTEGER}
+            </set>   
+            WHERE idInsumo = #{item.idMedicamento, jdbcType = VARCHAR}
+            AND lote = #{item.lote, jdbcType = VARCHAR}
+            AND idEstructura = #{item.idEstructura, jdbcType = VARCHAR}
+        </foreach>
+    </update>
+    
+    
+    <update id="actualizarInventarioSurtidos" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="listaDetalle"  item="item"  index="index"  separator=";">
+            UPDATE inventario
+            <set>
+                cantidadActual = cantidadActual - #{ item.cantidadActual , jdbcType = INTEGER }
+            </set>
+            WHERE idInventario = #{ item.idInventario , jdbcType = VARCHAR }
+        </foreach>
+    </update>
+    
+    <update id="actualizarInventarioRecetaManual" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="listaDetalle"  item="item"  index="index"  separator=";">
+            UPDATE inventario
+            <set>
+                cantidadActual = cantidadActual - #{ item.cantidadEntregada , jdbcType = INTEGER}
+            </set>   
+            WHERE idInventario = #{item.idInventario, jdbcType = VARCHAR}
+        </foreach>
+    </update>
+    
+    
+    <insert id="insertListInventarios" parameterType="Map">
+    	<foreach collection="listaInventarios" item="item" separator=";">
+            INSERT INTO inventario(
+                <if test="item.idInventario != null">idInventario</if>
+                <if test="item.fechaIngreso != null">,fechaIngreso</if>
+                <if test="item.idEstructura != null">,idEstructura</if>
+                <if test="item.idInsumo != null">,idInsumo</if>
+                <if test="item.idPresentacion != null">,idPresentacion</if>
+                <if test="item.lote != null">,lote</if>
+                <if test="item.fechaCaducidad != null">,fechaCaducidad</if>
+                <if test="item.costo != null">,costo</if>
+                <if test="item.costoUnidosis != null">,costoUnidosis</if>
+                <if test="item.idDictamenMedico != null">,idDictamenMedico</if>
+                <if test="item.idProveedor != null">,idProveedor</if>
+                <if test="item.accesorios != null">,accesorios</if>
+                <if test="item.cantidadActual != null">,cantidadActual</if>
+                <if test="item.existenciaInicial != null">,existenciaInicial</if>
+                <if test="item.claveProveedor != null">, claveProveedor</if>
+                <if test="item.cantidadXCaja != null">, cantidadXCaja</if>
+                <if test="item.presentacionComercial != null">, presentacionComercial</if>
+                <if test="item.activo != null">,activo</if>
+                <if test="item.insertFecha != null">,insertFecha</if>
+                <if test="item.insertIdUsuario != null">,insertIdUsuario</if>
+                <if test="item.idTipoOrigen != null">,idTipoOrigen</if>
+                <if test="item.enviarAVG != null">,enviarAVG</if>
+                
+                <if test="item.osmolaridad!= null">, osmolaridad </if>
+                <if test="item.densidad != null">, densidad </if>
+                <if test="item.calorias != null">, calorias </if>
+                <if test="item.noHorasEstabilidad != null">, noHorasEstabilidad </if>
+                <if test="item.idFabricante != null">, idFabricante </if>
+            )
+            VALUES (
+                <if test="item.idInventario != null"> #{item.idInventario,jdbcType = VARCHAR}</if>
+                <if test="item.fechaIngreso != null"> ,#{item.fechaIngreso,jdbcType = TIMESTAMP}</if>
+                <if test="item.idEstructura != null"> ,#{item.idEstructura,jdbcType = VARCHAR}</if>
+                <if test="item.idInsumo != null"> ,#{item.idInsumo,jdbcType = VARCHAR}</if>
+                <if test="item.idPresentacion != null"> ,#{item.idPresentacion,jdbcType = INTEGER}</if>
+                <if test="item.lote != null"> ,#{item.lote,jdbcType = VARCHAR}</if>
+                <if test="item.fechaCaducidad != null"> ,#{item.fechaCaducidad,jdbcType = TIMESTAMP}</if>
+                <if test="item.costo != null"> ,#{item.costo,jdbcType = DECIMAL}</if>
+                <if test="item.costoUnidosis != null"> ,#{item.costoUnidosis,jdbcType = DECIMAL}</if>
+                <if test="item.idDictamenMedico != null"> ,#{item.idDictamenMedico,jdbcType = VARCHAR}</if>
+                <if test="item.idProveedor != null"> ,#{item.idProveedor,jdbcType = VARCHAR}</if>
+                <if test="item.accesorios != null"> ,#{item.accesorios,jdbcType = VARCHAR}</if>
+                <if test="item.cantidadActual != null"> ,#{item.cantidadActual,jdbcType = INTEGER}</if>
+                <if test="item.existenciaInicial != null"> ,#{item.existenciaInicial,jdbcType = BIGINT}</if>
+                <if test="item.claveProveedor != null"> ,#{item.claveProveedor,jdbcType = VARCHAR}</if>
+                <if test="item.cantidadXCaja != null"> ,#{item.cantidadXCaja,jdbcType = VARCHAR}</if>
+                <if test="item.presentacionComercial != null"> ,#{item.presentacionComercial, jdbcType = INTEGER}</if>
+                <if test="item.activo != null"> ,#{item.activo,jdbcType = INTEGER}</if>
+                <if test="item.insertFecha != null"> ,#{item.insertFecha,jdbcType = TIMESTAMP}</if>
+                <if test="item.insertIdUsuario != null"> ,#{item.insertIdUsuario,jdbcType = VARCHAR}</if>
+                <if test="item.idTipoOrigen != null"> ,#{item.idTipoOrigen,jdbcType = INTEGER}</if>
+                <if test="item.enviarAVG != null">,#{item.enviarAVG, jdbcType = INTEGER}</if>
+                
+                <if test="item.osmolaridad != null">, #{ item.osmolaridad , jdbcType = DECIMAL }</if>
+                <if test="item.densidad != null">, #{ item.densidad , jdbcType = DECIMAL }</if>
+                <if test="item.calorias != null">, #{ item.calorias , jdbcType = DECIMAL }</if>
+                <if test="item.noHorasEstabilidad != null">, #{ item.noHorasEstabilidad , jdbcType = INTEGER }</if>
+                <if test="item.idFabricante != null">, #{ item.idFabricante , jdbcType = INTEGER }</if>
+                
+            )
+        </foreach>
+    </insert>
+    
+    <update id="actualizarListInventarios" parameterType="java.util.List">
+        <foreach collection="listaInventarios" item="item" index="index" separator=";">
+            UPDATE inventario
+            <set>
+                cantidadActual = #{item.cantidadActual, jdbcType = INTEGER}
+                <if test="item.costo != null" >, costo = #{item.costo,jdbcType = DECIMAL} </if>
+                <if test="item.costoUnidosis != null" >, costoUnidosis = #{item.costoUnidosis,jdbcType = DECIMAL} </if>
+            </set>               
+            WHERE 
+            lote = #{item.lote, jdbcType = VARCHAR}
+            AND idInsumo = #{item.idInsumo, jdbcType = VARCHAR}
+            AND idEstructura = #{item.idEstructura, jdbcType = VARCHAR}
+            <if test="item.idInventario != null">
+                AND idInventario = #{item.idInventario, jdbcType = VARCHAR}
+            </if>
+            <!-- and presentacionComercial = 1 --> <!-- GCR Se comenta linea debido a que manda un error al momento de actualizar
+            un inventario desde el modulo de Ingreso de Insumos, debido a que este cambio lo realizo Manuel Calderon y no sabe del por que--> 
+        </foreach>
+    </update>
+    
+    <update id="revertirInventarioList" parameterType="java.util.List">
+        <foreach collection="listaInventarios" item="item" index="index" separator=";">
+            UPDATE inventario
+            <set>
+                cantidadActual = (cantidadActual + #{item.cantidadActual, jdbcType = INTEGER})
+                ,updateFecha  = #{item.updateFecha, jdbcType = TIMESTAMP}
+                ,updateIdUsuario = #{item.updateIdUsuario, jdbcType = VARCHAR}
+            </set>   
+            WHERE idInventario = #{item.idInventario, jdbcType = VARCHAR}            
+        </foreach>
+    </update>
+    
+    <update id="actualizarInventarioGlobal" parameterType="mx.mc.model.Inventario">
+        UPDATE inventario
+        <set>
+            cantidadActual = #{cantidadActual, jdbcType = INTEGER}
+            ,updateFecha = #{updateFecha}
+            ,updateIdUsuario = #{updateIdUsuario}
+            <if test="enviarAVG != null">
+                ,enviarAVG = #{enviarAVG, jdbcType = INTEGER}
+            </if>
+        </set>
+           
+        WHERE idInventario = #{idInventario, jdbcType = VARCHAR}            
+    </update>
+        
+    <update id="restarInventarioMasivo" parameterType="java.util.List">
+        <foreach collection="listaInventarios" item="item" index="index" separator=";">
+            UPDATE inventario
+            <set>
+                cantidadActual =  cantidadActual - #{item.cantidadActual, jdbcType = INTEGER}
+                <if test="item.updateFecha != null">          ,updateFecha  = #{item.updateFecha,jdbcType=DATE}</if>
+                <if test="item.updateIdUsuario != null">      ,updateIdUsuario  = #{item.updateIdUsuario,jdbcType=VARCHAR}</if>       
+            </set>               
+            WHERE idInventario = #{item.idInventario,jdbcType=VARCHAR}
+            <if test="item.idInsumo != null ">AND idInsumo = #{item.idInsumo, jdbcType = VARCHAR}</if>
+            <if test="item.lote != null ">AND lote = #{item.lote, jdbcType = VARCHAR}</if>
+            <if test="item.idEstructura != null ">AND idEstructura = #{item.idEstructura, jdbcType = VARCHAR} </if>            
+        </foreach>
+    </update>
+    <select id="obtenerListaInactivosByIdInsumos" resultType="mx.mc.model.InventarioExtended" parameterType="java.util.List" >
+    	SELECT distinct i.idInventario, i.idInsumo, i.lote, i.fechaCaducidad, m.claveInstitucional
+    		FROM inventario i
+            INNER JOIN medicamento m on m.idMedicamento = i.idInsumo
+            WHERE i.activo = 0
+    		<if test=" listIdInsumos != null ">
+    			AND i.idInsumo IN
+    			<foreach item="item" index="index" collection="listIdInsumos" open="(" separator="," close=")">
+               		 #{item}
+            	</foreach>    		
+    		</if>   		 
+    </select>
+    
+    <select id="getInventarioForDevolucion" resultType="mx.mc.model.DevolucionDetalleExtended" parameterType="Map">
+    	SELECT inv.idInventario, inv.idInsumo, me.claveInstitucional, me.nombreCorto, me.factorTransformacion, pm.nombrePresentacion, es.idTipoAlmacen, 
+    	sum(inv.cantidadActual - IFNULL(vw.cantidadComprometida, 0)) AS cantidadActual,inv.cantidadXCaja, inv.presentacionComercial
+    	FROM inventario inv
+    		INNER JOIN estructura es ON inv.idEstructura = es.idEstructura
+			INNER JOIN medicamento me ON inv.idInsumo = me.idMedicamento
+			INNER JOIN presentacionMedicamento pm ON me.idPresentacionEntrada = pm.idPresentacion
+			LEFT JOIN vwAlmacenInsumoComprometido vw on (inv.idInsumo = vw.idInsumo AND inv.idEstructura = vw.idEstructuraAlmacen)
+			WHERE 1 = 1
+		<if test=" reabastoEnviado.idMedicamento != null ">
+			AND me.claveInstitucional = #{ reabastoEnviado.idMedicamento ,jdbcType = VARCHAR } 
+		</if>
+		<if test=" reabastoEnviado.lote != null">
+			AND inv.lote = #{ reabastoEnviado.lote ,jdbcType = VARCHAR }
+		</if>
+		<if test=" reabastoEnviado.idEstructura != null">
+			AND inv.idEstructura = #{ reabastoEnviado.idEstructura ,jdbcType = VARCHAR }
+		</if>
+                <if test=" reabastoEnviado.cantidadCaja != null">
+                        AND inv.cantidadXCaja = #{reabastoEnviado.cantidadCaja , jdbcType = INTEGER}
+                </if>
+		GROUP BY inv.idInsumo	
+    </select>
+    
+    <update id="actualizaInvByInvInsumoEstr" parameterType="java.util.List">
+        <foreach collection="listaInventarios" item="item" index="index" separator=";">
+            UPDATE inventario
+            <set>
+                cantidadActual = #{item.cantidadActual, jdbcType = INTEGER}
+            <if test=" item.updateFecha != null ">,  updateFecha = #{item.updateFecha, jdbcType = TIMESTAMP}</if>            
+            <if test=" item.updateIdUsuario != null ">, updateIdUsuario = #{item.updateIdUsuario, jdbcType = VARCHAR} </if>            
+            </set>   
+            WHERE 
+            idInventario = #{item.idInventario, jdbcType = VARCHAR}
+            <if test=" item.idInsumo != null ">AND idInsumo = #{item.idInsumo, jdbcType = VARCHAR}</if>            
+            <if test=" item.idEstructura != null ">AND idEstructura = #{item.idEstructura, jdbcType = VARCHAR} </if>            
+        </foreach>
+    </update>
+    
+    <update id="actualizaInvByInvInsumoEstrRefill" parameterType="java.util.List">
+        <foreach collection="listaInventarios" item="item" index="index" separator=";">
+            UPDATE inventario
+            <set>
+                cantidadActual = cantidadActual + #{item.cantidadActual, jdbcType = INTEGER}
+            <if test=" item.updateFecha != null ">,  updateFecha = #{item.updateFecha, jdbcType = TIMESTAMP}</if>            
+            <if test=" item.updateIdUsuario != null ">, updateIdUsuario = #{item.updateIdUsuario, jdbcType = VARCHAR} </if>            
+            </set>   
+            WHERE 
+            idInventario = #{item.idInventario, jdbcType = VARCHAR}
+            <if test=" item.idInsumo != null ">AND idInsumo = #{item.idInsumo, jdbcType = VARCHAR}</if>            
+            <if test=" item.idEstructura != null ">AND idEstructura = #{item.idEstructura, jdbcType = VARCHAR} </if>            
+        </foreach>
+    </update>
+    
+    <update id="actualizaInvByInv" parameterType="java.util.List">
+        <foreach collection="listaInventarios" item="item" index="index" separator=";">
+            UPDATE inventario
+            <set>
+                cantidadActual = cantidadActual - #{item.cantidadEntregada, jdbcType = INTEGER}
+            <if test=" item.updateFecha != null ">,  updateFecha = #{item.updateFecha, jdbcType = TIMESTAMP}</if>            
+            <if test=" item.updateIdUsuario != null ">, updateIdUsuario = #{item.updateIdUsuario, jdbcType = VARCHAR} </if>            
+            </set>   
+            WHERE 
+            idInventario = #{item.idInventario, jdbcType = VARCHAR}            
+        </foreach>
+    </update>
+    
+    <select id="obtenerInventariosPorInsumoEstructuraLoteYCantidadXCaja" resultType="mx.mc.model.Inventario" parameterType="Map">
+       SELECT idInventario,fechaIngreso,idEstructura,idInsumo,idPresentacion,
+	    lote,fechaCaducidad,costo,costoUnidosis,idDictamenMedico,
+            idProveedor,accesorios,cantidadActual,existenciaInicial,activo,
+            insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+            , cantidadXCaja, claveProveedor, presentacionComercial, costo, idFabricante
+        FROM inventario
+        WHERE idInsumo = #{idInsumo, jdbcType = VARCHAR}
+        AND lote = #{lote, jdbcType = VARCHAR}
+        AND idEstructura = #{idEstructura, jdbcType = VARCHAR}
+        <if test="cantidadXCaja != null">
+            AND cantidadXCaja = #{cantidadXCaja, jdbcType = INTEGER}
+        </if>
+        <if test="claveProveedor != null">
+            AND claveProveedor = #{ claveProveedor , jdbcType = VARCHAR}
+        </if>
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerInventariosPorInsumoEstructuraLoteYCantidadXCajaYFechaCad" resultType="mx.mc.model.Inventario" parameterType="Map">
+       SELECT idInventario,fechaIngreso,idEstructura,idInsumo,idPresentacion,
+	    lote,fechaCaducidad,costo,costoUnidosis,idDictamenMedico,
+            idProveedor,accesorios,cantidadActual,existenciaInicial,activo,
+            insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+            , cantidadXCaja, claveProveedor, presentacionComercial, costo, idFabricante
+        FROM inventario i
+        WHERE idInsumo = #{ idInsumo, jdbcType = VARCHAR }
+        AND lote = #{ lote, jdbcType = VARCHAR }
+        AND idEstructura = #{ idEstructura, jdbcType = VARCHAR }
+        <if test="cantidadXCaja != null">
+            AND cantidadXCaja = #{ cantidadXCaja, jdbcType = INTEGER }
+        </if>
+        <if test="claveProveedor != null">
+            AND claveProveedor = #{ claveProveedor , jdbcType = VARCHAR }
+        </if>
+        <if test="fechaCaducidad != null">
+            AND fechaCaducidad = #{ fechaCaducidad , jdbcType = TIMESTAMP }
+        </if>
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerInventariosPorInsumoEstructuraCantidadXCajaYProveedor" resultType="mx.mc.model.Inventario" parameterType="Map">
+       SELECT idInventario,fechaIngreso,idEstructura,idInsumo,idPresentacion,
+	    lote,fechaCaducidad,costo,costoUnidosis,idDictamenMedico,
+            idProveedor,accesorios,cantidadActual,existenciaInicial,activo,
+            insertFecha,insertIdUsuario,updateFecha,updateIdUsuario
+            , cantidadXCaja, claveProveedor, presentacionComercial, costo
+        FROM inventario
+        WHERE idInsumo = #{idInsumo, jdbcType = VARCHAR}
+        AND idEstructura = #{idEstructura, jdbcType = VARCHAR}
+        
+        <if test=" cantidadXCaja != null">
+            AND cantidadXCaja = #{ cantidadXCaja , jdbcType = INTEGER}
+        </if>
+        
+        <if test=" claveProveedor != null">
+            AND claveProveedor = #{ claveProveedor , jdbcType = VARCHAR} 
+        </if>
+        
+        <if test=" lote != null">
+            AND lote = #{ lote , jdbcType = VARCHAR} 
+        </if>
+        limit 1
+    </select>
+    
+    
+    <update id="actualizarAjusteInventario" parameterType="Map">
+        <foreach collection="listInventarioActualizar" item="item" index="index" separator=";">
+            UPDATE inventario
+            <set>
+                cantidadActual = #{item.cantidadAjuste, jdbcType = INTEGER}
+            </set>   
+            WHERE             
+            idInventario = #{item.idInventario, jdbcType = VARCHAR}           
+        </foreach>
+    </update>
+    
+    <update id="actualizarInventarioPresentCom" parameterType="mx.mc.model.Inventario">        
+            UPDATE inventario
+            <set>
+                presentacionComercial = #{presentacionComercial, jdbcType = INTEGER},
+                cantidadXCaja = #{cantidadXCaja , jdbcType = INTEGER}
+            </set>   
+            WHERE 
+            idInventario = #{idInventario, jdbcType = VARCHAR} 
+    </update>
+    
+    <select id="obtenerExistInvent" resultType="mx.mc.model.Inventario" parameterType="Map">
+        SELECT * FROM  inventario 
+        WHERE 
+        idEstructura = #{idEstructura, jdbcType = VARCHAR}
+        AND idInsumo = #{idInsumo, jdbcType = VARCHAR}        
+        AND cantidadXCaja = #{cantidadXCaja, jdbcType = INTEGER}                
+        AND lote = #{lote, jdbcType = VARCHAR}        
+        AND claveProveedor = #{claveProveedor, jdbcType = VARCHAR}        
+        AND {presentacionComercial, jdbcType = INTEGER}                
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Inventario">
+    	
+            INSERT INTO inventario(
+                <if test="idInventario != null">idInventario</if>
+                <if test="fechaIngreso != null">,fechaIngreso</if>
+                <if test="idEstructura != null">,idEstructura</if>
+                <if test="idInsumo != null">,idInsumo</if>
+                <if test="idPresentacion != null">,idPresentacion</if>
+                <if test="lote != null">,lote</if>
+                <if test="fechaCaducidad != null">,fechaCaducidad</if>
+                <if test="costo != null">,costo</if>
+                <if test="costoUnidosis != null">,costoUnidosis</if>
+                <if test="idDictamenMedico != null">,idDictamenMedico</if>
+                <if test="idProveedor != null">,idProveedor</if>
+                <if test="accesorios != null">,accesorios</if>
+                <if test="cantidadActual != null">,cantidadActual</if>
+                <if test="existenciaInicial != null">,existenciaInicial</if>
+                <if test="claveProveedor != null">, claveProveedor</if>
+                <if test="cantidadXCaja != null">, cantidadXCaja</if>
+                <if test="presentacionComercial != null">, presentacionComercial</if>
+                <if test="activo != null">,activo</if>
+                <if test="insertFecha != null">,insertFecha</if>
+                <if test="insertIdUsuario != null">,insertIdUsuario</if>
+            )
+            VALUES (
+                <if test="idInventario != null"> #{idInventario,jdbcType = VARCHAR}</if>
+                <if test="fechaIngreso != null"> ,#{fechaIngreso,jdbcType = TIMESTAMP}</if>
+                <if test="idEstructura != null"> ,#{idEstructura,jdbcType = VARCHAR}</if>
+                <if test="idInsumo != null"> ,#{idInsumo,jdbcType = VARCHAR}</if>
+                <if test="idPresentacion != null"> ,#{idPresentacion,jdbcType = INTEGER}</if>
+                <if test="lote != null"> ,#{lote,jdbcType = VARCHAR}</if>
+                <if test="fechaCaducidad != null"> ,#{fechaCaducidad,jdbcType = TIMESTAMP}</if>
+                <if test="costo != null"> ,#{costo,jdbcType = DECIMAL}</if>
+                <if test="costoUnidosis != null"> ,#{costoUnidosis,jdbcType = DECIMAL}</if>
+                <if test="idDictamenMedico != null"> ,#{idDictamenMedico,jdbcType = VARCHAR}</if>
+                <if test="idProveedor != null"> ,#{idProveedor,jdbcType = VARCHAR}</if>
+                <if test="accesorios != null"> ,#{accesorios,jdbcType = VARCHAR}</if>
+                <if test="cantidadActual != null"> ,#{cantidadActual,jdbcType = INTEGER}</if>
+                <if test="existenciaInicial != null"> ,#{existenciaInicial,jdbcType = BIGINT}</if>
+                <if test="claveProveedor != null"> ,#{claveProveedor,jdbcType = VARCHAR}</if>
+                <if test="cantidadXCaja != null"> ,#{cantidadXCaja,jdbcType = VARCHAR}</if>
+                <if test="presentacionComercial != null"> ,#{presentacionComercial, jdbcType = INTEGER}</if>
+                <if test="activo != null"> ,#{activo,jdbcType = INTEGER}</if>
+                <if test="insertFecha != null"> ,#{insertFecha,jdbcType = TIMESTAMP}</if>
+                <if test="insertIdUsuario != null"> ,#{insertIdUsuario,jdbcType = VARCHAR}</if>
+            )
+            ON DUPLICATE KEY UPDATE 
+                                       
+            idPresentacion = #{idPresentacion,jdbcType = INTEGER},
+            fechaCaducidad = #{fechaCaducidad,jdbcType = TIMESTAMP},
+            costo          = #{costo,jdbcType = DECIMAL},
+            costoUnidosis  = #{costoUnidosis,jdbcType = DECIMAL},
+            idProveedor    = #{idProveedor,jdbcType = VARCHAR},
+            idDictamenMedico = #{idDictamenMedico,jdbcType = VARCHAR},
+            accesorios =   #{accesorios,jdbcType = VARCHAR},
+            cantidadActual = #{cantidadActual,jdbcType = INTEGER},
+            existenciaInicial = #{existenciaInicial,jdbcType = BIGINT},
+            presentacionComercial = #{presentacionComercial, jdbcType = INTEGER},
+            activo = #{activo,jdbcType = INTEGER};
+
+            
+    </insert>
+    
+    
+    <select id="validarExistInventGlob" resultType="mx.mc.model.Inventario" parameterType="Map">                        
+        select * from inventario   
+        where  
+        lote  = #{lote, jdbcType = VARCHAR}
+        AND idInsumo = #{idInsumo, jdbcType = VARCHAR}
+        AND idEstructura  = #{idEstructura, jdbcType = VARCHAR}
+        AND claveProveedor =  #{claveProveedor,jdbcType = VARCHAR}
+        AND presentacionComercial = #{presentacionComercial,jdbcType = INTEGER}
+        AND cantidadXCaja = #{cantidadXCaja,jdbcType = INTEGER}
+    </select>
+    
+    <select id="obtenerInventariosPorInsumoLoteFechaCadIdInsumoClProv" resultType="mx.mc.model.Inventario" parameterType="Map">                        
+        select * from inventario i  
+        where  
+        i.lote  = #{lote, jdbcType = VARCHAR}
+        AND i.idInsumo = #{idInsumo, jdbcType = VARCHAR}
+        AND i.idEstructura  = #{idEstructura, jdbcType = VARCHAR}
+        AND i.fechaCaducidad =  #{fechaCaducidad,jdbcType = TIMESTAMP}
+    </select>
+    
+    <insert id="insertarNuevoInventario" parameterType="Map">
+    	
+            INSERT INTO inventario(
+                <if test="idInventario != null">idInventario</if>
+                <if test="fechaIngreso != null">,fechaIngreso</if>
+                <if test="idEstructura != null">,idEstructura</if>
+                <if test="idInsumo != null">,idInsumo</if>
+                <if test="idPresentacion != null">,idPresentacion</if>
+                <if test="lote != null">,lote</if>
+                <if test="fechaCaducidad != null">,fechaCaducidad</if>
+                <if test="costo != null">,costo</if>
+                <if test="costoUnidosis != null">,costoUnidosis</if>
+                <if test="idDictamenMedico != null">,idDictamenMedico</if>
+                <if test="idProveedor != null">,idProveedor</if>
+                <if test="accesorios != null">,accesorios</if>
+                <if test="cantidadActual != null">,cantidadActual</if>
+                <if test="existenciaInicial != null">,existenciaInicial</if>
+                <if test="claveProveedor != null">, claveProveedor</if>
+                <if test="cantidadXCaja != null">, cantidadXCaja</if>
+                <if test="presentacionComercial != null">, presentacionComercial</if>
+                <if test="activo != null">,activo</if>
+                <if test="insertFecha != null">,insertFecha</if>
+                <if test="insertIdUsuario != null">,insertIdUsuario</if>
+            )
+            VALUES (
+                <if test="idInventario != null"> #{idInventario,jdbcType = VARCHAR}</if>
+                <if test="fechaIngreso != null"> ,#{fechaIngreso,jdbcType = TIMESTAMP}</if>
+                <if test="idEstructura != null"> ,#{idEstructura,jdbcType = VARCHAR}</if>
+                <if test="idInsumo != null"> ,#{idInsumo,jdbcType = VARCHAR}</if>
+                <if test="idPresentacion != null"> ,#{idPresentacion,jdbcType = INTEGER}</if>
+                <if test="lote != null"> ,#{lote,jdbcType = VARCHAR}</if>
+                <if test="fechaCaducidad != null"> ,#{fechaCaducidad,jdbcType = TIMESTAMP}</if>
+                <if test="costo != null"> ,#{costo,jdbcType = DECIMAL}</if>
+                <if test="costoUnidosis != null"> ,#{costoUnidosis,jdbcType = DECIMAL}</if>
+                <if test="idDictamenMedico != null"> ,#{idDictamenMedico,jdbcType = VARCHAR}</if>
+                <if test="idProveedor != null"> ,#{idProveedor,jdbcType = VARCHAR}</if>
+                <if test="accesorios != null"> ,#{accesorios,jdbcType = VARCHAR}</if>
+                <if test="cantidadActual != null"> ,#{cantidadActual,jdbcType = INTEGER}</if>
+                <if test="existenciaInicial != null"> ,#{existenciaInicial,jdbcType = BIGINT}</if>
+                <if test="claveProveedor != null"> ,#{claveProveedor,jdbcType = VARCHAR}</if>
+                <if test="cantidadXCaja != null"> ,#{cantidadXCaja,jdbcType = VARCHAR}</if>
+                <if test="presentacionComercial != null"> ,#{presentacionComercial, jdbcType = INTEGER}</if>
+                <if test="activo != null"> ,#{activo,jdbcType = INTEGER}</if>
+                <if test="insertFecha != null"> ,#{insertFecha,jdbcType = TIMESTAMP}</if>
+                <if test="insertIdUsuario != null"> ,#{insertIdUsuario,jdbcType = VARCHAR}</if>
+            )
+            ON DUPLICATE KEY UPDATE 
+                                       
+            idPresentacion = #{idPresentacion,jdbcType = INTEGER},
+            fechaCaducidad = #{fechaCaducidad,jdbcType = TIMESTAMP},
+            costo          = #{costo,jdbcType = DECIMAL},
+            costoUnidosis  = #{costoUnidosis,jdbcType = DECIMAL},
+            idProveedor    = #{idProveedor,jdbcType = VARCHAR},
+            idDictamenMedico = #{idDictamenMedico,jdbcType = VARCHAR},
+            accesorios =   #{accesorios,jdbcType = VARCHAR},
+            cantidadActual = #{cantidadActual,jdbcType = INTEGER},
+            existenciaInicial = #{existenciaInicial,jdbcType = BIGINT},
+            presentacionComercial = #{presentacionComercial, jdbcType = INTEGER},
+            activo = #{activo,jdbcType = INTEGER};
+
+            
+    </insert>
+    <update id="updateInventario" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="listaDetalle"  item="item"  index="index"  separator=";">
+            UPDATE inventario
+            <set>
+                cantidadActual = cantidadActual - #{item.cantidadEnviado, jdbcType = INTEGER}
+            </set>   
+            WHERE idInventario = #{item.idInventarioSurtido, jdbcType = VARCHAR}
+        </foreach>
+    </update>
+    
+    
+    <select id="obtenerExistenciasPorIdEstructuraIdInsumo" resultType="mx.mc.model.Inventario" parameterType="Map" >
+    	SELECT distinct idInventario, fechaIngreso, idEstructura, idInsumo, idPresentacion
+        , lote, fechaCaducidad, costo, costoUnidosis, idDictamenMedico, idProveedor, accesorios
+        , cantidadActual, existenciaInicial, activo, insertFecha, insertIdUsuario, updateFecha
+        , updateIdUsuario, cantidadXCaja, claveProveedor, presentacionComercial
+        , osmolaridad , densidad , noHorasestabilidad , idFabricante , calorias
+        FROM inventario 
+        WHERE activo = 1
+        AND cantidadActual > 0 
+        AND idEstructura  = #{ idEstructura , jdbcType = VARCHAR}
+        AND idInsumo = #{ idInsumo , jdbcType = VARCHAR}
+        ORDER BY fechaCaducidad ASC
+    </select>
+    
+        <select id="listaLotesPorClaveInst" resultType="mx.mc.model.Inventario" parameterType="Map" >
+    SELECT distinct
+      i.lote
+      , i.activo
+      , i.fechaCaducidad
+      , i.idInsumo
+      , i.idInventario
+      FROM inventario i
+      INNER JOIN medicamento m ON m.idMedicamento = i.idInsumo
+      WHERE m.claveInstitucional = #{ claveInstitucional , jdbcType = VARCHAR }
+      and i.idEstructura = #{ estructura , jdbcType = VARCHAR }
+    </select>
+    
+    <select id="listaMedicamentoEstructura" resultType="mx.mc.model.Inventario" parameterType="Map" >
+    SELECT distinct
+       i.idEstructura, 
+       e.nombre
+      FROM inventario i
+      INNER JOIN medicamento m ON m.idMedicamento = i.idInsumo
+      INNER JOIN estructura e on i.idEstructura = e.idEstructura
+      WHERE m.claveInstitucional = #{ claveInstitucional , jdbcType = VARCHAR }
+    </select>
+    
+     <select id="listaFechasCaducidad1" resultType="mx.mc.model.Inventario" parameterType="Map" >
+        SELECT 
+        i.idInsumo,
+        m.claveInstitucional,
+        m.nombreCorto,
+        i.lote,
+        i.activo,
+        date_format(i.fechaCaducidad,'%d-%m-%Y') as fecha,
+        i.fechaCaducidad
+        FROM
+        inventario i
+        INNER JOIN
+        medicamento m ON m.idMedicamento = i.idInsumo
+        WHERE 1 = 1 
+        and m.claveInstitucional = #{claveInstitucional, jdbcType = VARCHAR}
+        and i.lote = #{ lote , jdbcType = VARCHAR}
+        and i.idEstructura = #{ estructura , jdbcType = VARCHAR }
+    </select>
+    
+    <update id="actualizar" parameterType="mx.mc.model.Inventario">
+         
+        UPDATE inventario
+        <set>
+               
+            activo = #{activo,jdbcType=INTEGER},
+            updateFecha =#{updateFecha,jdbcType=DATE},
+            updateIdUsuario =#{updateIdUsuario,jdbcType=VARCHAR}
+          
+        </set>
+           
+        WHERE idInsumo = #{idInsumo, jdbcType = VARCHAR}
+        and   lote = #{lote,jdbcType=VARCHAR}
+        
+    </update>
+    
+    <select id="obtenerIdInsumoByClave" resultType="mx.mc.model.Inventario" parameterType="Map">                        
+        select distinctRow 
+        inv.idInsumo,
+        m.claveInstitucional,
+        inv.lote,
+        inv.fechaCaducidad,
+        inv.IdEstructura,
+        inv.idInventario,
+        inv.cantidadActual
+        from medicamento m
+        inner join inventario inv on m.idMedicamento = inv.idInsumo
+        where 
+        m.claveInstitucional = #{claveInstitucional, jdbcType = VARCHAR}
+        and inv.lote = #{lote, jdbcType = VARCHAR}
+        <if test="fecha != null">
+        and inv.fechaCaducidad = #{fecha, jdbcType = TIMESTAMP}
+        </if>   
+        <if test="estructura != null">
+        and inv.idEstructura = #{ estructura , jdbcType = VARCHAR }
+        </if>    
+    </select>
+    
+    <update id="actualizarInventarioCantidadActual" parameterType="mx.mc.model.Inventario">
+        update inventario 
+        <set>
+            cantidadActual = #{cantidadActual, jdbcType = VARCHAR},            
+            
+            updateFecha = #{updateFecha,jdbcType = TIMESTAMP},
+            updateIdUsuario = #{updateIdUsuario,jdbcType = TIMESTAMP}
+        </set>   
+        WHERE idInventario = #{idInventario, jdbcType = VARCHAR}            
+    </update>
+    
+    <update id="actualizarInventarioForRestockList" parameterType="mx.mc.model.Inventario">
+        <foreach collection="idInventariosConCeros" item="item" index="index" separator=";">                    
+        update inventario 
+            <set>
+                cantidadActual = 0                
+            </set>                       
+        WHERE idInventario = #{item.idInventario, jdbcType = VARCHAR}
+        </foreach>
+    </update>
+    
+    <update id="actualizarInventariosCantidadActualStock" parameterType="mx.mc.model.Inventario">        
+        <foreach collection="inventarioList" item="item" index="index" separator=";">            
+            update inventario 
+            <set>
+                cantidadActual = #{item.cantidadActual, jdbcType = INTEGER},
+                updateFecha = #{item.updateFecha, jdbcType = TIMESTAMP}
+            </set>               
+            WHERE idInventario = #{item.idInventario, jdbcType = VARCHAR}
+        </foreach>                       
+    </update>
+    
+    <update id="actualizarInventarioCantidadInactivar" parameterType="mx.mc.model.Inventario">        
+        UPDATE inventario
+        <set>
+            cantidadActual = #{cantidadActual, jdbcType = INTEGER},       
+            
+            updateFecha = #{updateFecha,jdbcType = TIMESTAMP},
+            updateIdUsuario = #{updateIdUsuario,jdbcType = TIMESTAMP}                
+        </set>   
+        WHERE 
+        idInventario = #{idInventario, jdbcType = VARCHAR} 
+    </update>
+    
+     <update id="actualizarInventarioGlobalLote" parameterType="mx.mc.model.Inventario">
+        UPDATE inventario
+        <set>
+            lote = #{lote, jdbcType = VARCHAR}
+            ,updateFecha = #{updateFecha}
+            ,updateIdUsuario = #{updateIdUsuario}
+            <if test="enviarAVG != null">
+                ,enviarAVG = #{enviarAVG, jdbcType = INTEGER}
+            </if>
+        </set>
+           
+        WHERE idInventario = #{idInventario, jdbcType = VARCHAR}            
+    </update>
+    
+    <update id="actualizarInventarioGlobalCaducidad" parameterType="mx.mc.model.Inventario">
+        UPDATE inventario
+        <set>
+            fechaCaducidad = #{fechaCaducidad, jdbcType = TIMESTAMP}
+            ,updateFecha = #{updateFecha}
+            ,updateIdUsuario = #{updateIdUsuario}
+            <if test="enviarAVG != null">
+                ,enviarAVG = #{enviarAVG, jdbcType = INTEGER}
+            </if>
+        </set>
+           
+        WHERE idInventario = #{idInventario, jdbcType = VARCHAR}            
+    </update>
+    
+    
+   <!-- Consultas de Boton Guardar -->
+   
+    <update id="actualizarInventarioBloqueos" parameterType="mx.mc.model.Inventario">        
+        UPDATE inventario
+        <set>
+        activo = #{activo,jdbcType = INTEGER },
+        updateFecha = #{updateFecha,jdbcType = TIMESTAMP },
+        updateIdUsuario  = #{updateIdUsuario,jdbcType=VARCHAR}
+        </set>
+        WHERE 
+        idInsumo = #{idInsumo, jdbcType = VARCHAR }
+        <if test="lote != null">
+            and lote = #{ lote , jdbcType = VARCHAR } 
+        </if>
+        <if test="fechaCaducidad != null">
+            and fechaCaducidad = #{ fechaCaducidad , jdbcType = TIMESTAMP } 
+        </if>
+        <if test="idInventario != null">
+            and idInventario = #{ idInventario , jdbcType = VARCHAR } 
+        </if>
+    </update>
+    
+    <update id="actualizaInvporClaveinstitucional" parameterType="mx.mc.model.Inventario">
+          UPDATE inventario
+            <set>
+                 activo =#{activo,jdbcType=INTEGER},
+                 updateFecha = #{updateFecha,jdbcType = TIMESTAMP},
+                 updateIdUsuario = #{updateIdUsuario,jdbcType = TIMESTAMP}
+            </set>    
+            WHERE idInsumo = #{idInsumo, jdbcType = VARCHAR}
+     
+    </update>
+    
+    <update id="actualizaInvporClaveinstitucionalyLote" parameterType="mx.mc.model.Inventario">
+          UPDATE inventario
+            <set>
+                 activo =#{activo,jdbcType=INTEGER},
+                 updateFecha = #{updateFecha,jdbcType = TIMESTAMP},
+                 updateIdUsuario = #{updateIdUsuario,jdbcType = TIMESTAMP}
+            </set>    
+            WHERE idInsumo = #{idInsumo, jdbcType = VARCHAR}
+            <if test="lote != null ">,lote =#{lote,jdbcType=VARCHAR}</if>            
+             
+                  
+    </update>
+    
+    <update id="actualizaInvporClaveinstitucionalLoteyFecha" parameterType="mx.mc.model.Inventario">
+          UPDATE inventario
+            <set>
+                 activo =#{activo,jdbcType=INTEGER},
+                 updateFecha = #{updateFecha,jdbcType = DATE},
+                 updateIdUsuario = #{updateIdUsuario,jdbcType = TIMESTAMP}
+            </set>    
+            WHERE idInsumo = #{idInsumo, jdbcType = VARCHAR}
+             <if test="lote != null ">lote =#{lote,jdbcType=VARCHAR}</if>            
+             <if test="fechaCaducidad != null ">,fechaCaducidad =#{fechaCaducidad,jdbcType=DATE}</if>
+                  
+    </update>
+    
+
+
+  <update id="revertirInventarioListCancelacion" parameterType="java.util.List">
+        <foreach collection="listaInventarios" item="item" index="index" separator=";">
+            UPDATE inventario
+            <set>
+                cantidadActual = CASE WHEN presentacionComercial = 1 THEN
+                                    CASE WHEN (#{item.cantidadActual, jdbcType = INTEGER} MOD cantidadXCaja) != 0 THEN
+                                           cantidadActual + (#{item.cantidadActual, jdbcType = INTEGER} DIV cantidadXCaja) + 1
+                                        ELSE
+                                            cantidadActual + (#{item.cantidadActual, jdbcType = INTEGER} DIV cantidadXCaja)
+                                    END
+                                 ELSE
+                                    (cantidadActual + #{item.cantidadActual, jdbcType = INTEGER})
+                                 END
+            </set>   
+            WHERE idInventario = #{item.idInventario, jdbcType = VARCHAR}
+        </foreach>
+    </update>
+    
+    <select id="getInventarioTracking" resultType="mx.mc.model.InventarioExtended" parameterType="Map" >
+        select e.nombre as nombreGabinete,
+        <if test="banderaInventario == false">e2.nombre as nombreServicio ,e2.envioHL7,</if>i.idEstructura,
+        i.lote,i.cantidadActual,i.fechaCaducidad,i.idInventario 
+        from inventario i
+        inner join medicamento m on m.idMedicamento = i.idInsumo
+        inner join estructura e on e.idEstructura = i.idEstructura        
+        <if test="banderaInventario == false">
+            inner join estructuraAlmacenServicio ea on ea.idEstructuraAlmacen = i.idEstructura
+            inner join estructura e2 on e2.idEstructura = ea.idEstructuraServicio
+        </if>        
+        where i.lote = #{lote, jdbcType = VARCHAR}            
+        and i.fechaCaducidad = #{fechaCaducidad , jdbcType = TIMESTAMP}
+        and m.claveInstitucional = #{claveInstitucional, jdbcType = VARCHAR}
+        and e.claveEstructura = #{idEstructura, jdbcType = VARCHAR}
+        <if test="banderaInventario == false">
+            and e2.envioHL7 = 1
+        </if>
+        and i.cantidadXCaja = 1;
+
+    </select>
+    
+    <select id="getInventarioByStock" resultType="mx.mc.model.Inventario" parameterType="Map" >
+            SELECT 
+    e.idEstructura,
+    i.idInventario,
+    e.claveEstructura,    
+    i.cantidadActual,
+    i.idInsumo,
+    m.claveInstitucional,
+    i.lote,
+    i.fechaCaducidad,
+    i.cantidadXCaja
+FROM
+    inventario i
+        INNER JOIN
+    medicamento m ON m.idMedicamento = i.idInsumo
+        INNER JOIN
+    estructura e ON e.idEstructura = i.idEstructura
+        where i.lote = #{lote, jdbcType = VARCHAR}            
+        AND m.claveInstitucional = #{claveInstitucional, jdbcType = VARCHAR}
+        AND e.claveEstructura = #{claveEstructura, jdbcType = VARCHAR}
+        AND i.fechaCaducidad = #{fechaCaducidad, jdbcType = TIMESTAMP}
+        AND i.cantidadXCaja = #{cantidadXCaja, jdbcType = INTEGER}        
+        AND e.envioHL7 != 1
+    </select>
+    
+    <select id="getListByIdInventario" resultType="mx.mc.model.Inventario" parameterType="Map">
+        select e.idEstructura, i.idInventario,e.nombre as almacen,e2.idEstructura,e2.nombre as servicio from estructuraAlmacenServicio ea
+        join estructura e on ea.idEstructuraAlmacen = e.idEstructura
+        join estructura e2 on e2.idEstructura = ea.idEstructuraServicio
+        join inventario i on i.idEstructura = e.idEstructura
+        WHERE i.idInventario not in
+        (
+        <foreach collection="idInventarioList" item="item" index="index" separator=",">
+            #{item, jdbcType = VARCHAR}
+        </foreach>      
+        )
+        and cantidadXCaja = 1
+        and e2.envioHL7 = 1
+        and i.cantidadActual > 0
+<!--        and idEstructura = #{idEstructura, jdbcType = VARCHAR}     -->
+    </select>    
+    
+    <select  id="getInsumoByFolioClaveInvRefill" parameterType="Map" resultType="mx.mc.model.InventarioExtended">
+        SELECT distinct e.nombre,i.lote,i.fechaCaducidad,i.cantidadActual,i.idInventario,m.nombreCorto,m.claveInstitucional,m.idMedicamento as idInsumo
+        from  medicamento m         
+        inner join inventario i on i.idInsumo = m.idMedicamento
+        inner join estructura e on e.idEstructura = i.idEstructura
+        where 
+        m.claveInstitucional = #{claveInstitucional , jdbcType = VARCHAR }
+        and i.lote = #{lote , jdbcType = VARCHAR}        
+        and i.fechaCaducidad = #{fechaCaducidad , jdbcType = TIMESTAMP}
+        and e.claveEstructura = #{claveEstructura, jdbcType = VARCHAR}                
+        and (i.claveProveedor is null OR i.claveProveedor = '0');
+    </select>    
+    
+    <select id="obtienelistaCodigoBarras" resultType="mx.mc.model.ClaveProveedorBarras" parameterType="Map" >
+        select distinct codigoBarras , cpb.claveProveedor
+        from medicamento me
+        inner join inventario i on i.idInsumo = me.idMedicamento
+        inner join claveProveedorBarras cpb on ( cpb.claveInstitucional = me.claveInstitucional )
+        where 
+        me.claveInstitucional = #{ claveInstitucional , jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtienelistaProveedor" resultType="mx.mc.model.ClaveProveedorBarras" parameterType="Map" >
+        select claveProveedor from claveProveedorBarras 
+        where 
+        claveInstitucional = #{ claveInstitucional , jdbcType = VARCHAR}
+    </select>
+    
+    <select id="obtienelistaCodigoBarrasByclaveInstAndClaveProv" resultType="mx.mc.model.ClaveProveedorBarras" parameterType="Map" >
+        select codigoBarras from claveProveedorBarras 
+        where 
+        claveInstitucional = #{ claveInstitucional , jdbcType = VARCHAR}
+        and claveProveedor = #{ claveProveedor , jdbcType = VARCHAR}
+    </select>
+    
+    <update id="updateClavProveedor" parameterType="mx.mc.model.Inventario">
+        UPDATE inventario
+        <set>
+            claveProveedor = #{claveProveedor, jdbcType = VARCHAR}
+            ,updateFecha = #{updateFecha,jdbcType = DATE}
+            ,updateIdUsuario = #{updateIdUsuario,jdbcType = TIMESTAMP}
+        </set>
+        WHERE idInventario = #{idInventario, jdbcType = VARCHAR}            
+    </update>
+    
+    
+    <select id="obtenerInventarioPorIdEstructurayporIdInsumo" resultType="mx.mc.model.InventarioExtended" parameterType="Map" >
+    	SELECT
+                idInventario ,
+                i.fechaIngreso ,
+                i.idEstructura ,
+                i.idInsumo ,
+                i.idPresentacion ,
+                i.lote ,
+                i.cantidadXCaja ,
+                i.fechaCaducidad ,
+                i.costo ,
+                i.costoUnidosis ,
+                i.idProveedor ,
+                i.idDictamenMedico ,
+                i.accesorios ,
+                i.cantidadActual ,
+                i.existenciaInicial ,
+                i.claveProveedor ,
+                i.presentacionComercial ,
+                i.activo ,
+                i.insertFecha ,
+                i.insertIdUsuario ,
+                i.updateFecha ,
+                i.updateIdUsuario ,
+                i.idTipoOrigen ,
+                i.cantidadPorClave ,
+                i.enviarAVG ,
+                i.osmolaridad ,
+                i.densidad ,
+                i.calorias ,
+                i.noHorasestabilidad ,
+                i.idFabricante
+                , IFNULL(p.nombreProveedor, '') AS nombreProveedor
+                , IFNULL(f.nombreFabricante, '') AS nombreFabricante
+        FROM
+                inventario i
+                LEFT JOIN proveedor p ON i.idProveedor = p.idProveedor 
+                LEFT JOIN fabricante f ON i.idFabricante = f.idFabricante 
+        WHERE
+                1 = 1
+        <if test=" idEstructura != null">
+            AND i.idEstructura = #{ idEstructura , jdbcType = VARCHAR}
+        </if>
+        <if test=" idInsumo != null ">    
+            AND i.idInsumo = #{ idInsumo , jdbcType = VARCHAR}
+       </if>
+        ORDER BY i.fechaCaducidad ASC
+    </select>
+    
+    <select id="obtenerLoteSugerido" resultType="mx.mc.model.Inventario" parameterType="Map" >
+        SELECT i.idEstructura , i.idInventario , i.cantidadActual , i.lote , i.fechaCaducidad as caducidad , f.nombreFabricante
+        FROM inventario i   
+        LEFT JOIN fabricante f ON i.idFabricante = f.idFabricante 
+        WHERE i.idInsumo = #{ idInsumo , jdbcType = VARCHAR }
+            AND i.activo = 1
+            AND i.fechaCaducidad &gt; now()
+            AND i.cantidadActual &gt; 0
+            AND i.idEstructura IN
+            <foreach item="item" index="index" collection="idEstructuraList" open="(" separator="," close=")">
+                #{ item , jdbcType = VARCHAR}
+            </foreach>
+        ORDER BY i.fechaCaducidad ASC LIMIT 1;
+    </select>
+    
+    <select id="obtenerInventarioPorIdEstructurasIdInsumo" resultType="mx.mc.model.InventarioExtended" parameterType="Map" >
+    	SELECT
+                idInventario ,
+                i.fechaIngreso ,
+                i.idEstructura ,
+                i.idInsumo ,
+                i.idPresentacion ,
+                i.lote ,
+                i.cantidadXCaja ,
+                i.fechaCaducidad ,
+                i.costo ,
+                i.costoUnidosis ,
+                i.idProveedor ,
+                i.idDictamenMedico ,
+                i.accesorios ,
+                i.cantidadActual ,
+                i.existenciaInicial ,
+                i.claveProveedor ,
+                i.presentacionComercial ,
+                i.activo ,
+                i.insertFecha ,
+                i.insertIdUsuario ,
+                i.updateFecha ,
+                i.updateIdUsuario ,
+                i.idTipoOrigen ,
+                i.cantidadPorClave ,
+                i.enviarAVG ,
+                i.osmolaridad ,
+                i.densidad ,
+                i.calorias ,
+                i.noHorasestabilidad ,
+                i.idFabricante
+                , IFNULL(p.nombreProveedor, '') AS nombreProveedor
+                , IFNULL(f.nombreFabricante, '') AS nombreFabricante
+        FROM
+                inventario i
+                LEFT JOIN proveedor p ON i.idProveedor = p.idProveedor 
+                LEFT JOIN fabricante f ON i.idFabricante = f.idFabricante 
+        WHERE 1 = 1
+        <if test=" idEstructuraList != null">
+            AND i.idEstructura IN
+                <foreach item="item" index="index" collection="idEstructuraList" open="(" separator="," close=")">
+                    #{ item , jdbcType = VARCHAR}
+                </foreach>
+        </if>
+        <if test=" idInsumo != null ">    
+            AND i.idInsumo = #{ idInsumo , jdbcType = VARCHAR}
+       </if>
+        ORDER BY i.fechaCaducidad ASC;
+    </select>
+    
+    
+    <update id="actualizarPorId" parameterType="mx.mc.model.Inventario">     
+        UPDATE inventario SET
+            updateFecha = #{ updateFecha }
+            , updateIdUsuario = #{ updateIdUsuario }
+            , idFabricante = #{ idFabricante }
+        WHERE idInventario = #{ idInventario }
+    </update>
+    
+    
+</mapper>

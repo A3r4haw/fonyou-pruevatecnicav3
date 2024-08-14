@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">                    
+                    <h:form id="mainForm"> 
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>                        
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <center><p:outputLabel value="TRANSFERENCIA DE INVENTARIO" style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 10px;" /></center>                                
+                            
+
+                            <p:outputLabel value="Almacén" 
+                                           style="margin-right: 10px;margin-left: 10px;color: #FFF;font-size: 14px;font-weight: bold;"/>
+                            <p:outputLabel value="#{transferenciaMB.estructuraList.get(0).nombre}"
+                                           rendered="#{!transferenciaMB.isAdmin}"
+                                           style="margin-right: 10px;color: #FFF;font-size: 16px  !important;font-weight: bold;"
+                                           
+                                           />
+                            <p:selectOneMenu id="comboAlmacen" 
+                                             rendered="#{transferenciaMB.isAdmin}"
+                                             value="#{transferenciaMB.idEstructura}"
+                                             disabled="#{!transferenciaMB.permiso.puedeVer}"
+                                             style="vertical-align: middle;"
+                                             
+                                             >
+                                <p:ajax listener="#{transferenciaMB.buscarTransferencia()}" 
+                                        update="tblTransferCtrl" />              
+                                <f:selectItems value="#{transferenciaMB.estructuraList}"
+                                               var="estructura"
+                                               itemValue="#{estructura.idEstructura}"
+                                               itemLabel="#{estructura.nombre}"/>
+                            </p:selectOneMenu>
+
+        &nbsp;&nbsp;
+                            
+                            
+                            
+                            <p:outputLabel value="Buscar Transferencia:"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 10px;" />
+                                                        
+                            <p:inputText id="textSearch" style="width: 30%!important;border-radius:10px!important;margin-left: 30px;" 
+                                         value="#{transferenciaMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar..." />
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>                                
+                            </i>                            
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{transferenciaMB.buscarTransferencia()}"
+                                 update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                 oncomplete="PF('statusProcess').hide();" style=" margin-left: 15px; margin-bottom: 8px;" />
+                        </div>                
+                        <p:commandButton class="btnNew" value="Crear Solicitud"  icon="fa fa-file-o" rendered="#{transferenciaMB.permiso.puedeCrear}" actionListener="#{transferenciaMB.selections}"
+                                     onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('mdlTipoTransferencia').show();"
+                                     ajax="true"  style=" margin: 5px 0; " styleClass="btnMusAzul" update="frmTypeTransfer" />
+                        <br/>
+                        <p:dataTable id="tblTransferCtrl" widgetVar="tblTransferCtrl" 
+                            var="item"
+                            value="#{transferenciaMB.reabastoList}"
+                            styleClass="styleEventosPlanPrestacion" reflow="true"
+                            emptyMessage="No existen registros para mostrar."
+                            style="margin-bottom:5px;" 
+                            scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350">
+
+                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.folio}"  headerText="Folio">
+                                <h:outputText value="#{item.folio}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.almacen}"  headerText="Destino">
+                                <h:outputText value="#{item.almacen}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.insertFecha}"  headerText="Fecha Envío">
+                                <h:outputText value="#{item.insertFecha}" class="altoColumn" >
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.estatus}"  headerText="Estatus">
+                                <h:outputText value="#{item.estatus}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left;width: 100px;" sortBy="#{item.solicitante}"  headerText="Usuario">
+                                <h:outputText value="#{item.solicitante}" class="altoColumn" />
+                            </p:column>
+
+                            <p:column style="text-align: left;width: 90px;" headerText="Acciones" >
+                                <p:commandLink title="Detalle"  actionListener="#{transferenciaMB.obtenerTransferencia(item)}"
+                                                       onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();PF('mdlDetalleTransfer').show();" 
+                                                       update=":frmNewTransfer" >
+                                        <i class="fa fa-edit iconMusAzul" />
+                                    </p:commandLink>&nbsp;
+                                    <p:commandLink title="Imprimir" update=":formPDF"  actionListener="#{transferenciaMB.printTransferencia(item)}"
+                                               onclick="PF('statusProcess').show();"                                                                           
+                                               oncomplete="PF('statusProcess').hide(); if(args.estatus){PF('mdlReport').show();}"
+                                               >
+                                    
+                                        <i class="fa fa-print iconMusAzul" />                                    
+                                    </p:commandLink>
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                              
+                     <p:dialog header="Seleccione..."
+                          widgetVar="mdlTipoTransferencia"
+                          closeOnEscape="true" modal="true"                          
+                          style="font-size:xx-small !important; " >
+                        <h:form id="frmTypeTransfer">
+                            <p:messages id="validaMsg1" globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:fieldset  >
+                                <p:panelGrid columns="2" layout="tabular" >
+                                    
+                                    <p:outputLabel value="Almacén Origen:" />
+                                    <p:selectOneMenu value="#{transferenciaMB.idEstructuraProv}" rendered="#{transferenciaMB.isAdmin}"  style=" width: 200px" >
+                                        <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true" />
+                                        <f:selectItems value="#{transferenciaMB.estructuraList}" var="orig" itemLabel="#{orig.nombre}" itemValue="#{orig.idEstructura}" />
+                                        <p:ajax event="change" onstart="PF('statusProcess').show();" listener="#{transferenciaMB.asignaOrigen}"  
+                                                oncomplete="PF('statusProcess').hide();" update="frmTypeTransfer:insumoslist,frmTypeTransfer:almacenDestino" />
+                                    </p:selectOneMenu>
+                                    <p:inputText size="25" value="#{transferenciaMB.estructuraSelect.nombre}"  readonly="true"   rendered="#{!transferenciaMB.isAdmin}"/>
+
+                                    <p:outputLabel value="Almacén Destino:"  />
+                                    <p:selectOneMenu id="almacenDestino"  value="#{transferenciaMB.reabasto.idEstructura}" 
+                                                     disabled="#{transferenciaMB.contEdit}" style=" width: 200px"  required="true" requiredMessage="Debe seleccionar un Almacén Destino"  >
+                                        <f:selectItem itemLabel="Seleccione una opción" itemValue="" noSelectionOption="true"  />
+                                        <f:selectItems value="#{transferenciaMB.estructuraList2}" var="dest" itemLabel="#{dest.nombre}" itemValue="#{dest.idEstructura}" />
+                                        <p:ajax event="change" listener="#{transferenciaMB.validaOrigenDestino}" update="frmTypeTransfer:almacenDestino" />
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Tipo de Transferencia:"  />
+                                    <p:selectOneRadio id="tipoReabasto" layout="pageDirection" value="#{transferenciaMB.tipoOrden}" required="true" requiredMessage="Debe seleccionar un tipo de Orden" >
+                                        <f:selectItem itemLabel="Normal" itemValue="1"  />
+                                        <f:selectItem itemLabel="Extraordinaria" itemValue="2" />
+                                        <f:ajax render="frmTypeTransfer" execute="tipo" />
+                                    </p:selectOneRadio>
+
+
+                                    <p:outputLabel value="Tipo de Insumo:" /> 
+                                    <p:selectOneMenu id="insumoslist" style="width: 120px;" value="#{transferenciaMB.tipoInsumo}" rendered="#{transferenciaMB.list}"  >
+                                        <f:selectItems value="#{transferenciaMB.tipoInsumoList}" var="tipo" itemLabel="#{tipo.nombreCatalogo}" itemValue="#{tipo.idCatalogoGeneral}" />
+                                        <!--p:ajax update="tblMedicamentos" listener="# {medicamentoMB.obtieneInsumo}" /-->
+                                    </p:selectOneMenu>
+                                    <p:outputLabel value="#{transferenciaMB.nombreInsumo}" rendered="#{!transferenciaMB.list}" style="font-weight: bold " />
+                                </p:panelGrid>
+                            </p:fieldset>
+                            <br/><br/>
+                            <p:panel class="pnlActions">
+                                <p:commandButton id="btnTipCancel" class="btnItem" value="Cancelar"  style="width: 100px;"
+                                                         ajax="true" onclick="PF('mdlTipoReabasto').hide();"  validateClient="false" />
+                                    <!--p:confirm header="Confirmación - modalPassUsuario" message="Desea Guardar los cambios" icon="ui-icon-alert"  /-->
+                                <p:commandButton id="btnTipNew" class="btnItem"
+                                            value="Crear" style="margin:0; width: 100px; "
+                                            actionListener="#{transferenciaMB.newOrdenTransferencia}"
+                                            onclick="PF('statusProcess').show();"
+                                            update="frmNewTransfer" styleClass="btnMusAzul"
+                                            oncomplete="if(args.estatus){ PF('mdlTipoTransferencia').hide(); PF('mdlDetalleTransfer').show();}PF('statusProcess').hide();"
+                                             />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+                    
+                    <p:dialog header="Registro de Orden de Transferencia"
+                          widgetVar="mdlDetalleTransfer"
+                          closeOnEscape="true" modal="true"                          
+                          style="font-size:xx-small !important;" width="80%">
+                        <h:form id="frmNewTransfer">
+                            <p:messages globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:panelGrid columns="4" layout="tabular" >
+                                <p:outputLabel value="Tipo de Insumo:"  />
+                                <p:outputLabel value="#{transferenciaMB.nombreInsumo}" style="font-weight: bold " />
+                                
+                                <p:outputLabel value="Fecha de Envio:"   />
+                                <p:inputText value="#{transferenciaMB.reabasto.fechaSolicitud}" readonly="true" size="25" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm" />
+                                </p:inputText>                                
+
+                                <p:outputLabel value="Almacén Origen:"  />                                
+                                <p:inputText size="25" value="#{transferenciaMB.reabasto.proveedor}"  readonly="true" />
+
+                                <p:outputLabel value="Almacén Destino:"  />
+                                <p:inputText size="25" value="#{transferenciaMB.reabasto.almacen}"  readonly="true" />
+                                                                
+                            </p:panelGrid>
+                            <br />
+                            <p:panelGrid id="addInsumo" rendered="#{transferenciaMB.contEdit}" ><div  style="background-color:grey  !important; padding: 5px;  ">
+                                <p:outputLabel value="Cantidad:" style="color:#fff;" />&nbsp;&nbsp;
+                                <p:inputNumber id="numSoli" value="#{transferenciaMB.cantTransfer}" decimalPlaces="0" tabindex="6"  size="7" />&nbsp;&nbsp;
+                                
+                                <p:outputLabel value="Insumo"  style="color:#fff;"/> &nbsp;&nbsp;
+                                <!-- p:inputText id="textFolio" value="#{transferenciaMB.codigoBarras}" style="width: 50%;"  / -->
+                                <p:autoComplete id="autoSkuSap" size="55" value="#{transferenciaMB.skuSap}" autocomplete="on" 
+                                                    completeMethod="#{transferenciaMB.autoComplete}" minQueryLength="4" forceSelection="true"
+                                                    var="skuSap" itemValue="#{skuSap.idInventario}" itemLabel="#{skuSap.nombreLargo}"
+                                        converter="skuSapConverter"
+                                        tabindex="7"
+                                        placeholder="Escanear Código de Barras"
+                                        emptyMessage="Código de Barras desconocido." >
+                                    <p:ajax event="itemSelect"  update=":frmNewTransfer"
+                                                listener="#{transferenciaMB.handleSelect}"                                                 
+                                                process=":frmNewTransfer"></p:ajax>
+                                        <p:ajax event="itemUnselect"  update=":frmNewTransfer"
+                                                listener="#{transferenciaMB.handleUnSelect}" 
+                                                process=":frmNewTransfer"></p:ajax>
+                                        
+                                        <p:column style="width: 20px; font-size: small;" width="20px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Clave" />
+                                            </f:facet>
+                                            <h:outputText value="#{skuSap.claveInstitucional}" style=" font-size: small;" />
+                                        </p:column>
+                                        <p:column style="width: 20px; font-size: small;" width="20px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Clave Proveedor" />
+                                            </f:facet>
+                                            <h:outputText value="#{skuSap.claveProveedor}" style=" font-size: small; font-weight: bolder;" />
+                                        </p:column>
+                                        <p:column style="width: 20px; font-size: small;" width="20px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Lote" />
+                                            </f:facet>
+                                            <h:outputText value="#{skuSap.lote}" style=" font-size: small; font-weight: bolder;" />
+                                        </p:column>
+                                        <p:column style="width: 20px; font-size: small;" width="20px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Caducidad" />
+                                            </f:facet>
+                                            <h:outputText value="#{skuSap.fechaCaducidad}" style=" font-size: small; font-weight: bolder;" >
+                                                <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column style="width: 350px; font-size: small;" width="350px">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Descripción" />
+                                            </f:facet>
+                                            <h:outputText value="#{skuSap.nombreLargo}" style=" font-size: x-small;" />
+                                        </p:column>
+                                        <p:column style="width: 10px; font-size: small; align-content: center; " width="10px" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Existencia DU" />
+                                            </f:facet>
+                                            <h:outputText value="#{skuSap.cantidadActual}" style=" font-size: small; font-weight: bolder;" />
+                                        </p:column>
+                                        <p:column style="width: 10px; font-size: small; align-content: center; " width="10px" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Existencia Cajas" />
+                                            </f:facet>
+                                            <h:outputText value="#{skuSap.cantidadActual / skuSap.cantidadXCaja}" style=" font-size: small; font-weight: bolder;" />
+                                        </p:column>
+                                    </p:autoComplete>&nbsp;&nbsp;
+                                
+                                    <p:commandButton id="btnAdd"  value="Agregar" style="margin:0; width:100px;" tabindex="8"  actionListener="#{transferenciaMB.addInsumoList}"
+                                            onclick="PF('statusProcess').show();"  update="frmNewTransfer"  oncomplete="PF('statusProcess').hide();">                                    
+                                </p:commandButton>    
+                                </div>
+                            </p:panelGrid>
+                            <p:dataTable id="tblReabastoInsumo" 
+                                var="item" editable="#{transferenciaMB.contEdit}" editMode="cell"
+                                value="#{transferenciaMB.reabastoInsumoExtList}"
+                                styleClass="styleEventosPlanPrestacion" reflow="true"
+                                style="margin-bottom:5px;" scrollRows="30" scrollable="true" liveScroll="true" scrollHeight="200" >
+
+                                <p:ajax event="rowToggle" global="false"/>
+
+                                <p:ajax event="cellEdit" listener="#{transferenciaMB.onCellEdit}" update="tblReabastoInsumo" />                            
+                                <p:column style="width:5px">
+                                    <p:rowToggler />
+                                </p:column>
+                                <p:column style="text-align: left; width: 50px;"  headerText="Clave">
+                                    <h:outputText value="#{item.clave}"  class="altoColumn" />
+                                </p:column>
+
+                                <p:column style="text-align: left;width: 130px;"  sortBy="#{item.nombreComercial}" headerText="Insumo" >
+                                    <h:outputText value="#{item.nombreComercial}" class="altoColumn" />
+                                </p:column>                                
+                                
+                                <p:column style="text-align: left;width: 60px;"  sortBy="#{item.presentacion}" headerText="Presentación" >
+                                    <h:outputText value="#{item.presentacion}" class="altoColumn" />
+                                </p:column>
+
+                                <p:column style="text-align: left;width: 65px;" headerText="Piezas X caja" >
+                                    <h:outputText value="#{item.cantidadXCaja}" class="altoColumn" />
+                                </p:column>                                                                
+                                
+                                <p:column style="text-align: left; width: 50px;" rendered="false" headerText="DU Requerida" >
+                                    <h:outputText value="#{item.cantidadSolicitada}" class="altoColumn" />
+                                </p:column>
+                                
+                                <p:column style="text-align: left;width: 50px;"  headerText="Cajas Surtidas" >
+                                    <h:outputText value="#{item.cantidadActual}" class="altoColumn" />
+                                </p:column>
+                                
+                                <p:column style="text-align: left;width: 50px;" headerText="Cantidad Surtida DU" >
+                                    <h:outputText value="#{item.cantidadSurtida}" class="altoColumn" />
+                                </p:column>
+                                                                
+                                <p:column style="text-align: left;width: 30px;" headerText="Acciones"  rendered="#{transferenciaMB.contEdit}" >
+                                    <p:commandLink title="Eliminar"  actionListener="#{transferenciaMB.deleteInsumoOfList(item.idInsumo)}"  rendered="#{transferenciaMB.contEdit}"
+                                                       onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update="tblReabastoInsumo" >
+                                        <i class="fa fa-trash-o iconMusAzul" />
+                                    </p:commandLink>
+                                </p:column>
+                                
+                                <p:rowExpansion>
+                                    <p:dataTable var="env" id="tblReabastoInsumoDetalle"
+                                                 value="#{item.listaDetalleReabIns}"
+                                                scrollable="true" 
+                                                emptyMessage="" >
+                                        
+                                        <p:column headerText="Lote " style="width: 25%">
+                                            <h:outputText value="#{env.loteEnv}" />
+                                        </p:column>
+
+                                        <!--TODO:  SE ELIMINA PRESENCTACION DE CADUCIDAD SOLO PARA TOLUCA  -->
+                                        <p:column headerText="Fecha de caducidad" style="width:25%" rendered="true">
+                                            <h:outputLabel value="#{env.fechaCad}" >
+                                                <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                        
+                                        <p:column headerText="Cantidad DU" style="width:20%">
+                                            <h:outputLabel value="#{env.cantidadEnviado}" />
+                                        </p:column>
+                                        
+                                        <p:column headerText="Cantidad Cajas" style="width:20%">
+                                            <h:outputLabel value="#{env.cantidadCaja}" />
+                                        </p:column>
+                                        
+                                        <p:column style="text-align: left;width: 10%;" headerText="Acciones"   >
+                                            <p:commandLink title="Eliminar"  actionListener="#{transferenciaMB.deleteLoteOfInsumo(item.idInsumo,env.loteEnv)}" 
+                                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update="frmNewTransfer:tblReabastoInsumo" >
+                                                <i class="fa fa-trash-o iconMusAzul" />
+                                            </p:commandLink>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:rowExpansion>
+                                
+                                <f:facet name="footer" >
+                                    <p:outputLabel style="font-size: 1em !important; color: #000;">
+                                        #{transferenciaMB.numeroRegistros} Insumos han sido encontrados
+                                    </p:outputLabel> 
+                                </f:facet>
+                            </p:dataTable>
+                            <p:panel class="pnlActions">                                
+                                <p:commandButton id="btnRegPrint" class="btnItem" value="Imprimir" style="width: 100px;"  rendered="#{!transferenciaMB.contEdit}"
+                                                 update=":formPDF" ajax="true" onclick="PF('statusProcess').show();" actionListener="#{transferenciaMB.printTransferencia(transferenciaMB.reabasto)}"
+                                                 validateClient="false" oncomplete="PF('mdlReport').show();PF('mdlDetalleTransfer').hide(); PF('statusProcess').hide();" />
+                                &nbsp;&nbsp;
+                                <p:commandButton id="btnRegCancel" class="btnItem" value="Cancelar" style="width: 100px;" tabindex="9" 
+                                                         ajax="true" onclick="PF('mdlDetalleTransfer').hide();"  validateClient="false" />&nbsp;&nbsp;
+                                <p:commandButton id="btnRegNew"  rendered="#{transferenciaMB.contEdit}" styleClass="btnMusAzul"
+                                            value="Crear" style="margin:0; width: 100px;"  tabindex="10" 
+                                            onclick="PF('mdlConfTransfer').show();"  />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>
+
+                    <p:dialog  header="Confirmación de Registro de Orden de Reabasto"
+                          widgetVar="mdlConfTransfer"
+                          closeOnEscape="false" modal="true"                          
+                          style="font-size:xx-small !important;" >
+                        <h:form id="frmConfReabasto">
+                            <p:panelGrid columns="2">
+                                <p:outputLabel value="Imprimir Solicitud" />
+                                <p:selectOneButton value="#{transferenciaMB.printSolicitud}">
+                                    <f:selectItem itemLabel="Si" itemValue="true" />
+                                    <f:selectItem itemLabel="No" itemValue="false" />
+                                </p:selectOneButton>
+                            </p:panelGrid><br />
+                            <div class="pnlActions">
+                                <p:commandButton id="btnConfCancel" class="btnItem" value="Cancelar" style="width: 100px;" 
+                                                         ajax="true" onclick="PF('mdlConfTransfer').hide();"  validateClient="false" />&nbsp;&nbsp;
+                                
+                                <p:commandButton id="btnConfSend" update=":mainForm:tblTransferCtrl,:formPDF" styleClass="btnMusAzul"
+                                            value="Enviar" style="margin:0; width: 100px;"
+                                            actionListener="#{transferenciaMB.sendOrdenTransferencia}"
+                                            onclick="PF('statusProcess').show();"                                        
+                                            oncomplete="PF('mdlConfTransfer').hide(); PF('statusProcess').hide(); if(args.estatus){PF('mdlDetalleTransfer').hide();} if(args.print){ PF('mdlReport').show();} " />
+                            </div>
+                        </h:form>
+                    </p:dialog>  
+                    
+                    <p:dialog widgetVar="mdlReport" width="750px" height="500px"
+                          closeOnEscape="false" modal="true"                          
+                          style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                            
+                            <p:media cache="false" width="100%" height="500px" value="/Reportes" player="pdf"/>                            
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

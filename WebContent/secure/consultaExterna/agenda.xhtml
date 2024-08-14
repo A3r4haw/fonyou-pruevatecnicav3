@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+    
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">
+                <h:form id="formPrincipal" >
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                        <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                        <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                    </p:confirmDialog>
+                    <p:messages id="msg" closable="true" showDetail="false"/>
+
+                    <div class="mainPanel" style="padding: 10px;width: 20%;float: left;"  >
+                        <h2>Agenda</h2>
+                        <p:outputLabel for="consultorio" value="* Consultorio :"/>
+                        <br/>
+                        <p:selectOneMenu id="consultorio"
+                                         value="#{agendaMB.idConsultorio}" 
+                                         style="margin-right: 10px;">
+                            <f:selectItem itemLabel="" itemValue=""/>
+                            <f:selectItems value="#{agendaMB.listaConsultorios}"
+                                           var="consultorio"
+                                           itemValue="#{consultorio.idEstructura}"
+                                           itemLabel="#{consultorio.nombre}"/>
+
+                        </p:selectOneMenu>
+                        <br/>
+                        <p:outputLabel for="turno" value="* Turno :" />
+                        <br/>
+                        <p:selectOneMenu id="turno"
+                                         value="#{agendaMB.idTurno}" 
+                                         style="margin-right: 10px;">
+                            <f:selectItem itemLabel="" itemValue="0"/>
+                            <f:selectItems value="#{agendaMB.listaTurnos}"
+                                           var="turno"
+                                           itemValue="#{turno.idTurno}"
+                                           itemLabel="#{turno.nombre}"/>
+                            <p:ajax listener="#{agendaMB.seleccionarTurno}" 
+                                    update="@form" 
+                                    process="@form"/>
+                        </p:selectOneMenu>
+                        <br/>
+                        <p:outputLabel for="medico" value="* Médico :"/>
+                        <br/>
+                        <p:selectOneMenu id="medico"
+                                         value="#{agendaMB.idMedico}" >
+                            <f:selectItem itemLabel="" itemValue=""/>
+                            <f:selectItems value="#{agendaMB.listaMedicos}"
+                                           var="medico"
+                                           itemValue="#{medico.idUsuario}"
+                                           itemLabel="#{medico.nombre} #{medico.apellidoPaterno} #{medico.apellidoPaterno}"/>
+                            <p:ajax listener="#{agendaMB.cargarEventosCalendario}" 
+                                    update="@form" 
+                                    process="@form"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="mainPanel" style="padding: 10px;width: 50%;float: left;">
+                        <p:schedule id="schedule" value="#{agendaMB.eventModel}" 
+                                    widgetVar="agenda"                                     
+                                    locale="es_MX"
+                                    timeZone="GMT-5" 
+                                    axisFormat="H:mm"
+                                    rightHeaderTemplate="month"
+                                    minTime="#{agendaMB.horaInicio}" 
+                                    maxTime="#{agendaMB.horaFin}"
+                                    allDaySlot="false"
+                                    initialDate="#{agendaMB.diaInicial}"
+                                    view="#{agendaMB.vistaAgenda}"
+                                    resizable="false"
+                                    class="cabezeraAgenda">
+
+                            <p:ajax event="dateSelect"
+                                    listener="#{agendaMB.seleccionarFecha}"
+                                    update="@form,formModal"
+                                    oncomplete="if(args.mostrar){PF('dialogoCita').show();}" process="@form"/>
+                            <p:ajax event="eventSelect" 
+                                    listener="#{agendaMB.selectItem}" 
+                                    update="@form,formModal"
+                                    oncomplete="if(args.mostrar){PF('dialogoCita').show();}" process="@form" />
+                            <p:ajax event="eventMove" 
+                                    listener="#{agendaMB.moveItem}" 
+                                    update="@form" />
+                            <p:ajax event="eventResize" />
+                        </p:schedule>
+
+                    </div>
+
+                </h:form>
+
+                <p:dialog widgetVar="dialogoCita" 
+                          header="Detalle de la cita" 
+                          showEffect="clip" 
+                          hideEffect="clip"
+                          >
+                    <p:messages id="msgModal" closable="true" redisplay="false" globalOnly="true" showDetail="false">
+                        <p:autoUpdate />
+                    </p:messages>
+                    <h:form id="formModal" >
+                        <h:panelGrid id="gridDetalleCita" columns="2">
+                            <p:outputLabel for="txtUsuario" value="Paciente *" />                                
+                            <p:autoComplete id="txtUsuario" 
+                                            value="#{agendaMB.idPaciente}"
+                                            completeMethod="#{agendaMB.autocompletePaciente}"
+                                            minQueryLength="4"
+                                            queryDelay="500" 
+                                            maxResults="50" 
+                                            forceSelection="true" 
+                                            cacheTimeout="0" 
+                                            var="paciente" 
+                                            cache="false"
+                                            emptyMessage="No se encontraron registros"
+                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" 
+                                            itemValue="#{paciente}" 
+                                            converter="musGenericConverter"
+                                            disabled="#{agendaMB.disabled}"
+                                            >
+                            </p:autoComplete>
+
+                            <p:outputLabel for="titulo" value="Título *" />                                
+                            <p:inputText id="titulo" value="#{agendaMB.tituloCita}" disabled="#{agendaMB.disabled}" />
+
+                            <p:outputLabel for="fechaInicio" value="Hora inicio *" />
+                            <p:calendar id="fechaInicio"
+                                        value="#{agendaMB.fechaInicio}"
+                                        timeZone="GMT-5"
+                                        locale="es_MX"
+                                        pattern="dd/MM/yyyy HH:mm" 
+                                        mindate="#{currentDate}" 
+                                        disabled="#{agendaMB.disabled}"
+                                        showButtonPanel="true"  />
+
+                            <p:outputLabel for="fechaFin" value="Hora final *" />
+                            <p:calendar id="fechaFin"  
+                                        value="#{agendaMB.fechaFin}"
+                                        timeZone="GMT-5" 
+                                        locale="es_MX"
+                                        pattern="dd/MM/yyyy HH:mm" 
+                                        mindate="#{currentDate}" 
+                                        disabled="#{agendaMB.disabled}"
+                                        showButtonPanel="true" />
+
+                            <p:outputLabel for="comentarios" value="Comentarios" />
+                            <p:inputTextarea id="comentarios" value="#{agendaMB.comentarios}" disabled="#{agendaMB.disabled}" />
+
+                            <p:commandButton value="Limpiar" actionListener="#{agendaMB.initialize}" rendered="#{agendaMB.clean}" update="formModal" />
+
+                            <p:commandButton value="Cancelar Cita" actionListener="#{agendaMB.cancelarCita()}" 
+                                             rendered="#{agendaMB.cancel}" update="@form" 
+                                             oncomplete="if(args.cancel){PF('dialogoCita').hide();}" >
+                                <p:confirm  header="Confirmación" message="¿Desea cancelar la cita ?"  icon="ui-icon-alert" />
+                            </p:commandButton>
+
+                            <p:commandButton id="addButton" 
+                                             value="Guardar" rendered="#{agendaMB.save}"
+                                             actionListener="#{agendaMB.guardarCita}"
+                                             oncomplete="if(args.save){PF('dialogoCita').hide();}"
+                                             update="@form"/>
+
+                            <p:commandButton id="endButton" 
+                                             value="Cerrar" rendered="#{!agendaMB.save}" 
+                                             oncomplete="PF('dialogoCita').hide();"
+                                             update="@form"/>
+
+                            <p:commandButton id="btn_a"  
+                                             global="false"                                             
+                                             value="Cerrar Cita" rendered="#{!agendaMB.save}" 
+                                             oncomplete="PF('dialogoCita').hide();" 
+                                             disabled="#{agendaMB.closeCita}"
+                                             widgetVar="bt_act"
+                                             onclick="bt_act.disabled()"
+                                             actionListener="#{agendaMB.actualizarEstatusCita}"
+                                             update="@form"
+                                             />
+                        </h:panelGrid>
+                    </h:form>
+                </p:dialog>    
+            </ui:define>
+
+        </ui:composition>
+    </h:body>
+
+</html>

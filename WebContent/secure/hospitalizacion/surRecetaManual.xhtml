@@ -1,0 +1,1257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <h:form id="formPrincipal" >
+                    <p:focus context="formPrincipal" />
+                    <p:messages id="msgFormPrincipal" globalOnly="false" showDetail="false" closable="true" />
+                    <div id="busqueda" style="height: 30px !important;">
+                        <p:outputLabel value="Recetas"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+                        <p:spacer width="10px;" />
+                        <p:inputText id="busqueda" 
+                                     value="#{surtRecetaManualHospMB.cadenaBusqueda}" 
+                                     class="textSearch"
+                                     style="width: 50% !important;" 
+                                     placeholder="Buscar..." />
+                        <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />
+                        <p:spacer width="12px" />
+                        <p:commandButton title="Buscar" value="Buscar" 
+                                         actionListener="#{surtRecetaManualHospMB.obtenerRecetasManuales}"
+                                         icon="fa fa-search" 
+                                         onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide();"
+                                         style="margin-right: 10px;"
+                                         update="tblRecetas"
+                                         />
+                        <p:commandButton title="Agregar" value="Agregar" 
+                                         actionListener="#{surtRecetaManualHospMB.limpiarTodo}"
+                                         icon="fa fa-plus" class="btnMusAzul"
+                                         onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide();PF('modalRecetaManual').show();"
+                                         update=":formAgregarReceta"
+                                         disabled="#{!surtRecetaManualHospMB.permiso.puedeCrear}"
+                                         />
+                    </div>
+                    <p:dataTable id="tblRecetas" 
+                                 widgetVar="tblRecetas" 
+                                 value="#{surtRecetaManualHospMB.listaRecetasManuales}"
+                                 selection="#{surtRecetaManualHospMB.recetaManualSelect}"
+                                 var="item" 
+                                 rowKey="#{item.idPrescripcion}"
+                                 rowIndexVar="row"
+                                 style="margin-bottom:5px;"
+                                 styleClass="mystyle"
+                                 scrollRows="10" scrollable="true" 
+                                 scrollHeight="350"
+                                 emptyMessage="No se encontraron Registros"
+                                 reflow="true"
+                                 paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                 currentPageReportTemplate=" "
+                                 paginator="true"
+                                 rows="10"
+                                 disabledTextSelection="false" 
+                                 paginatorPosition="bottom" >
+
+                        <f:facet name="{Records}">
+                            <div style="float:left;">
+                                <p:outputLabel class="footerLabel" 
+                                               value="  Prescripciones Programadas: #{surtRecetaManualHospMB.listaRecetasManuales.size()}" 
+                                               rendered="true" />
+                            </div>
+                        </f:facet>
+
+                        <p:column style="text-align: left; width: 20% "
+                                  sortBy="#{item.folio}" >
+                            <f:facet name="header" >
+                                <h:outputText value="Folio Receta" />
+                            </f:facet>
+                            <h:outputText value="#{item.folio}" />
+                        </p:column>
+
+                        <p:column style="text-align: left; width: 10% "
+                                  sortBy="#{item.fechaPrescripcion}" >
+                            <f:facet name="header" >
+                                <h:outputText value="Fecha" />
+                            </f:facet>
+                            <h:outputText value="#{item.fechaPrescripcion}" >
+                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column style="text-align: left; width: 20% "
+                                  sortBy="#{item.nombrePaciente} , #{item.appPaciente} #{item.apmPaciente}" >
+                            <f:facet name="header" >
+                                <h:outputText value="Paciente" />
+                            </f:facet>
+                            <h:outputText value="#{item.nombrePaciente} , #{item.appPaciente} #{item.apmPaciente}" />
+                        </p:column>
+
+                        <p:column style="text-align: left; width: 15% " 
+                                  sortBy="#{item.ubicacion}" >
+                            <f:facet name="header" >
+                                <h:outputText value="Ubicación" />
+                            </f:facet>
+                            <h:outputText value="#{item.ubicacion}" />
+                        </p:column>
+
+                        <p:column style="text-align: left; width: 15% " 
+                                  sortBy="#{item.nombreMedico} #{item.appMedico} #{item.apmMedico}" >
+                            <f:facet name="header" >
+                                <h:outputText value="Médico" />
+                            </f:facet>
+                            <h:outputText value="#{item.nombreMedico} #{item.appMedico} #{item.apmMedico}" />
+                        </p:column>
+
+                        <p:column style="text-align: left; width: 10% "
+                                  sortBy="#{item.estatusPrescripcion}" >
+                            <f:facet name="header" >
+                                <h:outputText value="Estatus" />
+                            </f:facet>
+                            <h:outputText value="#{item.estatusPrescripcion}" />
+                        </p:column>
+
+                        <p:column style="width: 8%;text-align: center;" rendered="#{surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}">
+                            <f:facet name="header" >
+                                <h:outputText value="Operaciones" />
+                            </f:facet>
+                            <p:tooltip for="linkCancelar" value="Cancelar" position="top"/>
+                            <p:commandLink id="linkCancelar"
+                                           actionListener="#{surtRecetaManualHospMB.validaCancelarPrescripcion(item.idPrescripcion)}"
+                                           onclick="PF('statusProcess').show();"
+                                           oncomplete="PF('statusProcess').hide();"
+                                           style="margin: 5px;text-decoration: none;"
+                                           styleClass="iconMusAzul"
+                                           disabled="#{!surtRecetaManualHospMB.permiso.puedeEliminar}"
+                                           update="tblRecetas">
+                                <p:confirm header="Confirmación" message="Desea cancelar la receta ?" icon="ui-icon-alert" />
+                                <i class="fa fa-ban" />
+                            </p:commandLink>
+                            <p:tooltip for="linkEditar" value="Editar" position="top"/>
+                            <p:commandLink id="linkEditar"
+                                           actionListener="#{surtRecetaManualHospMB.mostrarModalEditarPrescripcion(item)}"
+                                           onclick="PF('statusProcess').show();"
+                                           oncomplete="PF('statusProcess').hide();PF('modalEditarRecetaManual').show();"
+                                           style="margin: 5px;text-decoration: none;"
+                                           styleClass="iconMusAzul"
+                                           disabled="#{!surtRecetaManualHospMB.permiso.puedeEditar}"
+                                           update=":formEditarReceta:tblIsumosEditar"
+                                           rendered="#{item.idEstatusPrescripcion eq 6}">
+                                <i class="fa fa-pencil-square-o" />
+                            </p:commandLink>
+                        </p:column>
+                    </p:dataTable>
+
+                </h:form>
+
+                <p:dialog header="SURTIMIENTO DE RECETA MANUAL"
+                          widgetVar="modalRecetaManual"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important;padding:0px!important;margin: 5px!important;  " 
+                          width="95%" 
+                          >
+                    <p:scrollPanel style="width: 100%;height:50%; padding:5px!important; " mode="native">
+                        <h:form id="formAgregarReceta" style="margin: 5px!important; padding:0px !important;" >
+                            <p:messages id="msgModalRecetaManual" globalOnly="false" showDetail="false" closable="true" />
+
+                            <p:outputLabel value="Prefijo :" style="margin-right: 10px;" rendered="#{surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}"/>
+                            <p:selectOneMenu id="prefijo" 
+                                             value="#{surtRecetaManualHospMB.prefijo}"
+                                             rendered="#{surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}"
+                                             style="width:125px;vertical-align:middle;">
+                                <f:selectItem itemLabel="Normal" itemValue="E" />
+                                <f:selectItem itemLabel="Controlada" itemValue="F" />
+                                <p:ajax update="etiquetaPrefijo" />
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Folio :" style="margin-left: 10px;margin-right: 10px;" />
+                            <p:outputLabel value="#{surtRecetaManualHospMB.prefijo}" id="etiquetaPrefijo" 
+                                           rendered="#{surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}" style="font-weight: bolder; font-size: larger ; color: #0081c2;"/>
+                            <p:inputText id="folio"
+                                         style="margin-left: 10px;" 
+                                         value="#{surtRecetaManualHospMB.folioPrescripcion}" >
+                                <p:ajax event="blur" listener="#{surtRecetaManualHospMB.validarFolioRecetaOnBlur}" update="msgModalRecetaManual" />
+                            </p:inputText>
+                            <p:outputLabel value="Fecha :" style="margin-left: 10px;"/>
+                            <p:calendar id="txtFechaInicio" 
+                                        style="margin-left: 10px;"
+                                        value="#{surtRecetaManualHospMB.fechaReceta}" 
+                                        showOn="button" locale="es_MX" 
+                                        navigator="true" 
+                                        pattern="dd/MM/yyyy"
+                                        pages="1" 
+                                        mask="true" />
+
+                            <p:outputLabel value="Entidad Hospitalaria :" style="margin-left: 10px;" 
+                                           rendered="#{!surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}"/>
+                            <p:autoComplete id="autoCEntidad" 
+                                            value="#{surtRecetaManualHospMB.entidadHospitalaria}" 
+                                            autocomplete="on" 
+                                            completeMethod="#{surtRecetaManualHospMB.autocompleteDatos}" 
+                                            minQueryLength="4" 
+                                            forceSelection="true"
+                                            var="entidadHospitalaria" 
+                                            itemValue="#{entidadHospitalaria.idEntidadHospitalaria}" 
+                                            itemLabel="#{entidadHospitalaria.nombre}"
+                                            converter="entidadHospitalariaConverter" 
+                                            tabindex="9" 
+                                            placeholder="Buscar Entidades..."
+                                            emptyMessage="No se encontro el registro." 
+                                            style="margin-left: 10px;"
+                                            scrollHeight="200"
+                                            rendered="#{!surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}" >
+                                
+                                <p:ajax event="itemSelect" 
+                                        listener="#{surtRecetaManualHospMB.handleSelectEntidadHospitalaria}" 
+                                        update="tblEntidad,@this" 
+                                        >
+                                </p:ajax>
+                                <p:column style="font-size: small;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Nombre Entidad" />
+                                    </f:facet>
+                                    <h:outputText value="#{entidadHospitalaria.nombre}" style=" font-size: small;" />
+                                </p:column>
+                            </p:autoComplete>
+
+                            <p:outputLabel value="Tipo :" style="margin-left: 10px;margin-right: 10px;" rendered="#{surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}"/>
+                            <p:selectOneMenu id="tipoReceta" 
+                                             value="#{surtRecetaManualHospMB.tipoConsulta}" 
+                                             style="width:125px;vertical-align:middle;"
+                                             rendered="#{surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}">
+                                <f:selectItem itemLabel="Urgencias" itemValue="U" />
+                                <f:selectItem itemLabel="Hospitalización" itemValue="H" />
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Servicio :" style="margin-left: 10px;margin-right: 10px;" rendered="#{surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}"/>
+
+                            <p:selectOneMenu id="servicio" 
+                                             value="#{surtRecetaManualHospMB.idServicio}"
+                                             autoWidth="false"
+                                             style="width:120px;vertical-align:middle;"
+                                             filter="true"
+                                             filterMatchMode="contains" >
+                                <f:selectItems value="#{surtRecetaManualHospMB.listaServicios}"
+                                               var="servicio"
+                                               itemValue="#{servicio.idEstructura}"
+                                               itemLabel="#{servicio.nombre}"/>
+                            </p:selectOneMenu>
+                            <br/>
+                            <p:dataTable id="tblEntidad" 
+                                         widgetVar="tblEntidad" 
+                                         value="#{surtRecetaManualHospMB.entidadList}"
+                                         selection="#{surtRecetaManualHospMB.entidadHospitalaria}"
+                                         var="diags" 
+                                         rowKey="#{diags.idEntidadHospitalaria}"
+                                         selectionMode="single"
+                                         style="margin-bottom: 5px; margin-top: 5px;"
+                                         reflow="true" 
+                                         emptyMessage=" "
+                                         scrollRows="5" scrollable="true" scrollHeight="80"
+                                         paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+                                         currentPageReportTemplate=" "
+                                         paginator="true"
+                                         rows="5"
+                                         paginatorPosition="bottom" 
+                                         rendered="#{!surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}">
+
+                                <f:facet name="{Records}">
+                                    <div style="float:left;">
+                                        <p:outputLabel class="footerLabel" value=" Entidades Registradas #{surtRecetaManualHospMB.entidadList.size()}" /> 
+                                    </div>
+                                </f:facet>
+                                <p:column style="text-align: left; width: 90%;"
+                                          sortBy="#{diags.nombre}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Entidad" />
+                                    </f:facet>
+                                    <h:outputText value="#{diags.nombre}" />
+                                </p:column>
+
+                                <p:column style="text-align: center; width: 10%;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="" />
+                                    </f:facet>
+                                    <p:commandLink title="Eliminar Entidad Hospitalaria"  
+                                                   onclick="PF('statusProcess').show();" 
+                                                   oncomplete="PF('statusProcess').hide();"
+                                                   actionListener="#{surtRecetaManualHospMB.eliminarEntidadHospitalaria(diags.idEntidadHospitalaria)}"
+                                                   update="tblEntidad">
+                                        <i class="fa fa-trash iconElimina"  style="font-size: x-large" />
+                                    </p:commandLink>
+                                </p:column>
+
+                            </p:dataTable>
+
+                            <br/>
+                            <p:outputLabel value="Paciente :" />
+                            <p:autoComplete id="autoCPaciente" 
+                                            value="#{surtRecetaManualHospMB.pacienteExtended}" 
+                                            autocomplete="on" 
+                                            completeMethod="#{surtRecetaManualHospMB.autoCompletePacientes}" 
+                                            minQueryLength="3" 
+                                            forceSelection="true"
+                                            var="paciente"  
+                                            itemValue="#{paciente.idPaciente}" 
+                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}"
+                                            converter="pacienteConverter" 
+                                            placeholder="Buscar Paciente..."
+                                            emptyMessage="Búsqueda sin resultados" 
+                                            style="margin-left: 10px;"
+                                            size="40" 
+                                            scrollHeight="200">
+
+                                <p:column style="font-size: small;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Número de Paciente" />
+                                    </f:facet>
+                                    <h:outputText value="#{paciente.pacienteNumero}" style=" font-size: small;" />
+                                </p:column>
+                                <p:column style="font-size: small;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Clave DerechoHabiencia" />
+                                    </f:facet>
+                                    <h:outputText value="#{paciente.claveDerechohabiencia}" style=" font-size: small;" />
+                                </p:column>
+                                <p:column style="font-size: small;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Nombre" />
+                                    </f:facet>
+                                    <h:outputText value="#{paciente.nombreCompleto}" style=" font-size: small; font-weight: bolder;" />
+                                </p:column>
+                                <p:column style="font-size: small;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Apellido Paterno" />
+                                    </f:facet>
+                                    <h:outputText value="#{paciente.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                </p:column>
+                                <p:column style="font-size: small;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Apellido Materno" />
+                                    </f:facet>
+                                    <h:outputText value="#{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                </p:column>
+                            </p:autoComplete>
+                            <p:commandButton title="Agregar" value="+" 
+                                             onclick="PF('statusProcess').show();"
+                                             actionListener="#{surtRecetaManualHospMB.mostrarModalAgregarPaciente}"
+                                             oncomplete="PF('statusProcess').hide();PF('modalAgregarPaciente').show();"
+                                             update="formAgregarPaciente"
+                                             />
+                            <p:outputLabel value="Médico :" style="margin-left: 10px;"/>
+                            <p:autoComplete id="autoCMedico" 
+                                            value="#{surtRecetaManualHospMB.medico}" 
+                                            autocomplete="on" 
+                                            completeMethod="#{surtRecetaManualHospMB.autoCompleteMedicos}" 
+                                            minQueryLength="3" 
+                                            forceSelection="true"
+                                            var="medico" 
+                                            itemValue="#{medico.idUsuario}" 
+                                            itemLabel="#{medico.nombre} #{medico.apellidoPaterno} #{medico.apellidoMaterno}"
+                                            converter="medicoConverter" 
+                                            placeholder="Buscar Médico..."
+                                            emptyMessage="Búsqueda sin resultados" 
+                                            style="margin-left: 10px;"
+                                            size="35" 
+                                            scrollHeight="200">
+
+                                <p:column style="font-size: small;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Cédula Profesional" />
+                                    </f:facet>
+                                    <h:outputText value="#{medico.cedProfesional}" style=" font-size: small;" />
+                                </p:column>
+                                <p:column style="font-size: small;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Nombre" />
+                                    </f:facet>
+                                    <h:outputText value="#{medico.nombre}" style=" font-size: small; font-weight: bolder;" />
+                                </p:column>
+                                <p:column style="font-size: small;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Apellido Paterno" />
+                                    </f:facet>
+                                    <h:outputText value="#{medico.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                </p:column>
+                                <p:column style="font-size: small;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Apellido Materno" />
+                                    </f:facet>
+                                    <h:outputText value="#{medico.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                </p:column>
+                            </p:autoComplete>
+                            <p:commandButton title="Agregar" value="+" 
+                                             actionListener="#{surtRecetaManualHospMB.mostrarModalAgregarMedico}"
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();PF('modalAgregarMedico').show();"
+                                             update=":formAgregarMedico:turnoMedico"
+                                             />
+                            <ui:remove>
+                                <p:outputLabel value="Hospital :" style="margin-left: 10px;"/>
+                                <p:inputText style="margin-left: 10px;"/>
+                                <p:commandButton title="Agregar" value="+" 
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide();"
+                                                 />
+                            </ui:remove>
+                            
+                            <p:outputLabel value="Diagnóstico :" style="margin-left: 10px;"/>
+                            <p:autoComplete id="autoCDiagnostico" 
+                                            value="#{surtRecetaManualHospMB.diagnostico}" 
+                                            autocomplete="on" 
+                                            completeMethod="#{surtRecetaManualHospMB.autocompleteDiagnostico}" 
+                                            minQueryLength="3" 
+                                            forceSelection="true"
+                                            var="diagnostico" 
+                                            itemValue="#{diagnostico.idDiagnostico}" 
+                                            itemLabel="#{diagnostico.nombre}"
+                                            converter="diagnosticoConverter" 
+                                            placeholder="Buscar Diagnóstico ..."
+                                            emptyMessage="Búsqueda sin resultados" 
+                                            style="margin-left: 10px;"
+                                            size="33" 
+                                            scrollHeight="200">
+                                <p:ajax event="itemSelect" 
+                                        listener="#{surtRecetaManualHospMB.handleSelectDiagnostico}" 
+                                        update="tblDiagnosticos,@this" 
+                                        >
+                                </p:ajax>
+                                <p:column style="font-size: small;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Clave" />
+                                    </f:facet>
+                                    <h:outputText value="#{diagnostico.clave}" style=" font-size: small;" />
+                                </p:column>
+
+                                <p:column style="font-size: small;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Nombre Diagnostico" />
+                                    </f:facet>
+                                    <h:outputText value="#{diagnostico.nombre}" style=" font-size: small;" />
+                                </p:column>
+
+
+                            </p:autoComplete>
+
+                            <br/>
+                            <p:dataTable id="tblDiagnosticos" 
+                                         widgetVar="tblDiagnosticos" 
+                                         value="#{surtRecetaManualHospMB.diagnosticoList}"
+                                         selection="#{surtRecetaManualHospMB.diagnosticoSelected}"
+                                         var="diags" 
+                                         rowKey="#{diags.idDiagnostico}"
+                                         selectionMode="single"
+                                         style="margin-bottom: 5px; margin-top: 5px;"
+                                         reflow="true" 
+                                         emptyMessage=" "
+                                         scrollRows="5" scrollable="true" scrollHeight="70"
+                                         paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+                                         currentPageReportTemplate=" "
+                                         paginator="false"
+                                         rows="5"
+                                         paginatorPosition="bottom" >
+
+                                <f:facet name="{Records}" >
+                                    <div style="float:left;">
+                                        <p:outputLabel class="footerLabel" value=" Diagnósticos Registrados #{surtRecetaManualHospMB.diagnosticoList.size()}" /> 
+                                    </div>
+                                </f:facet>
+
+                                <p:column style="text-align: left; width: 20%;"
+                                          sortBy="#{diags.clave}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Clave"  />
+                                    </f:facet>
+                                    <h:outputText value="#{diags.clave}" style="font-size: smaller !important;" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 90%;"
+                                          sortBy="#{diags.nombre}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Diagnóstico"  />
+                                    </f:facet>
+                                    <h:outputText value="#{diags.nombre}" style="font-size: smaller !important;" />
+                                </p:column>
+
+                                <p:column style="text-align: center; width: 10%;">
+                                    <f:facet name="header" >
+                                        <h:outputText value="" />
+                                    </f:facet>
+                                    <p:commandLink title="Eliminar Diagnóstico"  
+                                                   onclick="PF('statusProcess').show();" 
+                                                   oncomplete="PF('statusProcess').hide();"
+                                                   actionListener="#{surtRecetaManualHospMB.eliminarDiagnostico(diags.idDiagnostico)}"
+                                                   update="tblDiagnosticos">
+                                        <i class="fa fa-trash iconElimina"  style="font-size: large" />
+                                    </p:commandLink>
+                                </p:column>
+
+                            </p:dataTable>
+
+                            <div style="background-color:#EEF2F4;">
+                                <p:outputLabel value="Medicamento :" style="font-weight: bolder !important;margin-right: 10px;"/>
+                                <p:autoComplete id="autoCMedicamento" 
+                                                value="#{surtRecetaManualHospMB.skuSap}" 
+                                                autocomplete="on" 
+                                                completeMethod="#{surtRecetaManualHospMB.autocompleteMedicamento}"
+                                                minQueryLength="4" 
+                                                forceSelection="true"
+                                                var="skuSap" 
+                                                itemValue="#{skuSap.idInventario}" 
+                                                itemLabel="#{skuSap.nombreLargo}"
+                                                converter="skuSapConverter" 
+                                                placeholder="Escanear Código de Barras"
+                                                emptyMessage="Código de Barras desconocido." 
+                                                style="margin-left: 10px;"
+                                                size="40" 
+                                                scrollHeight="200" 
+                                                >
+                                    <p:ajax event="itemSelect" update="cantEntregada"
+                                            listener="#{surtRecetaManualHospMB.handleSelectMedicamento}" />
+                                    <p:ajax event="itemUnselect" 
+                                            listener="#{surtRecetaManualHospMB.handleUnSelectMedicamento}"  />
+
+                                    <p:column style="width: 20px; font-size: small !important;" width="20px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave"  />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.claveInstitucional}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 20px; font-size: small !important;" width="20px" rendered="false">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave Proveedor" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.lote}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 350px; font-size: small !important;" width="350px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Descripción" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.nombreLargo}" style=" font-size: x-small;" />
+                                    </p:column>
+                                    <p:column style="width: 10px; font-size: small !important; align-content: center; " width="10px" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Unidosis" />
+                                        </f:facet>
+                                        <h:outputText value="NO" rendered="#{skuSap.presentacionComercial eq 1}" style=" font-size: small; font-weight: bolder;" />
+                                        <h:outputText value="SI" rendered="#{skuSap.presentacionComercial ne 1}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 20px; font-size: small !important; " >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Lote" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.lote}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 20px; font-size: small !important; " >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Caducidad" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.fechaCaducidad}" style=" font-size: small; font-weight: bolder;" >
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column style="width: 15px; font-size: small !important; " >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Existencia&nbsp;DU" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.calculoCajaUnidosis}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 10px; font-size: small !important; "  >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Existencia&nbsp;Cajas" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.cantidadActual / skuSap.cantidadXCaja}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                </p:autoComplete>
+                                
+                                <p:spacer width="10px" />
+                                <p:outputLabel value="Dósis :" style="font-weight: bolder !important;margin-right: 10px;"/>
+                                <p:spinner id="txtInsumoCantidad" 
+                                           widgetVar="txtInsumoCantidad" 
+                                           value="#{surtRecetaManualHospMB.prescripcionInsumo.dosis}"
+                                           min="1"
+                                           size="10"
+                                           style="margin-right: 10px;" >
+                                    <p:ajax event="change" oncomplete="callRemote()"/>
+                                </p:spinner>
+                                <p:spacer width="10px" />
+                                <p:outputLabel value="Frecuencia :" style="font-weight: bolder !important;margin-right: 10px;"/>
+                                <p:spinner id="txtInsumoFrecuencia" 
+                                           widgetVar="txtInsumoFrecuencia" 
+                                           value="#{surtRecetaManualHospMB.prescripcionInsumo.frecuencia}"
+                                           min="1" max="24"
+                                           size="10"
+                                           style="margin-right: 10px;" >
+                                    <p:ajax event="change" oncomplete="callRemote()"/>
+                                </p:spinner>
+                                <p:spacer width="10px" />
+                                <p:outputLabel value="Duración :" style="font-weight: bolder !important;margin-right: 10px;"/>
+                                <p:spinner id="txtInsumoDuracion" 
+                                           widgetVar="txtInsumoDuracion" 
+                                           value="#{surtRecetaManualHospMB.prescripcionInsumo.duracion}"
+                                           min="1" 
+                                           readonly="#{surtRecetaManualHospMB.activeDuracion}"
+                                           size="10"
+                                           style="margin-right: 10px;" >
+                                    <p:ajax event="change" oncomplete="callRemote();"/>
+                                </p:spinner>
+
+                                <p:remoteCommand name="callRemote" partialSubmit="true" process="@this" oncomplete="calculaSolicitado()"  />
+                                <script>
+                                    function calculaSolicitado() {
+                                        var dosi = jQuery('input[id*="txtInsumoCantidad"]').val();
+                                        var frec = jQuery('input[id*="txtInsumoFrecuencia"]').val();
+                                        var dura = jQuery('input[id*="txtInsumoDuracion"]').val();
+                                        var result = 0;
+                                        if (!isNaN(frec)) {
+                                            if (frec !== '') {
+                                                if (frec > 0) {
+                                                    var entero = Math.trunc(24 / frec);       // var numTomas = Math.floor ( 24 % frec ) ;
+                                                    var residuo = 24 % frec;
+                                                    result = entero * dosi * dura + (dura * residuo);
+                                                }
+                                            }
+                                        }
+                                        jQuery('input[id*="txtCantSol"]').val(result);
+                                    }
+                                </script>
+                                <br/>
+                                <br/>
+                                <p:outputLabel value="DU Cantidad Solicitada :" style="font-weight: bolder !important;margin-right: 10px;"/>
+                                <p:inputText id="txtCantSol" 
+                                             value="0"
+                                             readonly="true" 
+                                             size="4"
+                                             style=" text-align: right ;font-weight: bolder !important;margin-right: 10px;" />
+
+                                <p:outputLabel value="Notas :" style="font-weight: bolder !important;margin-right: 10px;"/>
+                                <p:inputTextarea id="txtComentarios"
+                                                 cols="50" 
+                                                 rows="2" 
+                                                 style="margin-right: 10px;vertical-align: middle;" 
+                                                 value="#{surtRecetaManualHospMB.prescripcionInsumo.comentarios}"
+                                                 />
+                                <p:outputLabel value="DU Cantidad entregada :" 
+                                               style="font-weight: bolder !important;margin-right: 10px;"
+                                               />
+
+                                <p:inputNumber id="cantEntregada"
+                                               value="#{surtRecetaManualHospMB.cantidadEntregada}" 
+                                               disabled="#{surtRecetaManualHospMB.bandera}"
+                                               size="5" 
+                                               decimalPlaces="0"
+                                               style="margin-right: 10px;"
+                                               />
+                                <p:commandButton title="Agregar prescripcion" value="Agregar Medicamento" 
+                                                 actionListener="#{surtRecetaManualHospMB.agregarPrescripcionInsumo}"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); limpiaSolicitado();"
+                                                 update="tblIsumos,autoCMedicamento,txtInsumoCantidad,txtInsumoFrecuencia,txtInsumoDuracion,txtComentarios,cantEntregada,:formAgregarReceta:msgModalRecetaManual"
+                                                 />
+                                <script>
+                                    function limpiaSolicitado() {
+                                        jQuery('input[id*="txtCantSol"]').val('0');
+                                    }
+                                </script>
+                            </div>
+
+                            <p:dataTable id="tblIsumos" 
+                                         widgetVar="tblIsumos" 
+                                         value="#{surtRecetaManualHospMB.prescripcionInsumoExtendedList}"
+                                         var="ins" 
+                                         selection="#{surtRecetaManualHospMB.prescripcionInsumoExtendedSelected}"              
+                                         rowKey="#{ins.idInsumo}"
+                                         rowIndexVar="rowI"
+                                         selectionMode="single"
+                                         style="margin-bottom:10px; margin-top: 5px;"
+                                         reflow="true" 
+                                         emptyMessage=" "
+                                         scrollRows="5" scrollable="true" scrollHeight="200"
+                                         paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+                                         currentPageReportTemplate=" "
+                                         paginator="true"
+                                         rows="5"
+                                         paginatorPosition="bottom" >
+
+                                <f:facet name="{Records}">
+                                    <div style="float:left;">
+                                        <p:outputLabel class="footerLabel" value=" Medicamentos Registrados #{surtRecetaManualHospMB.prescripcionInsumoExtendedList.size()}" /> 
+                                    </div>
+                                </f:facet>
+
+                                <p:column style="width:5%">
+                                    <p:rowToggler />
+                                </p:column> 
+
+                                <p:column style="text-align: left; width: 40%;"
+                                          sortBy="#{ins.nombreCorto}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Clave - Nombre - Indicación" />
+                                    </f:facet>
+                                    <h:outputText value="#{ins.claveInstitucional} - #{ins.nombreCorto}" />
+                                    <br/>
+                                    <h:outputText value="#{ins.indicaciones}" class="lbl-data-small" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10%;" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Dosis" />
+                                    </f:facet>
+                                    <h:outputText value="#{ins.dosis}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10%;" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Frecuencia" />
+                                    </f:facet>
+                                    <h:outputText value="#{ins.frecuencia}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10%;" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Duración" />
+                                    </f:facet>
+                                    <h:outputText value="#{ins.duracion}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10%;" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="DU Solicitada" />
+                                    </f:facet>
+                                    <h:outputText value="#{ins.cantidadSolicitada}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10%;" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Cantidad Surtida" />
+                                    </f:facet>
+                                    <h:outputText value="#{ins.cantidadEntregada}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10%;" rendered="false" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Cajas a Surtir" />
+                                    </f:facet>
+                                    <h:outputText value="#{ins.cantidadEntregada/ins.cantidadXCaja}" />
+                                </p:column>
+
+                                <p:rowExpansion>
+                                    <p:dataTable value="#{ins.surtimientoEnviadoExtendedList}"
+                                                 var="surtimientoEnviado"
+                                                 scrollable="true" 
+                                                 scrollHeight="100"
+                                                 emptyMessage="No se encontraron Registros" >
+                                        <p:column headerText="Lote">
+                                            <h:outputText value="#{surtimientoEnviado.lote}" />
+                                        </p:column>
+                                        <p:column headerText="Cantidad">
+                                            <h:outputLabel value="#{surtimientoEnviado.cantidadEnviado}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:rowExpansion>
+
+                                <p:column style="text-align: left; width: 5%;" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="" />
+                                    </f:facet>
+                                    <p:commandLink title="Eliminar Medicamento"  
+                                                   onclick="PF('statusProcess').show();" 
+                                                   oncomplete="PF('statusProcess').hide();"
+                                                   actionListener="#{surtRecetaManualHospMB.eliminarMedicamento(ins.idInsumo)}"
+                                                   update="tblIsumos">
+                                        <i class="fa fa-trash iconElimina" style="font-size: large" />
+                                    </p:commandLink>
+                                </p:column>
+
+                            </p:dataTable>
+
+                            <p:commandButton title="Guardar" 
+                                             value="Guardar" 
+                                             icon="fa fa-check-circle"
+                                             style="margin-right: 10px;float: right;"
+                                             styleClass="btnMusAzul" 
+                                             actionListener="#{surtRecetaManualHospMB.insertarPrescripcion}"
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();if(args.estatus){PF('modalRecetaManual').hide();PF('mdlReport').show();}"
+                                             update="msgModalRecetaManual , :formPrincipal:tblRecetas,:formPDF , :formPrincipal:msgFormPrincipal"
+                                             rendered="#{!surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}">
+                                <p:confirm header="Confirmación" message="Desea surtir la Receta ?" icon="ui-icon-alert" />  
+                            </p:commandButton>
+
+                            <p:commandButton title="Guardar Prescripción" 
+                                             value="Guardar"
+                                             icon="fa fa-check-circle"
+                                             style="margin-right: 10px;float: right;"
+                                             styleClass="btnMusAzul"
+                                             actionListener="#{surtRecetaManualHospMB.validacionRecetaManual}" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();PF('modalRecetaManualConfirmacion').show();"
+                                             update="formAgregarRecetaConfirmacion , msgModalRecetaManual , :formPrincipal:tblRecetas,:formPDF , :formPrincipal:msgFormPrincipal"
+                                             rendered="#{surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}"
+                                             />
+                        </h:form>
+                    </p:scrollPanel>
+                </p:dialog>
+
+                <p:dialog header="SURTIMIENTO DE RECETA MANUAL"
+                          widgetVar="modalEditarRecetaManual"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important;" 
+                          width="95%" 
+                          >
+                    <p:scrollPanel style="width: 100%;height:400px;" mode="native">
+                        <h:form id="formEditarReceta" >
+                            <p:focus context="formEditarReceta" />
+                            <p:messages id="msgModalEditarRecetaManual" globalOnly="false" showDetail="false" closable="true" />
+                            <div style="background-color:#EEF2F4;">
+                                <p:outputLabel value="Medicamento :" style="font-weight: bolder !important;margin-right: 10px;"/>
+                                <p:autoComplete id="autoCMedicamentoEditar" 
+                                                value="#{surtRecetaManualHospMB.skuSap}" 
+                                                autocomplete="on" 
+                                                completeMethod="#{surtRecetaManualHospMB.autocompleteMedicamento}" 
+                                                minQueryLength="4" 
+                                                forceSelection="true"
+                                                var="skuSap" 
+                                                itemValue="#{skuSap.idInventario}" 
+                                                itemLabel="#{skuSap.nombreLargo}"
+                                                converter="skuSapConverter" tabindex="9"
+                                                placeholder="Escanear Código de Barras"
+                                                emptyMessage="Código de Barras desconocido." 
+                                                style="margin-left: 10px;"
+                                                size="40" 
+                                                scrollHeight="200" >
+                                    <p:ajax event="itemSelect" 
+                                            listener="#{surtRecetaManualHospMB.handleSelectMedicamento}" 
+                                            ></p:ajax>
+                                    <p:ajax event="itemUnselect" 
+                                            listener="#{surtRecetaManualHospMB.handleUnSelectMedicamento}" 
+                                            ></p:ajax>
+
+                                    <p:column style="width: 20px; font-size: small !important;" width="20px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave"  />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.claveInstitucional}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 20px; font-size: small !important;" width="20px" rendered="false">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave Proveedor" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.lote}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 350px; font-size: small !important;" width="350px">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Descripción" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.nombreLargo}" style=" font-size: x-small;" />
+                                    </p:column>
+                                    <p:column style="width: 10px; font-size: small !important; align-content: center; " width="10px" >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Unidosis" />
+                                        </f:facet>
+                                        <h:outputText value="NO" rendered="#{skuSap.presentacionComercial eq 1}" style=" font-size: small; font-weight: bolder;" />
+                                        <h:outputText value="SI" rendered="#{skuSap.presentacionComercial ne 1}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 20px; font-size: small !important; " >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Lote" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.lote}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 20px; font-size: small !important; " >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Caducidad" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.fechaCaducidad}" style=" font-size: small; font-weight: bolder;" >
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column style="width: 15px; font-size: small !important; " >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Existencia&nbsp;DU" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.cantidadActual}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                    <p:column style="width: 10px; font-size: small !important; "  >
+                                        <f:facet name="header" >
+                                            <h:outputText value="Existencia&nbsp;Cajas" />
+                                        </f:facet>
+                                        <h:outputText value="#{skuSap.cantidadActual / skuSap.cantidadXCaja}" style=" font-size: small; font-weight: bolder;" />
+                                    </p:column>
+                                </p:autoComplete>
+                                <p:spacer width="10px" />
+
+                                <p:outputLabel value="Cantidad entregada :" 
+                                               style="font-weight: bolder !important;margin-right: 10px;"
+                                               />
+
+                                <p:inputNumber id="cantEntregadaEditar"
+                                               value="#{surtRecetaManualHospMB.cantidadEntregada}"                                               
+                                               size="5" 
+                                               decimalPlaces="0"
+                                               style="margin-right: 10px;"
+                                               />
+                                <p:commandButton title="Agregar Medicamento" value="Agregar Medicamento" 
+                                                 actionListener="#{surtRecetaManualHospMB.agregarMedicamentoDetalle}"
+                                                 onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide();"
+                                                 update="tblIsumosEditar,autoCMedicamentoEditar,cantEntregadaEditar,:formEditarReceta:msgModalEditarRecetaManual"
+                                                 />
+
+                            </div>
+
+                            <p:dataTable id="tblIsumosEditar" 
+                                         widgetVar="tblIsumosEditar" 
+                                         value="#{surtRecetaManualHospMB.listaInsumosPendientes}"
+                                         var="ins" 
+                                         rowKey="#{ins.idSurtimientoInsumo}"
+                                         rowIndexVar="rowI"
+                                         style="margin-bottom:10px; margin-top: 5px;"
+                                         reflow="true" 
+                                         emptyMessage=" "
+                                         scrollRows="5" scrollable="true" scrollHeight="200"
+                                         paginatorTemplate="{Records} {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} "
+                                         currentPageReportTemplate=" "
+                                         paginator="true"
+                                         rows="5"
+                                         paginatorPosition="bottom"
+                                         >
+
+                                <f:facet name="{Records}">
+                                    <div style="float:left;">
+                                        <p:outputLabel class="footerLabel" value=" Medicamentos Registrados #{surtRecetaManualHospMB.listaInsumosPendientes.size()}" /> 
+                                    </div>
+                                </f:facet>
+
+                                <p:column style="width:5%">
+                                    <p:rowToggler />
+                                </p:column> 
+
+                                <p:column style="text-align: left; width: 40%;"
+                                          sortBy="#{ins.idSurtimientoInsumo}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Clave - Nombre - Indicación" />
+                                    </f:facet>
+                                    <h:outputText value="#{ins.claveInstitucional} - #{ins.nombreCorto}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10%;" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="DU Solicitada" />
+                                    </f:facet>
+                                    <h:outputText value="#{ins.cantidadSolicitada - ins.cantidadEnviada}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 10%;" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="DU a Surtir" />
+                                    </f:facet>
+                                    <p:inputText value="#{ins.cantidadRecepcion}" disabled="true" style="width: 50%;"/>
+                                </p:column>
+
+                                <p:rowExpansion>
+                                    <p:dataTable value="#{ins.surtimientoEnviadoExtendList}"
+                                                 var="surtimientoEnviado"
+                                                 scrollable="true" 
+                                                 scrollHeight="100"
+                                                 emptyMessage="No se encontraron Registros" >
+                                        <p:column headerText="Lote">
+                                            <h:outputText value="#{surtimientoEnviado.lote}" />
+                                        </p:column>
+                                        <p:column headerText="Cantidad">
+                                            <h:outputLabel value="#{surtimientoEnviado.cantidadEnviado}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:rowExpansion>
+
+                            </p:dataTable>
+
+                            <p:commandButton title="Guardar Prescripción" 
+                                             value="Guardar"
+                                             icon="fa fa-check-circle"
+                                             style="margin-right: 10px;float: right;"
+                                             styleClass="btnMusAzul"
+                                             actionListener="#{surtRecetaManualHospMB.surtirPrescripcionParcial}" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();PF('mdlReport').show();if(!args.error){PF('modalEditarRecetaManual').hide()};"
+                                             update="formAgregarRecetaConfirmacion , msgModalEditarRecetaManual , :formPrincipal:tblRecetas,:formPDF ,:formEditarReceta:msgModalEditarRecetaManual,:formPrincipal:msgFormPrincipal"
+                                             rendered="#{surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}"
+                                             />
+                        </h:form>
+                    </p:scrollPanel>
+                </p:dialog>
+
+
+                <p:dialog header="Confirmación"
+                          widgetVar="modalRecetaManualConfirmacion"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important;  padding: 0px!important; margin: 0px!important;"
+                           >
+                    <h:form id="formAgregarRecetaConfirmacion" >
+                        <p:messages id="msgModalRecetaManualConfirmacion" globalOnly="false" showDetail="false" closable="true" />
+
+                        <p:outputLabel value="Se detectan inconsistencias en las cantidades Solicitadas y por Surtir de los siguientes Medicamentos" 
+                                       style="font-weight: bolder !important;"
+                                       rendered="#{surtRecetaManualHospMB.listaPrescripcionInsumoExtendedValidacion.size() gt 0}" >
+                        </p:outputLabel>
+                        <br/>
+                        <p:dataTable id="tblIsumosValidados"
+                                     widgetVar="tblIsumosValidados" 
+                                     value="#{surtRecetaManualHospMB.listaPrescripcionInsumoExtendedValidacion}"
+                                     var="insValidado"  
+                                     style="margin-bottom:10px; margin-top: 5px; padding: 0px !important; width: 750px !important; font-size: small !important"
+                                     reflow="true" 
+                                     emptyMessage=" "
+                                     rendered="#{surtRecetaManualHospMB.listaPrescripcionInsumoExtendedValidacion.size() gt 0}" >
+
+                            <p:column style="text-align: left; width: 67%;" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Clave - Nombre" />
+                                </f:facet>
+                                <h:outputText value="#{insValidado.claveInstitucional} - #{insValidado.nombreCorto}" />
+                            </p:column>
+                            <p:column style="text-align: center; width: 10%;">
+                                <f:facet name="header" >
+                                    <h:outputText value="Cantidad Solicitada" />
+                                </f:facet>
+                                <h:outputText value="#{insValidado.cantidadSolicitada}" />
+                            </p:column>
+                            <p:column style="text-align: center; width: 10%;" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Cantidad Entregada" />
+                                </f:facet>
+                                <h:outputText value="#{insValidado.cantidadEntregada}" />
+                            </p:column>
+                            <p:column style="text-align: center; width: 13%;" >
+                                <f:facet name="header" >
+                                    <h:outputText value="Discrepancia" />
+                                </f:facet>
+                                <h:outputText value="#{insValidado.cantidadSolicitada - insValidado.cantidadEntregada}" />
+                            </p:column>
+                        </p:dataTable>
+                        <br/>
+                        <div align="center" style="width: 100% !important;">
+                            <p:outputLabel value="Desea surtir la Receta ?" style="font-weight: bolder !important;" />
+                        </div>
+                        <br/>
+                        <p:commandButton title="Guardar Receta" 
+                                         value="SI" 
+                                         icon="fa fa-check-circle"
+                                         style="margin-right: 10px;float: right;"
+                                         styleClass="btnMusAzul" 
+                                         actionListener="#{surtRecetaManualHospMB.insertarPrescripcion()}"
+                                         onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide();if(args.estatus){ PF('modalRecetaManualConfirmacion').hide(); PF('modalRecetaManual').hide();PF('mdlReport').show();}else{PF('modalRecetaManualConfirmacion').hide();}"
+                                         update="msgModalRecetaManualConfirmacion , :formPrincipal:tblRecetas,:formPDF , :formPrincipal:msgFormPrincipal , :formAgregarReceta:msgModalRecetaManual"
+                                         rendered="#{surtRecetaManualHospMB.habilitaEditaryCancelarSurtimientoManual}"  />
+                        <p:commandButton title="Cancelar Registro de Receta" 
+                                         value="NO"
+                                         icon="fa fa-check-circle"
+                                         style="margin-right: 10px;float: right;"
+                                         styleClass="btnMusRed"
+                                         onclick="PF('modalRecetaManualConfirmacion').hide();"  />
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="AGREGAR PACIENTE"
+                          widgetVar="modalAgregarPaciente"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formAgregarPaciente" >
+                        <p:messages id="msgModalAddUsuario" globalOnly="false" showDetail="false" closable="true" />
+
+                        <p:outputLabel value="Tipo de paciente :" style="display: inline-block;width: 120px;"/>
+                        <p:selectOneMenu id="tipoPaciente" 
+                                         value="#{surtRecetaManualHospMB.paciente.idTipoPaciente}"
+                                         autoWidth="false"
+                                         style="width: 152px;">
+                            <f:selectItems value="#{surtRecetaManualHospMB.listaTipoPacientes}"
+                                           var="tipoPaciente"
+                                           itemValue="#{tipoPaciente.idCatalogoGeneral}"
+                                           itemLabel="#{tipoPaciente.nombreCatalogo}"/>
+                        </p:selectOneMenu>
+                        <br/>
+                        <p:outputLabel value="Clave de Paciente :" style="display: inline-block;width: 120px;margin-bottom: 10px;"/>
+                        <p:inputText value="#{surtRecetaManualHospMB.paciente.claveDerechohabiencia}"/>
+                        <br/>
+                        <p:outputLabel value="Nombre :" style="display: inline-block;width: 120px;margin-bottom: 10px;"/>
+                        <p:inputText value="#{surtRecetaManualHospMB.paciente.nombreCompleto}"/>
+                        <br/>
+                        <p:outputLabel value="Apellido Paterno :" style="display: inline-block;width: 120px;margin-bottom: 10px;"/>
+                        <p:inputText value="#{surtRecetaManualHospMB.paciente.apellidoPaterno}"/>
+                        <br/>
+                        <p:outputLabel value="Apellido Materno :" style="display: inline-block;width: 120px;margin-bottom: 10px;"/>
+                        <p:inputText value="#{surtRecetaManualHospMB.paciente.apellidoMaterno}"/>
+                        <br/>
+                        <p:outputLabel value="Sexo :" style="display: inline-block;width: 120px;margin-bottom: 10px;"/>
+                        <p:selectOneButton value="#{surtRecetaManualHospMB.paciente.sexo}">
+                            <f:selectItem itemLabel="Masculino" itemValue="M" />
+                            <f:selectItem itemLabel="Femenino" itemValue="F" />
+                        </p:selectOneButton>
+                        <br/>
+                        <p:outputLabel value="Fecha Nacimiento :" style="display: inline-block;width: 120px;margin-bottom: 10px;"/>
+                        <p:calendar id="txtFechaInicio" 
+                                    value="#{surtRecetaManualHospMB.paciente.fechaNacimiento}" 
+                                    showOn="button" 
+                                    locale="es_MX" 
+                                    navigator="true" 
+                                    yearRange="c-100:c"
+                                    pattern="dd/MM/yyyy"
+                                    maxdate="#{surtRecetaManualHospMB.fechaActual}"
+                                    pages="1" 
+                                    mask="true" />
+                        <br/>
+                       
+                        <br/>
+                        <br/>
+                        <p:selectCheckboxMenu id="turno"
+                                              label="Turnos"
+                                              value="#{surtRecetaManualHospMB.listaIdTurnos}" 
+                                              >
+                            <f:selectItems value="#{surtRecetaManualHospMB.listaTurnos}"
+                                           var="turno"
+                                           itemValue="#{turno.idTurno}"
+                                           itemLabel="#{turno.nombre}"/>
+                        </p:selectCheckboxMenu>
+                        <br/>
+                        <br/>
+                        <p:commandButton title="Guardar paciente" value="Agregar" 
+                                         onclick="PF('statusProcess').show();"
+                                         actionListener="#{surtRecetaManualHospMB.agregarPaciente}"
+                                         oncomplete="PF('statusProcess').hide();if(!args.error){PF('modalAgregarPaciente').hide()};"
+                                         update="msgModalAddUsuario,:formAgregarReceta:msgModalRecetaManual" />
+
+                        <p:commandButton title="Agregar" value="Cancelar" 
+                                         oncomplete="PF('modalAgregarPaciente').hide();"
+                                         />
+
+                        <p:confirmDialog global="true" 
+                                         showEffect="fade" 
+                                         hideEffect="fade">
+                            <p:commandButton value="Si" 
+                                             type="button" 
+                                             styleClass="ui-confirmdialog-yes" 
+                                             icon="ui-icon-check" />
+                            <p:commandButton value="No" 
+                                             type="button" 
+                                             styleClass="ui-confirmdialog-no" 
+                                             icon="ui-icon-close" />
+                        </p:confirmDialog>
+
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="AGREGAR MEDICO"
+                          widgetVar="modalAgregarMedico"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+
+                    <h:form id="formAgregarMedico" >
+                        <p:messages id="msgModalAddMedico" globalOnly="false" showDetail="false" closable="true" />
+                        <p:panelGrid columns="2">
+                            <p:outputLabel value="Nombre"  />
+                            <p:inputText id="txtNombre" style="width: 300px !important;"  label="Nombre" 
+                                         maxlength="20"
+                                         value="#{surtRecetaManualHospMB.medicoExtended.nombre}"  >
+
+                            </p:inputText>
+
+                            <p:outputLabel value="Apellido Paterno"  />
+                            <p:inputText id="txtNombrePaterno" style="width: 300px !important;"   maxlength="20"
+                                         label="Apellido Paterno"  
+                                         value="#{surtRecetaManualHospMB.medicoExtended.apellidoPaterno}"  >
+
+                            </p:inputText>
+
+                            <p:outputLabel value="Apellido Materno" />
+                            <p:inputText id="txtApellidoMaterno" style="width: 300px !important;" label="Apellido Materno" maxlength="20"
+                                         value="#{surtRecetaManualHospMB.medicoExtended.apellidoMaterno}"   >
+
+                            </p:inputText>
+
+                            <p:outputLabel value="Nombre Usuario" />
+                            <p:inputText id="txtNombreUsuario"  style="width: 200px !important;"   label="Nombre Usuario"
+                                         value="#{surtRecetaManualHospMB.medicoExtended.nombreUsuario}" maxlength="15"   >
+                            </p:inputText>
+
+                            <p:outputLabel value="Correo Electrónico" />
+                            <p:inputText id="txtCorreoElectronico" style="width: 200px !important;"   label="Correo electrónico" 
+                                         value="#{surtRecetaManualHospMB.medicoExtended.correoElectronico}"  >                                            
+
+                            </p:inputText>                                 
+
+                            <p:outputLabel value="Cedula Profesional:" />
+                            <p:inputText id="cedProf" style="width: 200px !important;" value="#{surtRecetaManualHospMB.medicoExtended.cedProfesional}"  />
+
+                            <p:outputLabel value="Cedula Especialidad:" />
+                            <p:inputText id="cedEsp"  style="width: 200px !important;" value="#{surtRecetaManualHospMB.medicoExtended.cedEspecialidad}"/>
+
+                            <p:outputLabel value="Turnos:" />
+                            <p:selectCheckboxMenu id="turnoMedico"
+                                                  label="Turnos"
+                                                  class="sOneMenu"
+                                                  value="#{surtRecetaManualHospMB.listaIdTurnos}" 
+                                                  >
+                                <f:selectItems value="#{surtRecetaManualHospMB.listaTurnos}"
+                                               var="turno"
+                                               itemValue="#{turno.idTurno}"
+                                               itemLabel="#{turno.nombre}"/>
+                            </p:selectCheckboxMenu>
+
+                        </p:panelGrid>
+                        <br/>                                                         
+
+                        <p:commandButton id="btnSave1"
+                                         actionListener="#{surtRecetaManualHospMB.agregarMedicos}"
+                                         styleClass="btnMusAzul" 
+                                         value="Guardar" 
+                                         style="float: right;"
+                                         onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide();if(!args.errorModalMedicos){PF('modalAgregarMedico').hide();}"
+                                         update="msgModalAddMedico,:formAgregarReceta:msgModalRecetaManual"
+                                         />
+
+
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog widgetVar="mdlReport" width="820px" height="600px"  header="Ticket"
+                          closeOnEscape="true" modal="true"                          
+                          style="font-size:xx-small !important;" >
+                    <h:form id="formPDF"   >                       
+                        <p:media id="vpdf" value="#{surtRecetaManualHospMB.archivo}" player="pdf" width="800px" height="600px" cache="false"  class="vpdf"  />
+                    </h:form>                    
+                </p:dialog>
+            </ui:define>
+
+        </ui:composition>
+    </h:body>
+
+</html>

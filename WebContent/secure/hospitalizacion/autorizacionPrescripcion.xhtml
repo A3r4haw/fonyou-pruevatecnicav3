@@ -1,0 +1,1099 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <f:metadata>
+        <f:viewParam name="tipoProc" value="2" />
+    </f:metadata>
+    
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanelAmplio" >
+                    <h:form id="mainForm">
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        <p:focus context="mainForm"/>
+
+                        <div id="busqueda" style="height: 30px !important;">
+                            <p:outputLabel value="Autorizar Prescripción de Mezcla "
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 50px;" />
+                            <p:selectCheckboxMenu id="menu" value="#{registroSolucionMB.tipoPrescripcionSelectedList}" label="Tipo" title="Filtro por tipo de Prescripción"
+                                                  filter="true" filterMatchMode="startsWith" panelStyle="width:110px" style="width: 110px;"
+                                                  rendered="false" >
+                                <f:selectItem value="#{N}" itemLabel="Normal" itemValue="N" />
+                                <f:selectItem value="#{U}" itemLabel="Urgente" itemValue="U" />
+                                <f:selectItem value="#{D}" itemLabel="Dosis Única" itemValue="D" />
+                            </p:selectCheckboxMenu>
+                            <p:spacer width="10px;" />
+                            <p:inputText id="busqueda" 
+                                         value="#{registroSolucionMB.cadenaBusqueda}" 
+                                         class="textSearch"
+                                         style="width: 30% !important;" 
+                                         placeholder="Buscar..." title="Buscar por Número de Cama, Paciente o Servicio" />
+                            <i class="fa fa-search" aria-hidden="true" style="position:absolute;  text-indent: 5px; margin-top: 3px; margin-left: -25px; color: #AAAAAA; font-size: 0.9em;" />
+                            <p:spacer width="12px" />
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" 
+                                             onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();}"
+                                             actionListener="#{registroSolucionMB.obtenerSurtimientos}"
+                                             update="@form"  />
+                        </div>                        
+
+                        <p:toolbar rendered="false">
+                            <p:toolbarGroup id="toolbar"  >
+                                <p:commandButton id="btnModificar" value="Modificar"
+                                                 title="Modificar Rol" icon="ui-icon-pencil"
+                                                 onclick="PF('statusProcess').show()"
+                                                 oncomplete="PF('statusProcess').hide(); PF('modalSurtimiento').show();"
+                                                 update=":formSurtimientoDetail"
+                                                 disabled="#{!registroSolucionMB.permiso.puedeEditar or !registroSolucionMB.elementoSeleccionado}"
+                                                 rendered="false" />
+                            </p:toolbarGroup>
+                        </p:toolbar>
+                        <br/>
+                        <p:panel id="dataTable" style="margin:-28px 0px;">
+                            <p:dataTable id="tblSurtimientos" 
+                                         widgetVar="tblSurtimientos"         
+                                         value="#{registroSolucionMB.dispensacionSolucionLazy}"
+                                         lazy="true"
+                                         selection="#{registroSolucionMB.surtimientoExtendedSelected}"
+                                         var="item" 
+                                         rowKey="#{item.idSurtimiento}"
+                                         rowIndexVar="row"
+                                         selectionMode="single"
+                                         style="margin-bottom:5px;"
+                                         styleClass="mystyle"
+                                         scrollRows="10" scrollable="true" scrollHeight="350"
+                                         emptyMessage="No se encontraron Registros"
+                                         reflow="true"
+                                         paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+                                         currentPageReportTemplate=" "
+                                         paginator="true"
+                                         rows="10"
+                                         paginatorPosition="bottom"
+                                         rowStyleClass="#{item.tipoPrescripcion eq 'U' ? 'urgente' : item.tipoPrescripcion eq 'D' ? 'unica': null}" >
+                                <p:ajax event="rowDblselect" listener="#{registroSolucionMB.verSurtimiento}" 
+                                        update=":formEditarOrden"
+                                        onstart="PF('statusProcess').show()"
+                                        oncomplete="PF('statusProcess').hide(); PF('modalEditarOrden').show();" />                                
+
+                                <p:column style="text-align: left; width: 6% "
+                                          sortBy="#{item.tipoPrescripcion}" exportable="false"
+                                           filterBy="#{item.tipoPrescripcion}" filterMatchMode="contains" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Tipo" />
+                                    </f:facet>
+                                    <p:outputPanel rendered="#{item.tipoPrescripcion eq 'N'}" >
+                                        <img src="#{request.contextPath}/resources/img/cpnormal.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                        <p:spacer width="8px"/>
+                                        <h:outputText value="Normal"/>
+                                    </p:outputPanel>
+                                    <p:outputPanel rendered="#{item.tipoPrescripcion eq 'U'}" >
+                                        <img src="#{request.contextPath}/resources/img/cpurgente.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                        <p:spacer width="8px"/>
+                                        <h:outputText value="Urgente"/>
+                                    </p:outputPanel>
+                                    <p:outputPanel rendered="#{item.tipoPrescripcion eq 'D'}" >
+                                        <img src="#{request.contextPath}/resources/img/cpunica.png" style="height: 15px !important; margin-left: 0px !important;" />
+                                        <p:spacer width="8px"/>
+                                        <h:outputText value="Dosis Única"/>
+                                    </p:outputPanel>
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 6% "
+                                          sortBy="#{item.tipoSolucion}" 
+                                          filterBy="#{item.tipoSolucion}" filterMatchMode="contains" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Solución" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.tipoSolucion}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 12% "
+                                          sortBy="#{item.fechaProgramada}" 
+                                          filterBy="#{item.fechaProgramada}" filterMatchMode="contains" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Fecha Programada" />
+                                    </f:facet>
+                                    <h:outputText styleClass="#{item.prioridad eq 'Alta' ? 'prioridadAlta' : item.prioridad eq 'Media' ? 'prioridadMedia' : item.prioridad eq 'Baja' ? 'prioridadBaja' : null}"  
+                                                  value="#{item.fechaProgramada}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                    </h:outputText>
+                                </p:column>
+                                
+                                <ui:remove><p:column style="text-align: left; width: 10% "
+                                          sortBy="# {item.fechaParaEntregar}" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Fecha Entrega" />
+                                    </f:facet>
+                                    <h:outputText value="# {item.fechaParaEntregar}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                    </h:outputText>
+                                </p:column>
+                                    </ui:remove>
+                                <p:column style="text-align: left; width: 10% "
+                                          sortBy="#{item.folio}" 
+                                          filterBy="#{item.folio}" filterMatchMode="contains" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Prescripción" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.folio}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 14% " 
+                                          sortBy="#{item.nombreEstructura}"
+                                          filterBy="#{item.nombreEstructura}" filterMatchMode="contains" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Servicio" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombreEstructura}" />
+                                </p:column>
+
+                                <p:column style="text-align: left; width: 6% "
+                                          sortBy="#{item.cama}"
+                                          filterBy="#{item.cama}" filterMatchMode="contains" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Ubicación" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.cama}" />
+                                </p:column>
+                                
+                                <p:column style="text-align: left; width: 18% " 
+                                          sortBy="#{item.nombrePaciente}" 
+                                          filterBy="#{item.nombrePaciente}" filterMatchMode="contains" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Paciente" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombrePaciente}" />
+                                </p:column>                                
+
+                                <p:column style="text-align: left; width: 18% " 
+                                          sortBy="#{item.nombreMedico}" 
+                                          filterBy="#{item.nombreMedico}" filterMatchMode="contains" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Médico" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombreMedico}" />
+                                </p:column>
+                                
+                                <p:column style="text-align: left; width: 16% " 
+                                          sortBy="#{item.nombreMedico}" 
+                                          filterBy="#{item.nombreMedico}" filterMatchMode="contains"
+                                          rendered="false"  >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Capturó/Validó" />
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombreMedico}" />
+                                </p:column>
+                                
+                                <p:column style="text-align: left; width: 6% " exportable="false">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Acciones" />
+                                    </f:facet>
+                                    <p:commandLink title="Autorizar" onclick="PF('statusProcess').show()"
+                                                   oncomplete="PF('statusProcess').hide(); PF('modalEditarOrden').show();"
+                                                   action="#{registroSolucionMB.verSurtimiento}"
+                                                   update=":formEditarOrden"
+                                                   disabled="#{!registroSolucionMB.permiso.puedeEditar}">
+                                        <f:actionListener binding="#{registroSolucionMB.setSurtimientoExtendedSelected(item)}" />
+                                        <i class="fa fa-eye iconMusAzul" style="font-size: large"/>
+                                    </p:commandLink>                                    
+                                </p:column>
+                            </p:dataTable>
+                            
+
+                        </p:panel>
+
+                    </h:form>
+                </div>  
+                
+                <p:dialog header="Información de Mezcla Por Autorizar"
+                          widgetVar="modalEditarOrden"
+                          closeOnEscape="true"
+                          closable="true"
+                          width="95%"
+                          height="650px" 
+                          position="30,10"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important;">
+                    <!--<p:scrollPanel mode="native" style="max-height: 650px">-->
+                        <h:form id="formEditarOrden">
+                            <p:messages id="msgValidaEdicion" globalOnly="false" showDetail="false" closable="true" rendered="#{registroSolucionMB.msjMdlSurtimiento}" />
+                            <div class="ui-g">
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 1px;" value="Folio Surtimiento: " />
+                                        <p:outputLabel id="folioSurt2" 
+                                                       value="#{registroSolucionMB.surtimientoExtendedSelected.folio}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 1px;" value="Fecha Registro: " />
+                                        <p:outputLabel id="fechaRegistro" title="Fecha de Registro" 
+                                                       value="#{registroSolucionMB.surtimientoExtendedSelected.insertFecha}"  >
+                                            <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm"/>
+                                        </p:outputLabel>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 1px;" value="Estatus: "  />
+                                        <p:outputLabel id="estatusSurtimiento" 
+                                                   value="#{registroSolucionMB.surtimientoExtendedSelected.estatusSolucion}" />
+                                    </div>
+                                </div>
+                                
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 1px;" value="Folio Prescripción: "  />
+                                        <p:outputLabel id="txtFolioPrescripcion" title="Folio de Prescripción" style="font-weight: bold; "
+                                                       value="#{registroSolucionMB.surtimientoExtendedSelected.folioPrescripcion}" />
+                                    </div>
+                                    
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 1px;" for="fechaProgramada" value="Programada" />
+                                        <p:calendar id="fechaProgramada" title="Fecha Programada"
+                                                    value="#{registroSolucionMB.surtimientoExtendedSelected.fechaProgramada}"
+                                                    disabled="#{!registroSolucionMB.editable}"
+                                                    showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                    pages="1" mask="true" showButtonPanel="true" effect="fade" required="true"
+                                                    requiredMessage="Debe ingresar la Fecha Programada"
+                                                    size="10" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 1px;" for="tipoPrescripcion" value="Tipo Prescripción: "/>
+                                        <p:selectOneMenu id="tipoPrescripcion" style="vertical-align: middle;"
+                                                         label="Tipo de Prescripción" title="Tipo de Prescripción" autoWidth="true" 
+                                                         required="true" requiredMessage="Debe seleccionar un Tipo de Prescripción"
+                                                         value="#{registroSolucionMB.surtimientoExtendedSelected.tipoPrescripcion}" 
+                                                         disabled="#{!registroSolucionMB.editable}">
+                                            <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                            <f:selectItem value="#{N}" itemLabel="Normal" itemValue="N" />
+                                            <f:selectItem value="#{U}" itemLabel="Urgente" itemValue="U" />
+                                            <f:selectItem value="#{D}" itemLabel="Dosis Única" itemValue="D" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 1px;" for="comboServicios" value="Área/Servicio: " />
+                                        <p:selectOneMenu id="comboServicios" style="vertical-align: middle; "
+                                                         label="Área o Servicio" title="Área o Servicio" autoWidth="true" 
+                                                         required="true" requiredMessage="Debe seleccionar el Área o Servicio"
+                                                         filter="true" filterMatchMode="contains"
+                                                         value="#{registroSolucionMB.surtimientoExtendedSelected.idEstructura}"
+                                                         disabled="#{!registroSolucionMB.editable}" >
+                                            <f:selectItem itemLabel="Seleccione Área" itemValue="#{null}"/>
+                                            <f:selectItems value="#{registroSolucionMB.listServiciosQueSurte}"
+                                                           var="servicio"
+                                                           itemValue="#{servicio.idEstructura}"
+                                                           itemLabel="#{servicio.nombre}"  />
+                                            <p:ajax event="itemSelect" listener="#{registroSolucionMB.obtenerCamas}" 
+                                                    update="comboCamas" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 1px;" for="comboCamas" value="Cama: " />
+                                        <p:selectOneMenu id="comboCamas" title="Cama del Paciente" style="vertical-align: middle; "
+                                                         value="#{registroSolucionMB.surtimientoExtendedSelected.cama}"
+                                                         autoWidth="true"
+                                                         filter="true" filterMatchMode="contains"
+                                                         disabled="#{!registroSolucionMB.editable}" >
+                                            <f:selectItem itemLabel="Seleccione Cama" itemValue="#{null}"/>
+                                            <f:selectItems value="#{registroSolucionMB.listaCamas}"
+                                                           var="cama"
+                                                           itemValue="#{cama.idCama}"
+                                                           itemLabel="#{cama.nombreCama} - #{cama.ubicacion} " />
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 1px;" for="autoCompleteMedico" value="Médico Solicitante: " />
+                                        <p:autoComplete id="autoCompleteMedico" 
+                                                value="#{registroSolucionMB.medico}" 
+                                                required="true" requiredMessage="Seleccione Médico"
+                                                completeMethod="#{registroSolucionMB.autoCompleteMedicos}" 
+                                                minQueryLength="3" forceSelection="true"
+                                                var="medico" itemValue="#{medico.idUsuario}" 
+                                                itemLabel="#{medico.nombre} #{medico.apellidoPaterno} #{medico.apellidoMaterno}"
+                                                converter="medicoConverter" 
+                                                placeholder="Buscar Médico..."
+                                                emptyMessage="Búsqueda sin resultados" 
+                                                size="25" title="Médico Solicitante"
+                                                scrollHeight="200"
+                                                disabled="#{!registroSolucionMB.editable}" >
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Cédula Profesional" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.cedProfesional}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;" >
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Nombre" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.nombre}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Paterno" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Materno" />
+                                                </f:facet>
+                                                <h:outputText value="#{medico.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:commandButton id="agregaMedico" title="Agregar" value="+" 
+                                            actionListener="#{registroSolucionMB.mostrarModalAgregarMedico}"
+                                            onclick="PF('statusProcess').show();"
+                                            oncomplete="PF('statusProcess').hide();PF('modalAgregarMedico').show();"
+                                            update=":formAgregarMedico:turnoMedico"
+                                            rendered="false" >
+                                            <p:resetInput target="formAgregarMedico"/>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                                
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 1px;" for="autoCompletePaciente" value="Paciente: " />
+                                        <p:autoComplete id="autoCompletePaciente" 
+                                                value="#{registroSolucionMB.pacienteExtended}" 
+                                                completeMethod="#{registroSolucionMB.autoCompletePacientes}" 
+                                                minQueryLength="3" forceSelection="true"
+                                                required="true" requiredMessage="Seleccione paciente"
+                                                var="paciente" itemValue="#{paciente}"
+                                                itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}"
+                                                converter="pacienteConverter" 
+                                                placeholder="Buscar Paciente..."
+                                                emptyMessage="Búsqueda sin resultados" 
+                                                title="Nombre del Paciente"
+                                                size="25" scrollHeight="200"
+                                                disabled="#{!registroSolucionMB.editable}" >
+                                            <p:ajax event="itemSelect" listener="#{registroSolucionMB.selectPaciente}" 
+                                                    update="txtNumPaciente, txtDiagnosticos, txtEdadPaciente, txtPesoPaciente, txtTallaPaciente, txtAreaPaciente, chkDiabetes, chkHipertension, chkProRenales, chkPadeCronico">
+                                            </p:ajax>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Número de Expediente" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.pacienteNumero}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave DerechoHabiencia" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.claveDerechohabiencia}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Nombre" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.nombreCompleto}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Paterno" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.apellidoPaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                            <p:column style="font-size: small;">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Apellido Materno" />
+                                                </f:facet>
+                                                <h:outputText value="#{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:commandButton id="agregaPaciente" title="Agregar" value="+" 
+                                            onclick="PF('statusProcess').show();" immediate="true"
+                                            actionListener="#{registroSolucionMB.mostrarModalAgregarPaciente}"
+                                            oncomplete="PF('statusProcess').hide();PF('modalAgregarPaciente').show();"
+                                            update="formAgregarPaciente"
+                                            disabled="#{!registroSolucionMB.editable}"  >
+                                            <p:resetInput target="formAgregarPaciente"/>
+                                        </p:commandButton>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel style="margin-right: 1px;" value="No. de Expediente: " />
+                                        <p:outputLabel class="textoNegrita" id="txtNumPaciente" title="Número de Expediente"
+                                                       value="#{registroSolucionMB.pacienteExtended.pacienteNumero}" >
+                                        </p:outputLabel>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4">
+                                        <p:outputLabel for="tipoConsulta" value="Tipo Consulta: " />
+                                        <p:selectOneMenu id="tipoConsulta" style="vertical-align: middle;"
+                                                         value="#{registroSolucionMB.surtimientoExtendedSelected.tipoConsulta}" 
+                                                         title="Tipo de la Consulta" autoWidth="true" 
+                                                         required="true" requiredMessage="Debe seleccionar el Tipo de Consulta"
+                                                         disabled="#{!registroSolucionMB.editable}" >
+                                            <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{null}"/>
+                                            <f:selectItem value="#{I}" itemLabel="Hospitalización" itemValue="I" />
+                                            <f:selectItem value="#{E}" itemLabel="Ambulatoria" itemValue="E" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" value="Fecha Nacimiento: " />
+                                        <p:outputLabel id="txtFecNacPaciente" value="#{registroSolucionMB.pacienteExtended.fechaNacimiento}" >
+                                            <f:convertDateTime pattern="yyyy-MM-dd" />
+                                        </p:outputLabel>
+                                        <p:outputLabel value=" ( " />
+                                        <p:outputLabel id="txtEdadPaciente" value="#{registroSolucionMB.pacienteExtended.edadPaciente}" />
+                                        <p:outputLabel value=" años )" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" value="Peso: "  />
+                                        <p:inputText id="txtPesoPaciente"  size="1" maxlength="4"
+                                                     value="#{registroSolucionMB.surtimientoExtendedSelected.pesoPaciente}"
+                                                     disabled="#{!registroSolucionMB.editable}" >
+                                            <p:keyFilter regEx="/[\d\.]/i" />
+                                            <p:ajax event="change" update="txtAreaPaciente" listener="#{registroSolucionMB.obtenerSuperficieCorporal()}" />
+                                        </p:inputText> kg
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" value="Estatura: "  />
+                                        <p:inputText id="txtTallaPaciente" size="1" maxlength="4"
+                                                     value="#{registroSolucionMB.surtimientoExtendedSelected.tallaPaciente}"
+                                                     disabled="#{!registroSolucionMB.editable}" >
+                                            <p:keyFilter regEx="/[\d\.]/i" />
+                                            <p:ajax event="change" update="txtAreaPaciente" listener="#{registroSolucionMB.obtenerSuperficieCorporal()}" />
+                                        </p:inputText> mts
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" value="Superficie Corporal: "  />
+                                        <p:inputText id="txtAreaPaciente"  size="1" maxlength="4"
+                                                     value="#{registroSolucionMB.surtimientoExtendedSelected.areaCorporal}" 
+                                                     disabled="#{!registroSolucionMB.editable}" >
+                                            <p:keyFilter regEx="/[\d\.]/i" />
+                                        </p:inputText> m²
+                                    </div>
+                                </div>
+
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                        <p:outputLabel value="Diagnósticos: * " style="margin-right: 1px; vertical-align: top; "/>
+                                        <p:autoComplete id="txtDiagnosticos"
+                                                styleClass="autocomplete-multiple-hiper"
+                                                multiple="true" 
+                                                placeholder="Agregar Diagnósticos" 
+                                                value="#{registroSolucionMB.listaDiagnosticos}"
+                                                completeMethod="#{registroSolucionMB.autocompleteDiagnosticos}"
+                                                minQueryLength="4"
+                                                forceSelection="true"
+                                                var="diagnos"
+                                                itemLabel="#{diagnos.nombre}" itemValue="#{diagnos}" 
+                                                converter="musGenericConverter"
+                                                disabled="#{!registroSolucionMB.editable}" >
+                                            <p:ajax event="itemSelect" update="txtDiagnosticos"></p:ajax>
+                                            <p:column style="width: 20px; font-size: small;" width="50px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave" />
+                                                </f:facet>
+                                                <h:outputText value="#{diagnos.clave}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="width: 600px; font-size: small;" width="600px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{diagnos.nombre}" style=" font-size: x-small;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                    
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel style="margin-right: 1px;" value="Prob Glucosa: " />
+                                        <p:selectBooleanCheckbox value="#{registroSolucionMB.surtimientoExtendedSelected.diabetes}" 
+                                                                 id="chkDiabetes"
+                                                                 disabled="#{!registroSolucionMB.editable}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel style="margin-right: 1px;" value="Prob Renales" />
+                                        <p:selectBooleanCheckbox value="#{registroSolucionMB.surtimientoExtendedSelected.problemasRenales}" 
+                                                                 id="chkProRenales"
+                                                                 disabled="#{!registroSolucionMB.editable}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                        <p:outputLabel style="margin-right: 1px;" value="Prob Hipertensión: " />
+                                        <p:selectBooleanCheckbox value="#{registroSolucionMB.surtimientoExtendedSelected.hipertension}" 
+                                                                 id="chkHipertension"
+                                                                 disabled="#{!registroSolucionMB.editable}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                        <p:outputLabel style="margin-right: 1px;" value="Padec crónico: "  rendered="false" />
+                                        <p:selectBooleanCheckbox value="#{registroSolucionMB.surtimientoExtendedSelected.padecimientoCronico}" 
+                                                                 id="chkPadeCronico"  rendered="false" />
+                                    </div>
+                                    
+                                </div>
+                                
+                                <p:outputLabel value="INFORMACIÓN DE LA SOLUCIÓN"  class="plabel ui-g-12" />
+                                
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" for="tipoSolucion" value="Tipo Solución: "/>
+                                        <p:selectOneMenu id="tipoSolucion" widgetVar="tipoSolucion" style="vertical-align: middle;"
+                                                         value="#{registroSolucionMB.idTipoSolucion}" label="Tipo de Solución"
+                                                         title="Tipo de Solución" autoWidth="true" 
+                                                         required="true" requiredMessage="Seleccione Tipo de Solución"
+                                                         disabled="#{!registroSolucionMB.editable}" >
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}"/>
+                                            <f:selectItems value="#{registroSolucionMB.tipoSolucionList}" var="tipoSol"
+                                                           itemLabel="#{tipoSol.clave}" itemValue="#{tipoSol.idTipoSolucion}"/>
+                                            <p:ajax event="itemSelect" update="protocolo txtDiagnostico"
+                                                    listener="#{registroSolucionMB.seleccionaTiposolucion}">
+                                            </p:ajax>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" for="viaAdministracion" value="Vía Administración: "/>
+                                        <p:selectOneMenu id="viaAdministracion" style="vertical-align: middle; " 
+                                                         value="#{registroSolucionMB.viaAdministracion.idViaAdministracion}"
+                                                         label="Vía de Administración" title="Vía de Administración" autoWidth="true" 
+                                                         required="true" requiredMessage="Seleccione Vía de Administración" 
+                                                         filter="true" filterMatchMode="contains"
+                                                         disabled="#{!registroSolucionMB.editable}" >
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}"/>
+                                            <f:selectItems value="#{registroSolucionMB.viaAdministracionList}" var="via"
+                                                           itemLabel="#{via.nombreViaAdministracion}" itemValue="#{via.idViaAdministracion}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 1px;" value="Volumen total: " />
+                                            <p:inputText  value="#{registroSolucionMB.surtimientoExtendedSelected.volumenTotal}" 
+                                                          size="4" 
+                                                          disabled="#{!registroSolucionMB.editable}" >
+                                                <p:keyFilter regEx="/[0-9.]/i"/>
+                                            </p:inputText>
+                                            <p:outputLabel value=" ml" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" value="Contenedor: " />
+                                        <p:selectOneMenu value="#{registroSolucionMB.surtimientoExtendedSelected.idContenedor}"
+                                                         filter="true" filterMatchMode="contains"
+                                                         required="true" requiredMessage="Seleccione contennedor"
+                                                         disabled="#{!registroSolucionMB.editable}" >
+                                                <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}"/>
+                                                <f:selectItems value="#{registroSolucionMB.envaseList}" var="tipo" itemLabel="#{tipo.descripcion}" itemValue="#{tipo.idEnvaseContenedor}" />
+                                            </p:selectOneMenu>
+                                    </div>
+                                </div>
+                                
+                                <div class="ui-g-12" >
+                                    <ui:remove><div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" value="Fecha de Entrega: " for="txtFechaEntregaS" /> 
+                                        <p:calendar id="txtFechaEntregaS" 
+                                                    value="#{registroSolucionMB.surtimientoExtendedSelected.fechaParaEntregar}"
+                                                    rendered="true" requiredMessage="Seleccione fecha de entrega"
+                                                    showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                                    title="Fecha Programada" 
+                                                    pages="1" mask="true" showButtonPanel="true" effect="fade" 
+                                                    size="8"
+                                                    disabled="#{!registroSolucionMB.editable}" />
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" value="Hora de Entrega: " for="txtHoraEntregas" /> 
+                                        <p:selectOneMenu id="txtHoraEntregas" style="vertical-align: middle;" 
+                                                         value="#{registroSolucionMB.surtimientoExtendedSelected.idHorarioParaEntregar}" 
+                                                         required="true" requiredMessage="Seleccione hora de entrega"
+                                                         label="Hora de Entrega" filter="true" filterMatchMode="contains" 
+                                                         title="Hora de Entrega" autoWidth="true"
+                                                         disabled="#{!registroSolucionMB.editable}" >
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}"/>
+                                            <f:selectItems value="#{registroSolucionMB.horarioEntregaLista}" var="horar" 
+                                                           itemValue="#{horar.idHorarioEntrega}" itemLabel="#{horar.nombre}" />
+                                        </p:selectOneMenu>
+                                    </div> </ui:remove>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" for="chkPerfucionContinua" value="Perfusión Continua: "/>
+                                        <p:selectBooleanCheckbox id="chkPerfucionContinua" 
+                                                                 value="#{registroSolucionMB.surtimientoExtendedSelected.perfusionContinua}"
+                                                                 disabled="#{!registroSolucionMB.editable or !registroSolucionMB.surtimientoExtendedSelected.perfusionContinua}" >
+                                            <p:ajax event="change" update="velocidad" listener="#{registroSolucionMB.activaPerfusion}" />
+                                        </p:selectBooleanCheckbox>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" for="hrsInfusion" value="Tiempo Infusión:"/>
+                                        <p:inputMask id="hrsInfusion" value="#{registroSolucionMB.surtimientoExtendedSelected.horasInfusion}" mask="999:99"
+                                                     disabled="#{!registroSolucionMB.editable}">
+                                            <p:ajax event="blur" process="@this" update="velocidad"
+                                                    listener="#{registroSolucionMB.calculaVelocidadPerfusion}" />
+                                        </p:inputMask>    
+                                        <p:outputLabel value=" min." />
+                                    </div>    
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" for="velocidad" value="Velocidad: "/>
+                                        <p:inputNumber id="velocidad" value="#{registroSolucionMB.surtimientoExtendedSelected.velocidad}" 
+                                                       minValue="0" decimalSeparator="." thousandSeparator="," decimalPlaces="2" size="10" 
+                                                       title="Velocidad de Administración" 
+                                                       disabled="#{!registroSolucionMB.editable}" />
+                                        <p:outputLabel value=" ml/h" />
+                                    </div>
+                                    
+                                </div>
+                                
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                        <p:outputLabel style="margin-right: 1px;" for="protocolo" value="Protocolo: "/>
+                                        <p:selectOneMenu id="protocolo" value="#{registroSolucionMB.claveProtocolo}" label="Protocolo" filter="true" filterMatchMode="contains"
+                                                         title="Tipo de Protocolo" autoWidth="true" style="vertical-align: middle;"
+                                                         disabled="#{!registroSolucionMB.isOncologica or !registroSolucionMB.editable}">
+                                            <f:selectItem itemLabel="Seleccione una opción" itemValue="#{null}"/>
+                                            <f:selectItems value="#{registroSolucionMB.listaProtocolos}" var="proto" itemValue="#{proto.claveProtocolo}" itemLabel="#{proto.claveProtocolo}"></f:selectItems>
+                                            <ui:remove> <p:ajax event="itemSelect" update="formWarning:msjWarning txtDiagnostico"
+                                                    listener="#{registroSolucionMB.validaDiagnosticoProtocolo}">
+                                            </p:ajax></ui:remove> 
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="ui-g-12 ui-md-6 ui-lg-9">
+                                        <p:outputLabel style="margin-right: 1px;" for="txtDiagnostico" value="Diagnóstico: "/>
+                                        <p:autoComplete id="txtDiagnostico" styleClass="autocomplete-multiple-hiper"
+                                                multiple="false" placeholder="Buscar Diagnóstico" 
+                                                value="#{registroSolucionMB.diagnosticoSelected}"
+                                                completeMethod="#{registroSolucionMB.autocompleteDiagnostico}"
+                                                minQueryLength="4" forceSelection="true" size ="80"
+                                                var="diagnos" itemLabel="#{diagnos.nombre}" 
+                                                itemValue="#{diagnos}" 
+                                                converter="musGenericConverter" 
+                                                disabled="#{!registroSolucionMB.isOncologica or !registroSolucionMB.editable}">
+                                            <p:column style="width: 20px; font-size: small;" width="50px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave" />
+                                                </f:facet>
+                                                <h:outputText value="#{diagnos.clave}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="width: 600px; font-size: small;" width="600px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{diagnos.nombre}" style=" font-size: x-small;" />
+                                            </p:column>
+                                            <ui:remove>
+                                            <p:ajax event="itemSelect" update="formWarning:msjWarning"
+                                                listener="#{registroSolucionMB.validaDiagnosticoProtocolo}">
+                                            </p:ajax>
+                                                </ui:remove>
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
+
+                                <div class="ui-g-12" style="padding: 10px 5px; background-color: #bfbfbf; margin-right:20px;">
+                                    <div style="width: 5%; float:left;">
+                                        <p:inputText id="xcantidad"
+                                                     value="#{registroSolucionMB.xcantidad}"
+                                                     size="3" rendered="false"
+                                                     title="Cantidad de medicamentos">
+                                            <p:keyFilter regEx="/[0-9-.]/i" />
+                                            <p:ajax event="keyup" update="@this" />
+                                        </p:inputText>
+                                    </div>
+                                    <div style="width: 40%; float:left;">
+                                        <p:autoComplete id="txtInsumo" 
+                                                        value="#{registroSolucionMB.medicamento}" 
+                                                        completeMethod="#{registroSolucionMB.autoCompleteMedicamentos}"
+                                                        minQueryLength="4" 
+                                                        forceSelection="true"
+                                                        var="insumo" 
+                                                        itemLabel="#{insumo.nombreCorto}" 
+                                                        itemValue="#{insumo}" 
+                                                        converter="medicamentoExtHashConverter"
+                                                        placeholder="Buscar Insumo"
+                                                        emptyMessage="No se encontro registro."
+                                                        size="65"
+                                                        disabled="#{!registroSolucionMB.disabledEditAddInsumo}" >
+                                            <p:ajax event="itemSelect" process="txtInsumo, lblUnidad" update="txtInsumo, lblUnidad"></p:ajax>
+                                            <p:column style="width: 20px; font-size: small;" width="20px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave Institucional" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.claveInstitucional}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="width: 350px; font-size: small;" width="350px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.nombreCorto}" style=" font-size: x-small;" />
+                                            </p:column>
+
+                                        </p:autoComplete>
+                                    </div>
+                                    <div style="width: 15%; float:left;">
+                                        <p:outputLabel for="dosis" >Cant/Dosis:</p:outputLabel>
+                                        <p:inputNumber id="dosis"  
+                                                       value="#{registroSolucionMB.dosis}" 
+                                                       minValue="0" decimalSeparator="." thousandSeparator="," decimalPlaces="2" 
+                                                       size="6" title="Dosis"
+                                                       disabled="#{!registroSolucionMB.disabledEditAddInsumo}" />
+                                        <p:outputLabel id="lblUnidad">#{registroSolucionMB.medicamento.nombreUnidadConcentracion}</p:outputLabel>
+                                    </div>
+                                    <div style="width: 20%; float:left;">
+                                        <p:outputLabel for="frecuencia" >Frecuencia:</p:outputLabel>
+                                        <p:selectOneMenu id="frecuencia" value="#{registroSolucionMB.frecuencia}" 
+                                                         label="Frecuencia" filter="true" filterMatchMode="contains"
+                                                         title="Frecuencia" autoWidth="true" style="vertical-align: middle;"
+                                                         disabled="#{!registroSolucionMB.disabledEditAddInsumo}" >
+                                            <f:selectItem itemLabel="Seleccione Frecuencia" itemValue="#{null}"/>
+                                            <f:selectItems value="#{registroSolucionMB.listaFrecuencias}" var="frec" itemValue="#{frec.frecuencia}" itemLabel="#{frec.nombre} - #{frec.frecuencia} hr(s)"></f:selectItems>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div style="width: 13%; float:left;">
+                                        <p:outputLabel for="duracion" >Duración:</p:outputLabel>
+                                        <p:inputNumber id="duracion" 
+                                                       value="#{registroSolucionMB.duracion}" 
+                                                       minValue="0" maxValue="90" decimalPlaces="0" size="4" title="Duración"
+                                                       disabled="#{!registroSolucionMB.disabledEditAddInsumo}" />
+                                    </div>
+                                    <div style="width: 7%; float: right;">
+                                        <p:commandButton value="Agregar"
+                                                         style="float: right;"
+                                                         actionListener="#{registroSolucionMB.agregarMedicamento}"
+                                                         update="msgValidaEdicion, txtInsumo, dosis, frecuencia, duracion, tblInsumos"
+                                                         rendered="#{registroSolucionMB.disabledEditAddInsumo}"
+                                                         styleClass="btnMusAzul" />
+                                    </div>
+                                </div>
+                                
+                                <div class="ui-g-12" >
+                                    <p:dataTable id="tblInsumos"
+                                                 widgetVar="tblInsumos" 
+                                                 value="#{registroSolucionMB.surtimientoInsumoExtendedList}"                                   
+                                                 var="item"
+                                                 rowIndexVar="row"
+                                                 style="margin-top:0px; margin-bottom:5px; width:98%;"
+                                                 styleClass="mystyle"
+                                                 scrollable="true" scrollHeight="120"
+                                                 emptyMessage="No hay insumos capturados"
+                                                 reflow="true"
+                                                 paginator="false"
+                                                 rows="0"
+                                                 disabledSelection="true">
+                                        <p:column style="text-align: left; width: 10% "
+                                                  sortBy="#{item.claveInstitucional}" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Clave" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.claveInstitucional}" class="textoNegrita" />
+                                        </p:column>
+                                        <p:column  style="text-align: left; width: 60% "
+                                                   sortBy="#{item.nombreCorto}" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Insumo" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.nombreCorto}" />
+                                        </p:column>
+                                        <p:column  style="text-align: left; width: 10% ">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Dosis" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.dosis} #{item.unidadConcentracion}" />
+                                        </p:column>
+                                        <p:column style="text-align: left; width: 6% " >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Frecuencia" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.frecuencia}" />
+                                        </p:column>
+                                        <p:column style="text-align: left; width: 5% " >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Duración" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.duracion}" />
+                                        </p:column>
+                                        <p:column style="text-align: left; width: 5% " >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Cant Req" />
+                                            </f:facet>
+                                            <h:outputText value="#{item.cantidadSolicitada}" class="textoNegrita" />
+                                        </p:column>
+                                        <p:column  style="text-align: left; width: 4% "
+                                                   rendered="#{registroSolucionMB.editable}" >
+                                            <f:facet name="header">
+                                                <h:outputText value="Eliminar" />
+                                            </f:facet>
+                                            <p:commandLink title="Eliminar" onclick="PF('statusProcess').show()"
+                                                           oncomplete="PF('statusProcess').hide();"
+                                                           actionListener="#{registroSolucionMB.eliminaInsumoDeLista(item)}"
+                                                           update="formEditarOrden:tblInsumos ">
+                                                <i class="fa fa-trash iconMusAzul" />
+                                            </p:commandLink>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                                <br/>
+                                                                                               
+                                
+                                <div class="ui-g-12" style=" width: 100% !important; /*position: absolute; bottom: 0px;*/ background-color: #f8f8f8; border-top: solid 2px #C8C8C8;  " >
+                                    <div class="ui-g-12 ui-md-6 ui-lg-4" style="display: flex; align-content: center; justify-content: space-between; float: right;" >
+                                        <div >
+                                            <p:commandButton value="Cerrar" immediate="true"
+                                                     styleClass="btnMusBoolGris"  
+                                                     onclick="PF('modalEditarOrden').hide();"
+                                                     style="margin-right: 1px; float: right;" >
+                                            </p:commandButton>
+                                        </div>
+                                        <div >
+                                            <p:commandButton value="No Autorizar" styleClass="btnMusRed" icon="fa fa-times-circle" 
+                                                         style="margin-right: 1px; float: right;"
+                                                         onclick="PF('statusProcess').show();"
+                                                         oncomplete="PF('statusProcess').hide(); PF('dlgNoAutorizaPrescripcion').show(); "
+                                                          />
+                                        </div>
+                                        <div >
+                                            <p:commandButton value="Autorizar" styleClass="btnMusAzul" icon="fa fa-check-circle" 
+                                                         style="margin-right: 1px;float: right;"
+                                                         onclick="PF('statusProcess').show()"
+                                                         oncomplete="PF('statusProcess').hide(); PF('dlgAutorizaPrescripcion').show();"
+                                                         /> 
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <ui:remove>
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                        <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                                    </p:confirmDialog></ui:remove>
+                        </h:form>
+                </p:dialog>
+                
+                <p:dialog header="Autoriza Prescripción"
+                          widgetVar="dlgAutorizaPrescripcion"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          width="600px" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="frmAutorizaPrescripcion" >
+                        <p:messages id="msgAutorizaPrescripcion" globalOnly="false" showDetail="false" closable="true" />
+                        <br/>
+                        <div class="ui-g">
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                     <p:outputLabel value="Comentarios: "  class="plabel" />&nbsp;
+                                                                          
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-9">
+                                    <p:inputTextarea value="#{registroSolucionMB.comentarioAutoriza}" cols="50" rows="3"/>
+                                </div>
+                            </div>    
+                            <div class="ui-g-12">                                
+                                <div class="ui-g-12 ui-md-6 ui-lg-6">                                       
+                                    <p:commandButton value="Cerrar" immediate="true"
+                                                     styleClass="btnMusBoolGris"  
+                                                     onclick="PF('dlgAutorizaPrescripcion').hide();"
+                                                     style="margin-right: 1px; float: right;" >
+                                    </p:commandButton>
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                    <p:commandButton value="Aceptar" styleClass="btnMusAzul" icon="fa fa-check-circle" 
+                                                     style="margin-right: 1px;float: right;"
+                                                     onclick="PF('statusProcess').show()"
+                                                     actionListener="#{registroSolucionMB.autorizarPrescripcion()}" 
+                                                     oncomplete="PF('statusProcess').hide(); if (args.estatus) {PF('modalEditarOrden').hide(); PF('dlgAutorizaPrescripcion').hide();}"
+                                                      update=":mainForm"
+                                                     /> 
+                                </div>    
+                            </div>
+                        </div>    
+                    </h:form>
+                    
+                </p:dialog>
+                
+                <p:dialog header="No Autoriza Prescripción"
+                          widgetVar="dlgNoAutorizaPrescripcion"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          width="600px" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="frmNoAutorizaPrescripcion" >
+                        <p:messages id="msgNoAutorizaPrescripcion" globalOnly="false" showDetail="false" closable="true" />
+                        <br/>
+                        <div class="ui-g">
+                            <div class="ui-g-12" >
+                                <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                     <p:outputLabel value="Motivos de no autorización "  class="plabel" />&nbsp;
+                                                                          
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-9">
+                                    <p:inputTextarea value="#{registroSolucionMB.motivoNoAutoriza}" cols="50" rows="3"/>
+                                </div>
+                            </div>    
+                            <div class="ui-g-12">
+                                <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                    <p:commandButton value="Cerrar" immediate="true"
+                                                     styleClass="btnMusBoolGris"  
+                                                     onclick="PF('dlgNoAutorizaPrescripcion').hide();"
+                                                     style="margin-right: 1px; float: right;" >
+                                    </p:commandButton>
+                                </div>
+                                <div class="ui-g-12 ui-md-6 ui-lg-6">
+                                    <p:commandButton value="Aceptar" styleClass="btnMusAzul" icon="fa fa-check-circle" 
+                                                     style="margin-right: 1px;float: right;"
+                                                     onclick="PF('statusProcess').show()"
+                                                     actionListener="#{registroSolucionMB.noAutorizarPrescripcion()}" 
+                                                     oncomplete="PF('statusProcess').hide(); if (args.estatus) {PF('modalEditarOrden').hide(); PF('dlgNoAutorizaPrescripcion').hide();}"
+                                                      update=":mainForm"
+                                                     /> 
+                                </div>    
+                            </div>
+                        </div>    
+                    </h:form>
+                    
+                </p:dialog>
+                
+                <p:dialog header="AGREGAR PACIENTE"
+                          widgetVar="modalAgregarPaciente"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          width="500px" 
+                          style="font-size:xx-small !important; " >
+                    <h:form id="formAgregarPaciente" >
+                        <p:messages id="msgModalAddUsuario" globalOnly="false" showDetail="false" closable="true" />
+                        <p:panelGrid columns="2" >
+                            
+                            <p:outputLabel value="Tipo de paciente : " rendered="false" />
+                            <p:selectOneMenu id="tipoPaciente" style="width: 152px;" rendered="false" 
+                                             value="#{registroSolucionMB.paciente.idTipoPaciente}" >
+                                <f:selectItems value="#{registroSolucionMB.listaTipoPacientes}"
+                                               var="tipoPaciente" itemValue="#{tipoPaciente.idCatalogoGeneral}"
+                                               itemLabel="#{tipoPaciente.nombreCatalogo}"/>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="#{msg['pac.numPac']} : " for="txtPacClavePaciente" />
+                            <p:inputText id="txtPacClavePaciente" value="#{registroSolucionMB.paciente.claveDerechohabiencia}"
+                                         required="true" requiredMessage="Clave de paciente requerida"
+                                         placeholder="Clave o número de paciente" maxlength="45" />
+                           
+                            <p:outputLabel value="Nombre : " for="txtPacNombrePaciente" />
+                            <p:inputText id="txtPacNombrePaciente" value="#{registroSolucionMB.paciente.nombreCompleto}"
+                                         required="true" requiredMessage="Nombre de paciente requerido" 
+                                         placeholder="Nombre(s) de paciente" maxlength="45" />
+                            
+                            <p:outputLabel value="Apellido Paterno : " for="txtPacApePatPaciente" />
+                            <p:inputText id="txtPacApePatPaciente" value="#{registroSolucionMB.paciente.apellidoPaterno}" 
+                                         placeholder="Apellido paterno" maxlength="45"
+                                         required="true" requiredMessage="Apellido paterno requerido" />
+                            
+                            <p:outputLabel value="Apellido Materno : " for="txtPacApeMatPaciente" />
+                            <p:inputText id="txtPacApeMatPaciente" value="#{registroSolucionMB.paciente.apellidoMaterno}" 
+                                         placeholder="Apellido materno" maxlength="45" />
+                            
+                            <p:outputLabel value="Sexo : " for="txtPacSexoPaciente" />
+                            <p:selectOneButton id="txtPacSexoPaciente" value="#{registroSolucionMB.paciente.sexo}">
+                                <f:selectItem itemLabel="Masculino" itemValue="M" />
+                                <f:selectItem itemLabel="Femenino" itemValue="F" />
+                            </p:selectOneButton>
+                            
+                            <p:outputLabel value="Fecha Nacimiento : " for="txtFechaInicio" />
+                            <p:calendar id="txtFechaInicio" showOn="button" navigator="true" yearRange="c-100:c" pages="1" 
+                                        value="#{registroSolucionMB.paciente.fechaNacimiento}" maxdate="#{registroSolucionMB.fechaActual}"
+                                        mask="true" pattern="dd/MM/yyyy" locale="es_MX" placeholder="dd/MM/yyyy" 
+                                        required="true" requiredMessage="Fecha de nacimiento requerida" />
+                            <p:selectCheckboxMenu id="turno" label="Turnos" rendered="false"
+                                                  value="#{registroSolucionMB.listaIdTurnos}" >
+                                <f:selectItems value="#{registroSolucionMB.listaTurnos}" rendered="false"
+                                               var="turno" itemValue="#{turno.idTurno.toString()}" itemLabel="#{turno.nombre}" />
+                            </p:selectCheckboxMenu>
+                            
+                            <p:outputLabel value="CURP : " for="txtPacCurp" />
+                            <p:inputText id="txtPacCurp" value="#{registroSolucionMB.paciente.curp}" 
+                                         placeholder="CURP" maxlength="18" />
+                            
+                            <p:outputLabel value="RFC : " for="txtPacRfc" />
+                            <p:inputText id="txtPacRfc" value="#{registroSolucionMB.paciente.rfc}" 
+                                         placeholder="RFC" maxlength="13" />
+                            
+                            <p:outputLabel value="Lugar Nacimiento : " for="txtPacLugarNac" />
+                            <p:inputText id="txtPacLugarNac" value="#{registroSolucionMB.paciente.lugarNacimiento}" 
+                                         placeholder="Lugar de Nacimiento" maxlength="45" />
+                            
+                            <p:outputLabel value="País de Residencia : " for="txtPacPaisRes" />
+                            <p:inputText id="txtPacPaisRes" value="#{registroSolucionMB.paciente.paisResidencia}" 
+                                         placeholder="Pais de Residencia" maxlength="45" />
+                            
+                          <p:outputLabel value="Presenta Discapacidad : " for="txtPacPresDisc" />
+                          <p:inputText id="txtPacPresDisc" value="#{registroSolucionMB.paciente.descripcionDiscapacidad}" 
+                                       placeholder="Descripción Discapacidad" maxlength="45" />
+                            
+                        </p:panelGrid>
+                        <br/>
+                        <p:commandButton value="Agregar" title="Guardar paciente" styleClass="btnMusAzul" style="float: right;"
+                                         onclick="PF('statusProcess').show();"
+                                         actionListener="#{registroSolucionMB.agregarPaciente}"
+                                         oncomplete="PF('statusProcess').hide();if(!args.error){PF('modalAgregarPaciente').hide()};"
+                                         update=":formEditarOrden:msgValidaEdicion msgModalAddUsuario" >
+                        </p:commandButton>
+                        <p:commandButton title="Cancelar" value="Cancelar" oncomplete="PF('modalAgregarPaciente').hide();"  style="float: right;"/>
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog header="AGREGAR MÉDICO"
+                          widgetVar="modalAgregarMedico"
+                          closeOnEscape="true"
+                          closable="true"
+                          modal="true" 
+                          resizable="false"
+                          responsive="true"
+                          style="font-size:xx-small !important; " >
+                    <h:form id="formAgregarMedico" >
+                        <p:messages id="msgModalAddMedico" globalOnly="false" showDetail="false" closable="true" />
+                        <p:panelGrid columns="2" >
+                            <p:outputLabel value="Nombre" for="txtNombre" />
+                            <p:inputText id="txtNombre" placeholder="Nombre" maxlength="30"
+                                         required="true"  requiredMessage="Nombre de Médico requerido" 
+                                         value="#{registroSolucionMB.medicoExtended.nombre}"  />
+                            <p:outputLabel value="Apellido Paterno" for="txtNombrePaterno" />
+                            <p:inputText id="txtNombrePaterno" placeholder="Apellido Paterno"  maxlength="30"
+                                         required="true"  requiredMessage="Apellido de Médico requerido" 
+                                         value="#{registroSolucionMB.medicoExtended.apellidoPaterno}" />
+                            <p:outputLabel value="Apellido Materno" />
+                            <p:inputText id="txtApellidoMaterno" placeholder="Apellido Materno" maxlength="30"
+                                         value="#{registroSolucionMB.medicoExtended.apellidoMaterno}" />
+                            <p:outputLabel value="Cedula Profesional: " for="cedProf" />
+                            <p:inputText id="cedProf" placeholder="Cédula Profesional"  maxlength="15" 
+                                         value="#{registroSolucionMB.medicoExtended.cedProfesional}"
+                                         required="true" requiredMessage="La cédula profesional es requerida" />
+                            <p:outputLabel value="Cedula Especialidad: " />
+                            <p:inputText id="cedEsp" placeholder="Cédula de especialidad"  maxlength="15" 
+                                         value="#{registroSolucionMB.medicoExtended.cedEspecialidad}"/>
+                            <p:outputLabel value="Turnos: " rendered="false" />
+                            <p:selectCheckboxMenu id="turnoMedico" class="sOneMenu" rendered="false"
+                                                  value="#{registroSolucionMB.listaIdTurnos}" >
+                                <f:selectItems value="#{registroSolucionMB.listaTurnos}"
+                                               var="turno" itemValue="#{turno.idTurno.toString()}" itemLabel="#{turno.nombre}"/>
+                            </p:selectCheckboxMenu>
+                        </p:panelGrid>
+                        <br/>
+                        <p:commandButton id="btnSave1" value="Guardar" styleClass="btnMusAzul" style="float: right;"
+                                         actionListener="#{registroSolucionMB.agregarMedicos}" 
+                                         onclick="PF('statusProcess').show();"
+                                         oncomplete="PF('statusProcess').hide();if(!args.errorModalMedicos){PF('modalAgregarMedico').hide();}"
+                                         update=":formEditarOrden:msgValidaEdicion msgModalAddMedico" />
+                        <p:commandButton title="Cancelar" value="Cancelar" oncomplete="PF('modalAgregarMedico').hide();" style="float: right;"/>
+                    </h:form>
+                </p:dialog>
+
+               
+            </ui:define>
+        </ui:composition>
+    </h:body>
+
+</html>

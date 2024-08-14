@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.PacienteServicioPerifericoMapper" >
+    
+    
+    <insert id="insertar" parameterType="mx.mc.model.PacienteServicioPeriferico" >
+        INSERT INTO pacienteServicioPeriferico
+        (
+        idPacienteServicioPeriferico 
+        , idPaciente
+        , idEstructura 
+        , idUsuarioIngresa                
+        , idMotivoPacienteMovimiento 
+        , notasIngreso
+        , notasEgreso
+        , idMedicoAutoriza
+        , insertFecha 
+        , insertIdUsuario 
+        , fechaIngreso        
+        , fechaEgreso        
+        ) VALUES (
+        #{ idPacienteServicioPeriferico  , jdbcType = VARCHAR }
+        , #{ idPaciente  , jdbcType = VARCHAR }
+        , #{ idEstructura  , jdbcType = VARCHAR }
+        , #{ idUsuarioIngresa  , jdbcType = VARCHAR }
+        , #{ idMotivoPacienteMovimiento  , jdbcType = INTEGER }
+        , #{ notasIngreso  , jdbcType = INTEGER }
+        , #{ notasEgreso  , jdbcType = INTEGER }
+        , #{ idMedicoAutoriza  , jdbcType = INTEGER }
+        , #{ insertFecha  , jdbcType = TIMESTAMP }
+        , #{ insertIdUsuario  , jdbcType = VARCHAR }
+        , #{ fechaIngreso  , jdbcType = TIMESTAMP }
+        , #{ fechaEgreso  , jdbcType = TIMESTAMP }                
+        )
+    </insert>
+    
+    <select  id="obtenerDatos" resultType="mx.mc.model.PacienteServicioPeriferico"  parameterType="Map">
+        select * from pacienteServicioPeriferico 
+        where idEstructura = #{ idEstructura  , jdbcType = VARCHAR }
+        and idPaciente = #{ idPaciente  , jdbcType = VARCHAR }
+    </select>
+    
+    <update id="actualizar" parameterType="mx.mc.model.PacienteServicioPeriferico">
+        update pacienteServicioPeriferico
+        set 
+        idUsuarioEgreso = #{ idUsuarioEgreso , jdbcType = VARCHAR } ,
+        fechaEgreso = #{ fechaEgreso , jdbcType = TIMESTAMP } ,
+        notasEgreso = #{ notasEgreso , jdbcType = VARCHAR } ,
+        idMedicoAutoriza =  #{ idMedicoAutoriza  , jdbcType = INTEGER },
+        idMotivoPacienteMovimientoSalida =  #{ idMotivoPacienteMovimientoSalida  , jdbcType = INTEGER },
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP } ,
+        updateIdUsuario =  #{ updateIdUsuario  , jdbcType = VARCHAR }
+        Where idPacienteServicioPeriferico  = #{ idPacienteServicioPeriferico  , jdbcType = VARCHAR }
+        
+    </update>
+    
+    
+</mapper>

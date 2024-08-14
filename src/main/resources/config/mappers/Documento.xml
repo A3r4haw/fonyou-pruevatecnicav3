@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DocumentoMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Documento" parameterType="mx.mc.model.Documento" >
+        SELECT idDocumento , nombre , descripcion , idTipoArchivo , nombreArchivo , extension , archivo
+        , fecha , autorizado , activo , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario 
+        , idEstructura , idUsuarioAutoriza , fechaAutorizado
+        FROM documento WHERE 1=1
+        <if test=" idDocumento != null">
+            AND idDocumento = #{ idDocumento , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        LIMIT 0, 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Documento" parameterType="mx.mc.model.Documento" >
+        SELECT idDocumento , nombre , descripcion , idTipoArchivo , nombreArchivo , extension , archivo
+        , fecha , autorizado , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario 
+        , idEstructura , idUsuarioAutoriza , fechaAutorizado
+        FROM documento WHERE 1=1
+        <if test=" idDocumento != null">
+            AND idDocumento = #{ idDocumento , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTipoArchivo != null">
+            AND idTipoArchivo = #{ idTipoArchivo , jdbcType = VARCHAR }
+        </if>
+    </select>
+    
+    <select id="obtenerListaDocumentoActivo" resultType="mx.mc.model.DocumentoExtended" parameterType="Map" >
+        SELECT d.idDocumento , d.nombre , d.descripcion , d.idTipoArchivo , d.nombreArchivo , d.extension 
+        , d.fecha  , d.autorizado , d.activo , d.insertFecha , d.insertIdUsuario , d.updateFecha , d.updateIdUsuario 
+        , d.idEstructura , d.idUsuarioAutoriza , d.fechaAutorizado
+        , ta.nombre AS nombreTipoArchivo 
+        , concat(u1.nombre , ' ' , u1.apellidoPaterno , ' ' , u1.apellidoMaterno) AS nombreUsuarioRegistra 
+        , concat(u2.nombre , ' ' , u2.apellidoPaterno , ' ' , u2.apellidoMaterno) AS nombreUsuarioActualiza 
+        , concat(u3.nombre , ' ' , u3.apellidoPaterno , ' ' , u3.apellidoMaterno) AS nombreUsuarioAutoriza 
+        , e.nombre AS nombreEstructura
+                 FROM documento d
+                 LEFT JOIN tipoArchivo ta ON d.idTipoArchivo = ta.idTipoArchivo
+                 LEFT JOIN usuarios u1 ON d.insertIdUsuario = u1.idUsuario
+                 LEFT JOIN usuarios u2 ON d.updateIdUsuario = u2.idUsuario
+                 LEFT JOIN usuarios u3 ON d.idUsuarioAutoriza  = u3.idUsuario
+                 LEFT JOIN estructura e ON d.idEstructura = e.idEstructura
+                WHERE d.activo = 1
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null">
+            AND ( d.descripcion LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR d.nombreArchivo LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%' )
+        </if>
+        ORDER BY d.insertFecha DESC
+        LIMIT #{startingAt, jdbcType = INTEGER}, #{maxPerPage, jdbcType = INTEGER}
+    </select>
+    
+    <select id="obtenerNoTotalDocumentoActivo" resultType="Long" parameterType="Map" >
+        SELECT count(*)
+                 FROM documento d
+                 LEFT JOIN tipoArchivo ta ON d.idTipoArchivo = ta.idTipoArchivo
+                 LEFT JOIN usuarios u1 ON d.insertIdUsuario = u1.idUsuario
+                 LEFT JOIN usuarios u2 ON d.updateIdUsuario = u2.idUsuario
+                 LEFT JOIN usuarios u3 ON d.idUsuarioAutoriza  = u3.idUsuario
+                 LEFT JOIN estructura e ON d.idEstructura = e.idEstructura
+                WHERE d.activo = 1
+        <if test=" paramBusquedaReporte.cadenaBusqueda != null">
+            AND ( d.descripcion LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%'
+                OR d.nombreArchivo LIKE '%${ paramBusquedaReporte.cadenaBusqueda }%' )
+        </if>
+    </select>
+
+    <insert id="insertar" parameterType="mx.mc.model.Documento">
+        INSERT INTO documento
+        (
+        idDocumento
+        , nombre
+        , descripcion
+        , idTipoArchivo
+        , nombreArchivo
+        , extension
+        , archivo
+        , fecha
+        , autorizado
+        , activo
+        , insertFecha
+        , insertIdUsuario
+        , updateFecha
+        , updateIdUsuario
+        , idEstructura
+        , idUsuarioAutoriza
+        , fechaAutorizado
+        )
+        VALUES (
+        #{ idDocumento , jdbcType = VARCHAR }
+        , #{ nombre , jdbcType = VARCHAR }
+        , #{ descripcion , jdbcType = VARCHAR }
+        , #{ idTipoArchivo , jdbcType = INTEGER }
+        , #{ nombreArchivo , jdbcType = VARCHAR }
+        , #{ extension , jdbcType = VARCHAR }
+        , #{ archivo , jdbcType = BLOB }
+        , #{ fecha , jdbcType = TIMESTAMP }
+        , #{ autorizado , jdbcType = INTEGER }
+        , #{ activo , jdbcType = INTEGER }
+        , #{ insertFecha , jdbcType = TIMESTAMP }
+        , #{ insertIdUsuario , jdbcType = VARCHAR }
+        , #{ updateFecha , jdbcType = TIMESTAMP }
+        , #{ updateIdUsuario , jdbcType = TIMESTAMP }
+        , #{ idEstructura , jdbcType = VARCHAR }
+        , #{ idUsuarioAutoriza , jdbcType = VARCHAR }
+        , #{ fechaAutorizado , jdbcType = TIMESTAMP }
+        )
+    </insert>
+
+    <update id="actualizar" parameterType="mx.mc.model.Documento"  >
+        UPDATE documento
+        <set>
+            updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+            , updateIdUsuario = #{ updateIdUsuario , jdbcType = TIMESTAMP }
+            , autorizado = #{ autorizado , jdbcType = INTEGER }
+            , activo = #{ activo , jdbcType = INTEGER }                
+            <if test=" nombre != null"> , nombre = #{ nombre , jdbcType = VARCHAR } </if>
+            <if test=" descripcion != null"> , descripcion = #{ descripcion , jdbcType = VARCHAR } </if>
+            <if test=" idTipoArchivo != null"> , idTipoArchivo = #{ idTipoArchivo , jdbcType = INTEGER } </if>
+            <if test=" nombreArchivo != null"> , nombreArchivo = #{ nombreArchivo , jdbcType = VARCHAR } </if>
+            <if test=" extension != null"> , extension = #{ extension , jdbcType = VARCHAR } </if>
+            <if test=" archivo != null"> , archivo = #{ archivo , jdbcType = BLOB } </if>
+            <if test=" fecha != null"> , fecha = #{ fecha , jdbcType = TIMESTAMP } </if>
+            <if test=" idEstructura != null"> , idEstructura = #{ idEstructura , jdbcType = VARCHAR } </if>
+            <if test=" idUsuarioAutoriza != null"> , idUsuarioAutoriza = #{ idUsuarioAutoriza , jdbcType = VARCHAR } </if>
+            <if test=" fechaAutorizado != null"> , fechaAutorizado = #{ fechaAutorizado , jdbcType = VARCHAR } </if>
+        </set>
+        WHERE idDocumento = #{ idDocumento , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.Documento"  >
+        DELETE FROM Documento 
+        WHERE idDocumento = #{ idDocumento , jdbcType = VARCHAR }
+    </delete>
+    
+</mapper>

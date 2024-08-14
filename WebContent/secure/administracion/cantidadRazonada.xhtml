@@ -1,0 +1,377 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">                    
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="true" >
+                            <p:autoUpdate />
+                        </p:messages>
+
+                        <div class="ui-g-12 " style="border: #0088cc solid 1px; border-radius: 5px;" >
+                            
+                                <p:panelGrid style=" background: grey; padding: 10px 0px 0px  0px !important; width: 100% !important;">                                    
+                                    <p:row>
+                                        <p:column  style=" background: grey; margin:0px; padding: 0px; ">
+                                            <p:outputLabel value="Cantidad Razonada"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin: 0px; padding: 0px;" />    
+                                        </p:column>
+                                        <p:column  style=" background: grey; margin:0px; padding: 0px; ">
+                                            <p:outputLabel value="Tipo Insumo" style="color:#FFFFFF; font-weight: bold; "  /><br/>
+                                            <p:selectOneMenu style="width: 70%;" value="#{cantidadRazonadaMB.idTipoInsumo}"  >
+                                                <f:selectItems value="#{cantidadRazonadaMB.tipoInsumoList}" var="tipo" itemLabel="#{tipo.nombreCatalogo}" itemValue="#{tipo.idCatalogoGeneral}" />                                                                    
+                                                <p:ajax event="change" listener="#{cantidadRazonadaMB.obtenerInsumoCantidadRazonada}" update="mainForm:tblInsumoRazonada" />
+                                            </p:selectOneMenu>
+                                        </p:column>
+                                        <p:column colspan="2"  style=" background: grey; margin:0px; padding: 0px; ">
+                                            <p:outputLabel value="Insumo"  style="color:#FFFFFF; font-weight: bold; " /><br/>
+                                            <p:autoComplete  size="45" id="insumo"
+                                                             value="#{cantidadRazonadaMB.medicamento}"  autocomplete="on" 
+                                                             completeMethod="#{cantidadRazonadaMB.autoComplete}"  
+                                                             minQueryLength="3"  forceSelection="true" 
+                                                             var="insumo"  required="true" requiredMessage="El Insumo es requerido"
+                                                             itemValue="#{insumo.idMedicamento}" 
+                                                             itemLabel="#{insumo.nombreCorto}"
+                                                             converter="medicamentoConverter" tabindex="2" >
+                                                <p:ajax event="itemSelect" listener="#{cantidadRazonadaMB.handleSelect}" update="btnAdd" ></p:ajax>
+                                                <p:ajax event="itemUnselect" listener="#{cantidadRazonadaMB.handleUnSelect}" update="btnAdd" ></p:ajax>
+                                                <p:column style="width: 20px; font-size: small;" width="50px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave Institucional" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insumo.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 600px;" width="600px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insumo.nombreCorto}" style=" font-size: small;" />
+                                                </p:column>                                    
+                                            </p:autoComplete>
+                                        </p:column>
+                                        <p:column style=" background: grey; margin:0px; padding: 0px; " >
+                                            <p:outputPanel  >
+                                                <p:outputLabel value="Cant. PC"  style="color:#FFFFFF; font-weight: bold; " /><br/>
+                                                <p:spinner id="cantPC" placeholder="Cantidad Presentación comercial" min="0" tabindex="3"  
+                                                           value="#{cantidadRazonadaMB.cantPC}" size="5" >
+                                                    <p:keyFilter regEx="#{cantidadRazonadaMB.regexNumber}"  />
+                                                </p:spinner>
+                                            </p:outputPanel> 
+                                        </p:column>
+                                        <p:column style=" background: grey; margin:0px; padding: 0px; ">
+                                            <p:outputPanel  >
+                                                <p:outputLabel value="Periodo"  style="color:#FFFFFF; font-weight: bold; "/><br/>
+                                                <p:spinner id="periodoPC" placeholder="Reorder" min="0" tabindex="4"   size="5" value="#{cantidadRazonadaMB.periodoPC}" >
+                                                    <p:keyFilter regEx="#{cantidadRazonadaMB.regexNumber}"  />
+                                                </p:spinner>
+                                            </p:outputPanel>
+                                        </p:column>
+                                        <p:column style=" background: grey; margin:0px; padding: 0px; ">
+                                            <p:outputPanel>  
+                                                <p:outputLabel value="Cant. PU"  style="color:#FFFFFF; font-weight: bold; "/><br/>
+                                                <p:spinner id="cantPU" placeholder="Cantidad Presentación Unitario" min="0" tabindex="5"  size="5" value="#{cantidadRazonadaMB.cantPU}" >
+                                                    <p:keyFilter regEx="#{cantidadRazonadaMB.regexNumber}"  />
+                                                </p:spinner>
+                                            </p:outputPanel>
+                                        </p:column>
+                                        <p:column style=" background: grey; margin:0px; padding: 0px; ">
+                                           <p:outputPanel>
+                                                <p:outputLabel value="Periodo PU"  style="color:#FFFFFF; font-weight: bold; "/><br/>
+                                                <p:spinner id="periodoPU" placeholder="Periodo Presentación Unidosis" min="0" tabindex="5" size="5" value="#{cantidadRazonadaMB.periodoPU}" >
+                                                    <p:keyFilter regEx="#{cantidadRazonadaMB.regexNumber}"  />
+                                                </p:spinner>
+                                            </p:outputPanel> 
+                                        </p:column>
+                                    </p:row>
+                                    <p:row>
+                                        <p:column style=" background: grey; margin:0px; padding: 0px; "></p:column>
+                                        <p:column style=" background: grey; margin:0px; padding: 0px; ">
+                                            <p:outputLabel value="Restrictiva"  style="color:#FFFFFF; "/><br/>
+                                            <p:selectBooleanButton id="restrictiva" value="#{cantidadRazonadaMB.restrictiva}" onLabel="SI"  offLabel="NO" style="width:40px" />
+                                        </p:column>
+                                        <p:column colspan="4" style=" background: grey; margin:0px; padding: 0px; ">
+                                            <p:outputLabel value="Comentarios"  style="color:#FFFFFF; "/><br/>
+                                            <p:inputTextarea id="coment" value="#{cantidadRazonadaMB.comentarios}" rows="1"  class="textArea-Sum"  tabindex="2" /> 
+                                        </p:column>
+                                        <p:column style=" background: grey; margin:0px; padding: 0px; ">
+                                            <p:outputLabel value="Acción"  style="color:#FFFFFF; font-weight: bold; "/><br/>
+                                            <p:commandButton class="btnNew" value="Agregar"  icon="fa fa-plus" rendered="#{cantidadRazonadaMB.permiso.isPuedeCrear()}"
+                                                     actionListener="#{cantidadRazonadaMB.newInsumoCantidadRazonada}" onclick="PF('statusProcess').show();" 
+                                                     id="btnAdd"    oncomplete="PF('statusProcess').hide();" update="mainForm:insumo,mainForm:cantPC,mainForm:periodoPC,mainForm:cantPU,mainForm:periodoPU,mainForm:restrictiva,mainForm:coment,mainForm:tblInsumoRazonada,mainForm:btnAdd" 
+                                                     tabindex="6" styleClass="btnMusAzul"
+                                                     ajax="true" style=" margin: 5px 0; "  />
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                                <br></br>
+                                <p:commandButton class="btnNew" value="Agregar Layout" disabled="#{cantidadRazonadaMB.btnNew}" icon="fa fa-plus" 
+                                             actionListener="#{cantidadRazonadaMB.agregarLayout}" onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide(); PF('mdlLayout').show();"  rendered="#{cantidadRazonadaMB.permiso.isPuedeProcesar()}"
+                                             ajax="true" update="formLayout"  style=" margin: 5px 0;"  />
+                            <div class="ui-g-12">
+
+                                <p:dataTable id="tblInsumoRazonada" widgetVar="tblInsumoRazonada"
+                                             var="item" editable="true" 
+                                             value="#{cantidadRazonadaMB.cantidadRazonadaList}"
+                                             styleClass="styleEventosPlanPrestacion" reflow="true"
+                                             emptyMessage="No se econtraron Registros"
+                                             style="margin-bottom:5px;" 
+                                             scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" >
+                                    <p:ajax event="rowEdit" listener="#{cantidadRazonadaMB.onRowEdit}" update="tblInsumoRazonada" />
+                                    <p:ajax event="rowEditCancel" listener="#{cantidadRazonadaMB.onRowCancel}"  update="tblInsumoRazonada" />
+                                    <p:ajax event="rowEditInit" listener="#{cantidadRazonadaMB.onRowEditInit}" />
+
+                                    <p:columnGroup type="header">
+                                        <p:row>
+                                            <p:column rowspan="2" headerText="Clave" sortBy="#{item.claveInstitucional}" filterBy="#{item.claveInstitucional}" style="text-align: left;width: 12%; padding-left: 10px!important;"/>
+                                            <p:column rowspan="2" headerText="Descripción" sortBy="#{item.insumo}" filterBy="#{item.insumo}" style="text-align: left;width: 30%; padding-left: 10px!important;"/>
+                                            <p:column colspan="2" headerText="Presentación Comercial" style="text-align: center !important;width: 12%; "/>
+                                            <p:column colspan="2" headerText="Presentación Unitaria" style="text-align: center !important;width: 12%; "/>
+                                            <p:column rowspan="2" headerText="Restrictiva" style="text-align: left !important;width: 6%; padding-left: 10px!important; "/>
+                                            <p:column rowspan="2" headerText="Comentarios" style="text-align: left !important;width: 7%; padding-left: 10px!important; "/>
+                                            <p:column rowspan="2" headerText="Activo"  sortBy="#{item.activo}" style="text-align: left !important;width: 6%; padding-left: 10px!important; "/>
+                                            <p:column rowspan="2" headerText="Acciones" style="text-align: left !important;width: 7%; padding-left: 10px!important; "/>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column headerText="Cantidad" sortBy="#{item.cantidadPresentacionComercial}" style="text-align: left !important;width: 7%; padding-left: 10px!important; "/>
+                                            <p:column headerText="Periodo" sortBy="#{item.periodoPresentacionComercial}" style="text-align: left !important;width: 5%; padding-left: 10px!important; "/>
+                                            <p:column headerText="Cantidad" sortBy="#{item.cantidadDosisUnitaria}" style="text-align: left !important;width: 7%; padding-left: 10px!important; " />
+                                            <p:column headerText="Periodo"  sortBy="#{item.periodoDosisUnitaira}"  style="text-align: left !important;width: 5%; padding-left: 10px!important; "/>
+                                        </p:row>
+                                    </p:columnGroup>
+                                    <p:column>
+                                        <h:outputText value="#{item.claveInstitucional}" title="#{item.claveInstitucional}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column>
+                                        <h:outputText value="#{item.insumo}" title="#{item.insumo}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column>
+                                        <p:cellEditor>
+                                            <f:facet name="output"><h:outputText value="#{item.cantidadPresentacionComercial}"   class="altoColumn" /></f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText value="#{item.cantidadPresentacionComercial}"  size="6" >
+                                                    <p:keyFilter regEx="#{cantidadRazonadaMB.regexNumber}"  />                                           
+                                                </p:inputText>
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+
+                                    <p:column>
+                                        <p:cellEditor>
+                                            <f:facet name="output"><h:outputText value="#{item.periodoPresentacionComercial}"  class="altoColumn" /></f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText value="#{item.periodoPresentacionComercial}" size="6">
+                                                    <p:keyFilter regEx="#{cantidadRazonadaMB.regexNumber}"  />                                       
+                                                </p:inputText>
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+
+                                    <p:column>
+                                        <p:cellEditor>
+                                            <f:facet name="output"><h:outputText value="#{item.cantidadDosisUnitaria}" class="altoColumn" /></f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{item.cantidadDosisUnitaria}"   size="6" >
+                                                    <p:keyFilter regEx="#{cantidadRazonadaMB.regexNumber}"  />
+                                                </p:inputText>
+                                            </f:facet>
+                                        </p:cellEditor>                                            
+                                    </p:column>
+
+                                    <p:column>
+                                        <p:cellEditor>
+                                            <f:facet name="output"><h:outputText value="#{item.periodoDosisUnitaira}" class="altoColumn" /></f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{item.periodoDosisUnitaira}"   size="6" >
+                                                    <p:keyFilter regEx="#{cantidadRazonadaMB.regexNumber}"  />
+                                                </p:inputText>
+                                            </f:facet>
+                                        </p:cellEditor>                                            
+                                    </p:column>
+                                    
+                                    <p:column>
+                                        <p:cellEditor>
+                                            <f:facet  name="output"><h:outputText value="#{item.restrictiva==1 ? 'Si' : 'No' }" class="altoColumn" /></f:facet>
+                                            <f:facet name="input"> 
+                                                <p:selectOneButton value="#{item.restrictiva}" >
+                                                    <f:selectItem itemLabel="Si" itemValue="1" />
+                                                    <f:selectItem itemLabel="No" itemValue="0" />
+                                                </p:selectOneButton>
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+                                    
+                                    <p:column>
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText title="#{item.comentarios}" class="fa fa-commenting" />
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{item.comentarios}"   size="6" >
+                                                </p:inputText>
+                                            </f:facet>
+                                        </p:cellEditor>                                            
+                                    </p:column>
+                                    
+                                    <p:column  id="act" >
+                                        <p:cellEditor>
+                                            <f:facet  name="output">
+                                                <h:outputText value="#{item.activo ? 'Si' : 'No' }" class="altoColumn" />
+                                            </f:facet>
+                                            <f:facet name="input"> 
+                                                <p:selectOneButton value="#{item.activo}" >
+                                                    <f:selectItem itemLabel="Si" itemValue="true" />
+                                                    <f:selectItem itemLabel="No" itemValue="false" />
+                                                </p:selectOneButton>
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+
+                                    <p:column>
+                                        <p:commandLink title="#{item.activo ? 'Desactivar' : 'Activar'}" id="btnStatus"
+                                                       actionListener="#{cantidadRazonadaMB.cambiarStatusCantRzn(item.idCantidadRazonada, item.activo)}" 
+                                                       rendered="#{cantidadRazonadaMB.permiso.puedeProcesar}"
+                                                       onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update="tblInsumoRazonada" >
+                                            <i class="#{item.activo ? 'fa fa-toggle-on' : 'fa fa-toggle-off'} iconMusAzul" />                                            
+                                        </p:commandLink> &nbsp;
+                                        <p:rowEditor  styleClass="iconMusAzul"/>                                                                               
+                                    </p:column>
+                                    
+                                    <f:facet name="footer" >
+                                        <p:outputLabel style="font-size: 1em !important; color: #000;">
+                                            #{cantidadRazonadaMB.numeroRegistros} Insumos han sido encontrados
+                                        </p:outputLabel> 
+                                    </f:facet>
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </h:form>
+
+                    <p:dialog header="CANTIDAD RAZONADA DE FORMA MASIVA"
+                              widgetVar="mdlLayout"
+                              closeOnEscape="true" width="72%"
+                              closable="true"   styleClass="autoWidthDialog"                     
+                              modal="true" responsive="true"  >                             
+                        <h:form id="formLayout" style="padding: 0px;"> 
+                            <p:messages id="msjLayout" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:fileUpload  dragDropSupport="false" uploadLabel="Subir Archivo" cancelLabel="Cancelar" label="Seleccionar Archivo" 
+                                           allowTypes="/(\.|\/)(xlsx|xls)$/" invalidFileMessage="Tipo de archivo invalido" onstart="PF('statusProcess').show();" 
+                                           oncomplete="PF('statusProcess').hide();"
+                                           fileUploadListener="#{cantidadRazonadaMB.layoutFileUpload}"  mode="advanced" update="formLayout"  />
+                            <p:outputPanel  rendered="#{cantidadRazonadaMB.noProcess}" >
+                                <p:dataTable  id="tblNoProcessEstructura"
+                                              var="item" editable="true"  reflow="true"
+                                              emptyMessage="Sin registros"
+                                              value="#{cantidadRazonadaMB.cantidadRazonadaLayoutList}"
+                                              styleClass="styleEventosPlanPrestacion" 
+                                              style="margin-bottom:5px;" 
+                                              scrollRows="50" scrollable="true" liveScroll="true" scrollHeight="350" > 
+
+                                    <f:facet name="header" >
+                                        <h:outputText style="color: #000;" value="Resumén de datos Procesados" />
+                                    </f:facet>
+                                    <p:columnGroup type="header">
+                                        <p:row>
+                                            <p:column rowspan="2" headerText="" style="width: 3%" />
+                                            <p:column rowspan="2" headerText="Clave" style="text-align: center;width: 14%" />
+                                            <p:column rowspan="2" headerText="Descripción" style="text-align: left;width: 30%" />
+                                            <p:column colspan="2" headerText="Pres. Comercial" style="text-align: left;width: 14%;" />
+                                            <p:column colspan="2" headerText="Pres. Unitaria" style="text-align: left;width: 14%;" />
+                                            <p:column rowspan="2" headerText="Motivo" style="text-align: left;width: 19%;" />
+                                            <p:column rowspan="2" headerText="Estatus" style="text-align: left;width: 6%;" />
+                                        </p:row>
+                                        <p:row>
+                                            <p:column headerText="Cantidad" style="text-align: left;width: 6%;" />
+                                            <p:column headerText="Periodo" style="text-align: left;width: 6%;" />
+                                            <p:column headerText="Cantidad" style="text-align: left;width: 6%;" />
+                                            <p:column headerText="Periodo" style="text-align: left;width: 6%;" />
+                                        </p:row>
+                                    </p:columnGroup>   
+                                    <p:column>
+                                        <p:rowToggler rendered="#{item.list}" />
+                                    </p:column>
+                                    <p:column>                                        
+                                        <h:outputText value="#{item.claveInstitucional}" title="#{item.claveInstitucional}" class="altoColumn"  /> 
+                                    </p:column>
+
+                                    <p:column>
+                                        <h:outputText value="#{item.insumo}" title="#{item.insumo}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column>
+                                        <h:outputText value="#{item.cantidadPresentacionComercial}" title="#{item.cantidadPresentacionComercial}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column>
+                                        <h:outputText value="#{item.periodoPresentacionComercial}" title="#{item.periodoPresentacionComercial}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column>
+                                        <h:outputText value="#{item.cantidadDosisUnitaria}" title="#{item.cantidadDosisUnitaria}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column>
+                                        <h:outputText value="#{item.periodoDosisUnitaira}" title="#{item.periodoDosisUnitaira}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column>
+                                        <h:outputText value="#{item.motivo}" title="#{item.motivo}" class="altoColumn" />
+                                    </p:column>
+
+                                    <p:column>
+                                        <p:outputPanel rendered="#{item.process}" > <i class="fa fa-check" style="font-size: 2em"></i></p:outputPanel>
+                                        <p:outputPanel rendered="#{!item.process}" > <i class="fa fa-times" style="font-size: 2em"></i></p:outputPanel>
+                                    </p:column>
+                                    <p:rowExpansion rendered="#{item.list}">
+                                        <p:dataTable var="env" id="tblInsumoList"
+                                                     value="#{item.insumosList}"
+                                                     scrollable="true" 
+                                                     emptyMessage="" >
+
+                                            <p:column headerText="Clave " style="width: 25%">
+                                                <h:outputText value="#{env.claveInstitucional}" />
+                                            </p:column>
+
+                                            <p:column headerText="Insumo" style="width:25%" rendered="true">
+                                                <h:outputLabel value="#{env.nombreCorto}" >
+                                                </h:outputLabel>
+                                            </p:column> 
+
+                                        </p:dataTable>
+                                    </p:rowExpansion>
+                                </p:dataTable>
+                            </p:outputPanel>
+                            <p:panel class="pnlActions">
+                                <p:commandButton class="btnNew" value="Aceptar" 
+                                                 actionListener="#{cantidadRazonadaMB.obtenerInsumoCantidadRazonada}" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide(); PF('mdlLayout').hide();"
+                                                 ajax="true" update="mainForm:tblInsumoRazonada"  style=" margin: 5px 0; "  />
+                            </p:panel>
+                        </h:form>
+                    </p:dialog>  
+
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

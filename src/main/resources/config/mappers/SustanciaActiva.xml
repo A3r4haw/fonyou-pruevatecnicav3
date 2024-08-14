@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.SustanciaActivaMapper">
+    
+    <select id="obtenerTodo" resultType="mx.mc.model.SustanciaActiva" parameterType="mx.mc.model.SustanciaActiva" >
+        SELECT idSustanciaActiva, nombreSustanciaActiva, activa, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM sustanciaActiva
+        WHERE 1=1
+        AND activa = 1
+    </select>
+    <select id="obtenerPorNombre" resultType="mx.mc.model.SustanciaActiva"  parameterType="Map" >
+        SELECT idSustanciaActiva, nombreSustanciaActiva, activa, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM sustanciaActiva
+        <where>
+            <if test="nombreSustanciaActiva != null">  nombreSustanciaActiva  LIKE '%${nombreSustanciaActiva}%'  </if>
+        </where>
+    </select>
+    <select id="obtenerPorId" resultType="mx.mc.model.SustanciaActiva"  parameterType="Map" >
+        SELECT idSustanciaActiva, nombreSustanciaActiva, activa, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM sustanciaActiva
+        <where>
+            <if test="idSustanciaActiva != null">  idSustanciaActiva  = #{idSustanciaActiva,jdbcType= INTEGER}  </if>
+            AND activa = 1
+        </where>
+    </select>
+    <select id="obtenerSustanciaPorNombre" resultType="mx.mc.model.SustanciaActiva"  parameterType="Map" >
+        SELECT idSustanciaActiva, nombreSustanciaActiva, activa, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        FROM sustanciaActiva
+        <where>
+            <if test="nombreSustanciaActiva != null">  nombreSustanciaActiva  = #{nombreSustanciaActiva}  </if>
+        </where>
+        limit 1;
+    </select>
+    
+    <select id="obtenerSiguienteId" parameterType="Map" resultType="Integer">
+        SELECT MAX(idSustanciaActiva) + 1 FROM sustanciaActiva;
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.SustanciaActiva">
+        INSERT INTO sustanciaActiva (
+            idSustanciaActiva, nombreSustanciaActiva, activa, insertFecha, insertIdUsuario, updateFecha, updateIdUsuario
+        ) VALUES (
+            #{ idSustanciaActiva, jdbcType = INTEGER }
+            ,#{ nombreSustanciaActiva, jdbcType = VARCHAR }
+            ,#{ activa, jdbcType = INTEGER }
+            ,#{ insertFecha, jdbcType = TIMESTAMP }
+            ,#{ insertUsuarioId, jdbcType = VARCHAR }
+            ,#{ updateFecha, jdbcType = TIMESTAMP }
+            ,#{ updateUsuarioId, jdbcType = VARCHAR }
+        )
+    </insert>
+    
+</mapper>

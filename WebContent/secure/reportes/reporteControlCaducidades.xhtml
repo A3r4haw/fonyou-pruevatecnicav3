@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Reporte Control Caducidades</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <ui:remove><f:metadata>
+                                <f:viewParam name="Caducidad" />
+                            </f:metadata></ui:remove>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="Reporte Control de Caducidades" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3" >
+                                            <p:outputLabel style="margin-right: 10px;" value="Fecha inicio" />
+                                            <br/>
+
+                                            <p:calendar id="txtFechaInicio" value="#{controlCaducidadMB.paramBusquedaReporte.fechaInicio}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                                        mindate="" maxdate="#{controlCaducidadMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"
+                                                        disabled="false" 
+                                                        
+                                                        />                                                                                                                                 
+                                            
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-3"  >
+                                            <p:outputLabel style="margin-right: 10px;" value="Fecha Fin" />
+                                            <br/>
+                                            <p:calendar id="txtFechaFin" value="#{controlCaducidadMB.paramBusquedaReporte.fechaFin}" 
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy"
+                                                        mindate="" maxdate="#{controlCaducidadMB.fechaActual}"
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade"
+                                                        disabled="false"                                                        
+                                                        >
+                                            <p:ajax event="dateSelect" listener="#{controlCaducidadMB.obtenerFechaFinal()}" update="txtFechaFin"/>
+                                            </p:calendar>                                            
+                                            
+                                        </div>
+                                        
+                                         <div class="ui-g-12 ui-md-6 ui-lg-3">
+                                            <p:outputLabel style="margin-right: 10px;font-weight: bold;" value="Almacén / Sub-Almacén" />
+                                            <br/>
+                                            <p:outputLabel style="margin-right: 10px;"
+                                                           value="#{controlCaducidadMB.estructuraUsuario.nombre}" 
+                                                           rendered="#{!controlCaducidadMB.administrador}"/>
+                                            <p:selectOneMenu id="comboAlmacenSubAlmacen" 
+                                                             value="#{controlCaducidadMB.idEstructura}"
+                                                             disabled="#{!controlCaducidadMB.permiso.puedeVer}"
+                                                             style="vertical-align: middle; margin-right: 10px;"
+                                                             rendered="#{controlCaducidadMB.administrador}"
+                                                             >
+                                                <f:selectItem itemLabel="Todos" itemValue="" />					                                         
+                                                <f:selectItems value="#{controlCaducidadMB.listAlmacenesSubAlm}"
+                                                               var="almacen"
+                                                               itemValue="#{almacen.idEstructura}"
+                                                               itemLabel="#{almacen.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+
+                                        <div class="ui-g-6 ui-md-6 ui-lg-3" style="margin-top: 15px;">
+                                            <p:commandButton value="Generar Reporte"
+                                                             onclick="PF('statusProcess').show();"
+                                                             actionListener="#{controlCaducidadMB.consultar}"
+                                                             update=":formTablaCaducidad, :mainForm:msg"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle"  
+                                                             style="margin-left: 50px"
+                                                             styleClass="btnMusAzul"
+                                                             /> 
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-20 ui-md-6 ui-lg-4" style="height:60px; float: left; margin-right: 40px; ">
+
+                                            <p:outputLabel  style="margin-right: 10px;" value="Nombre de Insumo" />
+                                            <br/>
+
+                                            <p:autoComplete id="txtInsumo" 
+                                                            multiple="true"
+                                                            class="autoComplete-Sum" 
+                                                            styleClass="autoComplete-Sum" 
+                                                            panelStyle="autoComplete-Sum" 
+                                                            inputStyleClass="autoComplete-Sum" 
+                                                            value="#{controlCaducidadMB.paramBusquedaReporte.listInsumos}"
+                                                            completeMethod="#{controlCaducidadMB.autocompleteInsumo}"
+                                                            minQueryLength="3"
+                                                            queryDelay="500" 
+                                                            maxResults="10" 
+                                                            forceSelection="true" 
+                                                            cacheTimeout="0" 
+                                                            var="insum" 
+                                                            placeholder="Filtro Insumos" 
+                                                            cache="false"
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{insum.nombreCorto}" itemValue="#{insum}" 
+                                                            converter="musGenericConverter"
+                                                            disabled="#{!controlCaducidadMB.permiso.puedeEditar}" 
+                                                            scrollHeight = "350"
+                                                            >
+                                               <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                            
+                                        </div>
+                                            
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+
+                                            <p:menuButton value="Exportar Documento" 
+                                                          style="margin-top: 15px; margin-left: 20px">
+                                                <p:menuitem value="Formato PDF" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                              
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm"                                                             
+                                                            actionListener="#{controlCaducidadMB.imprimeReporteControlCaducidad}"/> 
+                                                
+                                                <p:menuitem value="Formato EXCEL"  
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false"
+                                                            actionListener="#{controlCaducidadMB.generaExcelControlCaducidad}"/>
+                                            </p:menuButton>                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form><br />
+                    <h:form id="formTablaCaducidad" >
+                        <style type="text/css">
+                            .ui-datatable-header {
+                                height: 20px
+                            }
+                        </style>
+                        <p:dataTable emptyMessage="" rows="10"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"                                         
+                                     paginatorPosition="bottom"
+                                     value="#{controlCaducidadMB.controlCaducidadLazy}" var="result" 
+                                     lazy="true" id="resultadosDT" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="font-size: x-small !important; width: 120% !important;">
+                       
+                            
+                            <p:column class="" style="width: 4%" headerText="Fecha Actual">
+                                <h:outputText value="#{result.fechaElaboracion}">
+                                    <f:convertDateTime pattern="MM/dd/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column class="" style="width: 4%" headerText="Fecha Caducidad">
+                                <h:outputText value="#{result.fechaCaducidad}">
+                                    <f:convertDateTime pattern="MM/dd/yyyy" />
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column class="" style="width: 5%" headerText="Clave Institucional" >
+                                <h:outputText value="#{result.claveArticulo}">
+                                    </h:outputText>
+                            </p:column>
+                            
+                            <p:column class="" style="width: 4%" headerText="Lote">
+                                <h:outputText value="#{result.lote}">
+                                    </h:outputText>
+                            </p:column>
+
+                            <p:column class="" style="width: 3%" headerText="Unidad">
+                                <h:outputText value="#{result.unidad}">
+                                    </h:outputText>
+                            </p:column>           
+
+                            <p:column class="" style="width: 3%" headerText="Existencia">
+                                <h:outputText value="#{result.existenciaFisica}">
+                                    </h:outputText>
+                            </p:column>
+
+                            <p:column class="" style="width: 3%" headerText="Consumo">
+                                <h:outputText value="#{result.consumo}">
+                                    </h:outputText>
+                            </p:column>
+                            
+                            <p:column class="" style="width: 15%" headerText="Descripción">
+                                <h:outputText value="#{result.descripcion}">
+                                    </h:outputText>
+                            </p:column>
+
+                            <p:column class="" style="width: 5%" headerText="Proveedor clave">
+                                <h:outputText value="#{result.proveedorClave}">
+                                    </h:outputText>
+                            </p:column>                            
+
+                            <p:column class="" style="width: 5%" headerText="Proveedor nombre">
+                                <h:outputText value="#{result.nombreProveedor}">
+                                    </h:outputText>
+                            </p:column>
+                            
+                            <p:column class="" style="width: 5%" headerText="No. notificación">
+                                <h:outputText value="#{result.noNotificacion}">
+                                    </h:outputText>
+                            </p:column>
+                 
+                        </p:dataTable>
+
+                    </h:form>		
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes" 
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>

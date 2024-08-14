@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="border: none;">
+                    <h:form id="mainForm">                    
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" closeOnEscape="true" >
+                            <p:commandButton value="Si" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                            <p:commandButton value="No" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        </p:confirmDialog>
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            <p:outputLabel value="Reacciones de Hipersensibilidad"  style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;" />                            
+                            <p:inputText id="textSearch" style="margin-top:20px;width: 40%!important;" 
+                                         value="#{hipersensibilidadMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar Alergías por Paciente...." />
+                            <i class="iconSearch">
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>                                
+                            </i>                            
+                            <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{hipersensibilidadMB.buscarReaccionesHipersensibilidades()}"
+                                             update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                             oncomplete="PF('statusProcess').hide();" style=" margin-left: 20px; margin-bottom: 8px;" />
+                        </div>
+                        <p:commandButton class="btnNew" value="Nuevo Registro" icon="fa fa-file-o" rendered="#{hipersensibilidadMB.permiso.puedeCrear}"
+                                         onclick="PF('statusProcess').show();" actionListener="#{hipersensibilidadMB.nuevaReaccionHipersensiblidad()}" 
+                                         oncomplete="PF('statusProcess').hide(); PF('mdlNuevaReaccionHipersensibilidad').show();" update=":frmNuevaReaccionHipersensibilidad"
+                                         ajax="true"  style=" margin: 5px 0; " styleClass="btnMusAzul" />  &nbsp;&nbsp;
+                        <br/>
+                        <p:messages id="validaMsg" class="validaMsg" globalOnly="true" closable="true" showDetail="false" >
+                            <p:autoUpdate />
+                        </p:messages>
+                        
+                        <p:dataTable emptyMessage="No se encontraron registros" rows="10"
+                                     paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"                                    
+                                     paginator="true"  reflow="true"                               
+                                     paginatorPosition="bottom" widgetVar="tblReaccionHipersensibilidad" 
+                                     value="#{hipersensibilidadMB.hipersensibilidadLazy}" var="item" 
+                                     lazy="true" id="tblReaccionHipersensibilidad" scrollable="true" scrollWidth="100%" scrollHeight="350"
+                                     style="margin-bottom:5px; text-align: center;" selectionMode="single" 
+                                     selection="#{hipersensibilidadMB.hipersensibilidadSelect}"
+                                     rowKey="#{item.idHipersensibilidad}" rowIndexVar="row">                                                                        
+                            
+                            <p:column style="text-align: left;"  headerText="Fecha"  width="15%" sortBy="#{item.fecha}">
+                                <h:outputText value="#{item.fecha}" class="" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy HH:mm a" />
+                                </h:outputText>    
+                            </p:column>
+
+                            <p:column style="text-align: left !important; "  headerText="Paciente"  width="25%" sortBy="#{item.nombrePaciente}">
+                                <h:outputText value="#{item.nombrePaciente}"   class="" />
+                            </p:column>                            
+
+                            <p:column style="text-align: left;"  headerText="Tipo Alergia"  width="15%" sortBy="#{item.tipoAlergia}">
+                                <h:outputText value="#{item.tipoAlergia}" class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Alteración"  width="20%" sortBy="#{item.nombreAlteracion}">
+                                <h:outputText value="#{item.nombreAlteracion}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Registró"  width="15%" sortBy="#{item.nombreRegistro}">
+                                <h:outputText value="#{item.nombreRegistro}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;"  headerText="Riesgo"  width="10%" sortBy="#{item.riesgo}">
+                                <h:outputText value="#{item.riesgo}"  class="" />
+                            </p:column>
+                            <p:column style="text-align: left;" headerText="Acciones"  width="6%">
+                                <p:commandLink title="Editar"  actionListener="#{hipersensibilidadMB.obtenerReaccionHipersensibilidad(item.idHipersensibilidad)}"
+                                                          onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();PF('mdlNuevaReaccionHipersensibilidad').show();" 
+                                                          update=":frmNuevaReaccionHipersensibilidad" >
+                                        <i class="fa fa-edit" />
+                                    </p:commandLink>&nbsp;&nbsp;
+                                <p:commandLink title="Eliminar"  actionListener="#{hipersensibilidadMB.deleteReaccionHipersensibilidad(item.idHipersensibilidad)}"                                               
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":mainForm:tblReaccionHipersensibilidad" 
+                                        rendered="#{hipersensibilidadMB.permiso.puedeEliminar}" >
+                                    <i class="fa fa-trash-o iconMusAzul" />
+                                    <p:confirm header="Eliminación de Reacción de Hipersensibilidad" message="Está seguro que desea eliminar la reacción de hipersensibilidad ?" icon="ui-icon-alert"  />
+                                </p:commandLink>&nbsp;
+                            </p:column>
+                        </p:dataTable>
+                       
+                    </h:form>
+                  
+                    <p:dialog header="Registro de Reacción de Hipersensibilidad"
+                              widgetVar="mdlNuevaReaccionHipersensibilidad" 
+                              closeOnEscape="true" modal="true" resizable="false" 
+                              closable="true"
+                              style="font-size:xx-small !important; max-height:700px;overflow:auto;" width="64%"
+                              >                        
+                        <h:form id="frmNuevaReaccionHipersensibilidad" enctype="multipart/form-data">
+                            <p:messages globalOnly="false" closable="true" showDetail="false" >
+                                <p:autoUpdate />
+                            </p:messages>                            
+                            <p:panelGrid>
+                                <p:row>
+                                     <p:column>
+                                        <p:outputLabel value="Fecha: " class="plabel"  />
+                                    </p:column>
+                                    <p:column>
+                                        <p:calendar id="txtFecha" value="#{hipersensibilidadMB.hipersensibilidadSelect.fecha}" disabled="#{hipersensibilidadMB.editar}"                                                                                                                
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                                        mindate="#{hipersensibilidadMB.fechaActual}" styleClass="ui-calendar-inputStyle"                                                     
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade" tabindex="1"/>  
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Folio: "  class="plabel" />
+                                    </p:column>
+                                    <p:column> 
+                                        <p:inputText id="folio"  disabled="true" value="#{hipersensibilidadMB.hipersensibilidadSelect.folio}" style="width: 280px;" tabindex="2"/> 
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Tipo: "  class="plabel" />
+                                    </p:column>
+                                    <p:column>    
+                                        <p:selectOneMenu style="width: 218px;vertical-align: middle;margin-right: 10px;" value="#{hipersensibilidadMB.idTipoHipersensibilidad}" 
+                                                            filter="true" filterPlaceholder="Tipo Hipersensibilidad" tabindex="3">                                            
+                                            <f:selectItem itemLabel="Seleccionar un tipo" itemValue="" />
+                                            <f:selectItems value="#{hipersensibilidadMB.listaTipoHipersensibilidades}" var="tipoHiper" itemLabel="#{tipoHiper.nombreTipoHiper}" itemValue="#{tipoHiper.idTipoHipersensibilidad}" />
+                                        </p:selectOneMenu>
+                                    </p:column>                                    
+                                    <p:column>
+                                        <p:outputLabel value="Alteraciones: "  class="plabel" />
+                                    </p:column>
+                                    <p:column>    
+                                        <p:selectOneMenu style="width: 268px;vertical-align: middle;margin-right: 10px;" value="#{hipersensibilidadMB.idAlteracion}" 
+                                                            filter="true" filterPlaceholder="Alteración" tabindex="4">                                            
+                                            <f:selectItem itemLabel="Seleccionar una alteración" itemValue="" />
+                                            <f:selectItems value="#{hipersensibilidadMB.listaAlteraciones}" var="alteracion" itemLabel="#{alteracion.nombreAlteracion}" itemValue="#{alteracion.idAlteracion}" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Tipo Alergeno: "  class="plabel" />
+                                    </p:column>
+                                    <p:column>    
+                                        <p:selectOneMenu style="width: 218px;vertical-align: middle;margin-right: 10px;" value="#{hipersensibilidadMB.idTipoAlergeno}" 
+                                                            filter="true" filterPlaceholder="Tipo Alergeno" tabindex="5">                                            
+                                            <f:selectItem itemLabel="Seleccionar un Tipo Alergeno" itemValue="" />
+                                            <f:selectItems value="#{hipersensibilidadMB.listaTipoAlergenos}" var="tipoAlergeno" itemLabel="#{tipoAlergeno.nombreTipoAlergeno}" itemValue="#{tipoAlergeno.idTipoAlergeno}" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Alergeno: "  class="plabel" />
+                                    </p:column>
+                                    <p:column>    
+                                        <p:selectOneMenu style="width: 268px;vertical-align: middle;margin-right: 10px;" value="#{hipersensibilidadMB.idAlergeno}" 
+                                                            filter="true" filterPlaceholder="Alergeno" tabindex="6">                                            
+                                            <f:selectItem itemLabel="Seleccionar un Alergeno" itemValue="" />
+                                            <f:selectItems value="#{hipersensibilidadMB.listaAlergenos}" var="alergeno" itemLabel="#{alergeno.nombreAlergeno}" itemValue="#{alergeno.idAlergeno}" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Paciente: "  class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:autoComplete id="auto-paciente" value="#{hipersensibilidadMB.pacienteSelected}"
+                                                            completeMethod="#{hipersensibilidadMB.autoCompletePaciente}"
+                                                            minQueryLength="4" 
+                                                            cache="false"
+                                                            forceSelection="true"
+                                                            var="paciente" 
+                                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}"
+                                                            itemValue="#{paciente}" 
+                                                            converter="musGenericConverter"
+                                                            placeholder="Buscar por nombre, rfc, derechohabiencia..."
+                                                            emptyMessage="No se encontro registro." 
+                                                            size="30"
+                                                            tabindex="7"
+                                                            scrollHeight = "250">
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" style="font-size: small;" />
+                                                </p:column>
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="RFC" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.rfc}" style="font-size: x-small;" />
+                                                </p:column>
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Cve Derechohabiencia" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.claveDerechohabiencia}" style="font-size: x-small;" />
+                                                </p:column>
+                                                <p:column style="font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Número Paciente" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.pacienteNumero}" style="font-size: x-small;" >
+                                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                    </h:outputText>
+                                                </p:column>
+                                            </p:autoComplete>                                        
+                                            <ui:remove><p:inputText id="nombre" value="#{hipersensibilidadMB.hipersensibilidadSelect.nombrePaciente}"/> </ui:remove>
+                                    </p:column>                                    
+                                    <p:column>
+                                        <p:outputLabel value="Sustancia Activa: "  class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:autoComplete id="txtInsumo1" 
+                                                        class="autoComplete-Sum" 
+                                                        styleClass="autoComplete-Sum" 
+                                                        panelStyle="autoComplete-Sum" 
+                                                        inputStyle="width: 280px"
+                                                        value="#{hipersensibilidadMB.medicamento}"
+                                                        completeMethod="#{hipersensibilidadMB.autoComplete}"
+                                                        minQueryLength="4" scrollHeight="350" 
+                                                        queryDelay="500" 
+                                                        maxResults="50" 
+                                                        forceSelection="true" 
+                                                        cacheTimeout="0" 
+                                                        var="insumo" 
+                                                        placeholder="Buscar Insumos" 
+                                                        cache="false"
+                                                        emptyMessage="No se encontraron registros"
+                                                        itemLabel="#{insumo.sustanciaActiva}" itemValue="#{insumo}" 
+                                                        converter="insumoConverter"
+                                                        tabindex="8" >
+                                            <p:ajax event="itemSelect" update="nombreComercial"
+                                                    global="false" listener="#{hipersensibilidadMB.selectSustancia}" />
+                                            <p:ajax event="itemUnselect" listener="#{hipersensibilidadMB.handleUnSelect}" ></p:ajax>                                            
+                                            <p:column style="width: 350px; font-size: small;" width="350px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.sustanciaActiva}" style=" font-size: x-small;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Nombre: "  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:autoComplete  size="30" id="nombreComercial"
+                                                         style="width: 738px !important;"
+                                                        panelStyle="width: 738px !important;"
+                                                        inputStyle="width: 738px !important;"
+                                                        value="#{hipersensibilidadMB.medicamentoSelect}"  autocomplete="on" 
+                                                        completeMethod="#{hipersensibilidadMB.autoCompleteMedicamento}"  
+                                                        minQueryLength="3"  forceSelection="true" 
+                                                        var="insumo" 
+                                                        itemValue="#{insumo.idMedicamento}" 
+                                                        itemLabel="#{insumo.nombreCorto}"
+                                                        converter="medicamentoConverter" 
+                                                        tabindex="9">
+                                            <p:ajax event="itemSelect" listener="#{hipersensibilidadMB.selectMedicamento}" update="txtInsumo1" />
+                                            <p:column style="width: 20px; font-size: small;" width="50px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Clave Institucional" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.claveInstitucional}" style=" font-size: small;" />
+                                            </p:column>
+                                            <p:column style="width: 600px;" width="600px">
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Descripción" />
+                                                </f:facet>
+                                                <h:outputText value="#{insumo.nombreCorto}" style=" font-size: small;" />
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <!-- p:inputText id="nombreComercial"  value="# {hipersensibilidadMB.hipersensibilidadSelect.nombreComercial}" style="width: 690px"/ --> 
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Efectos: "  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:inputTextarea rows="3" cols="100" counter="efectos" maxlength="1000"
+                                            counterTemplate="{0} Caracteres que faltan." autoResize="false"
+                                            value="#{hipersensibilidadMB.hipersensibilidadSelect.efectos}" tabindex="10"/>
+                                        <p:outputLabel value=""/>
+                                        <h:outputText id="efectos" class="p-d-block" /> 
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Manifestaciones clínicas Características: "  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:inputTextarea rows="3" cols="100" counter="manifestaciones" maxlength="1000"
+                                            counterTemplate="{0} Caracteres que faltan." autoResize="false"
+                                            value="#{hipersensibilidadMB.hipersensibilidadSelect.manifestaciones}" tabindex="11"/>
+                                        <p:outputLabel value=""/>
+                                        <h:outputText id="manifestaciones" class="p-d-block" /> 
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Fecha 1er Evento: "  class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:calendar id="txtFechaPrimer" value="#{hipersensibilidadMB.hipersensibilidadSelect.fechaPrimerEvento}"                                                                                                                
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"                                                        
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade" tabindex="12"/>  
+                                    </p:column>
+                                    <p:column>
+                                        <p:outputLabel value="Fecha último Evento: "  class="plabel" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:calendar id="txtFechaUltimo" value="#{hipersensibilidadMB.hipersensibilidadSelect.fechaUltimoEvento}"                                                                                                                
+                                                        showOn="button" locale="es_MX" navigator="true" pattern="dd/MM/yyyy HH:mm"                                                    
+                                                        pages="1" mask="true" showButtonPanel="true" effect="fade" tabindex="13"/>  
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Riesgo: " class="plabel"/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:selectOneMenu style="width: 150px;vertical-align: middle;margin-right: 10px;" value="#{hipersensibilidadMB.hipersensibilidadSelect.riesgo}" 
+                                                            filter="true" filterPlaceholder="Riesgo" >   
+                                            <f:selectItem itemLabel="Seleccionar un riesgo" itemValue="" />
+                                            <f:selectItems value="#{hipersensibilidadMB.riesgosReaccion}" var="riesgo" itemLabel="#{riesgo}" itemValue="#{riesgo}" />                                
+                                          </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Síntomas: "  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:autoComplete size="30" id="txtDiagnostico"
+                                                        styleClass="autocomplete-multiple-hiper"
+                                                        multiple="true"                                                        
+                                                        style="width: 675px !important;"
+                                                        panelStyle="width: 675px !important;"
+                                                        inputStyle="width: 675px !important;"
+                                                        placeholder="Agregar Diagnósticos" 
+                                                        value="#{hipersensibilidadMB.listaDiagnosticos}"
+                                                        completeMethod="#{hipersensibilidadMB.autocompleteDiagnostico}"
+                                                        minQueryLength="4"                                                       
+                                                        forceSelection="true"                                                         
+                                                        var="diagnos" 
+                                                        itemLabel="#{diagnos.nombre}" itemValue="#{diagnos}" 
+                                                        converter="musGenericConverter" 
+                                                        tabindex="14">
+                                                        <p:column style="width: 20px; font-size: small;" width="50px">
+                                                            <f:facet name="header" >
+                                                                <h:outputText value="Clave" />
+                                                            </f:facet>
+                                                            <h:outputText value="#{diagnos.clave}" style=" font-size: small;" />
+                                                        </p:column>
+                                                        <p:column style="width: 600px; font-size: small;" width="600px">
+                                                            <f:facet name="header" >
+                                                                  <h:outputText value="Descripción" />
+                                                            </f:facet>
+                                                            <h:outputText value="#{diagnos.nombre}" style=" font-size: x-small;" />
+                                                        </p:column>
+                                        </p:autoComplete>
+                                    </p:column>
+                                </p:row>                                   
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Diagnósticos: "  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="3">                                                                                 
+                                        <p:selectManyCheckbox id="basic" value="#{hipersensibilidadMB.listaPruebas}" tabindex="15">
+                                            <f:selectItem itemLabel="Evaluación médica" itemValue="Evaluación médica"/>
+                                            <f:selectItem itemLabel="Análisis de sangre" itemValue="Análisis de sangre"/>
+                                            <f:selectItem itemLabel="Pruebas cutánea" itemValue="Pruebas cutánea"/>
+                                            <f:selectItem itemLabel="Pruebas LGE" itemValue="Pruebas LGE"/>
+                                        </p:selectManyCheckbox>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Prevenciones: "  class="plabel" />
+                                    </p:column>
+                                    <p:column colspan="3">
+                                        <p:selectManyCheckbox id="idPrevenciones" value="#{hipersensibilidadMB.selectPrevenciones}" layout="grid" columns="2" styleClass="grid-checkbox" tabindex="16">
+                                            <f:selectItems value="#{hipersensibilidadMB.prevencionesSelect}" var="prevencion" itemLabel="#{prevencion}" itemValue="#{prevencion}"/>
+                                        </p:selectManyCheckbox>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column></p:column>
+                                    <p:column colspan="3">                                        
+                                        <p:fileUpload dragDropSupport="true" auto="true" label="Adjuntar" value="#{hipersensibilidadMB.file}" mode="advanced" multiple="true"
+                                                      fileLimit="5" fileLimitMessage="No se pueden adjuntar mas de 5 Archivos" 
+                                                      style="width: 675px !important;" update=":frmNuevaReaccionHipersensibilidad:tablaArchivo"
+                                                      sizeLimit="16000000" invalidSizeMessage="Este  archivo supero el tamaño de 16MB"
+                                                      allowTypes="/(\.|\/)(xls|xlsx|xml|txt|pdf|docx|doc|jpeg|png|jpg|tiff|gif)$/" invalidFileMessage="Tipo de archivo invalido"
+                                                      fileUploadListener="#{hipersensibilidadMB.fileUpload}" onstart="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" />
+                                    </p:column>                                    
+                                </p:row>
+                                <p:row>
+                                    <p:column colspan="4">
+                                        <p:dataTable id="tablaArchivo" value="#{hipersensibilidadMB.listaAdjuntos}"  var="item"
+                                                     style="width: 900px !important;" scrollable="true" scrollHeight="150"
+                                                     
+                                                     selection="#{hipersensibilidadMB.adjuntoSelect}"
+                                                     rowKey="#{item.idAdjunto}" rowIndexVar="row">
+                                            <p:column style="text-align: left !important; " headerText="Fecha" width="15%">
+                                                <h:outputText value="#{item.insertFecha}" >
+                                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy" />
+                                                </h:outputText>    
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Adjunto" width="25">
+                                                <h:outputText value="#{item.nombreRegistro}" />
+                                            </p:column>
+                                            <p:column style="text-align: left !important; " headerText="Nombre Archivo" width="50%">
+                                                <h:outputText value="#{item.nombreAdjunto}" />
+                                            </p:column>
+                                            <p:column style="text-align: left;" headerText="Acciones"  width="10%">
+                                                <p:commandLink title="Descargar" actionListener="#{hipersensibilidadMB.descargarArchivo(item.idAdjunto)}"                                                               
+                                                               rendered="#{hipersensibilidadMB.editar}" 
+                                                               ajax="false">
+                                                    <p:fileDownload value="#{hipersensibilidadMB.archivoDescarga}" />
+                                                    <i class="fa fa-download" />
+                                                </p:commandLink>&nbsp;&nbsp;
+                                                <p:commandLink title="Eliminar"  actionListener="#{hipersensibilidadMB.deleteAdjunto(item.idAdjunto)}"                                               
+                                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" update=":frmNuevaReaccionHipersensibilidad:tablaArchivo" 
+                                                               rendered="#{hipersensibilidadMB.permiso.puedeEliminar}" process="@this" >
+                                                    <i class="fa fa-trash-o iconMusAzul" />
+                                                    <p:confirm header="Eliminación de archivo adjunto" message="Está seguro que desea eliminar el archivo adjunto ?" icon="ui-icon-alert"  />
+                                                </p:commandLink>&nbsp;
+                                            </p:column>    
+                                        </p:dataTable>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid> 
+                            <br />
+                            <div class="pnlActions">                                
+                                <p:commandButton id="btnRegCancel1" class="btnItem" value="Cancelar" style="width: 100px"
+                                                 ajax="true" onclick="PF('mdlNuevaReaccionHipersensibilidad').hide();" validateClient="false" tabindex="17" />&nbsp;&nbsp;
+                                <p:commandButton id="btnRegNew1"   styleClass="btnMusAzul"  tabindex="18"
+                                                 value="Guardar" style="margin:0; width: 100px;"    ajax="true"                                  
+                                                 onclick="PF('statusProcess').show();" actionListener="#{hipersensibilidadMB.crearReaccionHipersensibilidad()}"
+                                                 oncomplete="PF('statusProcess').hide();if(args.estatus){ PF('mdlNuevaReaccionHipersensibilidad').hide(); }" 
+                                                 update=":mainForm:tblReaccionHipersensibilidad"/>
+                            </div>
+                        </h:form>
+                    </p:dialog>
+                   
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+
+            </ui:define>
+        </ui:composition>        
+    </h:body>
+</html>

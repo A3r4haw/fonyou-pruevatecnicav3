@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+      
+    <h:head>
+        <title>Vía Administración</title>
+    </h:head>
+
+    <h:body>
+
+        <ui:composition template="../template/mainLayout.xhtml">
+
+            <ui:define name="content">
+
+                <div class="mainPanel">
+
+                    <h:form id="mainForm">
+
+                        <div id="busqueda" style="padding-bottom: 0px;">
+                            
+                            <p:outputLabel value="Vía Administración" style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+                            <p:spacer width="10"/>
+                                <p:inputText id="textSearch" style="width: 50%!important;border-radius:10px!important;" 
+                                             value="#{viaAdministracionMB.cadenaBusqueda}" class="textSearch" placeholder="Buscar..." />
+                                <i class="iconSearch">
+                                    <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15"/>
+                                </i>
+                                <p:commandButton title="Buscar" value="Buscar" icon="ui-icon-search" actionListener="#{viaAdministracionMB.buscarViaAdministracion}"
+                                                 update=":mainForm" ajax="false" validateClient="true" onclick="PF('statusProcess').show();"
+                                                 oncomplete="PF('statusProcess').hide();" style=" margin-left: 15px; margin-bottom: 8px;" />
+                                
+                        </div>
+                            <p:messages id="messages" class="validaMsg" globalOnly="true" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>                       
+
+                            <p:commandButton class="btnNew" value="Agregar" disabled="#{viaAdministracionMB.btnNew}" icon="fa fa-plus" rendered="#{viaAdministracionMB.permiso.puedeCrear}"
+                                             actionListener="#{viaAdministracionMB.crearViaAdministracion}" onclick="PF('statusProcess').show();" styleClass="btnMusAzul"
+                                             oncomplete="PF('statusProcess').hide(); PF('modalViaAdministracion').show();"
+                                             ajax="true" update=":formModal"  style=" margin: 5px 0; " resetValues="true"  /> &nbsp;&nbsp;
+
+                            <br/>
+
+                            <p:outputLabel value="No tiene permiso de visualización de esta transacción." 
+                                   style="font-size: 18px !important; font-weight: bold; color: red;"
+                                   rendered="#{!viaAdministracionMB.permiso.puedeVer}" />
+                            
+                            <p:dataTable  id="tblViaAdministraciones"  styleClass="cabecera" 
+                                      var="item" reflow="true"   
+                                      lazy="true"
+                                      value="#{viaAdministracionMB.viaAdministracionLazy}"                                          
+                                      style="margin-bottom:5px;"                                      
+                                      scrollRows="10" scrollable="true" liveScroll="true" scrollHeight="350" 
+                                     paginatorPosition="bottom"
+                                     rows="10"
+                                     paginator="true"
+                                     paginatorTemplate=" {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     rendered="#{viaAdministracionMB.permiso.puedeVer}"
+                                      >
+                            <p:column headerText="Número Vía" style="width: 50px;" sortBy="#{item.idViaAdministracion}" >
+                                <h:outputText value="#{item.idViaAdministracion}" class="altoColumn" />
+                            </p:column>  
+                            <p:column headerText="Nombre Vía Administración" style="width: 250px;" sortBy="#{item.nombreViaAdministracion}" >
+                                <h:outputText value="#{item.nombreViaAdministracion}" class="altoColumn" />
+                            </p:column>         
+                               
+                            <p:column headerText="Acciones" style="width: 70px;" >
+                                <p:commandLink title="Ver"  actionListener="#{viaAdministracionMB.obtenerViaAdministracion(item.idViaAdministracion)}" rendered="#{viaAdministracionMB.permiso.puedeVer}"
+                                               onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide(); PF('modalViaAdministracion').show();" update=":formModal" >
+                                    <i class="fa fa-eye  iconMusAzul" />
+                                </p:commandLink> &nbsp;
+                                <p:commandLink title="#{item.activa ? 'Desactivar' : 'Activar'}" actionListener="#{viaAdministracionMB.cambiarEstatusViaAdmon(item.idViaAdministracion,item.activa)}" 
+                                               rendered="#{viaAdministracionMB.permiso.puedeEditar}" onclick="PF('statusProcess').show();" oncomplete="PF('statusProcess').hide();" 
+                                               update=":mainForm:tblViaAdministraciones " >
+                                    <i class="#{item.activa ? 'fa fa-toggle-on' : 'fa fa-toggle-off'}  iconMusAzul" />
+
+                                </p:commandLink> &nbsp;                                
+                            </p:column>                 
+                        </p:dataTable>
+                    </h:form>
+                    
+                    <p:dialog header="Información de la Vía de Administración"
+                              widgetVar="modalViaAdministracion"
+                              closeOnEscape="true"
+                              closable="true"   styleClass="autoWidthDialog"                     
+                              modal="true" responsive="true" width="54%"  > 
+                        <h:form id="formModal" style="padding: 0px;">                                 
+                            <p:messages id="messages2" showDetail="false" globalOnly="false" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            
+                            <p:panelGrid columns="2"  >
+                                <p:outputLabel value="Número Administracion"/>
+                                <p:inputText value="#{viaAdministracionMB.viaAdministracionSelect.idViaAdministracion}" size="10" readonly="true" />
+                                
+                                <p:outputLabel value="Nombre*"/>
+                                <p:inputText value="#{viaAdministracionMB.viaAdministracionSelect.nombreViaAdministracion}" size="50" tabindex="1" />
+                                
+                                <p:outputLabel value="Activo"/>
+                                <p:selectBooleanButton id="txtActivo" onLabel="Si" offLabel="No"                                 
+                                    onIcon="ui-icon-check" offIcon="ui-icon-close" 
+                                    value="#{viaAdministracionMB.viaAdministracionSelect.activa}" 
+                                    tabindex="3" /> 
+                                                                
+                            </p:panelGrid>
+                            
+                            <br/>
+                            <div style="float:right">
+                                <p:commandButton value="Cancelar" 
+                                                 oncomplete="PF('modalViaAdministracion').hide();" ajax="true" />
+                                &nbsp;&nbsp;
+                                <p:commandButton value="Guardar"  styleClass="btnMusAzul" actionListener="#{viaAdministracionMB.guardarViaAdministracion}" 
+                                                 onclick="PF('statusProcess').show()"  oncomplete="PF('statusProcess').hide();if(args.estatus){ PF('modalViaAdministracion').hide();}" ajax="true" 
+                                                 update=":mainForm:tblViaAdministraciones" rendered="#{!viaAdministracionMB.actualizar}"/>
+                                <p:commandButton value="Modificar"  styleClass="btnMusAzul" actionListener="#{viaAdministracionMB.actualizarViaAdministracion()}" 
+                                                 onclick="PF('statusProcess').show()"  oncomplete="PF('statusProcess').hide();if(args.estatus){ PF('modalViaAdministracion').hide();}" ajax="true" 
+                                                 update=":mainForm:tblViaAdministraciones" rendered="#{viaAdministracionMB.actualizar}"/>
+                                &nbsp;
+                            </div>
+                        </h:form>
+                    </p:dialog>    
+                </div>    
+            
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+
+</html>

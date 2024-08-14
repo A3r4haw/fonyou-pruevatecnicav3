@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.AdjuntoMapper" >
+    
+    <select id="obtenerSiguienteAdjunto" parameterType="Map" resultType="Integer">
+        SELECT IFNULL( MAX(idAdjunto) + 1, 1) FROM adjunto;
+    </select>
+    
+    <insert id="insertarListaAdjuntos" parameterType="Map">
+        <foreach collection="listaAdjuntos" item="item" separator=";">
+            INSERT INTO adjunto (
+            <if test="item.idAdjunto != null" > idAdjunto</if>
+            <if test="item.nombreAdjunto != null" > ,nombreAdjunto</if>
+            <if test="item.adjunto != null" > ,adjunto</if>
+            <if test="item.eliminado != null" > ,eliminado</if>
+            <if test="item.insertFecha != null" > ,insertFecha</if>
+            <if test="item.insertIdUsuario != null" > ,insertIdUsuario</if>
+            <if test="item.updateFecha != null" > ,updateFecha</if>
+            <if test="item.updateIdUsuario != null" > ,updateIdUsuario</if>
+            ) VALUES (
+            <if test="item.idAdjunto != null" > #{item.idAdjunto, jdbcType = INTEGER }</if>
+            <if test="item.nombreAdjunto != null" > ,#{item.nombreAdjunto, jdbcType = VARCHAR }</if>
+            <if test="item.adjunto != null" > ,#{item.adjunto, jdbcType = BLOB }</if>
+            <if test="item.eliminado != null" > ,#{item.eliminado, jdbcType = INTEGER }</if>
+            <if test="item.insertFecha != null" > ,#{item.insertFecha, jdbcType = TIMESTAMP }</if>
+            <if test="item.insertIdUsuario != null" > ,#{item.insertIdUsuario, jdbcType = VARCHAR }</if>
+            <if test="item.updateFecha != null" > ,#{item.updateFecha, jdbcType = TIMESTAMP }</if>
+            <if test="item.updateIdUsuario != null" > ,#{item.updateIdUsuario, jdbcType = VARCHAR }</if>
+            )
+        </foreach>
+    </insert>
+    
+    <select id="obtenerAdjuntosByIdHipersensibilidad" parameterType="Map" resultType="mx.mc.model.AdjuntoExtended">
+        SELECT ad.idAdjunto, ad.nombreAdjunto, ad.eliminado, ad.insertFecha, ad.insertIdUsuario,
+               concat(u.nombre, " ", u.apellidoPaterno, " ", u.apellidoMaterno) as nombreRegistro
+        FROM adjunto ad
+            INNER JOIN hipersensibilidadAdjunto ha ON ad.idAdjunto = ha.idAdjunto
+            INNER JOIN hipersensibilidad h ON ha.idHipersensibilidad = h.idHipersensibilidad
+            INNER JOIN usuarios u ON idUsuario = ad.insertIdUsuario
+                WHERE h.idHipersensibilidad = #{idHipersensibilidad, jdbcType = VARCHAR}
+                AND eliminado = 0;
+    </select>
+    
+    <select id="obtenerAdjuntoByIdAdjunto" parameterType="Map" resultType="mx.mc.model.Adjunto">
+        SELECT idAdjunto, nombreAdjunto, adjunto, insertFecha, insertIdUsuario 
+            FROM adjunto WHERE eliminado = 0
+        AND idAdjunto = #{ idAdjunto , jdbcType = INTEGER }
+    </select>
+    
+    <update id="eliminarArchivo" parameterType="Map" >
+        UPDATE adjunto set eliminado = 1
+            WHERE idAdjunto = #{ idAdjunto, jdbcType = INTEGER }
+    </update>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Adjunto">
+            INSERT INTO adjunto (
+            <if test=" idAdjunto != null" > idAdjunto</if>
+            <if test=" nombreAdjunto != null" > , nombreAdjunto</if>
+            <if test=" adjunto != null" > , adjunto</if>
+            <if test=" eliminado != null" > , eliminado</if>
+            <if test=" insertFecha != null" > , insertFecha</if>
+            <if test=" insertIdUsuario != null" > , insertIdUsuario</if>
+            <if test=" updateFecha != null" > , updateFecha</if>
+            <if test=" updateIdUsuario != null" > , updateIdUsuario</if>
+            ) VALUES (
+            <if test=" idAdjunto != null" > #{ idAdjunto , jdbcType = INTEGER }</if>
+            <if test=" nombreAdjunto != null" > , #{ nombreAdjunto , jdbcType = VARCHAR }</if>
+            <if test=" adjunto != null" > , #{ adjunto , jdbcType = BLOB }</if>
+            <if test=" eliminado != null" > , #{ eliminado , jdbcType = INTEGER }</if>
+            <if test=" insertFecha != null" > , #{ insertFecha , jdbcType = TIMESTAMP }</if>
+            <if test=" insertIdUsuario != null" > , #{ insertIdUsuario , jdbcType = VARCHAR }</if>
+            <if test=" updateFecha != null" > , #{ updateFecha , jdbcType = TIMESTAMP }</if>
+            <if test=" updateIdUsuario != null" > , #{ updateIdUsuario , jdbcType = VARCHAR }</if>
+            )
+    </insert>
+    
+    <select id="obtenerAdjuntosByIdFichaPrevencion" parameterType="Map" resultType="mx.mc.model.AdjuntoExtended">
+        SELECT ad.idAdjunto, ad.nombreAdjunto, ad.eliminado, ad.insertFecha, ad.insertIdUsuario,
+        concat(u.nombre, " ", u.apellidoPaterno, " ", u.apellidoMaterno) as nombreRegistro
+        FROM adjunto ad
+        INNER JOIN fichaPrevencionAdjunto fpa ON ad.idAdjunto = fpa.idAdjunto
+        INNER JOIN fichaPrevencion fp ON fpa.idFichaPrevencion = fp.idPrevencion
+        INNER JOIN usuarios u ON ad.insertIdUsuario = u.idUsuario
+        WHERE fp.idPrevencion  = #{ idPrevencion , jdbcType = VARCHAR }
+        AND eliminado = 0
+        ORDER BY insertFecha DESC
+    </select>
+    
+    <select id="obtenerNoRegistrosEncontrados" parameterType="Map" resultType="int">
+        SELECT count(idAdjunto) as noRegistros
+            FROM adjunto WHERE eliminado = 0
+        AND idAdjunto = #{ idAdjunto , jdbcType = INTEGER }
+    </select>
+    
+    <update id="actualizar" parameterType="mx.mc.model.Adjunto"  >
+        UPDATE adjunto
+        <set>
+            updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+            , updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+            <if test=" nombreAdjunto != null"> , nombreAdjunto = #{ nombreAdjunto  , jdbcType = VARCHAR } </if>
+            <if test=" adjunto != null"> , adjunto = #{ adjunto  , jdbcType = BLOB } </if>
+            <if test=" eliminado != null"> , eliminado = #{ eliminado  , jdbcType = INTEGER } </if>
+        </set>
+        WHERE idAdjunto = #{ idAdjunto , jdbcType = INTEGER }
+    </update>
+    
+</mapper>    

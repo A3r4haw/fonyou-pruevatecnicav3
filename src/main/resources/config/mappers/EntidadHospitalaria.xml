@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.EntidadHospitalariaMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.EntidadHospitalaria" parameterType="mx.mc.model.EntidadHospitalaria" >
+        SELECT idEntidadHospitalaria , nombre , estatus , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , domicilio , claveEntidad , codigoUmf
+        FROM entidadHospitalaria
+        WHERE 1=1
+        <if test=" idEntidadHospitalaria != null ">
+            AND idEntidadHospitalaria = #{ idEntidadHospitalaria , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre LIKE '%${ nombre }%'
+        </if>       
+        LIMIT 1
+    </select>
+ 
+    <select id="obtenerLista" resultType="mx.mc.model.EntidadHospitalaria" parameterType="mx.mc.model.EntidadHospitalaria" >        
+        SELECT idEntidadHospitalaria , nombre , estatus , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , domicilio , claveEntidad , codigoUmf
+        FROM entidadHospitalaria
+        WHERE 1=1
+        <if test=" idEntidadHospitalaria != null ">
+            AND idEntidadHospitalaria = #{ idEntidadHospitalaria , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre LIKE '%${ nombre }%'
+        </if>
+         nombre ASC
+    </select>
+    
+    <select id="obtenerEntidadById" resultType="mx.mc.model.EntidadHospitalaria" parameterType="mx.mc.model.EntidadHospitalaria" >
+        SELECT idEntidadHospitalaria , nombre , estatus , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , domicilio , claveEntidad , codigoUmf
+        FROM entidadHospitalaria
+        WHERE 1=1
+        <if test=" idEntidadHospitalaria != null ">
+            AND idEntidadHospitalaria = #{ idEntidadHospitalaria , jdbcType = VARCHAR }
+        </if>
+               
+        LIMIT 1
+    </select>    
+    
+    <insert id="insertEntidadHospTable" parameterType="mx.mc.model.EntidadHospitalaria" >
+        INSERT INTO entidadHospitalaria (
+        idEntidadHospitalaria
+        , nombre
+        , estatus
+        , insertFecha
+        , insertIdUsuario
+        , domicilio
+        
+        <if test=" updateFecha != null "> , updateFecha </if>
+        <if test=" updateIdUsuario != null "> , updateIdUsuario </if>
+        <if test=" claveEntidad != null " > , claveEntidad </if>
+        <if test=" codigoUmf != null " > , codigoUmf </if>
+        
+        ) VALUES (
+        #{ idEntidadHospitalaria , jdbcType = VARCHAR }
+        , #{ nombre , jdbcType = VARCHAR }
+        , #{ estatus , jdbcType = INTEGER }
+        , #{ insertFecha , jdbcType = TIMESTAMP }
+        , #{ insertIdUsuario , jdbcType = VARCHAR }
+        , #{ domicilio , jdbcType = VARCHAR }
+        
+        <if test=" updateFecha != null "> , #{ updateFecha , jdbcType = TIMESTAMP } </if>
+        <if test=" updateIdUsuario != null "> , #{ updateIdUsuario , jdbcType = VARCHAR } </if>
+        <if test=" claveEntidad != null " > , #{ claveEntidad , jdbcType = VARCHAR } </if>
+        <if test=" codigoUmf != null " > , #{ codigoUmf , jdbcType = VARCHAR } </if>
+        )
+    </insert>
+    
+    <select id="obtenerBusquedaEntidad" resultType="mx.mc.model.EntidadHospitalaria" parameterType="Map" >        
+        SELECT idEntidadHospitalaria , nombre , estatus , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , domicilio , claveEntidad , codigoUmf
+        FROM entidadHospitalaria
+        WHERE 1=1
+        <if test="cadena != null ">
+            AND nombre LIKE '%${cadena}%'
+            OR domicilio LIKE '%${cadena}%'
+        </if>
+        ORDER BY nombre ASC
+    </select>
+    
+    <update id="actualizarEstatusEntidad" parameterType="mx.mc.model.EntidadHospitalaria">
+            UPDATE entidadHospitalaria
+            <set>
+                updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+                , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+                , estatus = #{ estatus, jdbcType = INTEGER }
+            </set>               
+            WHERE 
+            idEntidadHospitalaria = #{idEntidadHospitalaria, jdbcType = VARCHAR}
+    </update>
+    
+    <delete id="eliminarEntidad" parameterType="mx.mc.model.EntidadHospitalaria">
+        DELETE FROM entidadHospitalaria 
+        WHERE idEntidadHospitalaria = #{ idEntidadHospitalaria,jdbcType=VARCHAR }
+        AND domicilio = #{ domicilio , jdbcType = VARCHAR }
+    </delete>
+    
+    <select id="obtenerEntidadHospital" resultType="mx.mc.model.EntidadHospitalariaExtended" >
+         SELECT e.idEntidadHospitalaria , e.nombre , estatus , e.insertFecha , e.insertIdUsuario , e.updateFecha
+                , e.updateIdUsuario , e.domicilio , e.claveEntidad , e.codigoumf
+            , es.clavePresupuestal, es.claveEstructura AS centroCostos
+            FROM entidadHospitalaria e
+        INNER JOIN estructura es on e.idEntidadHospitalaria = es.idEntidadHospitalaria
+        WHERE 1=1
+        AND es.idEstructuraPadre IS NULL               
+        LIMIT 1;
+    </select>      
+    
+    <select id="obtenerEntidadHospByIdUsuaurio" resultType="mx.mc.model.EntidadHospitalaria">
+        SELECT eh.*
+        FROM entidadHospitalaria eh
+        JOIN estructura e ON eh.idEntidadHospitalaria = e.idEntidadHospitalaria
+        JOIN usuarios u ON u.idEstructura = e.idEstructura    
+        where idUsuario = #{ idUsuario , jdbcType = VARCHAR }   
+        and eh.estatus = 1 ;
+    </select>
+    
+    <select id="obtenerEntidadesdHospitalActivas" resultType="mx.mc.model.EntidadHospitalaria" >
+        SELECT idEntidadHospitalaria , nombre , estatus , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , domicilio , claveEntidad , codigoUmf
+        FROM entidadHospitalaria
+        WHERE estatus = 1;
+    </select>
+    
+    <select id="obtenerEntidadesActiasNoEsteIdEntidad" resultType="mx.mc.model.EntidadHospitalaria"  parameterType="String">
+        SELECT idEntidadHospitalaria , nombre , estatus , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario , domicilio , claveEntidad , codigoUmf
+        FROM entidadHospitalaria
+        WHERE 1=1
+        AND estatus = 1
+        AND idEntidadHospitalaria NOT IN ( #{ idEntidadHospitalaria , jdbcType = VARCHAR } );
+    </select>
+    
+    <update id="actualizarEntidadHospitalaria" parameterType="mx.mc.model.EntidadHospitalaria" >
+            UPDATE entidadHospitalaria
+            <set>
+                 updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+                , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+                <if test=" nombre != null "> , nombre = #{ nombre , jdbcType = VARCHAR } </if>
+                <if test=" estatus != null "> , estatus = #{ estatus , jdbcType = INTEGER } </if>       
+                <if test=" domicilio != null "> , domicilio = #{ domicilio , jdbcType = VARCHAR } </if>
+                <if test=" claveEntidad != null " > , claveEntidad = #{ claveEntidad , jdbcType = VARCHAR } </if>
+                <if test=" codigoUmf != null " > , codigoUmf = #{ codigoUmf , jdbcType = VARCHAR } </if>
+            </set>               
+            WHERE 
+            idEntidadHospitalaria = #{ idEntidadHospitalaria, jdbcType = VARCHAR }
+    </update>    
+    
+</mapper>

@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" > 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" >
+
+    <h:head>
+        <title>Reglas Censo Pacientes</title>
+        <h:outputScript library="primefaces" name="jquery/jquery.js" target="body" />
+    </h:head>
+
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">
+                <div class="mainPanel" style="padding: 10px;">
+
+                    <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+                    <p:dialog widgetVar="statusDialog" modal="true" draggable="false" closable="false" resizable="false" showHeader="false">
+                        <p:graphicImage name="/img/cargando.gif" />
+                    </p:dialog>
+
+                    <h:form id="formPrincipal" enctype="multipart/form-data">
+                        <p:messages id="msg" globalOnly="false" closable="true" showDetail="true"/>
+                        <div style="background: #808080;padding: 10px;">
+                            <p:outputLabel value="Reglas del Censo"
+                                           style="color: #FFFFFF;font-size: 18px !important;font-weight: bold;margin-right: 20px;"/>
+                            <p:inputText id="busqueda" 
+                                         value="#{censoReglaMB.textoBusqueda}" 
+                                         style="width: 50%!important;border-radius:10px!important;" 
+                                         placeholder="Buscar por medicamento o diagnóstico" />
+                            <i class="iconSearch" >
+                                <img src="../../resources/img/Medicamento/search-lupa.png" title="Presiona para buscar" alt="15" style=""/>
+                            </i>
+
+                            <p:commandButton value="Buscar" 
+                                             actionListener="#{censoReglaMB.buscarRegistros}"
+                                             icon="fa fa-search" 
+                                             style="margin-left: 20px;"
+                                             update="tablaCensoReglas"
+                                             global="false"
+                                             disabled="#{!censoReglaMB.permiso.puedeVer}">
+                            </p:commandButton>
+                            <p:spacer width="20px"/>
+                            <p:commandButton value="Registrar Regla"
+                                          icon="fa fa-plus"
+                                          update="formPrincipal"
+                                          oncomplete="PF('modalCensoRegla').show();"
+                                          disabled="#{!censoReglaMB.permiso.puedeCrear}"
+                                          actionListener="#{censoReglaMB.mostrarModalRegistrar}"
+                                          style="margin-right: 10px;">
+                            </p:commandButton>
+                            <p:menuButton value="Exportar" 
+                                          style="">
+                                <p:menuitem value="Excel"  
+                                            icon="fa fa-file-excel-o"
+                                            ajax="false">
+                                    <p:dataExporter type="xls" target="tablaCensoReglas" fileName="test" />
+                                </p:menuitem>
+                                <p:menuitem value="Pdf" 
+                                            icon="fa fa-file-pdf-o" 
+                                            ajax="false"> 
+                                    <p:dataExporter type="pdf" target="tablaCensoReglas" fileName="test" />
+                                </p:menuitem>
+                            </p:menuButton>
+                        </div>
+                        <p:dataTable id="tablaCensoReglas"
+                                     var="censoRegla" 
+                                     value="#{censoReglaMB.censoReglaLazy}" 
+                                     lazy="true"
+                                     selectionMode="single"
+                                     selection="#{censoReglaMB.censoReglaSelected}"
+                                     style="text-align: center;"
+                                     scrollHeight="300"
+                                     scrollable="true"
+                                     scrollRows="10"
+                                     emptyMessage="No se encontraron Registros"
+                                     reflow="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorPosition="bottom">
+
+                            <p:ajax event="rowDblselect" oncomplete="PF('modalCensoRegla').show();" 
+                                    update="formPrincipal" listener="#{censoReglaMB.mostrarModalDetalle}"/>
+                            <p:column headerText="Clave" style="text-align: left; width: 15%;" sortBy="#{censoRegla.claveInstitucional}" >
+                                <p:outputLabel value="#{censoRegla.claveInstitucional}"/>
+                            </p:column>
+                            <p:column headerText="Medicamento" style="text-align: left;" sortBy="#{censoRegla.nombreMedicamento}" >
+                                <h:outputText value="#{censoRegla.nombreMedicamento}"/>
+                            </p:column>
+                            <p:column headerText="Clave Diagnóstico" style="text-align: left; width: 15%;" sortBy="#{censoRegla.claveDiagnostico}" >
+                                <h:outputText value="#{censoRegla.claveDiagnostico}"/>
+                            </p:column>
+                            <p:column headerText="Diagnóstico" style="text-align: left;" sortBy="#{censoRegla.nombreDiagnostico}" >
+                                <h:outputText value="#{censoRegla.nombreDiagnostico}"/>
+                            </p:column>
+                            <p:column headerText="Opciones" exportable="false" style="text-align: center !important; width: 10%;">
+                                <p:tooltip for="linkEditar" value="Editar" position="top"/>
+                                <p:commandLink  id="linkEditar"
+                                                actionListener="#{censoReglaMB.mostrarModalActualizar(censoRegla)}"
+                                                style="margin: 5px;text-decoration: none;"
+                                                oncomplete="PF('modalCensoRegla').show();"
+                                                update=":formPrincipal"
+                                                styleClass="iconMusAzul"
+                                                disabled="#{!censoReglaMB.permiso.puedeEditar}">
+                                    <i class="fa fa-pencil-square-o"/>
+                                </p:commandLink>
+                                <p:tooltip for="linkDetalle" value="Detalle" position="top"/>
+                                <p:commandLink id="linkDetalle"
+                                               actionListener="#{censoReglaMB.mostrarModalDetalle}"
+                                               style="margin: 5px;text-decoration: none;"
+                                               oncomplete="PF('modalCensoRegla').show();"
+                                               styleClass="iconMusAzul"
+                                               update=":formPrincipal">
+                                    <i class="fa fa-list" />
+                                </p:commandLink>
+                            </p:column>
+                        </p:dataTable>
+                        <p:dialog header="REGLAS DEL CENSO DE PACIENTES"
+                                  widgetVar="modalCensoRegla"
+                                  modal="true"
+                                  resizable="false"
+                                  width="45%"
+                                  styleClass="zeroHPadding-dialog"
+                                  closeOnEscape="true"
+                                  closable="true">
+
+                            <p:messages id="msgModalRegistro" closable="true" >
+                                <p:autoUpdate />
+                            </p:messages>
+                            <p:focus for="auto-medicamento"/>
+                            <p:panelGrid columns="2" layout="grid" columnClasses="ui-grid-col-2, ui-grid-col-10">
+                                <p:outputLabel value="Medicamento"/>
+                                <p:autoComplete id="auto-medicamento" 
+                                                    value="#{censoReglaMB.medicamentoSelected}" 
+                                                    completeMethod="#{censoReglaMB.autoCompleteMedicamento}"
+                                                    minQueryLength="4" 
+                                                    forceSelection="true"
+                                                    cache="false"
+                                                    var="insumo" 
+                                                    itemLabel="#{insumo.nombreCorto}" 
+                                                    itemValue="#{insumo}" 
+                                                    converter="medicamentoExtendedHashConverter"
+                                                    placeholder="Buscar / Escanear Insumo"
+                                                    emptyMessage="No se encontro registro." 
+                                                    size="50"
+                                                    tabindex="2"
+                                                    scrollHeight = "250"
+                                                    disabled="#{censoReglaMB.vistaDetalle}">
+                                    <p:ajax event="itemSelect" update="auto-medicamento" global="false" 
+                                                    listener="#{censoReglaMB.validaLecturaPorCodigo}" />
+
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave Institucional" />
+                                        </f:facet>
+                                        <h:outputText value="#{insumo.claveInstitucional}" style="font-size: small;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Descripción" />
+                                        </f:facet>
+                                        <h:outputText value="#{insumo.nombreCorto}" style="font-size: x-small;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Lote" />
+                                        </f:facet>
+                                        <h:outputText value="#{insumo.lote}" style="font-size: x-small;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Fecha de Caducidad" />
+                                        </f:facet>
+                                        <h:outputText value="#{insumo.fechaCaducidad}" style="font-size: x-small;" >
+                                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                                        </h:outputText>
+                                    </p:column>
+                                </p:autoComplete>
+                                <p:outputLabel value="Diagnóstico"/>
+                                <p:autoComplete id="auto-diagnostico"
+                                                placeholder="Seleccione un Diagnóstico" 
+                                                value="#{censoReglaMB.diagnosticoSelected}"
+                                                completeMethod="#{censoReglaMB.autoCompleteDiagnostico}"
+                                                minQueryLength="4"
+                                                forceSelection="true" 
+                                                cache="false"
+                                                var="diagnos" 
+                                                itemLabel="#{diagnos.nombre}"
+                                                itemValue="#{diagnos.idDiagnostico}" 
+                                                converter="diagnosticoConverter"
+                                                size="50"
+                                                tabindex="3"
+                                                scrollHeight = "250"
+                                                disabled="#{censoReglaMB.vistaDetalle}">
+                                    <p:ajax event="itemSelect" global="false" listener="#{censoReglaMB.selectDiagnostico}"
+                                                    update="tablaReglas"/>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Clave" />
+                                        </f:facet>
+                                        <h:outputText value="#{diagnos.clave}" style="font-size: small;" />
+                                    </p:column>
+                                    <p:column style="font-size: small;">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Descripción" />
+                                        </f:facet>
+                                        <h:outputText value="#{diagnos.nombre}" style="font-size: x-small;" />
+                                    </p:column>
+                                </p:autoComplete>
+                            </p:panelGrid>
+                            <p:spacer height="10"/>
+                            <div class="ui-g-12">
+                                <p:commandButton value="Agregar Surtimiento" styleClass="ui-priority-primary"
+                                                action="#{censoReglaMB.agregaDetalle()}" oncomplete="PF('tablaReglas').addRow();"/>
+                            </div>
+                            <p:dataTable id="tablaReglas" widgetVar="tablaReglas" scrollable="true" editable="true" editMode="cell" reflow="true" emptyMessage=""
+                                         styleClass="centeredColumn" var="surt" value="#{censoReglaMB.listaCensoReglaDetalle}" rowIndexVar="idx" paginator="false" rows="0">
+                                <f:facet name="header">
+                                    <font color="#979797">Reglas de Surtimientos</font>
+                                </f:facet>
+                                <p:column style="text-align: center !important;">
+                                    <f:facet name="header">
+                                        <h:outputText value="Surtimiento" />
+                                    </f:facet>
+                                    <h:outputText value="#{surt.numeroSurtimiento}"/>
+                                </p:column>                
+                                <p:column headerText="Mínimo" style="text-align: center !important;">
+                                    <p:cellEditor>
+                                        <f:facet name="output"><h:outputText value="#{surt.minimo}" /></f:facet>
+                                        <f:facet name="input"><p:inputText value="#{surt.minimo}"/></f:facet>
+                                    </p:cellEditor>
+                                </p:column>
+                                <p:column headerText="Máximo" style="text-align: center !important;">
+                                    <p:cellEditor>
+                                        <f:facet name="output"><h:outputText value="#{surt.maximo}" /></f:facet>
+                                        <f:facet name="input"><p:inputText value="#{surt.maximo}" style="width:100%" label="Máximo"/></f:facet>
+                                    </p:cellEditor>
+                                </p:column>
+                                <p:column headerText="Días" style="text-align: center !important;">
+                                    <p:cellEditor>
+                                        <f:facet name="output"><h:outputText value="#{surt.numeroDias}" /></f:facet>
+                                        <f:facet name="input"><p:inputText value="#{surt.numeroDias}" style="width:100%" label="Días"/></f:facet>
+                                    </p:cellEditor>
+                                </p:column>
+                                <p:column headerText="Eliminar" exportable="false" style="text-align: center !important; width: 10%;">
+                                    <p:tooltip for="linkEliminar" value="Eliminar Surtimiento" position="top"/>
+                                    <p:commandLink id="linkEliminar"
+                                                   actionListener="#{censoReglaMB.eliminarSurtimiento(idx)}"
+                                                   style="margin: 5px;text-decoration: none;"
+                                                   update="tablaReglas"
+                                                   styleClass="iconMusAzul"
+                                                   disabled="#{!censoReglaMB.permiso.puedeEditar}">
+                                        <i class="fa fa-trash"/>
+                                    </p:commandLink>
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:commandButton id="buttonGuardar" value="Guardar" style="float: right;margin: 10px;" 
+                                             action="#{censoReglaMB.registrarRegla}"
+                                             oncomplete="if(args.estatusModal){ PF('modalCensoRegla').hide();}"
+                                             update="tablaCensoReglas, msg"
+                                             rendered="#{censoReglaMB.renderBotonGuardar}"/>
+                            <p:commandButton id="buttonActualizar"
+                                             value="Actualizar" 
+                                             style="float: right;margin: 10px;" 
+                                             action="#{censoReglaMB.actualizarRegla}"
+                                             update="tablaCensoReglas, msg"
+                                             rendered="#{censoReglaMB.renderBotonActualizar}"
+                                             oncomplete="if(args.estatusModal){ PF('modalCensoRegla').hide(); }"/>
+                            <p:commandButton id="buttonCerrar" value="Cerrar" style="float: right;margin: 10px;"
+                                             immediate="true"
+                                             oncomplete="PF('modalCensoRegla').hide();"
+                                             rendered="#{censoReglaMB.vistaDetalle}"/>
+                        </p:dialog>
+                    </h:form>
+                </div>
+            </ui:define>
+            <ui:define name="footer">
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

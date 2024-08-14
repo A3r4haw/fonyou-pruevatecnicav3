@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:cxf="http://cxf.apache.org/core"
+       xmlns:beans="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-4.0.xsd
+           http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+           http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd  ">
+       
+    <!-- activates annotations (@Service, @Component, @Autowired) -->
+<!--    <context:component-scan base-package="com.asosis.app.ws" />
+            
+<jaxws:client id="clientConsultaCfdiSat"
+    serviceClass="com.asosis.app.ws.IConsultaCFDIService"
+    address="https://consultaqr.facturaelectronica.sat.gob.mx/ConsultaCFDIService.svc" />-->
+    
+    <!-- Interceptor para log de salida. -->
+    <!--<bean id="loggingOutInterceptor" class="org.apache.cxf.interceptor.LoggingOutInterceptor" />-->
+ 
+    <!-- Interceptor para log de entrada. -->
+    <!--<bean id="loggingInInterceptor"  class="org.apache.cxf.interceptor.LoggingInInterceptor" />-->
+                  
+<!--    <bean id="loggingFeature" class="org.apache.cxf.feature.LoggingFeature">
+        <property name="prettyLogging" value="true" />
+    </bean>-->
+
+<!--    <cxf:bus>
+        <cxf:features>
+            <ref bean="loggingFeature" />
+        </cxf:features>
+    </cxf:bus>-->
+    
+    <!-- Interceptor para log de salida. -->
+    <beans:bean id="loggingOutInterceptor" class="org.apache.cxf.interceptor.LoggingOutInterceptor" />
+ 
+    <!-- Interceptor para log de entrada. -->
+    <beans:bean id="loggingInInterceptor" class="org.apache.cxf.interceptor.LoggingInInterceptor" />
+    
+    <!-- Cliente de servicio web com CXF. -->
+    <jaxws:client id="RecetaSAFWSService"
+                  serviceClass="mx.com.dimesa.ws.client.service.SAFWSService_Client"
+                  address="http://wssafinterfacesqa.dimesa.com.mx/RecetaSAFWSService.svc">  
+        <!-- LLeva al archivo de LOG es SOAP response del servicio invocado. -->
+        <jaxws:inInterceptors>
+            <ref bean="loggingInInterceptor"/>
+        </jaxws:inInterceptors>
+        <!-- LLeva al archivo de LOG es SOAP request de invocacion. -->
+        <jaxws:outInterceptors>
+            <ref bean="loggingOutInterceptor"/>
+        </jaxws:outInterceptors>
+    </jaxws:client>
+                  
+</beans>

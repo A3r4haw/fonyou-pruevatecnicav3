@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DetalleInsumoSiamMapper">
+    <insert id="insertarLista"  parameterType="java.util.List" useGeneratedKeys="false"  >
+        <foreach collection="list" item="item" separator=";"> 
+        INSERT INTO detalleInsumoSiam (
+            idDetalleInsumoSiam,
+            idFolioAlternativo,
+            idInsumo,
+            cantidadSolicitada,
+            cantidadAprobada,
+            cantidadSurtida,
+            idEstructura,
+            insertFecha,
+            insertIdUsuario
+        ) VALUES (
+            #{ item.idDetalleInsumoSiam }
+            , #{ item.idFolioAlternativo }
+            , #{ item.idInsumo }               
+            , #{ item.cantidadSolicitada }
+            , #{ item.cantidadAprobada }
+            , #{ item.cantidadSurtida }
+            , #{ item.idEstructura }
+            , #{ item.insertFecha }
+            , #{ item.insertIdUsuario }
+        )
+        </foreach>
+    </insert>
+    
+    <update id="actualizarLista" parameterType="java.util.List" useGeneratedKeys="false" >
+        <foreach collection="list" item="item"  index="index"  separator=";">            
+            UPDATE detalleInsumoSiam
+            <set>
+                <if test="item.cantidadSurtida != null">
+                    cantidadSurtida = #{item.cantidadSurtida, jdbcType = INTEGER },
+                </if>
+                <if test="item.cantidadActual != null">
+                    cantidadActual = #{item.cantidadActual, jdbcType = INTEGER },
+                </if>
+                <if test="item.cantidadAprobada != null">
+                    cantidadAprobada = #{item.cantidadAprobada, jdbcType = INTEGER },
+                </if>
+                <if test="item.fechaRecepcion != null">
+                    fechaRecepcion = #{item.fechaRecepcion, jdbcType = TIMESTAMP },
+                </if>
+                <if test="item.idUsuarioRecepcion != null">
+                    idUsuarioRecepcion = #{item.idUsuarioRecepcion, jdbcType = VARCHAR },
+                </if>
+                <if test="item.updateFecha != null">
+                    updateFecha = #{item.updateFecha, jdbcType = TIMESTAMP },
+                </if>
+                <if test="item.updateIdUsuario != null">
+                    updateIdUsuario = #{item.updateIdUsuario, jdbcType = VARCHAR },
+                </if>
+            </set>                  
+            WHERE idFolioAlternativo = #{item.idFolioAlternativo, jdbcType = VARCHAR }
+                AND idInsumo = #{item.idInsumo, jdbcType = VARCHAR }
+        </foreach>
+    </update>
+    
+    <select id="obtenerDetalleSIAM"  parameterType="Map"  resultType="mx.mc.model.DetalleInsumoSiam">
+        SELECT 
+            idFolioAlternativo,idInsumo,cantidadSolicitada,cantidadAprobada,cantidadSurtida,idEstructura
+        FROM detalleInsumoSiam where idFolioAlternativo=#{idFolioAlternativo, jdbcType = VARCHAR};
+    </select>
+
+    <select id="obtenerDetallePorFolioEInsumo" parameterType="Map" resultType="mx.mc.model.DetalleInsumoSiam">
+        SELECT
+            dis.idFolioAlternativo, dis.idInsumo,cantidadSolicitada,dis.cantidadAprobada, dis.cantidadSurtida, dis.idEstructura
+        FROM detalleInsumoSiam dis LEFT JOIN folioAlternativoFolioMus fa ON dis.idFolioAlternativo = fa.idFolioAlternativo
+        WHERE dis.idInsumo = #{idInsumo, jdbcType = VARCHAR}
+          AND fa.folioAlternativo = #{folioAlternativo, jdbcType = VARCHAR};
+    </select>
+    
+    <select id="ultimaColectivaSurtida" parameterType="map" resultType="mx.mc.model.DetalleInsumoSiam">
+        SELECT di.idDetalleInsumoSiam, di.idFolioAlternativo, di.idInsumo, di.cantidadSolicitada,di.cantidadAprobada, di.cantidadSurtida
+             , di.idEstructura, di.cantidadActual, di.fechaRecepcion
+            FROM folioAlternativoFolioMus fa
+                 INNER JOIN detalleInsumoSiam di ON di.idFolioAlternativo = fa.idFolioAlternativo
+            WHERE di.idEstructura = #{ idEstructura, jdbcType = VARCHAR}
+                  AND di.idInsumo = #{ idInsumo, jdbcType = VARCHAR}
+                  AND di.fechaRecepcion IS NOT NULL
+            ORDER BY di.fechaRecepcion DESC
+            LIMIT 1
+    </select>
+    
+    <select id="detalleSIAMxFolioEstructura"  parameterType="Map"  resultType="mx.mc.model.DetalleInsumoSiam">
+        SELECT 
+            d.idDetalleInsumoSiam,
+            f.idFolioAlternativo,
+            f.folioMUS,
+            f.estatus,
+            d.idInsumo,
+            d.cantidadSolicitada,
+            d.cantidadAprobada,
+            d.cantidadSurtida,
+            d.idEstructura
+        FROM folioAlternativoFolioMus f
+            INNER JOIN detalleInsumoSiam d ON d.idFolioAlternativo = f.idFolioAlternativo
+        WHERE f.folioMUS =#{folioMus}           
+        <if test="idEstructura != null"> AND d.idEstructura =#{idEstructura}</if>
+        <if test="status != null">
+            AND f.estatus =#{status}
+        </if>
+        ;
+    </select>
+    <delete id="eliminarInsumo" parameterType="Map">
+        DELETE FROM detalleInsumoSiam WHERE idFolioAlternativo = #{idFolioAlternativo} AND idInsumo = #{idInsumo};
+    </delete>
+    
+    <delete id="eliminarDetalle"  parameterType="Map">
+        DELETE FROM  detalleInsumoSiam WHERE idFolioAlternativo = #{idFolioAlternativo};
+    </delete>
+</mapper>

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.RolMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.Rol" parameterType="mx.mc.model.Rol" >
+        SELECT idRol , nombre , descripcion , activo , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario
+        FROM roles
+        WHERE 1=1        
+        <if test=" idRol != null ">
+            AND idRol = #{ idRol , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            AND nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            AND descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        LIMIT 0, 1
+    </select>
+    
+    
+    <select id="obtenerLista" resultType="mx.mc.model.Rol" parameterType="mx.mc.model.Rol" >
+        SELECT idRol , nombre , descripcion , activo , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario
+        FROM roles
+        WHERE 1=1
+        AND activo = 1
+        AND nombre <![CDATA[<>]]> 'Total'
+        <if test=" idRol != null ">
+            AND idRol = #{ idRol , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            and nombre LIKE '%${ nombre }%'
+        </if>
+        <if test=" descripcion != null ">
+            and descripcion LIKE '%${ descripcion }%'
+        </if>
+<!--        <if test=" activo != null ">
+            AND activo = #{ activo , jdbcType = INTEGER }
+        </if>-->
+        ORDER BY nombre ASC
+    </select>
+    
+    <select id="obtenerListaTotal" resultType="mx.mc.model.Rol" parameterType="mx.mc.model.Rol" >
+        SELECT idRol , nombre , descripcion , activo , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario,
+        concat(nombre,descripcion) as nombres
+        FROM roles        
+         WHERE nombre <![CDATA[<>]]> 'Total'
+        <if test=" nombre != null ">
+            having nombres like '%${ nombre }%'            
+        </if>
+        ORDER BY nombre ASC
+    </select>
+    
+    <select id="obtenerPorIdUsuario" resultType="mx.mc.model.Rol" parameterType="Map" >
+        SELECT DISTINCT u.nombre , u.activo
+        FROM roles r
+        INNER JOIN usuariosRoles ur ON r.idRol = ur.idRol
+        INNER JOIN usuarios u ON ur.idUsuario = u.idUsuario
+        WHERE
+            u.idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.Rol" >
+        INSERT INTO roles (
+        <if test=" idRol != null ">
+            idRol
+        </if>
+        <if test=" nombre != null ">
+            , nombre
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion
+        </if>
+        <if test=" activo != null ">
+            , activo
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario
+        </if>
+        ) VALUES (
+        <if test=" idRol != null ">
+            #{ idRol , jdbcType = VARCHAR }
+        </if>
+        <if test=" nombre != null ">
+            , #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , #{ activo , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+
+
+    <update id="actualizar" parameterType="mx.mc.model.Rol"  >
+        UPDATE roles SET
+        updateFecha = #{ updateFecha , jdbcType = TIMESTAMP }
+        , updateIdUsuario = #{ updateIdUsuario , jdbcType = VARCHAR }
+        <if test=" nombre != null ">
+            , nombre = #{ nombre , jdbcType = VARCHAR }
+        </if>
+        <if test=" descripcion != null ">
+            , descripcion = #{ descripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" activo != null ">
+            , activo = #{ activo , jdbcType = INTEGER }
+        </if>
+        WHERE idRol = #{ idRol , jdbcType = VARCHAR }
+    </update>
+    
+
+    <delete id="eliminar" parameterType="mx.mc.model.Rol" >
+        DELETE FROM roles 
+        WHERE idRol = #{ idRol , jdbcType = VARCHAR }
+    </delete>
+    
+    <insert id="insertarTransaccionAccion" parameterType="mx.mc.model.TransaccionAccion" >
+        INSERT INTO transaccionAcciones (
+        <if test=" idRol != null ">
+            idRol
+        </if>
+        <if test=" idTransaccion != null ">
+            , idTransaccion
+        </if>
+        <if test=" idAccion != null ">
+            , idAccion
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        <if test=" updateFecha != null ">
+            , updateFecha
+        </if>
+        <if test=" updateIdUsuario != null ">
+            updateIdUsuario
+        </if>
+        ) VALUES (
+        <if test=" idRol != null ">
+            #{ idRol , jdbcType = VARCHAR }
+        </if>
+        <if test=" idTransaccion != null ">
+            , #{ idTransaccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idAccion != null ">
+            , #{ idAccion , jdbcType = VARCHAR }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        <if test=" updateFecha != null ">
+            , #{ updateFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" updateIdUsuario != null ">
+            , #{ updateIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+    
+
+    <delete id="eliminarTransaccionAccionPorIdRol" parameterType="Map" >
+        DELETE FROM transaccionAcciones 
+        WHERE idRol = #{ idRol , jdbcType = VARCHAR }
+    </delete>
+    
+    <select id="getRolByIdUsuario" resultType="mx.mc.model.Rol" parameterType="Map" >
+        SELECT DISTINCT r.idRol , r.nombre , r.activo
+        FROM roles r
+        INNER JOIN usuariosRoles ur ON r.idRol = ur.idRol
+        INNER JOIN usuarios u ON ur.idUsuario = u.idUsuario
+        WHERE
+            u.idUsuario = #{ idUsuario , jdbcType = VARCHAR }
+        LIMIT 1
+    </select>
+    
+    <select id="getRolByName" resultType="String" parameterType="Map" >
+        SELECT 
+        nombre
+        FROM
+        roles
+        WHERE nombre = #{ nombre , jdbcType = VARCHAR }            
+    </select>
+    
+</mapper>

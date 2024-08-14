@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.SignoVital" >
+    
+    <select id="obtener" resultType="mx.mc.model.SignoVital" parameterType="mx.mc.model.SignoVital" >
+        SELECT idSigno , fecha , idPaciente , idPacienteServicio , idPrescripcion , temperaturaCorporal , frecuenciaRespiratoria , frecuenciaCardiaca , presionDistolica , presionSistolica , presionIntracraneal , saturacionOxigeno , saturacionVenosaOxigeno , glucosa , estres , dolor , signosPiel , estadofuncional , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario
+        FROM signoVital
+        WHERE 1=1
+        <if test=" idSigno != null ">
+            AND idSigno = #{ idSigno }
+        </if>
+        <if test=" fecha != null ">
+            AND fecha = #{ fecha }
+        </if>
+        <if test=" idPaciente != null ">
+            AND idPaciente = #{ idPaciente }
+        </if>
+        <if test="  != null ">
+            AND idPacienteServicio = #{ idPacienteServicio }
+        </if>
+        LIMIT 1
+    </select>
+    
+    <select id="obtenerLista" resultType="mx.mc.model.SignoVital" parameterType="mx.mc.model.SignoVital" >
+        SELECT idSigno , fecha , idPaciente , idPacienteServicio , idPrescripcion , temperaturaCorporal , frecuenciaRespiratoria , frecuenciaCardiaca , presionDistolica , presionSistolica , presionIntracraneal , saturacionOxigeno , saturacionVenosaOxigeno , glucosa , estres , dolor , signosPiel , estadofuncional , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario
+        FROM signoVital
+        WHERE 1=1
+        <if test=" idSigno != null ">
+            AND idSigno = #{ idSigno }
+        </if>
+        <if test=" fecha != null ">
+            AND fecha = #{ fecha }
+        </if>
+        <if test=" idPaciente != null ">
+            AND idPaciente = #{ idPaciente }
+        </if>
+        <if test="  != null ">
+            AND idPacienteServicio = #{ idPacienteServicio }
+        </if>
+        ORDER BY fecha DESC
+    </select>
+    
+    <select id="obtenerUltimo" resultType="mx.mc.model.SignoVital" parameterType="mx.mc.model.SignoVital" >
+        SELECT idSigno , fecha , idPaciente , idPacienteServicio , idPrescripcion , temperaturaCorporal , frecuenciaRespiratoria , frecuenciaCardiaca , presionDistolica , presionSistolica , presionIntracraneal , saturacionOxigeno , saturacionVenosaOxigeno , glucosa , estres , dolor , signosPiel , estadofuncional , insertFecha , insertIdUsuario , updateFecha , updateIdUsuario
+        FROM signoVital
+        WHERE 1=1
+        <if test=" idSigno != null ">
+            AND idSigno = #{ idSigno }
+        </if>
+        <if test=" fecha != null ">
+            AND fecha = #{ fecha }
+        </if>
+        <if test=" idPaciente != null ">
+            AND idPaciente = #{ idPaciente }
+        </if>
+        <if test="  != null ">
+            AND idPacienteServicio = #{ idPacienteServicio }
+        </if>
+        ORDER BY fecha DESC
+        LIMIT 1
+    </select>
+    
+    <insert id="insertar" parameterType="mx.mc.model.SignoVital" >
+        INSERT INTO signoVital (
+            idSigno 
+            , fecha 
+            , idPaciente
+            <if test=" idPacienteServicio != null "> , idPacienteServicio </if>
+            <if test=" idPrescripcion != null "> , idPrescripcion </if>
+            <if test=" temperaturaCorporal != null "> , temperaturaCorporal </if>
+            <if test=" frecuenciaRespiratoria != null "> , frecuenciaRespiratoria </if>
+            <if test=" frecuenciaCardiaca != null "> , frecuenciaCardiaca </if>
+            <if test=" presionDistolica != null "> , presionDistolica </if>
+            <if test=" presionSistolica != null "> , presionSistolica </if>
+            <if test=" presionIntracraneal != null "> , presionIntracraneal </if>
+            <if test=" saturacionOxigeno != null "> , saturacionOxigeno </if>
+            <if test=" saturacionVenosaOxigeno != null "> , saturacionVenosaOxigeno </if>
+            <if test=" glucosa != null "> , glucosa </if>
+            <if test=" estres != null "> , estres </if>
+            <if test=" dolor != null "> , dolor </if>
+            <if test=" signosPiel != null "> , signosPiel </if>
+            <if test=" estadofuncional != null "> , estadofuncional </if>
+            , insertFecha 
+            , insertIdUsuario 
+            <if test=" updateFecha != null "> , updateFecha </if>
+            <if test=" updateIdUsuario != null "> , updateIdUsuario </if>
+        ) VALUES (
+              #{ idSigno }
+            , #{ fecha }
+            , #{ idPaciente }
+            <if test=" idPacienteServicio != null "> , #{ idPacienteServicio } </if>
+            <if test=" idPrescripcion != null "> , #{ idPrescripcion } </if>
+            <if test=" temperaturaCorporal != null "> , #{ temperaturaCorporal } </if>
+            <if test=" frecuenciaRespiratoria != null "> , #{ frecuenciaRespiratoria } </if>
+            <if test=" frecuenciaCardiaca != null "> , #{ frecuenciaCardiaca } </if>
+            <if test=" presionDistolica != null "> , #{ presionDistolica } </if>
+            <if test=" presionSistolica != null "> , #{ presionSistolica } </if>
+            <if test=" presionIntracraneal != null "> , #{ presionIntracraneal } </if>
+            <if test=" saturacionOxigeno != null "> , #{ saturacionOxigeno } </if>
+            <if test=" saturacionVenosaOxigeno != null "> , #{ saturacionVenosaOxigeno } </if>
+            <if test=" glucosa != null "> , #{ glucosa } </if>
+            <if test=" estres != null "> , #{ estres } </if>
+            <if test=" dolor != null "> , #{ dolor } </if>
+            <if test=" signosPiel != null "> , #{ signosPiel } </if>
+            <if test=" estadofuncional != null "> , #{ estadofuncional } </if>
+            , #{ insertFecha }
+            , #{ insertIdUsuario }
+            <if test=" updateFecha != null "> , #{ updateFecha } </if>
+            <if test=" updateIdUsuario != null "> , #{ updateIdUsuario } </if>
+            );
+    </insert>
+    
+</mapper>

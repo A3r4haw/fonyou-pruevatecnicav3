@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mx.mc.mapper.DiagnosticoPacienteMapper" >
+ 
+    <select id="obtener" resultType="mx.mc.model.DiagnosticoPaciente" parameterType="mx.mc.model.DiagnosticoPaciente" >
+        SELECT idDiagnosticoPaciente, idPrescripcion, fechaDiagnostico, idUsuarioDiagnostico, idDiagnostico, fechaFinDiagnostico, idUsuarioDiagnosticoTratado, idEstatusDiagnostico
+        FROM diagnosticoPaciente
+        WHERE 1=1
+        <if test=" idDiagnosticoPaciente != null ">
+            AND idDiagnosticoPaciente = #{ idDiagnosticoPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idDiagnostico != null ">
+            AND idDiagnostico = #{ idDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaDiagnostico != null ">
+            AND fechaDiagnostico = #{ fechaDiagnostico , jdbcType = DATE }
+        </if>
+        <if test=" idUsuarioDiagnostico != null ">
+            AND idUsuarioDiagnostico = #{ idUsuarioDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaFinDiagnostico != null ">
+            AND fechaFinDiagnostico = #{ fechaFinDiagnostico , jdbcType = DATE }
+        </if>
+        <if test=" idUsuarioDiagnosticoTratado != null ">
+            AND idUsuarioDiagnosticoTratado = #{ idUsuarioDiagnosticoTratado , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatusDiagnostico != null ">
+            AND idEstatusDiagnostico = #{ idEstatusDiagnostico , jdbcType = INTEGER }
+        </if>
+        LIMIT 1
+    </select>
+ 
+    <select id="obtenerLista" resultType="mx.mc.model.DiagnosticoPaciente" parameterType="mx.mc.model.DiagnosticoPaciente" >
+        SELECT idDiagnosticoPaciente, idPrescripcion, fechaDiagnostico, idUsuarioDiagnostico, idDiagnostico, fechaFinDiagnostico, idUsuarioDiagnosticoTratado, idEstatusDiagnostico
+        FROM diagnosticoPaciente
+        WHERE 1=1
+        <if test=" idDiagnosticoPaciente != null ">
+            AND idDiagnosticoPaciente = #{ idDiagnosticoPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPrescripcion != null ">
+            AND idPrescripcion = #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" idDiagnostico != null ">
+            AND idDiagnostico = #{ idDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaDiagnostico != null ">
+            AND fechaDiagnostico = #{ fechaDiagnostico , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idUsuarioDiagnostico != null ">
+            AND idUsuarioDiagnostico = #{ idUsuarioDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaFinDiagnostico != null ">
+            AND fechaFinDiagnostico = #{ fechaFinDiagnostico , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idUsuarioDiagnosticoTratado != null ">
+            AND idUsuarioDiagnosticoTratado = #{ idUsuarioDiagnosticoTratado , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatusDiagnostico != null ">
+            AND idEstatusDiagnostico = #{ idEstatusDiagnostico , jdbcType = INTEGER }
+        </if>
+    </select>
+     
+    <insert id="insertar" parameterType="mx.mc.model.DiagnosticoPaciente" >
+        INSERT INTO diagnosticoPaciente (
+        <if test=" idDiagnosticoPaciente != null ">
+            idDiagnosticoPaciente
+        </if>
+        <if test=" idPrescripcion != null ">
+            , idPrescripcion
+        </if>
+        <if test=" fechaDiagnostico != null ">
+            , fechaDiagnostico
+        </if>
+        <if test=" idUsuarioDiagnostico != null ">
+            , idUsuarioDiagnostico
+        </if>
+        <if test=" idDiagnostico != null ">
+            , idDiagnostico
+        </if>
+        <if test=" fechaFinDiagnostico != null ">
+            , fechaFinDiagnostico
+        </if>
+        <if test=" idUsuarioDiagnosticoTratado != null ">
+            , idUsuarioDiagnosticoTratado
+        </if>
+        <if test=" idEstatusDiagnostico != null ">
+            , idEstatusDiagnostico
+        </if>
+        <if test=" insertFecha != null ">
+            , insertFecha
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , insertIdUsuario
+        </if>
+        ) VALUES (
+        <if test=" idDiagnosticoPaciente != null ">
+            #{ idDiagnosticoPaciente , jdbcType = VARCHAR }
+        </if>
+        <if test=" idPrescripcion != null ">
+            , #{ idPrescripcion , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaDiagnostico != null ">
+            , #{ fechaDiagnostico , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idUsuarioDiagnostico != null ">
+            , #{ idUsuarioDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" idDiagnostico != null ">
+            , #{ idDiagnostico , jdbcType = VARCHAR }
+        </if>
+        <if test=" fechaFinDiagnostico != null ">
+            , #{ fechaFinDiagnostico , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" idUsuarioDiagnosticoTratado != null ">
+            , #{ idUsuarioDiagnosticoTratado , jdbcType = VARCHAR }
+        </if>
+        <if test=" idEstatusDiagnostico != null ">
+            , #{ idEstatusDiagnostico , jdbcType = INTEGER }
+        </if>
+        <if test=" insertFecha != null ">
+            , #{ insertFecha , jdbcType = TIMESTAMP }
+        </if>
+        <if test=" insertIdUsuario != null ">
+            , #{ insertIdUsuario , jdbcType = VARCHAR }
+        </if>
+        )
+    </insert>
+        
+    <select id="obtenerPorPrescripcionDiagnostico" resultType="mx.mc.model.DiagnosticoPaciente" parameterType="Map">
+        SELECT idDiagnosticoPaciente, idPrescripcion, fechaDiagnostico, idUsuarioDiagnostico, idDiagnostico , fechaFinDiagnostico , 
+        idUsuarioDiagnosticoTratado , idEstatusDiagnostico, insertFecha , insertIdUsuario , updateFecha , updateidUsuario 
+        FROM diagnosticoPaciente
+        WHERE idPrescripcion = #{idPrescripcion , jdbcType = VARCHAR}
+            AND idDiagnostico = #{idDiagnostico , jdbcType = VARCHAR}
+        LIMIT 1
+    </select>
+    
+</mapper>
