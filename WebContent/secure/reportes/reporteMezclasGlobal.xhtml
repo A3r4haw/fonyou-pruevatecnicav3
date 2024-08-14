@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"    
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <h:body>
+        <ui:composition template="../template/mainLayout.xhtml">
+            <ui:define name="content">                    
+                <div class="mainPanel">                	
+                    <h:form id="mainForm">
+                        <p:messages id="msg" globalOnly="true" closable="true" showDetail="false"/>
+                        <p:panelGrid>
+                            <div class="ui-g panelGris" >
+                                <p:outputLabel value="REPORTE DE MEZCLAS" class="fontCenter"   />
+                                <div class="ui-g-12" >
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" >
+                                            <p:outputLabel value="Fecha Inicio: " style="font-weight: bolder;"  />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:calendar id="txtFechaInicio" 
+                                                        value="#{reporteMezclasMB.paramBusquedaReporte.fechaInicio}" 
+                                                        mindate="" 
+                                                        maxdate="#{reporteMezclasMB.fechaActual}"
+                                                        showOn="button" showButtonPanel="true" 
+                                                        locale="es_MX" navigator="true" pattern="dd/MMM/yyyy HH:mm"
+                                                        pages="1" mask="true" effect="fade"
+                                                        styleClass="calendarAcho1" >
+                                                <p:ajax event="dateSelect"  update="txtFechaInicio2" />
+                                            </p:calendar>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" >
+                                            <p:outputLabel value="Fecha Fin: " style="font-weight: bolder;"  />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:calendar id="txtFechaInicio2" 
+                                                        value="#{reporteMezclasMB.paramBusquedaReporte.fechaFin}" 
+                                                        showOn="button" showButtonPanel="true" 
+                                                        locale="es_MX" navigator="true" pattern="dd/MMM/yyyy HH:mm"
+                                                        pages="1" mask="true" effect="fade"
+                                                        styleClass="calendarAcho1" >
+                                            </p:calendar>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" >
+                                            <p:outputLabel  value="Estatus: " style="font-weight: bolder;"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:selectOneMenu id="cmbIdEstatusSolucion" value="#{reporteMezclasMB.paramBusquedaReporte.idEstatusSolucion}"
+                                                             style="vertical-align: middle; margin-right: 10px; width: 150px" 
+                                                             filter="true" filterMatchMode="contains" 
+                                                             panelStyle="width:150px">
+                                                <f:selectItem itemLabel="Todos" itemValue="#{null}" />
+                                                <f:selectItems value="#{reporteMezclasMB.listaIdEstatusSolucion}"
+                                                               var="ser"
+                                                               itemValue="#{ser.idEstatusSolucion}"
+                                                               itemLabel="#{ser.descripcion}"/>
+                                                <p:ajax listener="#{reporteMezclasMB.mostrarColumnas}" update=":formTablaEstatusInsumos" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <ui:remove>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" >
+                                            <p:outputLabel  value="Tipo Insumo: " style="font-weight: bolder;"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:selectOneMenu id="cmbTipoInsumo" value="#{reporteMezclasMB.tipoInsumo}"
+                                                             style="vertical-align: middle; margin-right: 10px; width: 150px" 
+                                                             filter="true" filterMatchMode="contains" 
+                                                             panelStyle="width:150px">
+                                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                                <f:selectItem itemLabel="Medicamento" itemValue="#{reporteMezclasMB.insumoMedicamento}" />
+                                                <f:selectItem itemLabel="Material" itemValue="#{reporteMezclasMB.insumoMaterial}" />    
+                                            </p:selectOneMenu>
+                                        </div>
+                                        </ui:remove>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" >
+                                            <p:outputLabel value="Servicio/Área: " style="font-weight: bolder;"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-2">
+                                            <p:selectOneMenu id="cmbServicios" 
+                                                             value="#{reporteMezclasMB.paramBusquedaReporte.idEstructura}" 
+                                                             style="vertical-align: middle; margin-right: 10px; width: 180px" 
+                                                             filter="true" filterMatchMode="contains" 
+                                                             panelStyle="width:180px"> 
+                                                <f:selectItem itemLabel="Todos" itemValue="" />
+                                                <f:selectItems value="#{reporteMezclasMB.listaEstructuras}"
+                                                               var="ser"
+                                                               itemValue="#{ser.idEstructura}"
+                                                               itemLabel="#{ser.nombre}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:outputLabel value="Paciente: " style="font-weight: bolder;"/>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:autoComplete id="txtPaciente" styleClass="autoCompleteAncho400" 
+                                                            value="#{reporteMezclasMB.pacienteSelect}"
+                                                            completeMethod="#{reporteMezclasMB.autocompletePacientes}"
+                                                            minQueryLength="4" queryDelay="500"                     
+                                                            maxResults="50" scrollHeight="300"
+                                                            forceSelection="true" cacheTimeout="0" cache="false"
+                                                            var="paciente" multiple="false"
+                                                            placeholder=" Filtro pacientes ..." 
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" 
+                                                            itemValue="#{paciente}" 
+                                                            converter="musGenericConverter" >
+                                                <p:column style="width: 50px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="No. Paciente" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.pacienteNumero}" style=" font-size: small;" />
+                                                </p:column>                                                
+                                                <p:column style="width: 150px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{paciente.nombreCompleto} #{paciente.apellidoPaterno} #{paciente.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:outputLabel style="font-weight: bolder;"  value="Médico: " />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:autoComplete id="txtMedico" styleClass="autoCompleteAncho400" 
+                                                            value="#{reporteMezclasMB.medicoSelect}"
+                                                            completeMethod="#{reporteMezclasMB.autocompleteUsuarios}"
+                                                            minQueryLength="3" queryDelay="500" 
+                                                            maxResults="50" scrollHeight = "350"
+                                                            forceSelection="true" cacheTimeout="0" cache="false"
+                                                            var="medico" multiple="false"
+                                                            placeholder="  Filtro médicos ..." 
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{medico.nombre} #{medico.apellidoPaterno} #{medico.apellidoMaterno}" 
+                                                            itemValue="#{medico}" 
+                                                            converter="musGenericConverter" >
+                                                <p:column style="width: 50px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Cédula" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{medico.cedProfesional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 150px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{medico.nombre}  #{medico.apellidoPaterno}  #{medico.apellidoMaterno}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>                                               
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                            <p:menuButton value="Consultar" style="margin-top: 3px; margin-left: 3px; ">
+                                                <p:menuitem value="Consultar"
+                                                            actionListener="#{reporteMezclasMB.consultar()}" 
+                                                            update="formTablaEstatusInsumos, :mainForm:msg" 
+                                                            onclick="PF('statusProcess').show();"
+                                                             oncomplete="PF('statusProcess').hide();" 
+                                                             icon="fa fa-check-circle" 
+                                                             styleClass="btnMusAzul" />
+                                                <p:menuitem value="Exportar PDF"
+                                                            actionListener="#{reporteMezclasMB.generaPDF}" 
+                                                            update=":formPDF"
+                                                            onclick="PF('statusProcess').show();" 
+                                                            oncomplete="PF('statusProcess').hide();PF('mdlReport').show();"                                                             
+                                                            icon="fa fa-file-pdf-o"
+                                                            process=":mainForm" />
+                                                <p:menuitem value="Exportar Hoja Cálculo"
+                                                            icon="fa fa-file-excel-o"
+                                                            ajax="false" 
+                                                            actionListener="#{reporteMezclasMB.generaExcel}" />
+                                            </p:menuButton>
+                                        </div>
+                                    </div>
+                                    <ui:remove>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:outputLabel style="font-weight: bolder;"  value="Insumos: " />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:autoComplete id="txtInsumos" styleClass="autoCompleteAncho400" 
+                                                            value="#{reporteMezclasMB.paramBusquedaReporte.listInsumos}" 
+                                                            completeMethod="#{reporteMezclasMB.autocompleteInsumo}" 
+                                                            minQueryLength="4" queryDelay="500" 
+                                                            maxResults="50" scrollHeight = "370" 
+                                                            forceSelection="true" cacheTimeout="0" cache="false" 
+                                                            var="insum" multiple="true" 
+                                                            placeholder=" Filtro insumos ... " 
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{insum.nombreCorto}"
+                                                            itemValue="#{insum}" 
+                                                            converter="musGenericConverter" >
+                                                <p:column style="width: 20px; font-size: small;" width="20px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.claveInstitucional}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 350px; font-size: small;" width="350px">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Descripción" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{insum.nombreCorto}" style=" font-size: x-small;" />
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                        
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:outputLabel style="font-weight: bolder;"  value="Dispensa: " />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:autoComplete id="txtUsuario" styleClass="autoCompleteAncho400" 
+                                                            value="#{reporteMezclasMB.paramBusquedaReporte.listUsuarios}"
+                                                            completeMethod="#{reporteMezclasMB.autocompleteUsuarios}"
+                                                            minQueryLength="4" queryDelay="500" 
+                                                            maxResults="50" scrollHeight = "350" 
+                                                            forceSelection="true" cacheTimeout="0" cache="false" 
+                                                            var="usr" multiple="true"
+                                                            placeholder=" Filtro usuarios ..." 
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{usr.nombre} #{usr.apellidoPaterno} #{usr.apellidoMaterno}"
+                                                            itemValue="#{usr}" 
+                                                            converter="musGenericConverter" 
+                                                             >
+                                                <p:column style="width: 50px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre de Usuario" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.nombreUsuario}" style=" font-size: small;" />
+                                                </p:column>
+                                                <br/>
+                                                <p:column style="width: 150px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre Completo" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{usr.nombre}  #{usr.apellidoPaterno}   #{usr.apellidoMaterno}" style=" font-size: small;" />
+                                                </p:column>                                                
+                                            </p:autoComplete>
+                                        </div>
+                                    </div>
+                                    <div class="ui-g-12 " style="padding: 0em !important;">
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:outputLabel style="font-weight: bolder;"  value="Diagnóstico: " />
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-4" style="max-height:50px; float: left; margin-right: 1px; overflow-x:auto; overflow-y: auto; display: flex; align-items: center;">
+                                            <p:autoComplete id="txtDiagostico" styleClass="autoCompleteAncho400" 
+                                                            value="#{reporteMezclasMB.paramBusquedaReporte.listDiagosticos}"
+                                                            completeMethod="#{reporteMezclasMB.autocompleteDiagnostico}"
+                                                            minQueryLength="3" queryDelay="500" 
+                                                            maxResults="50" scrollHeight = "350"
+                                                            forceSelection="true" cacheTimeout="0" cache="false"
+                                                            var="diag" multiple="true"
+                                                            placeholder="  Filtro diagnósticos ..." 
+                                                            emptyMessage="No se encontraron registros"
+                                                            itemLabel="#{diag.clave} - #{diag.nombre}" 
+                                                            itemValue="#{diag}" 
+                                                            converter="musGenericConverter" >
+                                                <p:column style="width: 30px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Clave" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{diag.clave}" style=" font-size: small;" />
+                                                </p:column>
+                                                <p:column style="width: 250px; font-size: small;">
+                                                    <f:facet name="header" >
+                                                        <h:outputText value="Nombre" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{diag.nombre}" style=" font-size: small; font-weight: bolder;" />
+                                                </p:column>                                               
+                                            </p:autoComplete>
+                                        </div>
+                                        <div class="ui-g-12 ui-md-6 ui-lg-1">
+                                        </div>
+                                    </div>
+                                    </ui:remove>
+                                </div>
+                            </div>
+                        </p:panelGrid>	                                	
+                    </h:form>
+                    
+                    <p:outputLabel value="No tiene Permiso para esta Transacción"
+                                   rendered="#{!reporteMezclasMB.permiso.puedeVer}"
+                                   style="color: red; font-weight: bolder;"  />
+                    
+                    <h:form id="formTablaEstatusInsumos" >
+                        <p:dataTable id="resultadosDT"
+                                     value="#{reporteMezclasMB.mezclasLazy}"
+                                     var="result" 
+                                     lazy="true" scrollable="true" 
+                                     paginator="true" paginatorPosition="bottom"
+                                     scrollWidth="100%" scrollHeight="350" rows="20"
+                                     paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate=" "
+                                     emptyMessage="No se encontraron datos"
+                                     style="font-size: x-small !important; width: 100% !important;"
+                                     rendered="#{reporteMezclasMB.permiso.puedeVer}" >
+                            
+                            <f:facet name="header" >
+                                <p:commandButton id="toggler" type="button" value="Columnas" style="float:right; font-size: 10px !important;" icon="fa fa-columns" />
+                                <p:columnToggler datasource="resultadosDT" trigger="toggler" />
+                            </f:facet>
+
+                            <p:column headerText="Folio Presc." style="width: 5%;">
+                                <h:outputText value="#{result.folioPrescripcion}"/>
+                            </p:column>
+
+                            <p:column headerText="Servicio" style="width: 8%;">
+                                <h:outputText value="#{result.nombreServicio}"/>
+                            </p:column>
+                            
+                            <p:column headerText="Paciente" style="width: 10%;">
+                                <h:outputText value="#{result.nombrePaciente}"/>
+                            </p:column>
+
+                            <p:column headerText="Fecha Prog." style="width: 5%;">
+                                <h:outputText value="#{result.fechaProgramada}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Folio Mezcla" style="width: 6%;">
+                                <h:outputText value="#{result.folioSurtimiento}" style="font-weight: bolder; " >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                                                        
+                            <p:column headerText="Descripción" style="width: 10%;">
+                                <h:outputText value="#{result.descripcionMezcla}" />
+                            </p:column>
+
+                            <p:column headerText="Fecha Prescr." style="width: 5%;" visible="#{reporteMezclasMB.visiblePrescripcion}" >
+                                <h:outputText value="#{result.fechaPrescripcion}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Médico" style="width: 8%;">
+                                <h:outputText value="#{result.nombreMedico}"/>
+                            </p:column>
+                            <p:column headerText="Fecha Rechazo" style="width: 5%;" visible="#{reporteMezclasMB.visibleRechazo}" >
+                                <h:outputText value="#{result.updateFecha}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Q. Rechaza" style="width: 8%;" visible="#{reporteMezclasMB.visibleRechazo}" >
+                                <h:outputText value="#{result.idEstatusSolucion eq 6 ? result.usuarioValidaPresc : result.usuarioRechaza}" />
+                            </p:column>
+                            
+                            <p:column headerText="Comentario Rechazo" style="width: 8%;" visible="#{reporteMezclasMB.visibleRechazo}" >
+                                <h:outputText value="#{result.comentariosRechazo}" />
+                            </p:column>
+                            
+                            <p:column headerText="Fecha val. Pres." style="width: 5%;" visible="#{reporteMezclasMB.visibleRegValidacion}">
+                                <h:outputText value="#{result.fechaValPrescr}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Q. Valida" style="width: 8%;" visible="#{reporteMezclasMB.visibleRegValidacion}" >
+                                <h:outputText value="#{result.usuarioValidaPresc}" title="#{result.comentValPrescr}" />
+                            </p:column>
+                            
+                            <p:column headerText="Fecha val. O.P." style="width: 5%;" visible="#{reporteMezclasMB.visibleValidacion}" >
+                                <h:outputText value="#{result.fechaValida}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Q. Valida" style="width: 8%;" visible="#{reporteMezclasMB.visibleValidacion}">
+                                <h:outputText value="#{result.usuarioValidaOP}" title="#{result.comentValPrescr}" />
+                            </p:column>
+                            <p:column headerText="Comentario Valida" style="width: 8%;" visible="#{reporteMezclasMB.visibleValidacion}">
+                                <h:outputText value="#{result.comentValPrescr}" title="#{result.comentValPrescr}" />
+                            </p:column>
+
+                            <p:column headerText="Fecha Prepar." style="width: 5%;" visible="#{reporteMezclasMB.visiblePreparacion}">
+                                <h:outputText value="#{result.fechaPrepara}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Q. Prepara" style="width: 8%;" visible="#{reporteMezclasMB.visiblePreparacion}">
+                                <h:outputText value="#{result.usuarioPrepara}" title="#{result.comentariosPreparacion}" />
+                            </p:column>
+
+                            <p:column headerText="Fecha Inspec." style="width: 5%;" visible="#{reporteMezclasMB.visibleInspecciona}" >
+                                <h:outputText value="#{result.fechaInspeccion}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Q. Inspecc." style="width: 8%;" visible="#{reporteMezclasMB.visibleInspecciona}" >
+                                <h:outputText value="#{result.usuarioInspecciona}" title="#{result.comentarioInspeccion}" />
+                            </p:column>
+
+                            <p:column headerText="Fecha Acondic." style="width: 5%;"  visible="#{reporteMezclasMB.visibleAcondiciona}"  >
+                                <h:outputText value="#{result.fechaAcondicionamiento}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Q. Acondiciona" style="width: 8%;" visible="#{reporteMezclasMB.visibleAcondiciona}"  >
+                                <h:outputText value="#{result.usuarioAcondiciona}" title="#{result.comentarioAcondicionada}" />
+                            </p:column>
+                            
+                            <p:column headerText="Fecha Dispensación" style="width: 5%;" visible="#{reporteMezclasMB.visibleDistribuye}"  >
+                                <h:outputText value="#{result.fechaDispensacion}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Q. Dispensa" style="width: 8%;"  visible="#{reporteMezclasMB.visibleDistribuye}"  >
+                                <h:outputText value="#{result.usuarioDispensa}" />
+                            </p:column>
+                            
+                            <p:column headerText="Fecha Entrega" style="width: 5%;" visible="#{reporteMezclasMB.visibleEntrega}"  >
+                                <h:outputText value="#{result.fechaEntrega}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Q. Entrega" style="width: 8%;"  visible="#{reporteMezclasMB.visibleEntrega}"  >
+                                <h:outputText value="#{result.usuarioEntrega}" title="#{result.comentariosEntrega}" />
+                            </p:column>
+
+                            <p:column headerText="Fecha Recibe" style="width: 5%;" visible="#{reporteMezclasMB.visibleEntrega}" >
+                                <h:outputText value="#{result.fechaRecibe}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Usuario Recibe" style="width: 8%;" visible="#{reporteMezclasMB.visibleEntrega}">
+                                <h:outputText value="#{result.usuarioRecibe}"/>
+                            </p:column>
+                            
+                            <p:column headerText="Fecha Autoriza" style="width: 5%;" visible="false" >
+                                <h:outputText value="#{result.fechaAutoriza}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Usuario Autoriza" style="width: 8%;" visible="false">
+                                <h:outputText value="#{result.usuarioAutoriza}"/>
+                            </p:column>
+                            <p:column headerText="Comentario Autoriza" style="width: 8%;" visible="false">
+                                <h:outputText value="#{result.comentarioAutoriza}"/>
+                            </p:column>
+                            <p:column headerText="Ultimo Modific." style="width: 8%;" visible="false">
+                                <h:outputText value="#{result.ultimoMovimiento}" >
+                                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Estatus Mezcla"  style="width: 5%;" visible="#{!reporteMezclasMB.visibleEntrega}" rendered="false">
+                                <h:outputText value="#{result.estatusSolucion}"  style="font-weight: bolder; " />
+                            </p:column>
+
+
+                        </p:dataTable>
+                    </h:form>	
+
+                    <p:dialog widgetVar="mdlReport" width="800"  height="560" minimizable="true" maximizable="true" closable="true"
+                              closeOnEscape="true" modal="true"                          
+                              style="font-size:xx-small !important;" >
+                        <h:form id="formPDF">                        
+                            <p:media cache="false" 
+                                     width="100%" 
+                                     height="550" 
+                                     value="/Reportes"
+                                     player="pdf"/>                         
+                        </h:form>
+                        <p:ajax event="close" listener="#{sesionMB.freeBytesFromSession()}"/>
+                    </p:dialog>
+                </div>
+            </ui:define>				
+        </ui:composition>
+    </h:body>	
+</html>
